@@ -1,0 +1,32 @@
+# Socrates2 - Production Dependencies
+# Python version: 3.12
+# Last updated: 2025-11-05
+
+# =====WEB FRAMEWORK & SERVER =====
+fastapi==0.121.0
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# ===== DATABASE & ORM =====
+sqlalchemy==2.0.44
+alembic==1.14.0
+psycopg2-binary==2.9.10  # For Alembic migrations (sync)
+asyncpg==0.30.0          # For FastAPI async operations
+
+# ===== DATA VALIDATION =====
+pydantic[email]==2.12.3
+email-validator==2.2.0
+
+# ===== AUTHENTICATION & SECURITY =====
+passlib[bcrypt]==1.7.4
+bcrypt==4.2.1
+PyJWT[crypto]==2.10.1    # JWT tokens (NOT python-jose - see DEPENDENCIES_AND_CONFLICTS.md)
+cryptography==44.0.0
+python-dotenv==1.0.1
+
+# ===== LLM INTEGRATION =====
+anthropic==0.40.0
+httpx==0.28.1
+
+# ===== UTILITIES =====
+typing-extensions==4.12.2
