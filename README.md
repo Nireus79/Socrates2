@@ -21,6 +21,7 @@ Read these documents **in order** before starting implementation:
 - **[ARCHIVE_PATTERNS.md](./ARCHIVE_PATTERNS.md)** - Good patterns to follow from old repo
 - **[ARCHIVE_ANTIPATTERNS.md](./ARCHIVE_ANTIPATTERNS.md)** - Anti-patterns that caused failures
 - **[WHY_PREVIOUS_ATTEMPTS_FAILED.md](./WHY_PREVIOUS_ATTEMPTS_FAILED.md)** - Detailed post-mortem analysis
+- **[SQLALCHEMY_BEST_PRACTICES.md](./SQLALCHEMY_BEST_PRACTICES.md)** - 🔴 **CRITICAL** - SQLAlchemy issues that killed previous attempts (MUST READ before Phase 1)
 
 ### 3. Architecture & Design
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Complete system architecture with interconnections

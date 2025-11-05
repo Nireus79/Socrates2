@@ -6,6 +6,42 @@
 
 ---
 
+## ⚠️ CRITICAL: Read Before Starting
+
+**🔴 MUST READ:** [SQLALCHEMY_BEST_PRACTICES.md](./SQLALCHEMY_BEST_PRACTICES.md) - Contains critical issues that **KILLED PREVIOUS ATTEMPTS**
+
+### Session Lifecycle Warning (Archive Killer Bug)
+
+**Previous attempt had ZERO data persistence** due to SQLAlchemy session closing before commit synced to disk. This caused:
+- API returned 201 Created
+- But database had 0 records in ALL tables
+- Users lost ALL messages, sessions, and data
+
+**Verification Test (MUST PASS):**
+```python
+def test_persistence_after_session_close():
+    """This test FAILED in archive - caused complete data loss."""
+    with get_db_session() as db:
+        user = User(username="test")
+        db.add(user)
+        db.commit()
+        user_id = user.id
+
+    # Session closed - data MUST still be in database
+    with get_db_session() as db:
+        found = db.query(User).filter_by(id=user_id).first()
+        assert found is not None  # ⚠️ This FAILED in archive!
+```
+
+**Solution:** See SQLALCHEMY_BEST_PRACTICES.md sections:
+- Issue #1: Session Lifecycle (80% of previous failures)
+- Issue #2: Detached Instance Errors (15% of previous failures)
+- Complete configuration examples
+
+**DO NOT proceed with database implementation until you've read and understood the SQLAlchemy best practices document.**
+
+---
+
 ## 📋 Objectives
 
 1. Set up PostgreSQL databases (auth + specs)
@@ -43,6 +79,8 @@ from app.models.session import Session
 ## 📦 Deliverables
 
 ### 1. Database Setup
+
+**⚠️ BEFORE implementing:** Read [SQLALCHEMY_BEST_PRACTICES.md](./SQLALCHEMY_BEST_PRACTICES.md)
 
 **Files Created:**
 ```
