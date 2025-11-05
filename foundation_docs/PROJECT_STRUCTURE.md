@@ -474,9 +474,9 @@ backend/tests/
 
 ## References
 
-- [VISION.md](./VISION.md) - Project goals
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture
-- [TECHNOLOGY_STACK.md](./TECHNOLOGY_STACK.md) - Technology decisions
+- [VISION.md](VISION.md) - Project goals
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
+- [TECHNOLOGY_STACK.md](TECHNOLOGY_STACK.md) - Technology decisions
 - [INTERCONNECTIONS_MAP.md](./INTERCONNECTIONS_MAP.md) - Component dependencies
 - [ARCHIVE_ANTIPATTERNS.md](./ARCHIVE_ANTIPATTERNS.md) - What NOT to do
 - [SQLALCHEMY_BEST_PRACTICES.md](./SQLALCHEMY_BEST_PRACTICES.md) - Database implementation

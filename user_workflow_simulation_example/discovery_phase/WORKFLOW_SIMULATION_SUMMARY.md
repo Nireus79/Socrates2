@@ -503,11 +503,11 @@ Only high-quality questions shown
 ## References
 
 **Simulation Parts:**
-- [Part 1](./WORKFLOW_SIMULATION_PART1.md) - Registration, Login, Project Creation
-- [Part 2](./WORKFLOW_SIMULATION_PART2.md) - Socratic Questions, Vagueness Detection
-- [Part 3](./WORKFLOW_SIMULATION_PART3.md) - Direct Chat, Conflict Detection
-- [Part 4](./WORKFLOW_SIMULATION_PART4.md) - Conflict Resolution, Maturity Building
-- [Part 5](./WORKFLOW_SIMULATION_PART5.md) - Phase Advancement
+- [Part 1](WORKFLOW_SIMULATION_PART1.md) - Registration, Login, Project Creation
+- [Part 2](WORKFLOW_SIMULATION_PART2.md) - Socratic Questions, Vagueness Detection
+- [Part 3](WORKFLOW_SIMULATION_PART3.md) - Direct Chat, Conflict Detection
+- [Part 4](WORKFLOW_SIMULATION_PART4.md) - Conflict Resolution, Maturity Building
+- [Part 5](WORKFLOW_SIMULATION_PART5.md) - Phase Advancement
 
 **Documentation:**
 - [VISION.md](./VISION.md) - Project requirements

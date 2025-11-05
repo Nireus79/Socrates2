@@ -602,6 +602,6 @@ Generating next question (focus: Requirements)...
 ---
 
 **Reference:**
-- [WORKFLOW_SIMULATION_PART1.md](./WORKFLOW_SIMULATION_PART1.md) - Previous part
+- [WORKFLOW_SIMULATION_PART1.md](WORKFLOW_SIMULATION_PART1.md) - Previous part
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Agent architecture
 - [VISION.md](./VISION.md) - Vagueness detection requirement

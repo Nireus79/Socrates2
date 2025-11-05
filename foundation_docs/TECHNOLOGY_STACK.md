@@ -1,7 +1,7 @@
 # Socrates2 - Technology Stack
 
 **Last Updated:** 2025-11-05
-**Source:** [ARCHITECTURE.md](./ARCHITECTURE.md) and [VISION.md](./VISION.md)
+**Source:** [ARCHITECTURE.md](ARCHITECTURE.md) and [VISION.md](VISION.md)
 
 ---
 
@@ -367,8 +367,8 @@
 ---
 
 **References:**
-- [VISION.md](./VISION.md) - Project goals and requirements
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Complete system architecture
+- [VISION.md](VISION.md) - Project goals and requirements
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Complete system architecture
 - [SQLALCHEMY_BEST_PRACTICES.md](./SQLALCHEMY_BEST_PRACTICES.md) - Database implementation guide
 
 ---

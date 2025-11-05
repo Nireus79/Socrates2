@@ -569,6 +569,6 @@ Overall: 63% ✅ (Threshold: 60%)
 ---
 
 **Reference:**
-- [WORKFLOW_SIMULATION_PART4.md](./WORKFLOW_SIMULATION_PART4.md) - Previous part
+- [WORKFLOW_SIMULATION_PART4.md](WORKFLOW_SIMULATION_PART4.md) - Previous part
 - [VISION.md](./VISION.md) - Phase system (lines 121-152), Maturity gates (lines 329-350)
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Phase advancement logic
