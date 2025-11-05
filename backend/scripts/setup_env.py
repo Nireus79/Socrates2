@@ -8,9 +8,11 @@ import secrets
 import os
 import sys
 
+
 def generate_secret_key():
     """Generate a secure random secret key"""
     return secrets.token_urlsafe(32)
+
 
 def get_user_input(prompt, default=None):
     """Get input from user with optional default"""
@@ -23,6 +25,7 @@ def get_user_input(prompt, default=None):
             print("This field is required!")
             user_input = input(f"{prompt}: ").strip()
         return user_input
+
 
 def main():
     """Main setup function"""
@@ -136,6 +139,7 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:5173
     print("     psql -U postgres -c 'CREATE DATABASE socrates_specs;'")
     print("  3. Test connection: python -c 'from dotenv import load_dotenv; load_dotenv(); print(\"✅ OK\")'")
     print()
+
 
 if __name__ == "__main__":
     main()
