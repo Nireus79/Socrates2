@@ -1250,6 +1250,11 @@ Continue? (ask more questions / show summary / advance phase)
 │   ├── GET /project/{project_id}/analysis (full analysis)
 │   └── GET /project/{project_id}/recommendations (suggestions)
 │
+├── /code (Phase 4: Code Generation)
+│   ├── POST /generate (generate code from specifications)
+│   ├── GET /{generation_id}/status (check generation progress)
+│   └── GET /{generation_id}/download (download generated code)
+│
 └── /admin (testing/debugging)
     ├── GET /health
     ├── POST /db-reset
