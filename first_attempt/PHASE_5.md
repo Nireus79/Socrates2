@@ -232,5 +232,5 @@ def test_path_recommends_thorough():
 
 ---
 
-**Previous:** [PHASE_4.md](./PHASE_4.md)
+**Previous:** [PHASE_4.md](PHASE_4.md)
 **Next:** [PHASE_6.md](./PHASE_6.md) - User Learning & Adaptation

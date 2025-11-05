@@ -124,5 +124,5 @@ def test_conflict_resolution():
 
 ---
 
-**Previous:** [PHASE_2.md](./PHASE_2.md)
-**Next:** [PHASE_4.md](./PHASE_4.md)
+**Previous:** [PHASE_2.md](PHASE_2.md)
+**Next:** [PHASE_4.md](PHASE_4.md)

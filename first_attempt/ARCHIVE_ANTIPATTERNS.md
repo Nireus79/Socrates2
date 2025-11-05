@@ -397,8 +397,8 @@ User → API → Orchestrator → ProjectManagerAgent → Database
 ---
 
 **See Also:**
-- [ARCHIVE_PATTERNS.md](./ARCHIVE_PATTERNS.md) - Good patterns to keep
-- [WHY_PREVIOUS_ATTEMPTS_FAILED.md](./WHY_PREVIOUS_ATTEMPTS_FAILED.md) - Complete post-mortem
-- [INTERCONNECTIONS_MAP.md](./INTERCONNECTIONS_MAP.md) - How components connect
+- [ARCHIVE_PATTERNS.md](ARCHIVE_PATTERNS.md) - Good patterns to keep
+- [WHY_PREVIOUS_ATTEMPTS_FAILED.md](WHY_PREVIOUS_ATTEMPTS_FAILED.md) - Complete post-mortem
+- [INTERCONNECTIONS_MAP.md](INTERCONNECTIONS_MAP.md) - How components connect
 
 **Reference:** [Old Repo fallback_helpers.py](https://github.com/Nireus79/Socrates/blob/main/ARCHIVE/backend_for_audit/src/agents/fallback_helpers.py)

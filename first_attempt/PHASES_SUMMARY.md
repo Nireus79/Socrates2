@@ -1,6 +1,6 @@
 # Phases Summary: Quick Reference
 
-**Read detailed docs:** [PHASE_0.md](./PHASE_0.md) through [PHASE_5.md](./PHASE_5.md)
+**Read detailed docs:** [PHASE_0.md](PHASE_0.md) through [PHASE_5.md](PHASE_5.md)
 
 ---
 
@@ -152,6 +152,6 @@ Response to User
 
 ---
 
-**Detailed Plans:** See individual [PHASE_N.md](./PHASE_0.md) files
+**Detailed Plans:** See individual [PHASE_N.md](PHASE_0.md) files
 
-**Interconnections:** See [INTERCONNECTIONS_MAP.md](./INTERCONNECTIONS_MAP.md)
+**Interconnections:** See [INTERCONNECTIONS_MAP.md](INTERCONNECTIONS_MAP.md)
