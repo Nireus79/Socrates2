@@ -173,5 +173,5 @@ def test_all_specs_included():
 
 ---
 
-**Previous:** [PHASE_3.md](./PHASE_3.md)
-**Next:** [PHASE_5.md](./PHASE_5.md)
+**Previous:** [PHASE_3.md](PHASE_3.md)
+**Next:** [PHASE_5.md](PHASE_5.md)
