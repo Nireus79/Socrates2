@@ -310,31 +310,44 @@ class AgentOrchestrator:
 ### Creation Order (Due to Foreign Keys):
 
 ```
+**Database 1: socrates_auth**
 Phase 1:
 1. users (no dependencies)
-2. auth_tokens (→ users)
+2. refresh_tokens (→ users)
+3. password_reset_requests (→ users)
+4. audit_logs (→ users)
+5. user_rules (→ users)
 
-Phase 2:
-3. projects (→ users)
-4. sessions (→ projects, → users)
-5. messages (→ sessions)
-6. questions (→ projects, → sessions)
+**Database 2: socrates_specs**
+Phase 1-2:
+6. projects (→ socrates_auth.users)
+7. sessions (→ projects)
+8. conversation_history (→ sessions)
+9. questions (→ projects, → sessions)
+10. specifications (→ projects)
 
 Phase 3:
-7. specifications (→ projects)
-8. conflicts (→ projects, → specifications)
+11. conflicts (→ projects, → specifications)
+12. quality_metrics (→ projects)
+13. maturity_tracking (→ projects)
+14. test_results (→ projects, → sessions)
 
 Phase 4:
-9. generated_codebase (→ projects)
-10. generated_files (→ generated_codebase)
+15. generated_projects (→ projects)
+16. generated_files (→ generated_projects)
 
 Phase 5:
-11. quality_checks (→ projects, → sessions)
+17. user_behavior_patterns (→ socrates_auth.users)
+18. question_effectiveness (→ socrates_auth.users)
+19. knowledge_base_documents (→ projects)
 
 Phase 6:
-12. user_behavior_profiles (→ users)
-13. user_preferences (→ users)
-14. user_instructions (→ users)
+20. teams (→ socrates_auth.users)
+21. team_members (→ teams, → socrates_auth.users)
+22. team_invitations (→ teams, → socrates_auth.users)
+23. project_shares (→ projects, → teams)
+24. api_keys (→ socrates_auth.users)
+25. llm_usage_tracking (→ projects)
 ```
 
 ### Query Dependencies (What Queries Need What Tables):

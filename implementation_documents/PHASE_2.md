@@ -54,6 +54,10 @@ from app.models.specification import Specification
 
 ### 1. Question Model
 
+**⚠️ Database Reference:** See [DATABASE_SCHEMA_COMPLETE.md - questions table](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md#questions)
+
+**IMPORTANT:** This model MUST match the schema in DATABASE_SCHEMA_COMPLETE.md exactly.
+
 **File:** `backend/app/models/question.py`
 
 ```python
@@ -96,6 +100,10 @@ class Question(BaseModel):
 ---
 
 ### 2. Specification Model
+
+**⚠️ Database Reference:** See [DATABASE_SCHEMA_COMPLETE.md - specifications table](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md#specifications)
+
+**IMPORTANT:** This model MUST match the schema in DATABASE_SCHEMA_COMPLETE.md exactly.
 
 **File:** `backend/app/models/specification.py`
 

@@ -80,26 +80,36 @@ from app.models.session import Session
 
 ### 1. Database Setup
 
-**⚠️ BEFORE implementing:** Read [SQLALCHEMY_BEST_PRACTICES.md](SQLALCHEMY_BEST_PRACTICES.md)
+**⚠️ BEFORE implementing:**
+- Read [SQLALCHEMY_BEST_PRACTICES.md](SQLALCHEMY_BEST_PRACTICES.md)
+- Read [DATABASE_SCHEMA_COMPLETE.md](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md) for complete table definitions
 
 **Files Created:**
 ```
 backend/app/core/database.py
 backend/alembic/versions/001_create_users_table.py
-backend/alembic/versions/002_create_auth_tokens_table.py
+backend/alembic/versions/002_create_refresh_tokens_table.py
 backend/alembic/versions/003_create_projects_table.py
 backend/alembic/versions/004_create_sessions_table.py
 ```
 
 **Tables Created:**
-1. `users` (id, email, hashed_password, status, role, created_at, updated_at)
-2. `auth_tokens` (id, user_id, token, expires_at, created_at)
-3. `projects` (id, user_id, name, description, phase, maturity_score, status, created_at, updated_at)
-4. `sessions` (id, project_id, user_id, mode, status, started_at, ended_at)
+
+**socrates_auth database:**
+1. `users` - See [DATABASE_SCHEMA_COMPLETE.md#users](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md#users)
+2. `refresh_tokens` - See [DATABASE_SCHEMA_COMPLETE.md#refresh_tokens](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md#refresh_tokens)
+3. `password_reset_requests` - See [DATABASE_SCHEMA_COMPLETE.md#password_reset_requests](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md#password_reset_requests)
+4. `audit_logs` - See [DATABASE_SCHEMA_COMPLETE.md#audit_logs](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md#audit_logs)
+5. `user_rules` - See [DATABASE_SCHEMA_COMPLETE.md#user_rules](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md#user_rules)
+
+**socrates_specs database:**
+6. `projects` - See [DATABASE_SCHEMA_COMPLETE.md#projects](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md#projects)
+7. `sessions` - See [DATABASE_SCHEMA_COMPLETE.md#sessions](../foundation_docs/DATABASE_SCHEMA_COMPLETE.md#sessions)
 
 **Interconnection:**
 - Phase 2 agents will query these tables
-- Foreign keys: auth_tokens → users, projects → users, sessions → projects + users
+- Phase 2 adds: conversation_history, questions, specifications tables
+- Foreign keys: refresh_tokens → users, projects → users, sessions → projects
 
 ---
 
