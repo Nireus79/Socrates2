@@ -76,6 +76,35 @@ from app.models.session import Session
 
 ---
 
+## 🌐 API Endpoints
+
+This phase implements authentication and admin endpoints. See [API_ENDPOINTS.md](../foundation_docs/API_ENDPOINTS.md) for complete API documentation.
+
+**Implemented in Phase 1:**
+- POST /api/v1/auth/register - Lines 23-50 in API_ENDPOINTS.md
+- POST /api/v1/auth/login - Lines 52-80 in API_ENDPOINTS.md
+- POST /api/v1/auth/logout - Lines 82-95 in API_ENDPOINTS.md
+- GET /api/v1/admin/health - Lines 650-670 in API_ENDPOINTS.md
+- GET /api/v1/admin/stats - Lines 720-745 in API_ENDPOINTS.md
+
+**Testing Endpoints:**
+```bash
+# Health check
+curl http://localhost:8000/api/v1/admin/health
+
+# Register user
+curl -X POST http://localhost:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "Test123!"}'
+
+# Login
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "Test123!"}'
+```
+
+---
+
 ## 📦 Deliverables
 
 ### 1. Database Setup
@@ -110,6 +139,229 @@ backend/alembic/versions/004_create_sessions_table.py
 - Phase 2 agents will query these tables
 - Phase 2 adds: conversation_history, questions, specifications tables
 - Foreign keys: refresh_tokens → users, projects → users, sessions → projects
+
+#### Complete Migration Files
+
+**File: backend/alembic/versions/001_create_users_table.py**
+
+```python
+"""Create users table
+
+Revision ID: 001
+Revises:
+Create Date: 2025-11-05
+
+"""
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import UUID
+
+# revision identifiers
+revision = '001'
+down_revision = None
+branch_labels = None
+depends_on = None
+
+def upgrade():
+    op.create_table(
+        'users',
+        sa.Column('id', UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()')),
+        sa.Column('email', sa.String(255), nullable=False, unique=True),
+        sa.Column('hashed_password', sa.String(255), nullable=False),
+        sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('true')),
+        sa.Column('is_verified', sa.Boolean(), nullable=False, server_default=sa.text('false')),
+        sa.Column('status', sa.String(20), nullable=False, server_default='active'),
+        sa.Column('role', sa.String(20), nullable=False, server_default='user'),
+        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()'))
+    )
+
+    op.create_index('idx_users_email', 'users', ['email'])
+    op.create_index('idx_users_is_active', 'users', ['is_active'])
+    op.create_index('idx_users_status', 'users', ['status'])
+
+def downgrade():
+    op.drop_index('idx_users_status')
+    op.drop_index('idx_users_is_active')
+    op.drop_index('idx_users_email')
+    op.drop_table('users')
+```
+
+**File: backend/alembic/versions/002_create_refresh_tokens_table.py**
+
+```python
+"""Create refresh_tokens table
+
+Revision ID: 002
+Revises: 001
+Create Date: 2025-11-05
+
+"""
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import UUID
+
+revision = '002'
+down_revision = '001'
+branch_labels = None
+depends_on = None
+
+def upgrade():
+    op.create_table(
+        'refresh_tokens',
+        sa.Column('id', UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()')),
+        sa.Column('user_id', UUID(as_uuid=True), nullable=False),
+        sa.Column('token', sa.String(500), nullable=False, unique=True),
+        sa.Column('expires_at', sa.DateTime(), nullable=False),
+        sa.Column('is_revoked', sa.Boolean(), nullable=False, server_default=sa.text('false')),
+        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()'))
+    )
+
+    # Foreign key to users in socrates_auth database
+    op.create_foreign_key(
+        'fk_refresh_tokens_user_id',
+        'refresh_tokens', 'users',
+        ['user_id'], ['id'],
+        ondelete='CASCADE'
+    )
+
+    op.create_index('idx_refresh_tokens_user_id', 'refresh_tokens', ['user_id'])
+    op.create_index('idx_refresh_tokens_token', 'refresh_tokens', ['token'])
+    op.create_index('idx_refresh_tokens_expires_at', 'refresh_tokens', ['expires_at'])
+
+def downgrade():
+    op.drop_index('idx_refresh_tokens_expires_at')
+    op.drop_index('idx_refresh_tokens_token')
+    op.drop_index('idx_refresh_tokens_user_id')
+    op.drop_constraint('fk_refresh_tokens_user_id', 'refresh_tokens', type_='foreignkey')
+    op.drop_table('refresh_tokens')
+```
+
+**File: backend/alembic/versions/003_create_projects_table.py**
+
+```python
+"""Create projects table
+
+Revision ID: 003
+Revises: 002
+Create Date: 2025-11-05
+
+"""
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import UUID
+
+revision = '003'
+down_revision = '002'
+branch_labels = None
+depends_on = None
+
+def upgrade():
+    op.create_table(
+        'projects',
+        sa.Column('id', UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()')),
+        sa.Column('user_id', UUID(as_uuid=True), nullable=False),
+        sa.Column('name', sa.String(255), nullable=False),
+        sa.Column('description', sa.Text()),
+        sa.Column('current_phase', sa.String(50), nullable=False, server_default='discovery'),
+        sa.Column('maturity_score', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('status', sa.String(20), nullable=False, server_default='active'),
+        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()'))
+    )
+
+    op.create_index('idx_projects_user_id', 'projects', ['user_id'])
+    op.create_index('idx_projects_status', 'projects', ['status'])
+    op.create_index('idx_projects_current_phase', 'projects', ['current_phase'])
+    op.create_index('idx_projects_maturity_score', 'projects', ['maturity_score'])
+
+    # Add check constraint for maturity_score
+    op.create_check_constraint(
+        'check_projects_maturity_score',
+        'projects',
+        'maturity_score >= 0 AND maturity_score <= 100'
+    )
+
+def downgrade():
+    op.drop_constraint('check_projects_maturity_score', 'projects', type_='check')
+    op.drop_index('idx_projects_maturity_score')
+    op.drop_index('idx_projects_current_phase')
+    op.drop_index('idx_projects_status')
+    op.drop_index('idx_projects_user_id')
+    op.drop_table('projects')
+```
+
+**File: backend/alembic/versions/004_create_sessions_table.py**
+
+```python
+"""Create sessions table
+
+Revision ID: 004
+Revises: 003
+Create Date: 2025-11-05
+
+"""
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import UUID
+
+revision = '004'
+down_revision = '003'
+branch_labels = None
+depends_on = None
+
+def upgrade():
+    op.create_table(
+        'sessions',
+        sa.Column('id', UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()')),
+        sa.Column('project_id', UUID(as_uuid=True), nullable=False),
+        sa.Column('mode', sa.String(20), nullable=False, server_default='socratic'),
+        sa.Column('status', sa.String(20), nullable=False, server_default='active'),
+        sa.Column('started_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.Column('ended_at', sa.DateTime()),
+        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()'))
+    )
+
+    # Foreign key to projects
+    op.create_foreign_key(
+        'fk_sessions_project_id',
+        'sessions', 'projects',
+        ['project_id'], ['id'],
+        ondelete='CASCADE'
+    )
+
+    op.create_index('idx_sessions_project_id', 'sessions', ['project_id'])
+    op.create_index('idx_sessions_status', 'sessions', ['status'])
+    op.create_index('idx_sessions_mode', 'sessions', ['mode'])
+
+def downgrade():
+    op.drop_index('idx_sessions_mode')
+    op.drop_index('idx_sessions_status')
+    op.drop_index('idx_sessions_project_id')
+    op.drop_constraint('fk_sessions_project_id', 'sessions', type_='foreignkey')
+    op.drop_table('sessions')
+```
+
+**Running Migrations:**
+```bash
+# Initialize Alembic (first time only)
+cd backend
+alembic init alembic
+
+# Edit alembic.ini - set sqlalchemy.url
+# For socrates_auth:
+sqlalchemy.url = postgresql://user:password@localhost/socrates_auth
+
+# Create migration files (use the code above)
+
+# Run migrations
+alembic upgrade head
+
+# Verify tables created
+psql socrates_auth -c "\dt"
+psql socrates_specs -c "\dt"
+```
 
 ---
 
@@ -694,6 +946,257 @@ def test_orchestrator_routing():
 ```
 
 **Test Coverage Required:** Minimum 90%
+
+---
+
+## 🔧 Troubleshooting
+
+### Issue 1: Database Connection Failed
+
+**Symptom:**
+```
+sqlalchemy.exc.OperationalError: could not connect to server
+```
+
+**Causes:**
+1. PostgreSQL not running
+2. Wrong connection string in `.env`
+3. Database doesn't exist
+4. Wrong credentials
+
+**Solution:**
+```bash
+# 1. Check if PostgreSQL is running
+sudo systemctl status postgresql
+# or
+ps aux | grep postgres
+
+# 2. Check if databases exist
+psql -l | grep socrates
+
+# 3. Create databases if missing
+createdb socrates_auth
+createdb socrates_specs
+
+# 4. Test connection manually
+psql socrates_auth -c "SELECT 1"
+
+# 5. Verify .env file
+cat backend/.env | grep DATABASE_URL
+```
+
+---
+
+### Issue 2: Migration Fails - "relation already exists"
+
+**Symptom:**
+```
+alembic.util.exc.CommandError: relation "users" already exists
+```
+
+**Causes:**
+- Tables manually created
+- Previous migration partially completed
+- Alembic version table out of sync
+
+**Solution:**
+```bash
+# Check current migration state
+alembic current
+
+# Check what migrations exist
+alembic history
+
+# If table exists but migration not recorded:
+alembic stamp head
+
+# If need to start fresh (DANGEROUS - deletes data):
+# DROP all tables
+psql socrates_auth -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+# Then run migrations again
+alembic upgrade head
+```
+
+---
+
+### Issue 3: Import Error - "No module named 'app'"
+
+**Symptom:**
+```
+ModuleNotFoundError: No module named 'app'
+```
+
+**Causes:**
+- Not running from correct directory
+- PYTHONPATH not set
+- Virtual environment not activated
+
+**Solution:**
+```bash
+# 1. Activate virtual environment
+source venv/bin/activate
+
+# 2. Check you're in backend/ directory
+pwd
+# Should show: /path/to/Socrates2/backend
+
+# 3. Add backend to PYTHONPATH
+export PYTHONPATH="${PYTHONPATH}:/path/to/Socrates2/backend"
+
+# 4. Or run with Python module syntax
+python -m app.main
+```
+
+---
+
+### Issue 4: "bcrypt" or "passlib" Not Found
+
+**Symptom:**
+```
+ModuleNotFoundError: No module named 'passlib'
+```
+
+**Causes:**
+- Dependencies not installed
+- Wrong virtual environment
+
+**Solution:**
+```bash
+# Install all dependencies
+pip install -r requirements.txt
+
+# Verify passlib installed
+pip list | grep passlib
+
+# If still missing, install directly
+pip install passlib[bcrypt]
+```
+
+---
+
+### Issue 5: JWT Token Not Working - "Invalid token"
+
+**Symptom:**
+```
+fastapi.HTTPException: Could not validate credentials
+```
+
+**Causes:**
+- SECRET_KEY not set or changed
+- Token expired
+- Algorithm mismatch
+
+**Solution:**
+```bash
+# 1. Check SECRET_KEY in .env
+cat backend/.env | grep SECRET_KEY
+
+# 2. Generate new SECRET_KEY if missing
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+# 3. Add to .env
+echo "SECRET_KEY=<generated_key>" >> backend/.env
+
+# 4. Restart FastAPI server
+# Tokens issued before restart will be invalid
+```
+
+---
+
+### Issue 6: Tests Pass Locally But Data Not Persisting
+
+**Symptom:**
+- Tests show SUCCESS
+- Database queries return 0 rows
+- API returns 201 Created but data doesn't exist
+
+**Causes:**
+- **ARCHIVE KILLER BUG**: Session closes before commit syncs to disk
+- Using `db.commit()` but session closes immediately
+- Transaction isolation issues
+
+**Solution:**
+```python
+# ❌ WRONG - Session closes before commit syncs
+def create_user(db):
+    user = User(email="test@example.com")
+    db.add(user)
+    db.commit()
+    # Session closes here - data might not be on disk yet!
+
+# ✅ CORRECT - Ensure session stays open until data persisted
+def create_user(db):
+    user = User(email="test@example.com")
+    db.add(user)
+    db.commit()
+    db.refresh(user)  # Forces data to be read back from database
+    return user
+
+# ✅ CORRECT - Use context manager
+with get_db() as db:
+    user = User(email="test@example.com")
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    user_id = user.id  # Get ID before session closes
+
+# Verify data persisted
+with get_db() as db:
+    found = db.query(User).filter(User.id == user_id).first()
+    assert found is not None  # THIS MUST PASS
+```
+
+**See:** SQLALCHEMY_BEST_PRACTICES.md Issue #1 for complete explanation
+
+---
+
+### Issue 7: FastAPI Server Won't Start - Port Already in Use
+
+**Symptom:**
+```
+OSError: [Errno 48] Address already in use
+```
+
+**Solution:**
+```bash
+# 1. Find process using port 8000
+lsof -i :8000
+
+# 2. Kill the process
+kill -9 <PID>
+
+# 3. Or use different port
+uvicorn app.main:app --port 8001
+```
+
+---
+
+### Issue 8: Alembic Can't Find Config
+
+**Symptom:**
+```
+alembic.util.exc.CommandError: Can't locate revision identified by '001'
+```
+
+**Causes:**
+- Running from wrong directory
+- alembic.ini missing
+- Wrong database URL in alembic.ini
+
+**Solution:**
+```bash
+# 1. Must run from backend/ directory
+cd backend
+
+# 2. Check alembic.ini exists
+ls alembic.ini
+
+# 3. Check database URL in alembic.ini
+grep sqlalchemy.url alembic.ini
+
+# 4. Verify migration files exist
+ls alembic/versions/
+```
 
 ---
 

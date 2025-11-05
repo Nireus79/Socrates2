@@ -131,6 +131,8 @@ Phase 0 is complete when:
 
 **Note:** Phase 6-10 documents not created yet (not needed for MVP). Can proceed to Phase 1 implementation.
 
+**Complete API Documentation:** See [API_ENDPOINTS.md](../foundation_docs/API_ENDPOINTS.md) for all 34 endpoints across phases 1-5.
+
 ---
 
 ## 🔄 Next Steps

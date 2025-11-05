@@ -50,6 +50,50 @@ from app.models.specification import Specification
 
 ---
 
+## 🌐 API Endpoints
+
+This phase implements project, session, and specification management. See [API_ENDPOINTS.md](../foundation_docs/API_ENDPOINTS.md) for complete API documentation.
+
+**Implemented in Phase 2:**
+- POST /api/v1/projects - Create project (lines 97-145 in API_ENDPOINTS.md)
+- GET /api/v1/projects - List projects (lines 147-180 in API_ENDPOINTS.md)
+- GET /api/v1/projects/{id} - Get project details (lines 182-210 in API_ENDPOINTS.md)
+- GET /api/v1/projects/{id}/status - Get project status (lines 212-240 in API_ENDPOINTS.md)
+- DELETE /api/v1/projects/{id} - Archive project (lines 242-260 in API_ENDPOINTS.md)
+- POST /api/v1/sessions - Create session (lines 265-290 in API_ENDPOINTS.md)
+- POST /api/v1/sessions/{id}/next-question - Get next Socratic question (lines 315-340 in API_ENDPOINTS.md)
+- POST /api/v1/sessions/{id}/answer - Submit answer and extract specs (lines 342-395 in API_ENDPOINTS.md)
+- POST /api/v1/sessions/{id}/message - Send direct message (lines 425-470 in API_ENDPOINTS.md)
+- GET /api/v1/specifications/project/{id} - List specs (lines 475-505 in API_ENDPOINTS.md)
+- POST /api/v1/specifications - Add spec manually (lines 507-535 in API_ENDPOINTS.md)
+
+**Testing Endpoints:**
+```bash
+# Create project
+curl -X POST http://localhost:8000/api/v1/projects \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Project", "description": "Test project"}'
+
+# Start Socratic session
+curl -X POST http://localhost:8000/api/v1/sessions \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"project_id": "<project_id>", "mode": "socratic"}'
+
+# Get next question
+curl -X POST http://localhost:8000/api/v1/sessions/{session_id}/next-question \
+  -H "Authorization: Bearer <token>"
+
+# Submit answer
+curl -X POST http://localhost:8000/api/v1/sessions/{session_id}/answer \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"question_id": "<question_id>", "answer": "I want to build a REST API"}'
+```
+
+---
+
 ## 📦 Deliverables
 
 ### 1. Question Model

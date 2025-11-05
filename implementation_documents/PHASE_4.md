@@ -29,6 +29,35 @@
 
 ---
 
+## 🌐 API Endpoints
+
+This phase implements code generation from specifications. See [API_ENDPOINTS.md](../foundation_docs/API_ENDPOINTS.md) for complete API documentation.
+
+**Implemented in Phase 4:**
+- POST /api/v1/code/generate - Generate code from specifications
+- GET /api/v1/code/{generation_id}/status - Check generation progress
+- GET /api/v1/code/{generation_id}/download - Download generated code
+
+**Testing Endpoints:**
+```bash
+# Generate code
+curl -X POST http://localhost:8000/api/v1/code/generate \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"project_id": "<project_id>"}'
+
+# Check generation status
+curl -X GET http://localhost:8000/api/v1/code/{generation_id}/status \
+  -H "Authorization: Bearer <token>"
+
+# Download generated code
+curl -X GET http://localhost:8000/api/v1/code/{generation_id}/download \
+  -H "Authorization: Bearer <token>" \
+  --output generated_code.zip
+```
+
+---
+
 ## 📦 Key Deliverable: CodeGeneratorAgent
 
 ```python

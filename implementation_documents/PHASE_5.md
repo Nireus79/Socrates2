@@ -29,6 +29,32 @@
 
 ---
 
+## 🌐 API Endpoints
+
+This phase implements quality control gates. See [API_ENDPOINTS.md](../foundation_docs/API_ENDPOINTS.md) for complete API documentation.
+
+**Implemented in Phase 5:**
+- GET /api/v1/quality/project/{id}/metrics - Get quality metrics (lines 640-665 in API_ENDPOINTS.md)
+- GET /api/v1/quality/project/{id}/analysis - Full quality analysis (lines 670-710 in API_ENDPOINTS.md)
+- GET /api/v1/quality/project/{id}/recommendations - Get recommendations (lines 715-745 in API_ENDPOINTS.md)
+
+**Testing Endpoints:**
+```bash
+# Get quality metrics
+curl -X GET http://localhost:8000/api/v1/quality/project/{project_id}/metrics \
+  -H "Authorization: Bearer <token>"
+
+# Get full analysis
+curl -X GET http://localhost:8000/api/v1/quality/project/{project_id}/analysis \
+  -H "Authorization: Bearer <token>"
+
+# Get recommendations
+curl -X GET http://localhost:8000/api/v1/quality/project/{project_id}/recommendations \
+  -H "Authorization: Bearer <token>"
+```
+
+---
+
 ## 📦 Key Components
 
 ### 1. Question Quality Analysis

@@ -29,6 +29,34 @@
 
 ---
 
+## 🌐 API Endpoints
+
+This phase implements conflict detection and resolution. See [API_ENDPOINTS.md](../foundation_docs/API_ENDPOINTS.md) for complete API documentation.
+
+**Implemented in Phase 3:**
+- GET /api/v1/conflicts/project/{id} - List conflicts (lines 540-570 in API_ENDPOINTS.md)
+- GET /api/v1/conflicts/{id}/options - Get resolution options (lines 575-605 in API_ENDPOINTS.md)
+- POST /api/v1/conflicts/{id}/resolve - Resolve conflict (lines 610-635 in API_ENDPOINTS.md)
+
+**Testing Endpoints:**
+```bash
+# List conflicts for project
+curl -X GET http://localhost:8000/api/v1/conflicts/project/{project_id} \
+  -H "Authorization: Bearer <token>"
+
+# Get resolution options
+curl -X GET http://localhost:8000/api/v1/conflicts/{conflict_id}/options \
+  -H "Authorization: Bearer <token>"
+
+# Resolve conflict
+curl -X POST http://localhost:8000/api/v1/conflicts/{conflict_id}/resolve \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"resolution": "keep_old", "notes": "Staying with original choice"}'
+```
+
+---
+
 ## 📦 Key Deliverable: Conflict Model
 
 ```python
