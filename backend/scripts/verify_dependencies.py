@@ -22,9 +22,9 @@ REQUIRED_PACKAGES = {
     "pydantic": ("2.12.3", "Data validation"),
     "anthropic": ("0.40.0", "Claude API client"),
     "pytest": ("8.3.4", "Testing framework"),
-    "psycopg2": ("2.9.10", "PostgreSQL driver (sync)"),
+    "psycopg2-binary": ("2.9.10", "PostgreSQL driver (sync)"),
     "asyncpg": ("0.30.0", "PostgreSQL driver (async)"),
-    "jwt": ("2.10.1", "JWT tokens"),  # PyJWT package imports as 'jwt'
+    "PyJWT": ("2.10.1", "JWT tokens"),
     "passlib": ("1.7.4", "Password hashing"),
     "bcrypt": ("4.2.1", "Bcrypt algorithm"),
     "cryptography": ("44.0.0", "Cryptographic primitives"),
