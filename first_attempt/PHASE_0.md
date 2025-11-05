@@ -145,6 +145,6 @@ Phase 0 is complete when:
 
 ---
 
-**Next Phase:** [PHASE_1.md](./PHASE_1.md) - Infrastructure Foundation
+**Next Phase:** [PHASE_1.md](PHASE_1.md) - Infrastructure Foundation
 
-**Reference:** [INTERCONNECTIONS_MAP.md](./INTERCONNECTIONS_MAP.md) - See how Phase 0 connects to Phase 1
+**Reference:** [INTERCONNECTIONS_MAP.md](INTERCONNECTIONS_MAP.md) - See how Phase 0 connects to Phase 1

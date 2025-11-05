@@ -185,5 +185,5 @@ class Specification:
 ---
 
 **See Also:**
-- [ARCHIVE_ANTIPATTERNS.md](./ARCHIVE_ANTIPATTERNS.md) - What NOT to do
-- [INTERCONNECTIONS_MAP.md](./INTERCONNECTIONS_MAP.md) - How components connect
+- [ARCHIVE_ANTIPATTERNS.md](ARCHIVE_ANTIPATTERNS.md) - What NOT to do
+- [INTERCONNECTIONS_MAP.md](INTERCONNECTIONS_MAP.md) - How components connect

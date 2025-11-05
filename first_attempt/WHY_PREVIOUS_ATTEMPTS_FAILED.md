@@ -250,8 +250,8 @@ Every file must document:
 ---
 
 **Read Next:**
-- [ARCHIVE_ANTIPATTERNS.md](./ARCHIVE_ANTIPATTERNS.md) - Specific anti-patterns
-- [ARCHIVE_PATTERNS.md](./ARCHIVE_PATTERNS.md) - Good patterns to keep
-- [PHASE_1.md](./PHASE_1.md) - Start implementation here
+- [ARCHIVE_ANTIPATTERNS.md](ARCHIVE_ANTIPATTERNS.md) - Specific anti-patterns
+- [ARCHIVE_PATTERNS.md](ARCHIVE_PATTERNS.md) - Good patterns to keep
+- [PHASE_1.md](PHASE_1.md) - Start implementation here
 
 **Reference:** [Old Socrates Repository](https://github.com/Nireus79/Socrates)

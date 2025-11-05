@@ -816,5 +816,5 @@ Phase 2 complete when:
 
 ---
 
-**Previous Phase:** [PHASE_1.md](./PHASE_1.md) - Infrastructure
-**Next Phase:** [PHASE_3.md](./PHASE_3.md) - Conflict Detection
+**Previous Phase:** [PHASE_1.md](PHASE_1.md) - Infrastructure
+**Next Phase:** [PHASE_3.md](PHASE_3.md) - Conflict Detection

@@ -8,7 +8,7 @@
 
 ## ⚠️ CRITICAL: Read Before Starting
 
-**🔴 MUST READ:** [SQLALCHEMY_BEST_PRACTICES.md](./SQLALCHEMY_BEST_PRACTICES.md) - Contains critical issues that **KILLED PREVIOUS ATTEMPTS**
+**🔴 MUST READ:** [SQLALCHEMY_BEST_PRACTICES.md](SQLALCHEMY_BEST_PRACTICES.md) - Contains critical issues that **KILLED PREVIOUS ATTEMPTS**
 
 ### Session Lifecycle Warning (Archive Killer Bug)
 
@@ -80,7 +80,7 @@ from app.models.session import Session
 
 ### 1. Database Setup
 
-**⚠️ BEFORE implementing:** Read [SQLALCHEMY_BEST_PRACTICES.md](./SQLALCHEMY_BEST_PRACTICES.md)
+**⚠️ BEFORE implementing:** Read [SQLALCHEMY_BEST_PRACTICES.md](SQLALCHEMY_BEST_PRACTICES.md)
 
 **Files Created:**
 ```
@@ -850,9 +850,9 @@ Cannot proceed to Phase 2 until Phase 1 verification checklist is 100% complete.
 
 ---
 
-**Previous Phase:** [PHASE_0.md](./PHASE_0.md) - Documentation
-**Next Phase:** [PHASE_2.md](./PHASE_2.md) - Core Agents (ProjectManager, Socratic, Context)
+**Previous Phase:** [PHASE_0.md](PHASE_0.md) - Documentation
+**Next Phase:** [PHASE_2.md](PHASE_2.md) - Core Agents (ProjectManager, Socratic, Context)
 
 **Reference:**
-- [INTERCONNECTIONS_MAP.md](./INTERCONNECTIONS_MAP.md) - See Phase 1 → Phase 2 interconnections
+- [INTERCONNECTIONS_MAP.md](INTERCONNECTIONS_MAP.md) - See Phase 1 → Phase 2 interconnections
 - [Old Repo: backend_for_audit/src/agents/base.py](https://github.com/Nireus79/Socrates/blob/main/ARCHIVE/backend_for_audit/src/agents/base.py) - Reference (DO NOT copy-paste)
