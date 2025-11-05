@@ -508,6 +508,6 @@ Your choice: _
 ---
 
 **Reference:**
-- [WORKFLOW_SIMULATION_PART2.md](./WORKFLOW_SIMULATION_PART2.md) - Previous part
+- [WORKFLOW_SIMULATION_PART2.md](WORKFLOW_SIMULATION_PART2.md) - Previous part
 - [VISION.md](./VISION.md) - Conflict detection requirement (lines 54-62)
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - ConflictDetectorAgent design

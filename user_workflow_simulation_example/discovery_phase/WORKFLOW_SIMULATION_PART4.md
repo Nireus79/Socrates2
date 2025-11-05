@@ -525,6 +525,6 @@ Overall: 22%
 ---
 
 **Reference:**
-- [WORKFLOW_SIMULATION_PART3.md](./WORKFLOW_SIMULATION_PART3.md) - Previous part
+- [WORKFLOW_SIMULATION_PART3.md](WORKFLOW_SIMULATION_PART3.md) - Previous part
 - [VISION.md](./VISION.md) - Maturity system requirement (lines 329-350)
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Maturity calculation logic
