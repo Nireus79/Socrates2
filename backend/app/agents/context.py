@@ -159,7 +159,7 @@ class ContextAnalyzerAgent(BaseAgent):
                 source='extracted',
                 confidence=Decimal(str(spec_data.get('confidence', 0.9))),
                 is_current=True,
-                metadata={
+                spec_metadata={
                     'question_id': str(question_id),
                     'reasoning': spec_data.get('reasoning')
                 }

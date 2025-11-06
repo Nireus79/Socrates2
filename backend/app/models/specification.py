@@ -22,7 +22,7 @@ class Specification(BaseModel):
     - source: Source of spec (user_input, extracted, inferred)
     - confidence: Confidence score (0.00-1.00)
     - is_current: Whether this is the current version (superseded specs have false)
-    - metadata: Additional metadata as JSON
+    - spec_metadata: Additional metadata as JSON
     - superseded_at: Timestamp when this spec was superseded
     - superseded_by: ID of the specification that superseded this one
     - created_at: Timestamp (inherited from BaseModel)
@@ -82,7 +82,7 @@ class Specification(BaseModel):
         comment="Whether this is the current version (superseded specs have false)"
     )
 
-    metadata = Column(
+    spec_metadata = Column(
         JSONB,
         nullable=True,
         comment="Additional metadata as JSON"
