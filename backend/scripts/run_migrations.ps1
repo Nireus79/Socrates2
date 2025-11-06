@@ -63,7 +63,10 @@ $migrationFiles = @(
     "alembic\versions\001_create_users_table.py",
     "alembic\versions\002_create_refresh_tokens_table.py",
     "alembic\versions\003_create_projects_table.py",
-    "alembic\versions\004_create_sessions_table.py"
+    "alembic\versions\004_create_sessions_table.py",
+    "alembic\versions\005_create_questions_table.py",
+    "alembic\versions\006_create_specifications_table.py",
+    "alembic\versions\007_create_conversation_history_table.py"
 )
 
 $missingFiles = @()
@@ -84,7 +87,7 @@ if ($missingFiles.Count -gt 0) {
     exit 1
 }
 
-Write-Host "All 4 migration files found" -ForegroundColor Green
+Write-Host "All 7 migration files found" -ForegroundColor Green
 Write-Host ""
 
 # Run migrations for socrates_auth
@@ -168,7 +171,7 @@ Write-Host ""
 
 # Verify tables created
 Write-Host "Verifying tables created..." -ForegroundColor Green
-Write-Host "  Expected tables: projects, sessions" -ForegroundColor Cyan
+Write-Host "  Expected tables: projects, sessions, questions, specifications, conversation_history" -ForegroundColor Cyan
 Write-Host ""
 
 # Final summary
@@ -180,7 +183,7 @@ Write-Host "Database: $dbNameAuth" -ForegroundColor Cyan
 Write-Host "  Tables: users, refresh_tokens, alembic_version" -ForegroundColor White
 Write-Host ""
 Write-Host "Database: $dbNameSpecs" -ForegroundColor Cyan
-Write-Host "  Tables: projects, sessions, alembic_version" -ForegroundColor White
+Write-Host "  Tables: projects, sessions, questions, specifications, conversation_history, alembic_version" -ForegroundColor White
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "  1. Verify tables: psql -U postgres -d $dbNameAuth -c `"\dt`"" -ForegroundColor Cyan
