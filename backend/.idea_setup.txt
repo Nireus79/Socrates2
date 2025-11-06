@@ -1,0 +1,7 @@
+PyCharm Setup Instructions:
+
+1. Right-click on the 'backend' folder in Project view
+2. Select "Mark Directory as" → "Sources Root"
+3. The folder should turn blue/purple
+
+This tells PyCharm that imports should start from the backend directory.
