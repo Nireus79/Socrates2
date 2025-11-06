@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "socrates2"
+version = "0.1.0"
+description = "AI-Powered Specification Assistant"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "Socrates2 Team"}
+]
+keywords = ["ai", "specifications", "assistant", "socratic-method"]
+
+dependencies = [
+    "fastapi==0.121.0",
+    "uvicorn[standard]==0.34.0",
+    "sqlalchemy==2.0.44",
+    "alembic==1.14.0",
+    "psycopg2-binary==2.9.10",
+    "pydantic==2.12.3",
+    "pydantic-settings==2.7.0",
+    "python-dotenv==1.0.1",
+    "passlib[bcrypt]==1.7.4",
+    "python-jose[cryptography]==3.3.0",
+    "python-multipart==0.0.20",
+    "anthropic==0.43.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.4",
+    "pytest-asyncio==0.25.0",
+    "pytest-cov==6.0.0",
+    "pytest-mock==3.14.0",
+    "black==24.10.0",
+    "ruff==0.8.4",
+    "mypy==1.13.0",
+    "faker==33.1.0",
+    "factory-boy==3.3.1",
+]
+
+[tool.setuptools]
+packages = ["app"]
+
+[tool.setuptools.package-dir]
+app = "app"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers --tb=short --disable-warnings"
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.venv
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true

@@ -2,7 +2,31 @@
 
 ## Fix "Unresolved reference 'app'" Error
 
-### Method 1: Mark Directory as Sources Root (Recommended)
+## ⚠️ IMPORTANT: Proper Solution First
+
+**The right way to fix this (works on ANY system):**
+
+```bash
+cd Socrates2/backend
+pip install -e ".[dev]"
+```
+
+This installs the package in editable mode. Now imports work everywhere:
+- ✅ PyCharm, VSCode, any IDE
+- ✅ Command line
+- ✅ Docker containers
+- ✅ Production servers
+- ✅ CI/CD pipelines
+
+**After `pip install -e .`, PyCharm will automatically detect the package.** No manual configuration needed!
+
+---
+
+## IDE-Only Workarounds (Not Recommended)
+
+These only fix PyCharm - they don't work in production:
+
+### Method 1: Mark Directory as Sources Root (PyCharm Only)
 1. In PyCharm Project view, right-click on `backend` folder
 2. Select **"Mark Directory as"** → **"Sources Root"**
 3. The `backend` folder should turn blue/purple
