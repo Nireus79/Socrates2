@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db_auth
-from app.models.user import User
 
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -78,7 +77,7 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db_auth)
-) -> User:
+):
     """
     Get current authenticated user from JWT token.
     This is a FastAPI dependency that can be used in endpoints.
@@ -93,6 +92,9 @@ def get_current_user(
     Raises:
         HTTPException: If token is invalid or user not found
     """
+    # Import here to avoid circular dependency
+    from app.models.user import User
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -131,8 +133,8 @@ def get_current_user(
 
 
 def get_current_active_user(
-    current_user: User = Depends(get_current_user)
-) -> User:
+    current_user = Depends(get_current_user)
+):
     """
     Dependency to get current active user.
     Adds additional check that user is active.
@@ -155,8 +157,8 @@ def get_current_active_user(
 
 
 def get_current_admin_user(
-    current_user: User = Depends(get_current_user)
-) -> User:
+    current_user = Depends(get_current_user)
+):
     """
     Dependency to require admin role.
 
