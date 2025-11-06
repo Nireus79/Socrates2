@@ -22,7 +22,7 @@ class ConversationHistory(Base):
     - session_id: Foreign key to sessions table
     - role: Message role (user, assistant, system)
     - content: The message content
-    - metadata: Additional metadata as JSON
+    - message_metadata: Additional metadata as JSON
     - timestamp: When the message was sent
     """
     __tablename__ = "conversation_history"
@@ -57,7 +57,7 @@ class ConversationHistory(Base):
         comment="The message content"
     )
 
-    metadata = Column(
+    message_metadata = Column(
         JSONB,
         nullable=True,
         comment="Additional metadata as JSON"

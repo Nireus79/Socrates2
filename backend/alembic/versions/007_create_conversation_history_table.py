@@ -22,7 +22,7 @@ def upgrade():
         sa.Column('session_id', UUID(as_uuid=True), nullable=False),
         sa.Column('role', sa.String(20), nullable=False),
         sa.Column('content', sa.Text(), nullable=False),
-        sa.Column('metadata', JSONB, nullable=True),
+        sa.Column('message_metadata', JSONB, nullable=True),
         sa.Column('timestamp', sa.DateTime(), nullable=False, server_default=sa.text('NOW()'))
     )
 
