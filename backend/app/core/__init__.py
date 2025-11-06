@@ -1,45 +1,20 @@
 """
 Core application components (config, database, security)
-"""
-from app.core.config import settings, get_settings
-from app.core.database import (
-    get_db_auth,
-    get_db_specs,
-    engine_auth,
-    engine_specs,
-    Base,
-    init_db,
-    close_db_connections
-)
-from app.core.security import (
-    create_access_token,
-    decode_access_token,
-    get_current_user,
-    get_current_active_user,
-    get_current_admin_user
-)
-from app.core.dependencies import (
-    ServiceContainer,
-    get_service_container,
-    reset_service_container
-)
 
-__all__ = [
-    'settings',
-    'get_settings',
-    'get_db_auth',
-    'get_db_specs',
-    'engine_auth',
-    'engine_specs',
-    'Base',
-    'init_db',
-    'close_db_connections',
-    'create_access_token',
-    'decode_access_token',
-    'get_current_user',
-    'get_current_active_user',
-    'get_current_admin_user',
-    'ServiceContainer',
-    'get_service_container',
-    'reset_service_container',
-]
+This package contains core infrastructure:
+- config: Application settings
+- database: Database connections and sessions
+- security: Authentication and authorization
+- dependencies: Dependency injection container
+
+Import directly from submodules, not from this __init__.py:
+    from app.core.config import settings
+    from app.core.database import get_db_auth
+    from app.core.security import create_access_token
+"""
+
+# Don't import everything here - it causes circular imports
+# Let modules import what they need directly:
+#   from app.core.config import settings
+#   from app.core.database import get_db_auth
+#   etc.
