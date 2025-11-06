@@ -1,7 +1,7 @@
 """
 API endpoints and routes
 """
-from app.api import auth, admin
+from . import auth, admin
 
 __all__ = [
     'auth',
