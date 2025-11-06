@@ -4,8 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="databases set">
+    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="phase2">
+      <change afterPath="$PROJECT_DIR$/PHASE_0_1_VERIFICATION_REPORT.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/alembic/versions/005_create_questions_table.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/alembic/versions/006_create_specifications_table.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/alembic/versions/007_create_conversation_history_table.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/agents/context.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/agents/project.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/agents/socratic.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/models/conversation_history.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/models/project.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/models/question.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/models/session.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/models/specification.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/implementation_documents/PHASE_0.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/PHASE_0.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/implementation_documents/PHASE_1.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/PHASE_1.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,13 +50,13 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "Merging master",
+    "ignore.virus.scanning.warn.message": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />
@@ -164,7 +178,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762433845394</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="phase2">
+      <option name="closed" value="true" />
+      <created>1762443862899</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1762443862899</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -181,6 +203,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first attempt" />
     <MESSAGE value="databases set" />
-    <option name="LAST_COMMIT_MESSAGE" value="databases set" />
+    <MESSAGE value="phase2" />
+    <option name="LAST_COMMIT_MESSAGE" value="phase2" />
   </component>
 </project>
