@@ -328,8 +328,7 @@ def test_project_manager_agent_delete_project(service_container, test_project):
 # SOCRATICCOUNSELLORAGENT TESTS (with mocked Claude API)
 # ============================================================================
 
-@patch('app.agents.socratic.SocraticCounselorAgent.services')
-def test_socratic_agent_generate_question(mock_services, service_container, test_project, test_session):
+def test_socratic_agent_generate_question(service_container, test_project, test_session):
     """Test SocraticCounselorAgent can generate a question (mocked)"""
 
     # Mock Claude API response
@@ -407,8 +406,7 @@ def test_socratic_agent_calculate_coverage(service_container, test_project, spec
 # CONTEXTANALYZERAGENT TESTS (with mocked Claude API)
 # ============================================================================
 
-@patch('app.agents.context.ContextAnalyzerAgent.services')
-def test_context_agent_extract_specifications(mock_services, service_container, test_question, test_session, test_project):
+def test_context_agent_extract_specifications(service_container, test_question, test_session, test_project):
     """Test ContextAnalyzerAgent can extract specifications (mocked)"""
 
     # Mock Claude API response
