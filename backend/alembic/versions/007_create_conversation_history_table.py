@@ -5,6 +5,7 @@ Revises: 006
 Create Date: 2025-11-06
 
 """
+import os
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID, JSONB
@@ -15,7 +16,14 @@ down_revision = '006'
 branch_labels = None
 depends_on = None
 
+def _should_run():
+    """Only run this migration for socrates_specs database"""
+    db_url = os.getenv("DATABASE_URL", "")
+    return "socrates_specs" in db_url
+
 def upgrade():
+    if not _should_run():
+        return
     op.create_table(
         'conversation_history',
         sa.Column('id', sa.BigInteger(), primary_key=True, autoincrement=True),
@@ -46,6 +54,9 @@ def upgrade():
     )
 
 def downgrade():
+    if not _should_run():
+        return
+
     op.drop_constraint('check_conversation_history_role_valid', 'conversation_history', type_='check')
     op.drop_index('idx_conversation_history_timestamp')
     op.drop_index('idx_conversation_history_session_id')

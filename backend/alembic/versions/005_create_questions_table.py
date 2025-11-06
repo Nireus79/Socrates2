@@ -5,6 +5,7 @@ Revises: 004
 Create Date: 2025-11-06
 
 """
+import os
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
@@ -15,7 +16,15 @@ down_revision = '004'
 branch_labels = None
 depends_on = None
 
+def _should_run():
+    """Only run this migration for socrates_specs database"""
+    db_url = os.getenv("DATABASE_URL", "")
+    return "socrates_specs" in db_url
+
 def upgrade():
+    if not _should_run():
+        return
+
     op.create_table(
         'questions',
         sa.Column('id', UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()')),
@@ -58,6 +67,9 @@ def upgrade():
     )
 
 def downgrade():
+    if not _should_run():
+        return
+
     op.drop_constraint('check_questions_quality_score_valid', 'questions', type_='check')
     op.drop_index('idx_questions_created_at')
     op.drop_index('idx_questions_category')
