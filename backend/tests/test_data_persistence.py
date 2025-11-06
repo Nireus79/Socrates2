@@ -103,7 +103,6 @@ class TestDataPersistence:
         This simulates how API endpoints will use the database.
         """
         user_email = "di_test@example.com"
-        user_id = None
 
         # Simulate API endpoint creating user
         for db in get_db_auth():
@@ -124,8 +123,9 @@ class TestDataPersistence:
                 role='user'
             )
             db.add(user)
-            # Commit happens automatically when generator exits
+            db.flush()  # Flush to get ID before commit
             user_id = str(user.id)
+            # Commit happens automatically when generator exits
 
         # ⚠️  Session closed - verify data persisted
         for db in get_db_auth():
