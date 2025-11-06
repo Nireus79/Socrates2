@@ -15,12 +15,13 @@ asyncpg==0.30.0          # For FastAPI async operations
 
 # ===== DATA VALIDATION =====
 pydantic[email]==2.12.3
+pydantic-settings==2.7.0  # Required for Settings class
 email-validator==2.2.0
 
 # ===== AUTHENTICATION & SECURITY =====
 passlib[bcrypt]==1.7.4
 bcrypt==4.2.1
-PyJWT[crypto]==2.10.1    # JWT tokens (NOT python-jose - see DEPENDENCIES_AND_CONFLICTS.md)
+python-jose[cryptography]==3.3.0  # JWT tokens
 cryptography==44.0.0
 python-dotenv==1.0.1
 
