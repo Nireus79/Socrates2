@@ -8,6 +8,7 @@ Usage:
 """
 
 import sys
+
 try:
     import importlib.metadata as metadata
 except ImportError:
@@ -36,9 +37,11 @@ OPTIONAL_PACKAGES = {
     "mypy": ("1.13.0", "Type checker (dev)"),
 }
 
+
 def parse_version(version_str: str) -> tuple:
     """Parse version string into tuple for comparison."""
     return tuple(map(int, version_str.split(".")[:3]))
+
 
 def check_package(name: str, min_version: str, purpose: str, optional: bool = False) -> bool:
     """Check if package is installed with correct version."""
@@ -59,26 +62,27 @@ def check_package(name: str, min_version: str, purpose: str, optional: bool = Fa
         print(f"{marker} {name} NOT INSTALLED ({purpose})")
         return optional  # Optional packages don't fail
 
+
 def main():
     """Run all dependency checks."""
     print("🔍 Checking Socrates2 Dependencies...\n")
-    print("="*70)
+    print("=" * 70)
     print("REQUIRED PACKAGES (Production)")
-    print("="*70)
+    print("=" * 70)
 
     all_ok = True
     for package, (min_version, purpose) in REQUIRED_PACKAGES.items():
         if not check_package(package, min_version, purpose, optional=False):
             all_ok = False
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("OPTIONAL PACKAGES (Development)")
-    print("="*70)
+    print("=" * 70)
 
     for package, (min_version, purpose) in OPTIONAL_PACKAGES.items():
         check_package(package, min_version, purpose, optional=True)
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     if all_ok:
         print("✅ ALL REQUIRED DEPENDENCIES OK - Ready for Phase 1!")
         print("\nYou can now run:")
@@ -94,6 +98,7 @@ def main():
         print("  pip install -r requirements-dev.txt")
         print("\n📖 See DEPENDENCIES_AND_CONFLICTS.md for details")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
