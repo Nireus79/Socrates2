@@ -31,7 +31,7 @@ from app.core.dependencies import ServiceContainer
 # ============================================================================
 
 @pytest.fixture
-def test_user(db_auth):
+def test_user(auth_session):
     """Create test user in auth database"""
     user = User(
         email="testuser@example.com",
@@ -41,14 +41,14 @@ def test_user(db_auth):
         status="active",
         role="user"
     )
-    db_auth.add(user)
-    db_auth.commit()
-    db_auth.refresh(user)
+    auth_session.add(user)
+    auth_session.commit()
+    auth_session.refresh(user)
     return user
 
 
 @pytest.fixture
-def test_project(db_specs, test_user):
+def test_project(specs_session, test_user):
     """Create test project in specs database"""
     project = Project(
         user_id=test_user.id,
@@ -58,14 +58,14 @@ def test_project(db_specs, test_user):
         maturity_score=0,
         status="active"
     )
-    db_specs.add(project)
-    db_specs.commit()
-    db_specs.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
     return project
 
 
 @pytest.fixture
-def test_session(db_specs, test_project):
+def test_session(specs_session, test_project):
     """Create test session"""
     session = Session(
         project_id=test_project.id,
@@ -73,14 +73,14 @@ def test_session(db_specs, test_project):
         status="active",
         started_at=datetime.utcnow()
     )
-    db_specs.add(session)
-    db_specs.commit()
-    db_specs.refresh(session)
+    specs_session.add(session)
+    specs_session.commit()
+    specs_session.refresh(session)
     return session
 
 
 @pytest.fixture
-def test_question(db_specs, test_project, test_session):
+def test_question(specs_session, test_project, test_session):
     """Create test question"""
     question = Question(
         project_id=test_project.id,
@@ -90,19 +90,19 @@ def test_question(db_specs, test_project, test_session):
         context="Understanding project objectives",
         quality_score=Decimal('1.0')
     )
-    db_specs.add(question)
-    db_specs.commit()
-    db_specs.refresh(question)
+    specs_session.add(question)
+    specs_session.commit()
+    specs_session.refresh(question)
     return question
 
 
 @pytest.fixture
-def service_container(db_auth, db_specs):
+def service_container(auth_session, specs_session):
     """Create service container with test databases"""
     container = ServiceContainer()
     # Override database sessions with test databases
-    container._db_session_auth = db_auth
-    container._db_session_specs = db_specs
+    container._db_session_auth = auth_session
+    container._db_session_specs = specs_session
     return container
 
 
@@ -110,7 +110,7 @@ def service_container(db_auth, db_specs):
 # MODEL TESTS
 # ============================================================================
 
-def test_project_model_creation(db_specs, test_user):
+def test_project_model_creation(specs_session, test_user):
     """Test Project model can be created"""
     project = Project(
         user_id=test_user.id,
@@ -121,9 +121,9 @@ def test_project_model_creation(db_specs, test_user):
         status="active"
     )
 
-    db_specs.add(project)
-    db_specs.commit()
-    db_specs.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
 
     assert project.id is not None
     assert project.name == "My Project"
@@ -132,7 +132,7 @@ def test_project_model_creation(db_specs, test_user):
     assert project.created_at is not None
 
 
-def test_session_model_creation(db_specs, test_project):
+def test_session_model_creation(specs_session, test_project):
     """Test Session model can be created"""
     session = Session(
         project_id=test_project.id,
@@ -141,9 +141,9 @@ def test_session_model_creation(db_specs, test_project):
         started_at=datetime.utcnow()
     )
 
-    db_specs.add(session)
-    db_specs.commit()
-    db_specs.refresh(session)
+    specs_session.add(session)
+    specs_session.commit()
+    specs_session.refresh(session)
 
     assert session.id is not None
     assert session.project_id == test_project.id
@@ -151,7 +151,7 @@ def test_session_model_creation(db_specs, test_project):
     assert session.status == "active"
 
 
-def test_question_model_creation(db_specs, test_project, test_session):
+def test_question_model_creation(specs_session, test_project, test_session):
     """Test Question model can be created"""
     question = Question(
         project_id=test_project.id,
@@ -162,9 +162,9 @@ def test_question_model_creation(db_specs, test_project, test_session):
         quality_score=Decimal('0.95')
     )
 
-    db_specs.add(question)
-    db_specs.commit()
-    db_specs.refresh(question)
+    specs_session.add(question)
+    specs_session.commit()
+    specs_session.refresh(question)
 
     assert question.id is not None
     assert question.text == "What technologies will you use?"
@@ -172,7 +172,7 @@ def test_question_model_creation(db_specs, test_project, test_session):
     assert question.quality_score == Decimal('0.95')
 
 
-def test_specification_model_creation(db_specs, test_project, test_session):
+def test_specification_model_creation(specs_session, test_project, test_session):
     """Test Specification model can be created"""
     spec = Specification(
         project_id=test_project.id,
@@ -184,9 +184,9 @@ def test_specification_model_creation(db_specs, test_project, test_session):
         is_current=True
     )
 
-    db_specs.add(spec)
-    db_specs.commit()
-    db_specs.refresh(spec)
+    specs_session.add(spec)
+    specs_session.commit()
+    specs_session.refresh(spec)
 
     assert spec.id is not None
     assert spec.content == "Use PostgreSQL as primary database"
@@ -194,7 +194,7 @@ def test_specification_model_creation(db_specs, test_project, test_session):
     assert spec.is_current is True
 
 
-def test_conversation_history_model_creation(db_specs, test_session):
+def test_conversation_history_model_creation(specs_session, test_session):
     """Test ConversationHistory model can be created"""
     message = ConversationHistory(
         session_id=test_session.id,
@@ -203,9 +203,9 @@ def test_conversation_history_model_creation(db_specs, test_session):
         timestamp=datetime.utcnow()
     )
 
-    db_specs.add(message)
-    db_specs.commit()
-    db_specs.refresh(message)
+    specs_session.add(message)
+    specs_session.commit()
+    specs_session.refresh(message)
 
     assert message.id is not None
     assert message.role == "user"
@@ -360,7 +360,7 @@ def test_socratic_agent_generate_question(mock_services, service_container, test
     assert 'text' in result['question']
 
 
-def test_socratic_agent_calculate_coverage(service_container, test_project, db_specs):
+def test_socratic_agent_calculate_coverage(service_container, test_project, specs_session):
     """Test coverage calculation"""
     agent = SocraticCounselorAgent(
         agent_id="socratic",
@@ -389,11 +389,11 @@ def test_socratic_agent_calculate_coverage(service_container, test_project, db_s
     ]
 
     for spec in specs:
-        db_specs.add(spec)
-    db_specs.commit()
+        specs_session.add(spec)
+    specs_session.commit()
 
     # Calculate coverage
-    all_specs = db_specs.query(Specification).filter(
+    all_specs = specs_session.query(Specification).filter(
         Specification.project_id == test_project.id
     ).all()
 
@@ -440,7 +440,7 @@ def test_context_agent_extract_specifications(mock_services, service_container, 
     assert 'maturity_score' in result
 
 
-def test_context_agent_calculate_maturity(service_container, test_project, db_specs):
+def test_context_agent_calculate_maturity(service_container, test_project, specs_session):
     """Test maturity calculation"""
     agent = ContextAnalyzerAgent(
         agent_id="context",
@@ -477,11 +477,11 @@ def test_context_agent_calculate_maturity(service_container, test_project, db_sp
     ]
 
     for spec in specs:
-        db_specs.add(spec)
-    db_specs.commit()
+        specs_session.add(spec)
+    specs_session.commit()
 
     # Calculate maturity
-    maturity = agent._calculate_maturity(str(test_project.id), db_specs)
+    maturity = agent._calculate_maturity(str(test_project.id), specs_session)
 
     assert maturity >= 0
     assert maturity <= 100
@@ -492,7 +492,7 @@ def test_context_agent_calculate_maturity(service_container, test_project, db_sp
 # INTEGRATION TESTS
 # ============================================================================
 
-def test_full_workflow_integration(service_container, test_user, db_specs):
+def test_full_workflow_integration(service_container, test_user, specs_session):
     """
     Integration test: Full workflow from project creation to spec extraction
     Tests all 3 agents working together
@@ -539,9 +539,9 @@ def test_full_workflow_integration(service_container, test_user, db_specs):
         status="active",
         started_at=datetime.utcnow()
     )
-    db_specs.add(session)
-    db_specs.commit()
-    db_specs.refresh(session)
+    specs_session.add(session)
+    specs_session.commit()
+    specs_session.refresh(session)
 
     # Step 3: Generate question with SocraticCounselorAgent
     socratic_agent = SocraticCounselorAgent(
@@ -576,7 +576,7 @@ def test_full_workflow_integration(service_container, test_user, db_specs):
     assert specs_result['maturity_score'] > 0
 
     # Step 5: Verify project maturity was updated
-    project = db_specs.query(Project).filter(Project.id == project_id).first()
+    project = specs_session.query(Project).filter(Project.id == project_id).first()
     assert project.maturity_score > 0
 
 
