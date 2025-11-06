@@ -6,15 +6,15 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="databases set">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DEPENDENCIES_AND_CONFLICTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/DEPENDENCIES_AND_CONFLICTS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCUMENTATION_REVIEW.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/DOCUMENTATION_REVIEW.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FEATURE_DOCUMENTATION_AUDIT.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/FEATURE_DOCUMENTATION_AUDIT.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MIGRATION_PLAN.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/MIGRATION_PLAN.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PRE_IMPLEMENTATION_REVIEW.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/PRE_IMPLEMENTATION_REVIEW.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICKSTART_WINDOWS.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/QUICKSTART_WINDOWS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/READY_TO_RUN.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/READY_TO_RUN.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RESTART_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/RESTART_GUIDE.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WINDOWS_SETUP_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/WINDOWS_SETUP_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/agents/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/api/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/api/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/core/security.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/security.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/scripts/verify_dependencies.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/scripts/verify_dependencies.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_data_persistence.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_data_persistence.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_1_infrastructure.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_1_infrastructure.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,34 +24,34 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "Nireus79"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Nireus79&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Nireus79/Socrates2.git",
-    "accountId": "e6d6a39d-d3a3-406e-b2df-1a86f33a9093"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Nireus79/Socrates2.git&quot;,
+    &quot;accountId&quot;: &quot;e6d6a39d-d3a3-406e-b2df-1a86f33a9093&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 4
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
   <component name="ProjectId" id="353hvBtfPIZ2fzj7dxHEmCeA7e7" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />

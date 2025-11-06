@@ -119,7 +119,7 @@ def get_stats(
         }
     """
     # Get user counts from auth database
-    from app.models.user import User as UserModel
+    from ..models.user import User as UserModel
 
     total_users = db_auth.query(UserModel).count()
     active_users = db_auth.query(UserModel).filter(

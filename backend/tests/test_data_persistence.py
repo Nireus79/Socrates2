@@ -15,9 +15,9 @@ This test MUST PASS before proceeding to Phase 2.
 import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
-from app.models.user import User
-from app.core.database import get_db_auth, engine_auth
-from app.core.config import settings
+from backend.app.models.user import User
+from backend.app.core.database import get_db_auth, engine_auth
+from backend.app.core.config import settings
 
 
 class TestDataPersistence:
@@ -132,7 +132,7 @@ class TestDataPersistence:
             found = db.query(User).filter(User.email == user_email).first()
             assert found is not None, \
                 "CRITICAL: Data not persisted using dependency injection pattern!"
-            assert str(found.id) == user_id
+            assert str(found.id) == user_id  # TODO Local variable 'user_id' might be referenced before assignment
             print(f"✅ DI pattern works correctly (ID: {user_id})")
 
     def test_multiple_users_persist(self):

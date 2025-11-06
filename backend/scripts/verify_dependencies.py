@@ -12,7 +12,7 @@ import sys
 try:
     import importlib.metadata as metadata
 except ImportError:
-    import importlib_metadata as metadata  # Python < 3.8
+    import importlib_metadata as metadata  # Python < 3.8  # TODO Module 'importlib_metadata' not found
 
 REQUIRED_PACKAGES = {
     # Package name: (min_version, purpose)

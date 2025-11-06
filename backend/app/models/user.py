@@ -100,7 +100,7 @@ class User(BaseModel):
         Returns:
             True if password matches, False otherwise
         """
-        return pwd_context.verify(password, self.hashed_password)
+        return pwd_context.verify(password, self.hashed_password)  # TODO Expected type 'str | bytes | None', got 'Column[str]' instead
 
     def to_dict(self, exclude_fields: set = None) -> dict:
         """

@@ -31,9 +31,9 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
 
     # Set expiration time
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.utcnow() + expires_delta# TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)# TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.
 
     to_encode.update({"exp": expire})
 
@@ -127,7 +127,7 @@ def get_current_user(
             detail="User account is inactive"
         )
 
-    return user
+    return user  # TODO Expected type 'User', got 'Type[User]' instead
 
 
 def get_current_active_user(
