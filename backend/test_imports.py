@@ -10,6 +10,7 @@ Usage:
 import sys
 from pathlib import Path
 
+
 def test_imports():
     """Test that all critical imports work"""
     print("=" * 70)

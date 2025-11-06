@@ -215,7 +215,7 @@ class TestBaseAgent:
                 def get_capabilities(self):
                     return ["test"]
 
-            TestAgent("test", "Test Agent", None)
+            TestAgent("test", "Test Agent", None) # TODO Expected type 'None', got 'str' instead
 
         assert "ServiceContainer is required" in str(exc_info.value)
 
@@ -332,7 +332,7 @@ class TestAgentOrchestrator:
         orchestrator = AgentOrchestrator(services)
 
         with pytest.raises(TypeError):
-            orchestrator.register_agent("not an agent")
+            orchestrator.register_agent("not an agent")  # TODO Expected type 'BaseAgent', got 'str' instead
 
     def test_route_request_to_agent(self):
         """Test routing request to registered agent"""
