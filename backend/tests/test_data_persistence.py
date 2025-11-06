@@ -15,9 +15,9 @@ This test MUST PASS before proceeding to Phase 2.
 import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
-from backend.app.models.user import User
-from backend.app.core.database import get_db_auth, engine_auth
-from backend.app.core.config import settings
+from app.models.user import User
+from app.core.database import get_db_auth, engine_auth
+from app.core.config import settings
 
 
 class TestDataPersistence:
