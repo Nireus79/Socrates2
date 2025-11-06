@@ -66,13 +66,14 @@ class BaseAgent(ABC):
         # - self.services.get_database_specs()
 
         # Statistics tracking
+        created_time = datetime.now(timezone.utc).isoformat()
         self.stats = {
             'requests_processed': 0,
             'requests_succeeded': 0,
             'requests_failed': 0,
             'errors_encountered': 0,
-            'last_activity': None,
-            'created_at': datetime.now(timezone.utc).isoformat()
+            'last_activity': created_time,  # Initialize to creation time
+            'created_at': created_time
         }
 
         self.logger.info(f"Agent '{self.name}' initialized (ID: {self.agent_id})")
