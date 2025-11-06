@@ -196,7 +196,7 @@ def test_orchestrator_validates_phase2_agent_capabilities(service_container):
 # INTERCONNECTION TEST 4: Database Relationships (Phase 1 ↔ Phase 2)
 # ============================================================================
 
-def test_project_references_user_across_databases(db_auth, db_specs, test_user):
+def test_project_references_user_across_databases(auth_session, specs_session, test_user):
     """Verify Project (specs DB) can reference User (auth DB) via user_id"""
     # Create project referencing user from other database
     project = Project(
@@ -208,20 +208,20 @@ def test_project_references_user_across_databases(db_auth, db_specs, test_user):
         status="active"
     )
 
-    db_specs.add(project)
-    db_specs.commit()
-    db_specs.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
 
     # Verify user_id matches
     assert project.user_id == test_user.id
 
     # Verify user exists in auth database
-    user = db_auth.query(User).filter(User.id == test_user.id).first()
+    user = auth_session.query(User).filter(User.id == test_user.id).first()
     assert user is not None
     assert user.email == test_user.email
 
 
-def test_session_references_project(db_specs, test_project):
+def test_session_references_project(specs_session, test_project):
     """Verify Session references Project correctly"""
     session = Session(
         project_id=test_project.id,
@@ -230,20 +230,20 @@ def test_session_references_project(db_specs, test_project):
         started_at=datetime.utcnow()
     )
 
-    db_specs.add(session)
-    db_specs.commit()
-    db_specs.refresh(session)
+    specs_session.add(session)
+    specs_session.commit()
+    specs_session.refresh(session)
 
     # Verify relationship
     assert session.project_id == test_project.id
 
     # Verify bidirectional relationship
-    project = db_specs.query(Project).filter(Project.id == test_project.id).first()
+    project = specs_session.query(Project).filter(Project.id == test_project.id).first()
     assert len(project.sessions) > 0
     assert project.sessions[0].id == session.id
 
 
-def test_question_references_project_and_session(db_specs, test_project, test_session):
+def test_question_references_project_and_session(specs_session, test_project, test_session):
     """Verify Question references both Project and Session"""
     from decimal import Decimal
 
@@ -255,23 +255,23 @@ def test_question_references_project_and_session(db_specs, test_project, test_se
         quality_score=Decimal('1.0')
     )
 
-    db_specs.add(question)
-    db_specs.commit()
-    db_specs.refresh(question)
+    specs_session.add(question)
+    specs_session.commit()
+    specs_session.refresh(question)
 
     # Verify relationships
     assert question.project_id == test_project.id
     assert question.session_id == test_session.id
 
     # Verify bidirectional relationships
-    project = db_specs.query(Project).filter(Project.id == test_project.id).first()
-    session = db_specs.query(Session).filter(Session.id == test_session.id).first()
+    project = specs_session.query(Project).filter(Project.id == test_project.id).first()
+    session = specs_session.query(Session).filter(Session.id == test_session.id).first()
 
     assert len(project.questions) > 0
     assert len(session.questions) > 0
 
 
-def test_specification_references_project_and_session(db_specs, test_project, test_session):
+def test_specification_references_project_and_session(specs_session, test_project, test_session):
     """Verify Specification references both Project and Session"""
     from decimal import Decimal
 
@@ -285,23 +285,23 @@ def test_specification_references_project_and_session(db_specs, test_project, te
         is_current=True
     )
 
-    db_specs.add(spec)
-    db_specs.commit()
-    db_specs.refresh(spec)
+    specs_session.add(spec)
+    specs_session.commit()
+    specs_session.refresh(spec)
 
     # Verify relationships
     assert spec.project_id == test_project.id
     assert spec.session_id == test_session.id
 
     # Verify bidirectional relationships
-    project = db_specs.query(Project).filter(Project.id == test_project.id).first()
-    session = db_specs.query(Session).filter(Session.id == test_session.id).first()
+    project = specs_session.query(Project).filter(Project.id == test_project.id).first()
+    session = specs_session.query(Session).filter(Session.id == test_session.id).first()
 
     assert len(project.specifications) > 0
     assert len(session.specifications) > 0
 
 
-def test_cascade_delete_project_deletes_children(db_specs, test_user):
+def test_cascade_delete_project_deletes_children(specs_session, test_user):
     """Verify deleting project cascades to sessions, questions, specs"""
     # Create project
     project = Project(
@@ -311,9 +311,9 @@ def test_cascade_delete_project_deletes_children(db_specs, test_user):
         maturity_score=0,
         status="active"
     )
-    db_specs.add(project)
-    db_specs.commit()
-    db_specs.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
 
     # Create session
     session = Session(
@@ -322,9 +322,9 @@ def test_cascade_delete_project_deletes_children(db_specs, test_user):
         status="active",
         started_at=datetime.utcnow()
     )
-    db_specs.add(session)
-    db_specs.commit()
-    db_specs.refresh(session)
+    specs_session.add(session)
+    specs_session.commit()
+    specs_session.refresh(session)
 
     # Create question
     from decimal import Decimal
@@ -335,8 +335,8 @@ def test_cascade_delete_project_deletes_children(db_specs, test_user):
         category="goals",
         quality_score=Decimal('1.0')
     )
-    db_specs.add(question)
-    db_specs.commit()
+    specs_session.add(question)
+    specs_session.commit()
 
     # Remember IDs
     project_id = project.id
@@ -344,20 +344,20 @@ def test_cascade_delete_project_deletes_children(db_specs, test_user):
     question_id = question.id
 
     # Delete project
-    db_specs.delete(project)
-    db_specs.commit()
+    specs_session.delete(project)
+    specs_session.commit()
 
     # Verify cascades
-    assert db_specs.query(Project).filter(Project.id == project_id).first() is None
-    assert db_specs.query(Session).filter(Session.id == session_id).first() is None
-    assert db_specs.query(Question).filter(Question.id == question_id).first() is None
+    assert specs_session.query(Project).filter(Project.id == project_id).first() is None
+    assert specs_session.query(Session).filter(Session.id == session_id).first() is None
+    assert specs_session.query(Question).filter(Question.id == question_id).first() is None
 
 
 # ============================================================================
 # INTERCONNECTION TEST 5: Data Flow (Phase 1 → Phase 2)
 # ============================================================================
 
-def test_data_flows_from_user_to_project(db_auth, db_specs, test_user):
+def test_data_flows_from_user_to_project(auth_session, specs_session, test_user):
     """Test data flows correctly: User (Phase 1) → Project (Phase 2)"""
     # Phase 1: User created in auth database
     assert test_user.id is not None
@@ -370,19 +370,19 @@ def test_data_flows_from_user_to_project(db_auth, db_specs, test_user):
         maturity_score=0,
         status="active"
     )
-    db_specs.add(project)
-    db_specs.commit()
+    specs_session.add(project)
+    specs_session.commit()
 
     # Verify flow
     assert project.user_id == test_user.id
 
     # Verify user is accessible from both databases
-    user_from_auth = db_auth.query(User).filter(User.id == test_user.id).first()
+    user_from_auth = auth_session.query(User).filter(User.id == test_user.id).first()
     assert user_from_auth is not None
     assert user_from_auth.email == test_user.email
 
 
-def test_data_flows_project_to_session_to_question(db_specs, test_project):
+def test_data_flows_project_to_session_to_question(specs_session, test_project):
     """Test data flows: Project → Session → Question"""
     from decimal import Decimal
 
@@ -393,9 +393,9 @@ def test_data_flows_project_to_session_to_question(db_specs, test_project):
         status="active",
         started_at=datetime.utcnow()
     )
-    db_specs.add(session)
-    db_specs.commit()
-    db_specs.refresh(session)
+    specs_session.add(session)
+    specs_session.commit()
+    specs_session.refresh(session)
 
     # Phase 2: Question created for session
     question = Question(
@@ -405,9 +405,9 @@ def test_data_flows_project_to_session_to_question(db_specs, test_project):
         category="goals",
         quality_score=Decimal('1.0')
     )
-    db_specs.add(question)
-    db_specs.commit()
-    db_specs.refresh(question)
+    specs_session.add(question)
+    specs_session.commit()
+    specs_session.refresh(question)
 
     # Verify flow
     assert question.session_id == session.id
@@ -420,7 +420,7 @@ def test_data_flows_project_to_session_to_question(db_specs, test_project):
 # ============================================================================
 
 @pytest.fixture
-def test_user(db_auth):
+def test_user(auth_session):
     """Create test user"""
     user = User(
         email="interconnect@example.com",
@@ -430,14 +430,14 @@ def test_user(db_auth):
         status="active",
         role="user"
     )
-    db_auth.add(user)
-    db_auth.commit()
-    db_auth.refresh(user)
+    auth_session.add(user)
+    auth_session.commit()
+    auth_session.refresh(user)
     return user
 
 
 @pytest.fixture
-def test_project(db_specs, test_user):
+def test_project(specs_session, test_user):
     """Create test project"""
     project = Project(
         user_id=test_user.id,
@@ -447,14 +447,14 @@ def test_project(db_specs, test_user):
         maturity_score=0,
         status="active"
     )
-    db_specs.add(project)
-    db_specs.commit()
-    db_specs.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
     return project
 
 
 @pytest.fixture
-def test_session(db_specs, test_project):
+def test_session(specs_session, test_project):
     """Create test session"""
     session = Session(
         project_id=test_project.id,
@@ -462,16 +462,16 @@ def test_session(db_specs, test_project):
         status="active",
         started_at=datetime.utcnow()
     )
-    db_specs.add(session)
-    db_specs.commit()
-    db_specs.refresh(session)
+    specs_session.add(session)
+    specs_session.commit()
+    specs_session.refresh(session)
     return session
 
 
 @pytest.fixture
-def service_container(db_auth, db_specs):
+def service_container(auth_session, specs_session):
     """Create service container with test databases"""
     container = ServiceContainer()
-    container._db_session_auth = db_auth
-    container._db_session_specs = db_specs
+    container._db_session_auth = auth_session
+    container._db_session_specs = specs_session
     return container
