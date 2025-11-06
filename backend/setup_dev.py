@@ -5,6 +5,7 @@ Run this to verify your Python environment is correctly configured.
 import sys
 from pathlib import Path
 
+
 def check_environment():
     """Check if development environment is correctly set up"""
     print("=" * 60)
