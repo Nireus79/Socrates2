@@ -6,8 +6,15 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="databases set">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/scripts/verify_dependencies.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/scripts/verify_dependencies.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/claude.md" beforeDir="false" afterPath="$PROJECT_DIR$/CLAUDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DEPENDENCIES_AND_CONFLICTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/DEPENDENCIES_AND_CONFLICTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DOCUMENTATION_REVIEW.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/DOCUMENTATION_REVIEW.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FEATURE_DOCUMENTATION_AUDIT.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/FEATURE_DOCUMENTATION_AUDIT.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MIGRATION_PLAN.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/MIGRATION_PLAN.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PRE_IMPLEMENTATION_REVIEW.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/PRE_IMPLEMENTATION_REVIEW.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QUICKSTART_WINDOWS.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/QUICKSTART_WINDOWS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/READY_TO_RUN.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/READY_TO_RUN.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RESTART_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/RESTART_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WINDOWS_SETUP_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/WINDOWS_SETUP_GUIDE.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +54,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\foundation_docs" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\user_workflow_simulation\discovery_phase" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\user_workflow_simulation" />
@@ -133,7 +141,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762384900829</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="databases set">
+      <option name="closed" value="true" />
+      <created>1762415273558</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1762415273558</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
