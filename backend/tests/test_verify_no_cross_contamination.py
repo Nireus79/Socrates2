@@ -51,8 +51,12 @@ class TestNoCrossContamination:
         inspector = inspect(engine)
         tables = set(inspector.get_table_names())
 
-        # Expected tables in socrates_specs
-        expected_tables = {"projects", "sessions", "alembic_version"}
+        # Expected tables in socrates_specs (Phase 1 + Phase 2)
+        expected_tables = {
+            "projects", "sessions",  # Phase 1
+            "questions", "specifications", "conversation_history",  # Phase 2
+            "alembic_version"
+        }
 
         # Tables that should NOT be in socrates_specs
         forbidden_tables = {"users", "refresh_tokens"}

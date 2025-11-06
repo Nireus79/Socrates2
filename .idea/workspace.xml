@@ -4,22 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="phase2">
-      <change afterPath="$PROJECT_DIR$/PHASE_0_1_VERIFICATION_REPORT.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/alembic/versions/005_create_questions_table.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/alembic/versions/006_create_specifications_table.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/alembic/versions/007_create_conversation_history_table.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/agents/context.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/agents/project.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/agents/socratic.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/models/conversation_history.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/models/project.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/models/question.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/models/session.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/models/specification.py" afterDir="false" />
+    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="Merge Phase 2: Core Agents Implementation&#10;&#10;Merged Phase 2 implementation from feature branch:&#10;- 3 new database models (Project, Session, Question, Specification, ConversationHistory)&#10;- 3 new agents (ProjectManagerAgent, SocraticCounselorAgent, ContextAnalyzerAgent)&#10;- 3 new database migrations (005, 006, 007) successfully applied&#10;- Updated Phase 0 and Phase 1 documentation to COMPLETE status&#10;&#10;Phase 2 features:&#10;- ProjectManagerAgent: Full CRUD for projects with maturity tracking&#10;- SocraticCounselorAgent: AI-powered question generation using Claude API&#10;- ContextAnalyzerAgent: Specification extraction from user answers&#10;- Category-based coverage tracking (10 categories)&#10;- Confidence-weighted maturity scoring&#10;&#10;Database tables created:&#10;- questions: Socratic questions with categories&#10;- specifications: Extracted specs with versioning&#10;- conversation_history: Complete chat logs&#10;&#10;Migrations verified: 007 (head) applied successfully&#10;&#10;Co-Authored-By: Claude &lt;noreply@anthropic.com&gt;">
+      <change afterPath="$PROJECT_DIR$/backend/tests/test_phase_1_2_interconnections.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/tests/test_phase_2_core_agents.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/implementation_documents/PHASE_0.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/PHASE_0.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/implementation_documents/PHASE_1.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/PHASE_1.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_infrastructure.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_infrastructure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_verify_no_cross_contamination.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_verify_no_cross_contamination.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -186,7 +176,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762443862899</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Merge Phase 2: Core Agents Implementation&#10;&#10;Merged Phase 2 implementation from feature branch:&#10;- 3 new database models (Project, Session, Question, Specification, ConversationHistory)&#10;- 3 new agents (ProjectManagerAgent, SocraticCounselorAgent, ContextAnalyzerAgent)&#10;- 3 new database migrations (005, 006, 007) successfully applied&#10;- Updated Phase 0 and Phase 1 documentation to COMPLETE status&#10;&#10;Phase 2 features:&#10;- ProjectManagerAgent: Full CRUD for projects with maturity tracking&#10;- SocraticCounselorAgent: AI-powered question generation using Claude API&#10;- ContextAnalyzerAgent: Specification extraction from user answers&#10;- Category-based coverage tracking (10 categories)&#10;- Confidence-weighted maturity scoring&#10;&#10;Database tables created:&#10;- questions: Socratic questions with categories&#10;- specifications: Extracted specs with versioning&#10;- conversation_history: Complete chat logs&#10;&#10;Migrations verified: 007 (head) applied successfully&#10;&#10;Co-Authored-By: Claude &lt;noreply@anthropic.com&gt;">
+      <option name="closed" value="true" />
+      <created>1762446971414</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1762446971414</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -204,6 +202,7 @@
     <MESSAGE value="first attempt" />
     <MESSAGE value="databases set" />
     <MESSAGE value="phase2" />
-    <option name="LAST_COMMIT_MESSAGE" value="phase2" />
+    <MESSAGE value="Merge Phase 2: Core Agents Implementation&#10;&#10;Merged Phase 2 implementation from feature branch:&#10;- 3 new database models (Project, Session, Question, Specification, ConversationHistory)&#10;- 3 new agents (ProjectManagerAgent, SocraticCounselorAgent, ContextAnalyzerAgent)&#10;- 3 new database migrations (005, 006, 007) successfully applied&#10;- Updated Phase 0 and Phase 1 documentation to COMPLETE status&#10;&#10;Phase 2 features:&#10;- ProjectManagerAgent: Full CRUD for projects with maturity tracking&#10;- SocraticCounselorAgent: AI-powered question generation using Claude API&#10;- ContextAnalyzerAgent: Specification extraction from user answers&#10;- Category-based coverage tracking (10 categories)&#10;- Confidence-weighted maturity scoring&#10;&#10;Database tables created:&#10;- questions: Socratic questions with categories&#10;- specifications: Extracted specs with versioning&#10;- conversation_history: Complete chat logs&#10;&#10;Migrations verified: 007 (head) applied successfully&#10;&#10;Co-Authored-By: Claude &lt;noreply@anthropic.com&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge Phase 2: Core Agents Implementation&#10;&#10;Merged Phase 2 implementation from feature branch:&#10;- 3 new database models (Project, Session, Question, Specification, ConversationHistory)&#10;- 3 new agents (ProjectManagerAgent, SocraticCounselorAgent, ContextAnalyzerAgent)&#10;- 3 new database migrations (005, 006, 007) successfully applied&#10;- Updated Phase 0 and Phase 1 documentation to COMPLETE status&#10;&#10;Phase 2 features:&#10;- ProjectManagerAgent: Full CRUD for projects with maturity tracking&#10;- SocraticCounselorAgent: AI-powered question generation using Claude API&#10;- ContextAnalyzerAgent: Specification extraction from user answers&#10;- Category-based coverage tracking (10 categories)&#10;- Confidence-weighted maturity scoring&#10;&#10;Database tables created:&#10;- questions: Socratic questions with categories&#10;- specifications: Extracted specs with versioning&#10;- conversation_history: Complete chat logs&#10;&#10;Migrations verified: 007 (head) applied successfully&#10;&#10;Co-Authored-By: Claude &lt;noreply@anthropic.com&gt;" />
   </component>
 </project>
