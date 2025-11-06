@@ -121,13 +121,16 @@ def get_current_user(
     if user is None:
         raise credentials_exception
 
+    # Type narrowing: at this point user is definitely not None
+    assert user is not None  # Help type checker understand user is User, not None
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive"
         )
 
-    return user  # TODO Expected type 'User', got 'Type[User]' instead
+    return user
 
 
 def get_current_active_user(

@@ -57,7 +57,7 @@ app = FastAPI(
 
 # Configure CORS
 app.add_middleware(
-    CORSMiddleware,  # TODO Expected type '_MiddlewareFactory[ParamSpec("P")]', got 'Type[CORSMiddleware]' instead
+    CORSMiddleware,  # type: ignore[arg-type]  # Standard FastAPI middleware pattern, type checker limitation
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],

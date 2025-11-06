@@ -113,6 +113,7 @@ class TestDataPersistence:
                 # Commit happens automatically when generator exits
 
         # Create user using dependency injection pattern
+        user_id: str = ""  # Initialize to ensure it's always defined
         for db in get_db_auth():
             user = User(
                 email=user_email,
@@ -127,12 +128,16 @@ class TestDataPersistence:
             user_id = str(user.id)
             # Commit happens automatically when generator exits
 
+        # Verify user_id was assigned
+        assert user_id, "CRITICAL: user_id was not assigned - database session may not have executed"
+
         # ⚠️  Session closed - verify data persisted
         for db in get_db_auth():
             found = db.query(User).filter(User.email == user_email).first()
             assert found is not None, \
                 "CRITICAL: Data not persisted using dependency injection pattern!"
-            assert str(found.id) == user_id  # TODO Local variable 'user_id' might be referenced before assignment
+            assert str(found.id) == user_id, \
+                f"CRITICAL: User ID mismatch - expected {user_id}, got {found.id}"
             print(f"✅ DI pattern works correctly (ID: {user_id})")
 
     def test_multiple_users_persist(self):

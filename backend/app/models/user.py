@@ -100,7 +100,7 @@ class User(BaseModel):
         Returns:
             True if password matches, False otherwise
         """
-        return pwd_context.verify(password, self.hashed_password)  # TODO Expected type 'str | bytes | None', got 'Column[str]' instead
+        return pwd_context.verify(password, self.hashed_password)  # type: ignore[arg-type]  # At runtime it's str, type checker doesn't understand SQLAlchemy
 
     def to_dict(self, exclude_fields: set = None) -> dict:
         """
