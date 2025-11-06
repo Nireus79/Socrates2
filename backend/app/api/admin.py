@@ -6,7 +6,7 @@ Provides:
 - System statistics
 - Agent information
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import Dict, Any

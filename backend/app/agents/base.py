@@ -9,7 +9,7 @@ Provides:
 """
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from ..core.dependencies import ServiceContainer
@@ -72,7 +72,7 @@ class BaseAgent(ABC):
             'requests_failed': 0,
             'errors_encountered': 0,
             'last_activity': None,
-            'created_at': datetime.utcnow().isoformat()  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.
+            'created_at': datetime.now(timezone.utc).isoformat()
         }
 
         self.logger.info(f"Agent '{self.name}' initialized (ID: {self.agent_id})")
@@ -117,7 +117,7 @@ class BaseAgent(ABC):
             })
         """
         self.stats['requests_processed'] += 1
-        self.stats['last_activity'] = datetime.utcnow().isoformat()# TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.
+        self.stats['last_activity'] = datetime.now(timezone.utc).isoformat()
 
         # Validate action is supported
         capabilities = self.get_capabilities()
