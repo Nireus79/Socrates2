@@ -28,6 +28,7 @@ def upgrade():
         sa.Column('is_current', sa.Boolean(), nullable=False, server_default=sa.text('true')),
         sa.Column('spec_metadata', JSONB, nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.Column('superseded_at', sa.DateTime(), nullable=True),
         sa.Column('superseded_by', UUID(as_uuid=True), nullable=True)
     )
