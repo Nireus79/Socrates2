@@ -171,21 +171,33 @@ class TestDataPersistence:
                     role='user'
                 )
                 db.add(user)
+                db.flush()  # CRITICAL: Flush to get ID before commit
                 created_ids.append(str(user.id))
 
-        # Verify ALL users persisted
+        # Verify created_ids were actually assigned
+        assert len(created_ids) == len(test_emails), \
+            f"CRITICAL: Expected {len(test_emails)} IDs, got {len(created_ids)}"
+        assert all(id_str for id_str in created_ids), \
+            "CRITICAL: Some user IDs are empty or None"
+
+        # Verify ALL users persisted with correct IDs
         for db in get_db_auth():
-            for email in test_emails:
+            for idx, email in enumerate(test_emails):
                 found = db.query(User).filter(User.email == email).first()
                 assert found is not None, \
                     f"CRITICAL: User {email} not persisted!"
+
+                # Verify ID matches what we created
+                expected_id = created_ids[idx]
+                assert str(found.id) == expected_id, \
+                    f"CRITICAL: User {email} ID mismatch - expected {expected_id}, got {found.id}"
 
             # Count total users created
             count = db.query(User).filter(User.email.in_(test_emails)).count()
             assert count == len(test_emails), \
                 f"Expected {len(test_emails)} users, found {count}"
 
-        print(f"✅ All {len(test_emails)} users persisted correctly")
+        print(f"✅ All {len(test_emails)} users persisted correctly with matching IDs")
 
     def test_raw_sql_confirms_persistence(self):
         """
@@ -200,6 +212,7 @@ class TestDataPersistence:
             if existing:
                 db.delete(existing)
 
+        user_id: str = ""
         for db in get_db_auth():
             user = User(
                 email=user_email,
@@ -210,12 +223,17 @@ class TestDataPersistence:
                 role='user'
             )
             db.add(user)
+            db.flush()  # Get ID before commit
+            user_id = str(user.id)
+
+        # Verify user_id was assigned
+        assert user_id, "CRITICAL: user_id was not assigned"
 
         # Query using raw SQL (bypasses ORM cache)
         engine = create_engine(settings.DATABASE_URL_AUTH)
         with engine.connect() as conn:
             result = conn.execute(
-                text("SELECT email FROM users WHERE email = :email"),
+                text("SELECT id, email FROM users WHERE email = :email"),
                 {"email": user_email}
             )
             row = result.fetchone()
@@ -223,10 +241,13 @@ class TestDataPersistence:
             assert row is not None, \
                 "CRITICAL: User not found in database using raw SQL! ORM cache hiding the bug?"
 
-            assert row[0] == user_email, \
-                f"Email mismatch in raw SQL: expected {user_email}, got {row[0]}"
+            assert str(row[0]) == user_id, \
+                f"CRITICAL: ID mismatch in raw SQL - expected {user_id}, got {row[0]}"
 
-        print(f"✅ Raw SQL confirms data persisted correctly")
+            assert row[1] == user_email, \
+                f"Email mismatch in raw SQL: expected {user_email}, got {row[1]}"
+
+        print(f"✅ Raw SQL confirms data persisted correctly with matching ID {user_id}")
 
 
 if __name__ == "__main__":
