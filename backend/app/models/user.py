@@ -4,7 +4,7 @@ User model for authentication database (socrates_auth).
 from sqlalchemy import Column, String, Boolean, Index
 from passlib.context import CryptContext
 
-from app.models.base import BaseModel
+from .base import BaseModel
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

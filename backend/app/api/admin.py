@@ -11,10 +11,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import Dict, Any
 
-from app.core.database import get_db_auth, get_db_specs
-from app.core.security import get_current_admin_user
-from app.models.user import User
-from app.agents.orchestrator import get_orchestrator
+from ..core.database import get_db_auth, get_db_specs
+from ..core.security import get_current_admin_user
+from ..models.user import User
+from ..agents.orchestrator import get_orchestrator
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 

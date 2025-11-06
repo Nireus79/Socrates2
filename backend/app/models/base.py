@@ -11,7 +11,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 import uuid
 
-from app.core.database import Base
+from ..core.database import Base
 
 
 class BaseModel(Base):

@@ -13,7 +13,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from typing import Generator
 import logging
 
-from app.core.config import settings
+from .config import settings
 
 logger = logging.getLogger(__name__)
 

@@ -11,8 +11,8 @@ Responsibilities:
 from typing import Dict, Any, List, Optional
 import logging
 
-from app.core.dependencies import ServiceContainer
-from app.agents.base import BaseAgent
+from ..core.dependencies import ServiceContainer
+from .base import BaseAgent
 
 
 class AgentOrchestrator:
@@ -240,7 +240,7 @@ def get_orchestrator() -> AgentOrchestrator:
     global _orchestrator
 
     if _orchestrator is None:
-        from app.core.dependencies import get_service_container
+        from ..core.dependencies import get_service_container
         services = get_service_container()
         _orchestrator = AgentOrchestrator(services)
 

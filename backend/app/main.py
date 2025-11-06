@@ -9,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 
-from app.core.config import settings
-from app.core.database import close_db_connections
-from app.api import auth, admin
+from .core.config import settings
+from .core.database import close_db_connections
+from .api import auth, admin
 
 # Configure logging
 logging.basicConfig(
@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
     logger.info(f"Debug mode: {settings.DEBUG}")
 
     # Initialize orchestrator (will be done when first accessed)
-    from app.agents.orchestrator import get_orchestrator
+    from .agents.orchestrator import get_orchestrator
     orchestrator = get_orchestrator()
     logger.info("AgentOrchestrator initialized")
     logger.info(f"Registered agents: {list(orchestrator.agents.keys())}")
@@ -94,7 +94,7 @@ def api_info():
     Returns:
         Detailed API information
     """
-    from app.agents.orchestrator import get_orchestrator
+    from .agents.orchestrator import get_orchestrator
 
     orchestrator = get_orchestrator()
     agent_info = orchestrator.get_all_agents()

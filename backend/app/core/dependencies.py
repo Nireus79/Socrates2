@@ -15,8 +15,8 @@ import logging
 from anthropic import Anthropic
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
-from app.core.database import SessionLocalAuth, SessionLocalSpecs
+from .config import settings
+from .database import SessionLocalAuth, SessionLocalSpecs
 
 
 class ServiceContainer:

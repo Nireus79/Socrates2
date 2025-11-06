@@ -13,14 +13,14 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import Dict, Any
 from datetime import timedelta
 
-from app.core.database import get_db_auth
-from app.core.security import (
+from ..core.database import get_db_auth
+from ..core.security import (
     create_access_token,
     get_current_user,
     get_current_active_user
 )
-from app.models.user import User
-from app.core.config import settings
+from ..models.user import User
+from ..core.config import settings
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 
