@@ -3,7 +3,14 @@
     "allow": [
       "Bash(python:*)",
       "Bash(pytest:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Correct imports in Phase 7 sessions.py API endpoint\n\n- Changed import from non-existent get_current_user to get_current_active_user\n- Updated all three endpoint functions to use corrected dependency\n- This matches the pattern already applied to quality.py\n- Resolves ImportError that was blocking test execution\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)",
+      "Bash(git commit:*)",
+      "Bash(git pull:*)",
+      "Bash(export DATABASE_URL=$DATABASE_URL_SPECS)"
     ],
     "deny": [],
     "ask": []

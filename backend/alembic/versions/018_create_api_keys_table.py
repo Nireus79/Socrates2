@@ -19,9 +19,9 @@ depends_on = None
 
 
 def _should_run():
-    """Only run this migration for socrates_auth database"""
+    """Only run this migration for socrates_specs database"""
     db_url = os.getenv("DATABASE_URL", "")
-    return "socrates_auth" in db_url
+    return "socrates_specs" in db_url
 
 
 def upgrade():
@@ -32,7 +32,7 @@ def upgrade():
     op.create_table(
         'api_keys',
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()'), nullable=False, comment='Primary key (UUID)'),
-        sa.Column('user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, comment='Foreign key to users table'),
+        sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False, comment='Foreign key to users table (cross-database reference)'),
         sa.Column('provider', sa.String(length=50), nullable=False, comment='LLM provider: claude, openai, gemini, ollama, other'),
         sa.Column('api_key_encrypted', sa.Text(), nullable=False, comment='Encrypted API key (AES-256)'),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true', comment='Whether API key is active'),
