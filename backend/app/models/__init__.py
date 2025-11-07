@@ -15,6 +15,9 @@ from .quality_metric import QualityMetric
 from .user_behavior_pattern import UserBehaviorPattern
 from .question_effectiveness import QuestionEffectiveness
 from .knowledge_base_document import KnowledgeBaseDocument
+from .team import Team
+from .team_member import TeamMember
+from .project_share import ProjectShare
 
 __all__ = [
     'BaseModel',
@@ -31,4 +34,7 @@ __all__ = [
     'UserBehaviorPattern',
     'QuestionEffectiveness',
     'KnowledgeBaseDocument',
+    'Team',
+    'TeamMember',
+    'ProjectShare',
 ]
