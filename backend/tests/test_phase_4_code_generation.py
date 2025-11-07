@@ -404,7 +404,7 @@ def test_get_generation_status(code_gen_agent, complete_project, specs_session):
     })
 
     assert result['success'] is True
-    assert result['generation']['id'] == generation.id
+    assert result['generation']['id'] == str(generation.id)
     assert result['generation']['generation_status'] == 'completed'
     assert result['generation']['total_files'] == 5
 
