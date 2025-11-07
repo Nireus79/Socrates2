@@ -20,7 +20,7 @@ PROJECT_ROOT = Path(__file__).parent
 BACKEND_DIR = PROJECT_ROOT / "backend"
 sys.path.insert(0, str(BACKEND_DIR))
 
-API_URL = "http://localhost:8000"
+API_URL = "http://127.0.0.1:8000"
 
 
 class SocratesApp:
@@ -96,30 +96,35 @@ class SocratesApp:
 
     def start_server(self):
         print("[*] Starting API server in background...")
+        print("[*] This will take 5-10 seconds while agents initialize...")
+        print()
         os.chdir(BACKEND_DIR)
 
         cmd = [sys.executable, "-m", "uvicorn", "app.main:app",
-               "--host=0.0.0.0", "--port=8000", "--reload"]
+               "--host=127.0.0.1", "--port=8000", "--reload"]
 
         try:
-            self.server_process = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
+            # Don't capture output - let user see server logs
+            self.server_process = subprocess.Popen(cmd)
 
-            print("[*] Waiting for server to initialize...")
-            for i in range(15):
-                time.sleep(1)
+            # Wait longer for full agent initialization
+            print("[*] Waiting for server...")
+            for i in range(30):
+                time.sleep(0.5)
                 try:
-                    response = requests.get(API_URL, timeout=1)
+                    response = requests.get("http://127.0.0.1:8000/", timeout=1)
                     if response.status_code == 200:
+                        print()
                         print("[OK] Server running at {}".format(API_URL))
                         print("[OK] API Docs: {}/docs".format(API_URL))
                         print()
                         return True
                 except Exception:
-                    pass
+                    if i % 4 == 0:
+                        print(".", end="", flush=True)
 
-            print("[ERROR] Server started but didn't respond")
+            print()
+            print("[ERROR] Server started but didn't respond after 15 seconds")
             return False
         except Exception as e:
             print("[ERROR] Failed to start server: {}".format(e))
