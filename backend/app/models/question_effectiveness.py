@@ -3,7 +3,7 @@ QuestionEffectiveness model for tracking question effectiveness per user.
 """
 from sqlalchemy import Column, String, Integer, Numeric, DateTime, Index, CheckConstraint, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from ..core.database import Base
@@ -104,8 +104,8 @@ class QuestionEffectiveness(Base):
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-        onupdate=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         comment="Timestamp when record was last updated"
     )
 

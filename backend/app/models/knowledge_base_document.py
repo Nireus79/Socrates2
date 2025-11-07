@@ -4,7 +4,7 @@ KnowledgeBaseDocument model for uploaded knowledge base documents.
 from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from ..core.database import Base
@@ -88,7 +88,7 @@ class KnowledgeBaseDocument(Base):
     uploaded_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        default=lambda: datetime.now(timezone.utc),
         comment="Timestamp when document was uploaded"
     )
 

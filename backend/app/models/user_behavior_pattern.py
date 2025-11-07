@@ -3,7 +3,7 @@ UserBehaviorPattern model for learned user behavior patterns.
 """
 from sqlalchemy import Column, String, Numeric, DateTime, Index, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB, ARRAY
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from ..core.database import Base
@@ -74,15 +74,15 @@ class UserBehaviorPattern(Base):
     learned_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        default=lambda: datetime.now(timezone.utc),
         comment="Timestamp when pattern was learned"
     )
 
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-        onupdate=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         comment="Timestamp when pattern was last updated"
     )
 

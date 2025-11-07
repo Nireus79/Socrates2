@@ -4,7 +4,7 @@ QualityMetric model for quality control metrics and validation results.
 from sqlalchemy import Column, String, Numeric, Boolean, ForeignKey, Index, DateTime
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from ..core.database import Base
@@ -83,7 +83,7 @@ class QualityMetric(Base):
     calculated_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        default=lambda: datetime.now(timezone.utc),
         comment="Timestamp when metric was calculated"
     )
 

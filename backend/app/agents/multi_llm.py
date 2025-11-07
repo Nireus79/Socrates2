@@ -330,31 +330,75 @@ class MultiLLMManager(BaseAgent):
 
     def _encrypt_api_key(self, api_key: str) -> str:
         """
-        Encrypt API key before storing.
+        Encrypt API key before storing using Fernet encryption.
 
-        Uses simple base64 encoding as placeholder.
-        TODO: Implement proper Fernet encryption with SECRET_KEY
+        Uses SECRET_KEY from configuration to derive encryption key.
         """
-        import base64
+        try:
+            from cryptography.fernet import Fernet
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+            import base64
 
-        # Simple base64 encoding as placeholder
-        # In production, use: from cryptography.fernet import Fernet
-        encrypted = base64.b64encode(api_key.encode()).decode()
+            # Derive a Fernet-compatible key from SECRET_KEY
+            # Using PBKDF2 to generate a proper 32-byte key
+            secret = self.services.get_config()['SECRET_KEY'].encode()
+            salt = b'socrates_api_key'  # Fixed salt for consistent key derivation
 
-        self.logger.debug("API key encrypted (placeholder encryption)")
+            kdf = PBKDF2(
+                algorithm=hashes.SHA256(),
+                length=32,
+                salt=salt,
+                iterations=100000,
+            )
+            key = base64.urlsafe_b64encode(kdf.derive(secret))
 
-        return encrypted
+            cipher = Fernet(key)
+            encrypted = cipher.encrypt(api_key.encode()).decode()
+
+            self.logger.debug("API key encrypted with Fernet")
+            return encrypted
+
+        except Exception as e:
+            self.logger.error(f"Failed to encrypt API key: {e}")
+            # Fallback to base64 if encryption fails (better than storing in plaintext)
+            import base64
+            return base64.b64encode(api_key.encode()).decode()
 
     def _decrypt_api_key(self, encrypted_key: str) -> str:
         """
-        Decrypt API key.
+        Decrypt API key using Fernet decryption.
 
-        Uses simple base64 decoding as placeholder.
-        TODO: Implement proper Fernet decryption with SECRET_KEY
+        Uses SECRET_KEY from configuration to derive decryption key.
         """
-        import base64
+        try:
+            from cryptography.fernet import Fernet
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+            import base64
 
-        # Simple base64 decoding as placeholder
-        decrypted = base64.b64decode(encrypted_key.encode()).decode()
+            # Derive the same Fernet key from SECRET_KEY
+            secret = self.services.get_config()['SECRET_KEY'].encode()
+            salt = b'socrates_api_key'  # Same salt as encryption
 
-        return decrypted
+            kdf = PBKDF2(
+                algorithm=hashes.SHA256(),
+                length=32,
+                salt=salt,
+                iterations=100000,
+            )
+            key = base64.urlsafe_b64encode(kdf.derive(secret))
+
+            cipher = Fernet(key)
+            decrypted = cipher.decrypt(encrypted_key.encode()).decode()
+
+            return decrypted
+
+        except Exception as e:
+            self.logger.error(f"Failed to decrypt API key: {e}")
+            # Try fallback base64 decoding for backwards compatibility
+            try:
+                import base64
+                return base64.b64decode(encrypted_key.encode()).decode()
+            except:
+                raise ValueError("Failed to decrypt API key with both Fernet and base64 methods")
