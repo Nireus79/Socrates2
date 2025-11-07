@@ -11,7 +11,7 @@ import logging
 
 from .core.config import settings
 from .core.database import close_db_connections
-from .api import auth, admin, conflicts
+from .api import auth, admin, conflicts, code_generation
 
 # Configure logging
 logging.basicConfig(
@@ -38,6 +38,7 @@ async def lifespan(app: FastAPI):
     from .agents.socratic import SocraticCounselorAgent
     from .agents.context import ContextAnalyzerAgent
     from .agents.conflict_detector import ConflictDetectorAgent
+    from .agents.code_generator import CodeGeneratorAgent
     from .core.dependencies import get_service_container
 
     orchestrator = get_orchestrator()
@@ -48,11 +49,13 @@ async def lifespan(app: FastAPI):
     socratic_agent = SocraticCounselorAgent("socratic", "Socratic Counselor", services)
     context_agent = ContextAnalyzerAgent("context", "Context Analyzer", services)
     conflict_agent = ConflictDetectorAgent("conflict", "Conflict Detector", services)
+    code_gen_agent = CodeGeneratorAgent("code_generator", "Code Generator", services)
 
     orchestrator.register_agent(pm_agent)
     orchestrator.register_agent(socratic_agent)
     orchestrator.register_agent(context_agent)
     orchestrator.register_agent(conflict_agent)
+    orchestrator.register_agent(code_gen_agent)
 
     logger.info("AgentOrchestrator initialized")
     logger.info(f"Registered agents: {list(orchestrator.agents.keys())}")
@@ -87,6 +90,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(conflicts.router)
+app.include_router(code_generation.router)
 
 
 @app.get("/")
