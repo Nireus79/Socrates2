@@ -12,6 +12,9 @@ from .conflict import Conflict
 from .generated_project import GeneratedProject
 from .generated_file import GeneratedFile
 from .quality_metric import QualityMetric
+from .user_behavior_pattern import UserBehaviorPattern
+from .question_effectiveness import QuestionEffectiveness
+from .knowledge_base_document import KnowledgeBaseDocument
 
 __all__ = [
     'BaseModel',
@@ -25,4 +28,7 @@ __all__ = [
     'GeneratedProject',
     'GeneratedFile',
     'QualityMetric',
+    'UserBehaviorPattern',
+    'QuestionEffectiveness',
+    'KnowledgeBaseDocument',
 ]

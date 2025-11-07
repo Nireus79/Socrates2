@@ -11,7 +11,7 @@ import logging
 
 from .core.config import settings
 from .core.database import close_db_connections
-from .api import auth, admin, conflicts, code_generation, quality
+from .api import auth, admin, conflicts, code_generation, quality, sessions
 
 # Configure logging
 logging.basicConfig(
@@ -40,6 +40,8 @@ async def lifespan(app: FastAPI):
     from .agents.conflict_detector import ConflictDetectorAgent
     from .agents.code_generator import CodeGeneratorAgent
     from .agents.quality_controller import QualityControllerAgent
+    from .agents.user_learning import UserLearningAgent
+    from .agents.direct_chat import DirectChatAgent
     from .core.dependencies import get_service_container
 
     orchestrator = get_orchestrator()
@@ -52,13 +54,17 @@ async def lifespan(app: FastAPI):
     conflict_agent = ConflictDetectorAgent("conflict", "Conflict Detector", services)
     code_gen_agent = CodeGeneratorAgent("code_generator", "Code Generator", services)
     quality_agent = QualityControllerAgent("quality", "Quality Controller", services)
+    learning_agent = UserLearningAgent("learning", "User Learning", services)
+    direct_chat_agent = DirectChatAgent("direct_chat", "Direct Chat", services)
 
     orchestrator.register_agent(pm_agent)
     orchestrator.register_agent(socratic_agent)
     orchestrator.register_agent(context_agent)
     orchestrator.register_agent(conflict_agent)
     orchestrator.register_agent(code_gen_agent)
-    orchestrator.register_agent(quality_agent)  # Register quality agent LAST to enable gates
+    orchestrator.register_agent(quality_agent)  # Register quality agent before learning
+    orchestrator.register_agent(learning_agent)
+    orchestrator.register_agent(direct_chat_agent)
 
     logger.info("AgentOrchestrator initialized")
     logger.info(f"Registered agents: {list(orchestrator.agents.keys())}")
@@ -95,6 +101,7 @@ app.include_router(admin.router)
 app.include_router(conflicts.router)
 app.include_router(code_generation.router)
 app.include_router(quality.router)
+app.include_router(sessions.router)
 
 
 @app.get("/")
