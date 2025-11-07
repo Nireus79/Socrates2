@@ -26,13 +26,11 @@ from app.core.dependencies import ServiceContainer
 
 
 @pytest.fixture
-def service_container(specs_session, auth_session):
+def service_container(specs_session, auth_session, mock_claude_client):
     """Create service container for testing."""
-    from unittest.mock import Mock
     container = ServiceContainer()
     container._db_session_specs = specs_session
     container._db_session_auth = auth_session
-    mock_claude_client = Mock()
     container._claude_client = mock_claude_client
     return container
 

@@ -74,3 +74,10 @@ def specs_session(specs_engine):
     session.close()
     transaction.rollback()
     connection.close()
+
+
+@pytest.fixture
+def mock_claude_client():
+    """Create a mock Claude API client for testing"""
+    from unittest.mock import Mock
+    return Mock()

@@ -43,9 +43,11 @@ class GeneratedProject(BaseModel):
 
     def to_dict(self):
         """Convert to dictionary."""
+        import uuid as uuid_module
+
         base_dict = super().to_dict()
         base_dict.update({
-            'project_id': self.project_id,
+            'project_id': str(self.project_id) if isinstance(self.project_id, uuid_module.UUID) else self.project_id,
             'generation_version': self.generation_version,
             'total_files': self.total_files,
             'total_lines': self.total_lines,

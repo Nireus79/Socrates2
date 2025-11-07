@@ -66,6 +66,8 @@ class CodeGeneratorAgent(BaseAgent):
                 'missing_categories': list (if MATURITY_NOT_REACHED)
             }
         """
+        import uuid
+
         project_id = data.get('project_id')
 
         if not project_id:
@@ -75,11 +77,21 @@ class CodeGeneratorAgent(BaseAgent):
                 'error_code': 'VALIDATION_ERROR'
             }
 
+        # Validate project_id is a valid UUID
+        try:
+            project_uuid = uuid.UUID(project_id) if isinstance(project_id, str) else project_id
+        except (ValueError, AttributeError):
+            return {
+                'success': False,
+                'error': f'Invalid project_id format: {project_id}',
+                'error_code': 'PROJECT_NOT_FOUND'
+            }
+
         # Get database session
         db = self.services.get_database_specs()
 
         # Load project
-        project = db.query(Project).filter(Project.id == project_id).first()
+        project = db.query(Project).filter(Project.id == project_uuid).first()
         if not project:
             return {
                 'success': False,
@@ -241,6 +253,8 @@ class CodeGeneratorAgent(BaseAgent):
         Returns:
             {'success': bool, 'generation': dict}
         """
+        import uuid
+
         generation_id = data.get('generation_id')
 
         if not generation_id:
@@ -250,9 +264,19 @@ class CodeGeneratorAgent(BaseAgent):
                 'error_code': 'VALIDATION_ERROR'
             }
 
+        # Validate generation_id is a valid UUID
+        try:
+            gen_uuid = uuid.UUID(generation_id) if isinstance(generation_id, str) else generation_id
+        except (ValueError, AttributeError):
+            return {
+                'success': False,
+                'error': f'Generation not found: {generation_id}',
+                'error_code': 'GENERATION_NOT_FOUND'
+            }
+
         db = self.services.get_database_specs()
         generation = db.query(GeneratedProject).filter(
-            GeneratedProject.id == generation_id
+            GeneratedProject.id == gen_uuid
         ).first()
 
         if not generation:
@@ -328,10 +352,11 @@ class CodeGeneratorAgent(BaseAgent):
         # Identify missing
         missing = []
         for category, required in required_per_category.items():
-            count = category_counts.get(category, 0)
+            category_str = category.value  # Convert enum to string for lookup
+            count = category_counts.get(category_str, 0)
             if count < required:
                 missing.append({
-                    'category': category.value,
+                    'category': category_str,
                     'current': count,
                     'required': required,
                     'gap': required - count
