@@ -244,7 +244,7 @@ class MultiLLMManager(BaseAgent):
                     'tokens_total': 0,
                     'cost': 0.0,
                     'calls': 0,
-                    'avg_latency_ms': 0
+                    'avg_latency_ms': 0.0
                 }
 
             usage_by_provider[provider]['tokens_input'] += record.tokens_input
@@ -258,7 +258,7 @@ class MultiLLMManager(BaseAgent):
             provider_records = [r for r in usage_records if r.provider == provider]
             latencies = [r.latency_ms for r in provider_records if r.latency_ms]
             if latencies:
-                usage_by_provider[provider]['avg_latency_ms'] = sum(latencies) / len(latencies)  # TODO Expected type 'int', got 'float' instead
+                usage_by_provider[provider]['avg_latency_ms'] = sum(latencies) / len(latencies)
 
         return {
             'success': True,

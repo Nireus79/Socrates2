@@ -411,4 +411,4 @@ Maturity: {project_context.get('maturity_score', 0)}%
             cat = sparse_categories[0]
             return f"Could you tell me more about your {cat} requirements?"
 
-        return None  # TODO Expected type 'str', got 'None' instead
+        return "Is there anything else you'd like to specify?"
