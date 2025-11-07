@@ -16,10 +16,12 @@ down_revision = '006'
 branch_labels = None
 depends_on = None
 
+
 def _should_run():
     """Only run this migration for socrates_specs database"""
     db_url = os.getenv("DATABASE_URL", "")
     return "socrates_specs" in db_url
+
 
 def upgrade():
     if not _should_run():
@@ -52,6 +54,7 @@ def upgrade():
         'conversation_history',
         "role IN ('user', 'assistant', 'system')"
     )
+
 
 def downgrade():
     if not _should_run():

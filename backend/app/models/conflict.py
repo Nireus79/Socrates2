@@ -4,7 +4,7 @@ Conflict model for detecting and resolving specification conflicts.
 from sqlalchemy import Column, String, Text, Boolean, DateTime, Enum, ARRAY
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
-from app.models.base import BaseModel
+from ..models.base import BaseModel
 import enum
 
 
@@ -51,7 +51,7 @@ class Conflict(BaseModel):
     resolved_at = Column(DateTime, nullable=True)
     resolved_by_user = Column(Boolean, default=False)
 
-    def to_dict(self):
+    def to_dict(self):  # TODO Signature of method 'Conflict.to_dict()' does not match signature of the base method in class 'BaseModel'
         """Convert to dictionary."""
         base_dict = super().to_dict()
         base_dict.update({

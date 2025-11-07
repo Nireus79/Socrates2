@@ -45,6 +45,9 @@ class ServiceContainer:
         self._claude_client: Optional[Anthropic] = None
         self._logger_cache: dict = {}
         self._orchestrator: Optional['AgentOrchestrator'] = None
+        # For testing: allow injection of test database sessions
+        self._db_session_auth: Optional[Session] = None
+        self._db_session_specs: Optional[Session] = None
 
     def get_database_auth(self) -> Session:
         """
@@ -52,6 +55,9 @@ class ServiceContainer:
 
         IMPORTANT: Returns a NEW session each time (not cached).
         Caller must close the session when done or use in try/finally block.
+
+        For testing: If _db_session_auth is set (via dependency injection),
+        returns that session instead of creating a new one.
 
         Returns:
             SQLAlchemy session for socrates_auth database
@@ -70,6 +76,10 @@ class ServiceContainer:
             finally:
                 db.close()
         """
+        # Check if test session was injected
+        if self._db_session_auth is not None:
+            return self._db_session_auth
+
         try:
             return SessionLocalAuth()
         except Exception as e:
@@ -81,6 +91,9 @@ class ServiceContainer:
 
         IMPORTANT: Returns a NEW session each time (not cached).
         Caller must close the session when done or use in try/finally block.
+
+        For testing: If _db_session_specs is set (via dependency injection),
+        returns that session instead of creating a new one.
 
         Returns:
             SQLAlchemy session for socrates_specs database
@@ -99,6 +112,10 @@ class ServiceContainer:
             finally:
                 db.close()
         """
+        # Check if test session was injected
+        if self._db_session_specs is not None:
+            return self._db_session_specs
+
         try:
             return SessionLocalSpecs()
         except Exception as e:

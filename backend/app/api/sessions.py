@@ -322,7 +322,7 @@ def get_session(
 
     return {
         'success': True,
-        'session': session.to_dict()
+        'session': session.to_dict()  # TODO Parameter 'self' unfilled
     }
 
 
@@ -386,7 +386,7 @@ def get_session_history(
 
     return {
         'success': True,
-        'history': [h.to_dict() for h in history]
+        'history': [h.to_dict() for h in history]  # TODO Parameter 'self' unfilled
     }
 
 

@@ -16,10 +16,12 @@ down_revision = '005'
 branch_labels = None
 depends_on = None
 
+
 def _should_run():
     """Only run this migration for socrates_specs database"""
     db_url = os.getenv("DATABASE_URL", "")
     return "socrates_specs" in db_url
+
 
 def upgrade():
     if not _should_run():
@@ -72,7 +74,8 @@ def upgrade():
         ['is_current'],
         postgresql_where=sa.text('is_current = true')
     )
-    op.create_index('idx_specifications_created_at', 'specifications', ['created_at'], postgresql_using='btree', postgresql_ops={'created_at': 'DESC'})
+    op.create_index('idx_specifications_created_at', 'specifications', ['created_at'], postgresql_using='btree',
+                    postgresql_ops={'created_at': 'DESC'})
 
     # Check constraint
     op.create_check_constraint(
@@ -80,6 +83,7 @@ def upgrade():
         'specifications',
         'confidence IS NULL OR (confidence >= 0 AND confidence <= 1)'
     )
+
 
 def downgrade():
     if not _should_run():

@@ -183,8 +183,8 @@ class ExportAgent(BaseAgent):
 
         # Build JSON structure
         export_data = {
-            'project': project.to_dict(),
-            'specifications': [spec.to_dict() for spec in specs],
+            'project': project.to_dict(),  # TODO to_dict() Parameter 'self' unfilled
+            'specifications': [spec.to_dict() for spec in specs],   # TODO to_dict() Parameter 'self' unfilled
             'export_metadata': {
                 'total_specifications': len(specs),
                 'categories': list(set(spec.category for spec in specs)),

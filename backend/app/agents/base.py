@@ -8,9 +8,8 @@ Provides:
 - Statistics tracking
 """
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
 from datetime import datetime, timezone
-import logging
+from typing import Dict, Any, List
 
 from ..core.dependencies import ServiceContainer
 

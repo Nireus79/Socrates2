@@ -75,7 +75,7 @@ class ConflictDetectorAgent(BaseAgent):
 
             # Load existing specifications
             existing_specs = db.query(Specification).filter(
-                Specification.project_id == project_id
+                Specification.project_id == project_id  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             ).all()
 
             if not existing_specs:
@@ -211,7 +211,7 @@ class ConflictDetectorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load conflict
-            conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()
+            conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not conflict:
                 self.logger.warning(f"Conflict not found: {conflict_id}")
                 return {
@@ -286,7 +286,7 @@ class ConflictDetectorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Build query
-            query = db.query(Conflict).filter(Conflict.project_id == project_id)
+            query = db.query(Conflict).filter(Conflict.project_id == project_id)  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
 
             if status_filter:
                 try:
@@ -350,7 +350,7 @@ class ConflictDetectorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load conflict
-            conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()
+            conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not conflict:
                 self.logger.warning(f"Conflict not found: {conflict_id}")
                 return {
@@ -371,7 +371,7 @@ class ConflictDetectorAgent(BaseAgent):
             return {
                 'success': True,
                 'conflict': conflict.to_dict(),
-                'specifications': [s.to_dict() for s in specs]
+                'specifications': [s.to_dict() for s in specs]  # TODO Parameter 'self' unfilled
             }
 
         except Exception as e:
@@ -446,7 +446,7 @@ If no conflicts found, return:
         lines = []
         for spec in specs:
             lines.append(
-                f"- [{spec.id}] {spec.category.value}.{spec.key} = {spec.value} "
+                f"- [{spec.id}] {spec.category}: {spec.content} "
                 f"(confidence: {spec.confidence})"
             )
         return "\n".join(lines)

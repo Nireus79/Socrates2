@@ -85,7 +85,7 @@ class CodeGeneratorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load project
-            project = db.query(Project).filter(Project.id == project_id).first()
+            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
                 return {
@@ -110,7 +110,7 @@ class CodeGeneratorAgent(BaseAgent):
 
             # GATE 2: Check for unresolved conflicts
             unresolved_conflicts = db.query(Conflict).filter(
-                Conflict.project_id == project_id,
+                Conflict.project_id == project_id,  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
                 Conflict.status == ConflictStatus.OPEN
             ).count()
 
@@ -127,7 +127,7 @@ class CodeGeneratorAgent(BaseAgent):
 
             # Calculate next generation version
             last_generation = db.query(GeneratedProject).filter(
-                GeneratedProject.project_id == project_id
+                GeneratedProject.project_id == project_id  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             ).order_by(GeneratedProject.generation_version.desc()).first()
 
             next_version = (last_generation.generation_version + 1) if last_generation else 1
@@ -149,7 +149,7 @@ class CodeGeneratorAgent(BaseAgent):
 
             # Load ALL specifications
             specs = db.query(Specification).filter(
-                Specification.project_id == project_id,
+                Specification.project_id == project_id,  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
                 Specification.is_current == True
             ).all()
 
@@ -165,7 +165,7 @@ class CodeGeneratorAgent(BaseAgent):
                 }
 
             # Group specifications by category
-            grouped_specs = self._group_specs_by_category(specs)
+            grouped_specs = self._group_specs_by_category(specs)  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
 
             # Build comprehensive code generation prompt
             prompt = self._build_code_generation_prompt(project, grouped_specs)
@@ -299,7 +299,7 @@ class CodeGeneratorAgent(BaseAgent):
         try:
             db = self.services.get_database_specs()
             generation = db.query(GeneratedProject).filter(
-                GeneratedProject.id == generation_id
+                GeneratedProject.id == generation_id  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             ).first()
 
             if not generation:
@@ -355,7 +355,7 @@ class CodeGeneratorAgent(BaseAgent):
         try:
             db = self.services.get_database_specs()
             generations = db.query(GeneratedProject).filter(
-                GeneratedProject.project_id == project_id
+                GeneratedProject.project_id == project_id  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             ).order_by(GeneratedProject.generation_version.desc()).all()
 
             self.logger.debug(f"Listed {len(generations)} generations for project {project_id}")

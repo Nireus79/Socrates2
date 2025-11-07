@@ -40,7 +40,7 @@ def test_import_all_agents():
 
     try:
         from app.agents.base import BaseAgent
-        from app.agents.project import ProjectAgent
+        from app.agents.project import ProjectManagerAgent
         from app.agents.socratic import SocraticCounselorAgent
         from app.agents.context import ContextAnalyzerAgent
         from app.agents.conflict_detector import ConflictDetectorAgent
@@ -59,7 +59,7 @@ def test_agent_capabilities():
     """Test that all agents expose their capabilities correctly"""
     print("\n=== Testing Agent Capabilities ===")
 
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
     from app.agents.socratic import SocraticCounselorAgent
     from app.agents.context import ContextAnalyzerAgent
     from app.agents.conflict_detector import ConflictDetectorAgent
@@ -71,7 +71,7 @@ def test_agent_capabilities():
     mock_services = Mock()
 
     agents = [
-        ProjectAgent("project", "ProjectAgent", mock_services),
+        ProjectManagerAgent("project", "ProjectAgent", mock_services),
         SocraticCounselorAgent("socratic", "SocraticCounselorAgent", mock_services),
         ContextAnalyzerAgent("context", "ContextAnalyzerAgent", mock_services),
         ConflictDetectorAgent("conflict", "ConflictDetectorAgent", mock_services),
@@ -94,7 +94,7 @@ def test_agent_error_handling():
     """Test that agents handle errors gracefully with proper error codes"""
     print("\n=== Testing Agent Error Handling ===")
 
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
 
     # Create mock service container with mock database session
     mock_db = MagicMock()
@@ -102,13 +102,10 @@ def test_agent_error_handling():
     mock_services.get_database_specs.return_value = mock_db
     mock_services.get_database_auth.return_value = mock_db
 
-    agent = ProjectAgent("project", "ProjectAgent", mock_services)
+    agent = ProjectManagerAgent("project", "ProjectAgent", mock_services)
 
     # Test validation error
-    result = agent.execute({
-        'action': 'create_project'
-        # Missing required fields
-    })
+    result = agent.process_request('create_project', {})
 
     assert result['success'] is False, "Should return success=False for validation errors"
     assert 'error' in result, "Should return error message"
@@ -117,9 +114,7 @@ def test_agent_error_handling():
     print("✓ Validation error handling works correctly")
 
     # Test invalid action
-    result = agent.execute({
-        'action': 'invalid_action'
-    })
+    result = agent.process_request('invalid_action', {})
 
     assert result['success'] is False, "Should return success=False for invalid actions"
     print("✓ Invalid action handling works correctly")
@@ -132,12 +127,27 @@ def test_orchestrator_agent_registration():
     print("\n=== Testing Orchestrator Agent Registration ===")
 
     from app.agents.orchestrator import AgentOrchestrator
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
+    from app.agents.socratic import SocraticCounselorAgent
+    from app.agents.context import ContextAnalyzerAgent
+    from app.agents.conflict_detector import ConflictDetectorAgent
+    from app.agents.code_generator import CodeGeneratorAgent
+    from app.agents.quality_controller import QualityControllerAgent
+    from app.agents.team_collaboration import TeamCollaborationAgent
 
     # Create mock service container
     mock_services = Mock()
 
     orchestrator = AgentOrchestrator(mock_services)
+
+    # Register agents
+    orchestrator.register_agent(ProjectManagerAgent("project", "ProjectManager", mock_services))
+    orchestrator.register_agent(SocraticCounselorAgent("socratic", "SocraticCounselor", mock_services))
+    orchestrator.register_agent(ContextAnalyzerAgent("context", "ContextAnalyzer", mock_services))
+    orchestrator.register_agent(ConflictDetectorAgent("conflict", "ConflictDetector", mock_services))
+    orchestrator.register_agent(CodeGeneratorAgent("code", "CodeGenerator", mock_services))
+    orchestrator.register_agent(QualityControllerAgent("quality", "QualityController", mock_services))
+    orchestrator.register_agent(TeamCollaborationAgent("team", "TeamCollaboration", mock_services))
 
     # Verify agents are registered
     registered_agents = list(orchestrator.agents.keys())
@@ -159,7 +169,7 @@ def test_database_session_cleanup():
     """Test that database sessions are properly cleaned up in finally blocks"""
     print("\n=== Testing Database Session Cleanup ===")
 
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
 
     # Create mock database session
     mock_db = MagicMock()
@@ -170,11 +180,10 @@ def test_database_session_cleanup():
     mock_services.get_database_specs.return_value = mock_db
     mock_services.get_database_auth.return_value = mock_db
 
-    agent = ProjectAgent("project", "ProjectAgent", mock_services)
+    agent = ProjectManagerAgent("project", "ProjectAgent", mock_services)
 
     # Trigger an error by providing invalid data
-    result = agent.execute({
-        'action': 'get_project',
+    result = agent.process_request('get_project', {
         'project_id': str(uuid4())  # Non-existent project
     })
 
@@ -189,24 +198,21 @@ def test_error_logging():
     """Test that errors are logged with proper information"""
     print("\n=== Testing Error Logging ===")
 
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
 
     mock_db = MagicMock()
     mock_services = Mock()
     mock_services.get_database_specs.return_value = mock_db
     mock_services.get_database_auth.return_value = mock_db
 
-    agent = ProjectAgent("project", "ProjectAgent", mock_services)
+    agent = ProjectManagerAgent("project", "ProjectAgent", mock_services)
 
     # Agent should have a logger
     assert hasattr(agent, 'logger'), "Agent should have a logger"
 
     # Trigger a warning (validation error)
     with patch.object(agent.logger, 'warning') as mock_warning:
-        result = agent.execute({
-            'action': 'create_project'
-            # Missing required fields
-        })
+        result = agent.process_request('create_project', {})
 
         # Logger warning should have been called
         assert mock_warning.called, "Logger.warning should be called for validation errors"
@@ -216,8 +222,7 @@ def test_error_logging():
     mock_db.query.side_effect = Exception("Database error")
 
     with patch.object(agent.logger, 'error') as mock_error:
-        result = agent.execute({
-            'action': 'get_project',
+        result = agent.process_request('get_project', {
             'project_id': str(uuid4())
         })
 

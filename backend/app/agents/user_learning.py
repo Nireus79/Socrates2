@@ -344,8 +344,8 @@ class UserLearningAgent(BaseAgent):
         return {
             'success': True,
             'user_id': str(user_id),
-            'behavior_patterns': [p.to_dict() for p in patterns],
-            'question_effectiveness': [e.to_dict() for e in effectiveness],
+            'behavior_patterns': [p.to_dict() for p in patterns],  # TODO Parameter 'self' unfilled
+            'question_effectiveness': [e.to_dict() for e in effectiveness],  # TODO Parameter 'self' unfilled
             'total_questions_asked': total_questions_asked,
             'overall_response_quality': overall_quality
         }

@@ -3,7 +3,7 @@ GeneratedFile model for storing individual generated files.
 """
 from sqlalchemy import Column, String, Integer, Text, ARRAY, ForeignKey
 from sqlalchemy.orm import relationship
-from app.models.base import BaseModel
+from ..models.base import BaseModel
 
 
 class GeneratedFile(BaseModel):
@@ -24,7 +24,7 @@ class GeneratedFile(BaseModel):
     # Relationships
     generated_project = relationship("GeneratedProject", back_populates="files")
 
-    def to_dict(self):
+    def to_dict(self):  # TODO Signature of method 'GeneratedFile.to_dict()' does not match signature of the base method in class 'BaseModel'
         """Convert to dictionary."""
         base_dict = super().to_dict()
         base_dict.update({

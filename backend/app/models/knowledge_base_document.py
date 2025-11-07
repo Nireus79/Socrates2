@@ -88,7 +88,7 @@ class KnowledgeBaseDocument(Base):
     uploaded_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,
+        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
         comment="Timestamp when document was uploaded"
     )
 

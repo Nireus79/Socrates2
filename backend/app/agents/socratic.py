@@ -89,7 +89,7 @@ class SocraticCounselorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load project context
-            project = db.query(Project).filter(Project.id == project_id).first()
+            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
                 return {
@@ -99,7 +99,7 @@ class SocraticCounselorAgent(BaseAgent):
                 }
 
             # Load session
-            session = db.query(Session).filter(Session.id == session_id).first()
+            session = db.query(Session).filter(Session.id == session_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not session:
                 self.logger.warning(f"Session not found: {session_id}")
                 return {
@@ -110,24 +110,24 @@ class SocraticCounselorAgent(BaseAgent):
 
             # Load existing specifications
             existing_specs = db.query(Specification).filter(
-                Specification.project_id == project_id,
+                Specification.project_id == project_id,  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
                 Specification.is_current == True
             ).all()
 
             # Load previous questions
             previous_questions = db.query(Question).filter(
-                Question.project_id == project_id
+                Question.project_id == project_id  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             ).order_by(Question.created_at.desc()).limit(10).all()
 
             # Calculate coverage per category
-            coverage = self._calculate_coverage(existing_specs)
+            coverage = self._calculate_coverage(existing_specs)  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
 
             # Identify next category to focus on (lowest coverage)
             next_category = self._identify_next_category(coverage)
 
             # Build prompt for Claude
             prompt = self._build_question_generation_prompt(
-                project, existing_specs, previous_questions, next_category
+                project, existing_specs, previous_questions, next_category  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
             )
 
             # Call Claude API (separate from DB transaction)

@@ -430,7 +430,7 @@ class QualityControllerAgent(BaseAgent):
 
             return {
                 'success': True,
-                'metrics': [m.to_dict() for m in metrics],
+                'metrics': [m.to_dict() for m in metrics],  # TODO Parameter 'self' unfilled
                 'summary': {
                     'total_metrics': total_metrics,
                     'passed_metrics': passed_metrics,

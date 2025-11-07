@@ -363,7 +363,7 @@ class TeamCollaborationAgent(BaseAgent):
 
         return {
             'success': True,
-            'team': team.to_dict(),
+            'team': team.to_dict(),  # TODO Parameter 'self' unfilled
             'members': member_data
         }
 

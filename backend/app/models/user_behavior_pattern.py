@@ -74,15 +74,15 @@ class UserBehaviorPattern(Base):
     learned_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,
+        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
         comment="Timestamp when pattern was learned"
     )
 
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        onupdate=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
         comment="Timestamp when pattern was last updated"
     )
 
@@ -93,7 +93,7 @@ class UserBehaviorPattern(Base):
             'user_id': str(self.user_id),
             'pattern_type': self.pattern_type,
             'pattern_data': self.pattern_data,
-            'confidence': float(self.confidence),
+            'confidence': float(self.confidence),  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
             'learned_from_projects': [str(p) for p in self.learned_from_projects] if self.learned_from_projects else [],
             'learned_at': self.learned_at.isoformat(),
             'updated_at': self.updated_at.isoformat()

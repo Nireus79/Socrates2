@@ -83,7 +83,7 @@ class QualityMetric(Base):
     calculated_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,
+        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
         comment="Timestamp when metric was calculated"
     )
 
@@ -96,8 +96,8 @@ class QualityMetric(Base):
             'id': str(self.id),
             'project_id': str(self.project_id),
             'metric_type': self.metric_type,
-            'metric_value': float(self.metric_value),
-            'threshold': float(self.threshold) if self.threshold else None,
+            'metric_value': float(self.metric_value),  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
+            'threshold': float(self.threshold) if self.threshold else None,  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
             'passed': self.passed,
             'details': self.details,
             'calculated_at': self.calculated_at.isoformat()

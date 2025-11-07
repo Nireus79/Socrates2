@@ -130,7 +130,7 @@ def get_current_user(
             detail="User account is inactive"
         )
 
-    return user
+    return user  # TODO xpected type 'User', got 'Type[User]' instead
 
 
 def get_current_active_user(

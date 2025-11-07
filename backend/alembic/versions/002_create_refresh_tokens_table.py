@@ -15,10 +15,12 @@ down_revision = '001'
 branch_labels = None
 depends_on = None
 
+
 def _should_run():
     """Only run this migration for socrates_auth database"""
     db_url = os.getenv("DATABASE_URL", "")
     return "socrates_auth" in db_url
+
 
 def upgrade():
     if not _should_run():
@@ -45,6 +47,7 @@ def upgrade():
     op.create_index('idx_refresh_tokens_user_id', 'refresh_tokens', ['user_id'])
     op.create_index('idx_refresh_tokens_token', 'refresh_tokens', ['token'])
     op.create_index('idx_refresh_tokens_expires_at', 'refresh_tokens', ['expires_at'])
+
 
 def downgrade():
     if not _should_run():

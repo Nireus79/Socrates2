@@ -104,8 +104,8 @@ class QuestionEffectiveness(Base):
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        onupdate=datetime.utcnow,  # TODO datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
         comment="Timestamp when record was last updated"
     )
 
@@ -119,8 +119,8 @@ class QuestionEffectiveness(Base):
             'times_asked': self.times_asked,
             'times_answered_well': self.times_answered_well,
             'average_answer_length': self.average_answer_length,
-            'average_spec_extraction_count': float(self.average_spec_extraction_count) if self.average_spec_extraction_count else None,
-            'effectiveness_score': float(self.effectiveness_score) if self.effectiveness_score else None,
+            'average_spec_extraction_count': float(self.average_spec_extraction_count) if self.average_spec_extraction_count else None,  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
+            'effectiveness_score': float(self.effectiveness_score) if self.effectiveness_score else None,  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
             'last_asked_at': self.last_asked_at.isoformat() if self.last_asked_at else None,
             'updated_at': self.updated_at.isoformat()
         }

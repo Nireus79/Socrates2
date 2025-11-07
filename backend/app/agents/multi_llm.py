@@ -258,7 +258,7 @@ class MultiLLMManager(BaseAgent):
             provider_records = [r for r in usage_records if r.provider == provider]
             latencies = [r.latency_ms for r in provider_records if r.latency_ms]
             if latencies:
-                usage_by_provider[provider]['avg_latency_ms'] = sum(latencies) / len(latencies)
+                usage_by_provider[provider]['avg_latency_ms'] = sum(latencies) / len(latencies)  # TODO Expected type 'int', got 'float' instead
 
         return {
             'success': True,

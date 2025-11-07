@@ -84,7 +84,7 @@ class ContextAnalyzerAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load context
-            session = db.query(Session).filter(Session.id == session_id).first()
+            session = db.query(Session).filter(Session.id == session_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not session:
                 self.logger.warning(f"Session not found: {session_id}")
                 return {
@@ -93,7 +93,7 @@ class ContextAnalyzerAgent(BaseAgent):
                     'error_code': 'SESSION_NOT_FOUND'
                 }
 
-            question = db.query(Question).filter(Question.id == question_id).first()
+            question = db.query(Question).filter(Question.id == question_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not question:
                 self.logger.warning(f"Question not found: {question_id}")
                 return {
@@ -102,7 +102,7 @@ class ContextAnalyzerAgent(BaseAgent):
                     'error_code': 'QUESTION_NOT_FOUND'
                 }
 
-            project = db.query(Project).filter(Project.id == session.project_id).first()
+            project = db.query(Project).filter(Project.id == session.project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not project:
                 self.logger.warning(f"Project not found: {session.project_id}")
                 return {
@@ -113,12 +113,12 @@ class ContextAnalyzerAgent(BaseAgent):
 
             # Load existing specs
             existing_specs = db.query(Specification).filter(
-                Specification.project_id == project.id,
+                Specification.project_id == project.id,  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
                 Specification.is_current == True
             ).all()
 
             # Build extraction prompt
-            prompt = self._build_extraction_prompt(question, answer, existing_specs)
+            prompt = self._build_extraction_prompt(question, answer, existing_specs)  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
 
             # Call Claude API (separate from DB transaction)
             try:

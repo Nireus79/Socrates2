@@ -27,7 +27,7 @@ from app.models.generated_project import GeneratedProject
 from app.models.team import Team
 from app.models.team_member import TeamMember
 
-from app.agents.project import ProjectAgent
+from app.agents.project import ProjectManagerAgent
 from app.agents.socratic import SocraticCounselorAgent
 from app.agents.context import ContextAnalyzerAgent
 from app.agents.conflict_detector import ConflictDetectorAgent
@@ -88,7 +88,7 @@ class TestEndToEndUserWorkflow:
 
         # ===== STEP 1: Create Project =====
         print("\n=== STEP 1: Creating Project ===")
-        project_agent = ProjectAgent("project", "ProjectAgent", service_container)
+        project_agent = ProjectManagerAgent("project", "ProjectAgent", service_container)
 
         create_result = project_agent.execute({
             'action': 'create_project',
@@ -442,7 +442,7 @@ class TestErrorHandlingAndRecovery:
         """Test that agents handle invalid project IDs gracefully"""
         print("\n=== Testing Invalid Project ID Handling ===")
 
-        project_agent = ProjectAgent("project", "ProjectAgent", service_container)
+        project_agent = ProjectManagerAgent("project", "ProjectAgent", service_container)
 
         # Try to get non-existent project
         result = project_agent.execute({
@@ -458,7 +458,7 @@ class TestErrorHandlingAndRecovery:
         """Test that validation errors are handled correctly"""
         print("\n=== Testing Validation Error Handling ===")
 
-        project_agent = ProjectAgent("project", "ProjectAgent", service_container)
+        project_agent = ProjectManagerAgent("project", "ProjectAgent", service_container)
 
         # Try to create project without required fields
         result = project_agent.execute({
@@ -474,7 +474,7 @@ class TestErrorHandlingAndRecovery:
         """Test that database sessions are cleaned up even when errors occur"""
         print("\n=== Testing Session Cleanup on Error ===")
 
-        project_agent = ProjectAgent("project", "ProjectAgent", service_container)
+        project_agent = ProjectManagerAgent("project", "ProjectAgent", service_container)
 
         # Cause an error by providing invalid data
         result = project_agent.execute({
