@@ -26,17 +26,18 @@ class ServiceContainer:
     Design principles:
     - NO fallback returns (no {} or None)
     - Raises exceptions if dependencies missing
-    - Lazy loading (create on first use)
-    - Thread-safe (each request gets its own sessions)
+    - NO session caching (creates new session each time for thread-safety)
+    - Thread-safe (each agent call gets its own session)
 
     Used by:
     - All agents via BaseAgent.__init__()
     - API endpoints for orchestrator access
+
+    IMPORTANT: Database sessions are NOT cached. Each call to get_database_*()
+    returns a NEW session. Callers are responsible for closing sessions when done.
     """
 
     def __init__(self):
-        self._db_session_auth: Optional[Session] = None
-        self._db_session_specs: Optional[Session] = None
         self._claude_client: Optional[Anthropic] = None
         self._logger_cache: dict = {}
 
@@ -44,37 +45,59 @@ class ServiceContainer:
         """
         Get auth database session.
 
+        IMPORTANT: Returns a NEW session each time (not cached).
+        Caller must close the session when done or use in try/finally block.
+
         Returns:
             SQLAlchemy session for socrates_auth database
 
         Raises:
             Exception: If database connection fails
-        """
-        if self._db_session_auth is None:
-            try:
-                self._db_session_auth = SessionLocalAuth()
-            except Exception as e:
-                raise RuntimeError(f"Failed to create auth database session: {e}")
 
-        return self._db_session_auth
+        Example:
+            db = self.services.get_database_auth()
+            try:
+                # Use db...
+                db.commit()
+            except Exception:
+                db.rollback()
+                raise
+            finally:
+                db.close()
+        """
+        try:
+            return SessionLocalAuth()
+        except Exception as e:
+            raise RuntimeError(f"Failed to create auth database session: {e}")
 
     def get_database_specs(self) -> Session:
         """
         Get specs database session.
+
+        IMPORTANT: Returns a NEW session each time (not cached).
+        Caller must close the session when done or use in try/finally block.
 
         Returns:
             SQLAlchemy session for socrates_specs database
 
         Raises:
             Exception: If database connection fails
-        """
-        if self._db_session_specs is None:
-            try:
-                self._db_session_specs = SessionLocalSpecs()
-            except Exception as e:
-                raise RuntimeError(f"Failed to create specs database session: {e}")
 
-        return self._db_session_specs
+        Example:
+            db = self.services.get_database_specs()
+            try:
+                # Use db...
+                db.commit()
+            except Exception:
+                db.rollback()
+                raise
+            finally:
+                db.close()
+        """
+        try:
+            return SessionLocalSpecs()
+        except Exception as e:
+            raise RuntimeError(f"Failed to create specs database session: {e}")
 
     def get_logger(self, name: str) -> logging.Logger:
         """
@@ -150,15 +173,14 @@ class ServiceContainer:
     def close(self):
         """
         Clean up resources.
-        Call this when request handling is complete.
-        """
-        if self._db_session_auth:
-            self._db_session_auth.close()
-            self._db_session_auth = None
 
-        if self._db_session_specs:
-            self._db_session_specs.close()
-            self._db_session_specs = None
+        Note: Database sessions are no longer cached in ServiceContainer,
+        so this method only clears cached resources like loggers.
+        Database sessions must be closed by the code that created them.
+        """
+        # No database sessions to close (they're not cached)
+        # Just clear logger cache if needed
+        pass
 
 
 # Global singleton instance
