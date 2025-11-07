@@ -101,7 +101,15 @@ def specs_session(specs_engine):
 def mock_claude_client():
     """Create a mock Claude API client for testing"""
     from unittest.mock import Mock
-    return Mock()
+
+    mock_client = Mock()
+    # Mock the messages.create() method to return a proper response
+    mock_response = Mock()
+    mock_response.content = [Mock(text="This is a test response from Claude.")]
+    mock_response.usage = Mock(total_tokens=100)
+    mock_client.messages.create.return_value = mock_response
+
+    return mock_client
 
 
 @pytest.fixture
