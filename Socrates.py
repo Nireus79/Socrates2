@@ -1,26 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Socrates2 Interactive CLI - Main entry point for the Socrates2 project
+Socrates2 - Interactive Development Shell
+
+Automatically:
+1. Starts the FastAPI server in the background
+2. Keeps an interactive shell for testing and management
+3. Provides commands to interact with the API
 
 Usage:
-    python Socrates.py           # Start interactive shell (recommended)
-    python Socrates.py start     # Start server directly
-    python Socrates.py test      # Run tests
-    python Socrates.py help      # Show available commands
-
-The interactive shell automatically:
-1. Checks and sets up .env if needed
-2. Verifies all dependencies
-3. Checks database connections
-4. Provides a command prompt for project management
+    python Socrates.py        # Start with server running in background
 """
 
 import subprocess
 import sys
 import os
+import time
+import requests
+import json
 from pathlib import Path
-from typing import Optional
 
 # Get project root
 PROJECT_ROOT = Path(__file__).parent
@@ -29,29 +27,29 @@ BACKEND_DIR = PROJECT_ROOT / "backend"
 # Ensure backend is in path
 sys.path.insert(0, str(BACKEND_DIR))
 
+API_URL = "http://localhost:8000"
 
-class SocratesShell:
-    """Interactive shell for Socrates2 project management"""
+
+class SocratesApp:
+    """Socrates2 Development Shell with Background Server"""
 
     def __init__(self):
         self.running = True
         self.server_process = None
+        self.access_token = None
+        self.user_id = None
 
     def print_banner(self):
         """Print welcome banner"""
         print()
-        print("=" * 70)
+        print("=" * 80)
         print("  SOCRATES2 - AI-Powered Specification Assistant")
-        print("=" * 70)
-        print()
-        print("  Type 'start' to launch the API server")
-        print("  Type 'help'  to see all available commands")
+        print("=" * 80)
         print()
 
-    def check_and_setup(self):
-        """Check if setup is needed and run it"""
+    def check_setup(self):
+        """Check if setup is complete"""
         print("[*] Checking project setup...")
-        print()
 
         os.chdir(BACKEND_DIR)
 
@@ -71,12 +69,9 @@ class SocratesShell:
                     print("[ERROR] Failed to create .env file")
                     return False
             else:
-                print("[!] Setup skipped")
                 return False
-        else:
-            print("[OK] .env file exists")
 
-        # Verify dependencies
+        # Check dependencies
         print("[*] Verifying dependencies...")
         try:
             result = subprocess.run(
@@ -86,66 +81,39 @@ class SocratesShell:
                 timeout=30
             )
             if result.returncode == 0:
-                print("[OK] All dependencies installed")
+                print("[OK] All dependencies OK")
             else:
-                print("[ERROR] Some dependencies missing")
-                print(result.stdout)
+                print("[ERROR] Dependencies missing")
                 return False
         except subprocess.TimeoutExpired:
             print("[ERROR] Dependency check timed out")
             return False
 
+        # Check database connections
+        print("[*] Checking database connections...")
+        try:
+            from app.core.database import get_db_auth, get_db_specs
+            try:
+                get_db_auth()
+                print("[OK] socrates_auth: Connected")
+            except Exception as e:
+                print("[ERROR] socrates_auth: {}".format(str(e)[:50]))
+                return False
+            try:
+                get_db_specs()
+                print("[OK] socrates_specs: Connected")
+            except Exception as e:
+                print("[ERROR] socrates_specs: {}".format(str(e)[:50]))
+                return False
+        except Exception:
+            pass
+
         print()
         return True
 
-    def check_database_connections(self):
-        """Check if databases are accessible"""
-        print("[*] Checking database connections...")
-        print()
-
-        try:
-            from app.core.database import get_db_auth, get_db_specs
-
-            auth_ok = False
-            specs_ok = False
-
-            try:
-                auth_db = get_db_auth()
-                print("[OK] socrates_auth: Connected")
-                auth_ok = True
-            except Exception as e:
-                print("[ERROR] socrates_auth: {}".format(str(e)[:60]))
-
-            try:
-                specs_db = get_db_specs()
-                print("[OK] socrates_specs: Connected")
-                specs_ok = True
-            except Exception as e:
-                print("[ERROR] socrates_specs: {}".format(str(e)[:60]))
-
-            print()
-            return auth_ok and specs_ok
-
-        except Exception as e:
-            print("[ERROR] Failed to check connections: {}".format(e))
-            print()
-            return False
-
     def start_server(self):
-        """Start the FastAPI server"""
-        print()
-        print("=" * 70)
-        print("  STARTING SOCRATES2 API SERVER")
-        print("=" * 70)
-        print()
-        print("  [*] Server URL:  http://localhost:8000")
-        print("  [*] API Docs:    http://localhost:8000/docs")
-        print("  [*] Health:      http://localhost:8000/api/v1/admin/health")
-        print()
-        print("  [*] Press Ctrl+C to stop the server and return to shell")
-        print()
-        print("=" * 70)
-        print()
+        """Start the FastAPI server in background"""
+        print("[*] Starting API server in background...")
 
         os.chdir(BACKEND_DIR)
 
@@ -160,49 +128,221 @@ class SocratesShell:
         ]
 
         try:
-            self.server_process = subprocess.Popen(cmd)
-            self.server_process.wait()
-        except KeyboardInterrupt:
-            print()
-            print()
-            print("[*] Server stopped. Returning to shell...")
-            print()
+            self.server_process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            time.sleep(3)  # Wait for server to start
+
+            # Check if server is running
+            try:
+                response = requests.get(API_URL, timeout=2)
+                print("[OK] Server running at {}".format(API_URL))
+                print("[OK] API Docs:  {}/docs".format(API_URL))
+                print()
+                return True
+            except Exception:
+                print("[ERROR] Server failed to start")
+                return False
         except Exception as e:
             print("[ERROR] Failed to start server: {}".format(e))
-        finally:
+            return False
+
+    def stop_server(self):
+        """Stop the background server"""
+        if self.server_process:
+            print("[*] Stopping server...")
+            self.server_process.terminate()
+            try:
+                self.server_process.wait(timeout=5)
+                print("[OK] Server stopped")
+            except subprocess.TimeoutExpired:
+                self.server_process.kill()
+                print("[OK] Server killed")
             self.server_process = None
+        else:
+            print("[!] No server running")
+
+    def register(self, email: str, password: str):
+        """Register a new user"""
+        try:
+            response = requests.post(
+                "{}/api/v1/auth/register".format(API_URL),
+                json={"email": email, "password": password},
+                timeout=5
+            )
+            if response.status_code == 201:
+                data = response.json()
+                print("[OK] User registered: {}".format(email))
+                print("     User ID: {}".format(data.get('id')))
+                return True
+            else:
+                print("[ERROR] Registration failed: {}".format(response.text))
+                return False
+        except Exception as e:
+            print("[ERROR] {}".format(e))
+            return False
+
+    def login(self, email: str, password: str):
+        """Login user and get access token"""
+        try:
+            response = requests.post(
+                "{}/api/v1/auth/login".format(API_URL),
+                data={"username": email, "password": password},
+                timeout=5
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.access_token = data.get('access_token')
+                print("[OK] Logged in as: {}".format(email))
+                print("     Access Token: {}...".format(self.access_token[:20]))
+                return True
+            else:
+                print("[ERROR] Login failed: {}".format(response.text))
+                return False
+        except Exception as e:
+            print("[ERROR] {}".format(e))
+            return False
+
+    def get_headers(self):
+        """Get authorization headers"""
+        if self.access_token:
+            return {"Authorization": "Bearer {}".format(self.access_token)}
+        return {}
+
+    def create_project(self, name: str, description: str):
+        """Create a new project"""
+        try:
+            response = requests.post(
+                "{}/api/v1/projects".format(API_URL),
+                json={"name": name, "description": description},
+                headers=self.get_headers(),
+                timeout=5
+            )
+            if response.status_code in (200, 201):
+                data = response.json()
+                project_id = data.get('id')
+                print("[OK] Project created: {}".format(name))
+                print("     Project ID: {}".format(project_id))
+                return project_id
+            else:
+                print("[ERROR] Failed to create project: {}".format(response.text[:100]))
+                return None
+        except Exception as e:
+            print("[ERROR] {}".format(e))
+            return None
+
+    def list_projects(self):
+        """List all user projects"""
+        try:
+            response = requests.get(
+                "{}/api/v1/projects".format(API_URL),
+                headers=self.get_headers(),
+                timeout=5
+            )
+            if response.status_code == 200:
+                projects = response.json()
+                print("[OK] Your Projects:")
+                if isinstance(projects, list):
+                    for p in projects:
+                        print("     - {} (ID: {})".format(p.get('name'), p.get('id')))
+                else:
+                    print("     {}".format(projects))
+                return projects
+            else:
+                print("[ERROR] {}".format(response.text[:100]))
+                return None
+        except Exception as e:
+            print("[ERROR] {}".format(e))
+            return None
+
+    def create_session(self, project_id: str, mode: str = "socratic"):
+        """Create a session for a project"""
+        try:
+            response = requests.post(
+                "{}/api/v1/projects/{}/sessions".format(API_URL, project_id),
+                json={"mode": mode},
+                headers=self.get_headers(),
+                timeout=5
+            )
+            if response.status_code in (200, 201):
+                data = response.json()
+                session_id = data.get('id')
+                print("[OK] Session created in {} mode".format(mode))
+                print("     Session ID: {}".format(session_id))
+                return session_id
+            else:
+                print("[ERROR] Failed to create session: {}".format(response.text[:100]))
+                return None
+        except Exception as e:
+            print("[ERROR] {}".format(e))
+            return None
+
+    def send_message(self, session_id: str, message: str):
+        """Send a message in a session"""
+        try:
+            response = requests.post(
+                "{}/api/v1/sessions/{}/message".format(API_URL, session_id),
+                json={"message": message},
+                headers=self.get_headers(),
+                timeout=10
+            )
+            if response.status_code == 200:
+                data = response.json()
+                agent_response = data.get('response')
+                print()
+                print("[*] AI Response:")
+                print("    {}".format(agent_response[:200]))
+                print()
+                return agent_response
+            else:
+                print("[ERROR] {}".format(response.text[:100]))
+                return None
+        except Exception as e:
+            print("[ERROR] {}".format(e))
+            return None
 
     def print_help(self):
         """Print available commands"""
         print()
-        print("=" * 70)
+        print("=" * 80)
         print("  AVAILABLE COMMANDS")
-        print("=" * 70)
+        print("=" * 80)
         print()
-        print("  PROJECT & SERVER:")
-        print("    start              Start the API server on http://localhost:8000")
-        print("    stop               Stop a running server")
+        print("  AUTHENTICATION:")
+        print("    register EMAIL PASSWORD      - Register new user")
+        print("    login EMAIL PASSWORD         - Login user")
         print()
-        print("  TESTING:")
-        print("    test               Run all tests (144+ tests)")
-        print("    test -v            Run tests with verbose output")
-        print("    test-phase N       Run tests for phase N (e.g., test-phase 7)")
+        print("  PROJECTS:")
+        print("    projects                     - List your projects")
+        print("    project-create NAME DESC     - Create a new project")
         print()
-        print("  DATABASE:")
-        print("    migrate            Run database migrations")
-        print("    health             Check database connections and config")
+        print("  SESSIONS:")
+        print("    session-create PROJECT_ID    - Create session (socratic mode)")
+        print("    session-chat PROJECT_ID ID   - Send message to session")
         print()
-        print("  INFORMATION:")
-        print("    info               Show detailed project information")
-        print("    status             Show git status and project stats")
-        print("    docs               Show API documentation URLs")
-        print("    setup              Setup .env and verify dependencies")
+        print("  PROJECT MANAGEMENT:")
+        print("    test                         - Run all tests")
+        print("    test-phase N                 - Run phase N tests")
+        print("    health                       - Check API health")
+        print("    status                       - Show git status")
+        print()
+        print("  SERVER:")
+        print("    stop                         - Stop the API server")
         print()
         print("  OTHER:")
-        print("    help               Show this help message")
-        print("    exit / quit        Exit the shell")
+        print("    help                         - Show this help")
+        print("    exit / quit                  - Exit the shell")
         print()
-        print("=" * 70)
+        print("  QUICK START EXAMPLE:")
+        print("    1. register user@example.com password123")
+        print("    2. login user@example.com password123")
+        print("    3. project-create 'My Project' 'Test project'")
+        print("    4. session-create PROJECT_ID")
+        print("    5. session-chat SESSION_ID 'What are the main requirements?'")
+        print()
+        print("=" * 80)
         print()
 
     def handle_command(self, cmd_line: str):
@@ -210,254 +350,153 @@ class SocratesShell:
         if not cmd_line.strip():
             return
 
-        parts = cmd_line.strip().split()
+        parts = cmd_line.strip().split(None, 2)
         cmd = parts[0].lower()
         args = parts[1:] if len(parts) > 1 else []
 
-        # Server commands
-        if cmd == 'start':
-            self.start_server()
+        # Authentication
+        if cmd == 'register' and len(args) >= 2:
+            email = args[0]
+            password = args[1]
+            self.register(email, password)
 
-        elif cmd == 'stop':
-            if self.server_process:
-                print("[*] Stopping server...")
-                self.server_process.terminate()
+        elif cmd == 'login' and len(args) >= 2:
+            email = args[0]
+            password = args[1]
+            self.login(email, password)
+
+        # Projects
+        elif cmd == 'projects':
+            self.list_projects()
+
+        elif cmd == 'project-create' and args:
+            parts_full = cmd_line.strip().split(None, 1)
+            if len(parts_full) > 1:
+                remaining = parts_full[1]
+                parts_split = remaining.split(None, 1)
+                if len(parts_split) >= 2:
+                    name = parts_split[0]
+                    desc = parts_split[1]
+                    self.create_project(name, desc)
+                else:
+                    print("[ERROR] Usage: project-create NAME DESCRIPTION")
+
+        # Sessions
+        elif cmd == 'session-create' and args:
+            project_id = args[0]
+            self.create_session(project_id)
+
+        elif cmd == 'session-chat' and len(args) >= 2:
+            session_id = args[0]
+            message_parts = cmd_line.split(None, 2)
+            if len(message_parts) >= 3:
+                message = message_parts[2]
+                self.send_message(session_id, message)
             else:
-                print("[!] No server running")
+                print("[ERROR] Usage: session-chat SESSION_ID 'Your message'")
 
+        # Testing
         elif cmd == 'test':
             print()
             print("[*] Running test suite...")
-            print()
             os.chdir(BACKEND_DIR)
-            verbose = '-v' in args or '--verbose' in args
-
-            cmd_list = [sys.executable, "-m", "pytest", "tests/"]
-            if verbose:
-                cmd_list.append("-v")
-            else:
-                cmd_list.append("-q")
-
-            subprocess.run(cmd_list)
+            subprocess.run([sys.executable, "-m", "pytest", "tests/", "-q"])
             print()
 
         elif cmd == 'test-phase' and args:
             phase = args[0]
             print()
             print("[*] Running Phase {} tests...".format(phase))
-            print()
             os.chdir(BACKEND_DIR)
-
-            cmd_list = [sys.executable, "-m", "pytest",
-                       "tests/test_phase_{}_*.py".format(phase), "-v"]
-            subprocess.run(cmd_list)
+            subprocess.run([sys.executable, "-m", "pytest",
+                           "tests/test_phase_{}_*.py".format(phase), "-v"])
             print()
 
-        elif cmd == 'migrate':
-            print()
-            print("[*] Running database migrations...")
-            os.chdir(BACKEND_DIR)
-
-            response = input("[?] Run migrations? (y/n): ").strip().lower()
-            if response != 'y':
-                print("[!] Migrations skipped")
-                print()
-                return
-
-            try:
-                if sys.platform == "win32":
-                    subprocess.run(
-                        ["powershell", "-ExecutionPolicy", "Bypass", "-File",
-                         str(BACKEND_DIR / "scripts/run_migrations.ps1")],
-                        check=True
-                    )
-                else:
-                    subprocess.run(
-                        ["bash", str(BACKEND_DIR / "scripts/run_migrations.ps1")],
-                        check=True
-                    )
-                print("[OK] Migrations completed")
-            except subprocess.CalledProcessError:
-                print("[ERROR] Migration failed")
-            print()
-
+        # Health
         elif cmd == 'health':
             print()
-            print("[*] Checking Socrates2 Health...")
-            print()
-            os.chdir(BACKEND_DIR)
-
             try:
-                from app.core.config import settings
-                from app.core.database import get_db_auth, get_db_specs
-
-                print("[*] Configuration:")
-                print("    Environment: {}".format(settings.ENVIRONMENT))
-                print("    Debug Mode:  {}".format(settings.DEBUG))
-                print("    Log Level:   {}".format(settings.LOG_LEVEL))
-                print()
-
-                print("[*] Database Connections:")
-                try:
-                    auth_db = get_db_auth()
-                    print("    [OK] socrates_auth: Connected")
-                except Exception as e:
-                    print("    [ERROR] socrates_auth: {}".format(str(e)[:50]))
-
-                try:
-                    specs_db = get_db_specs()
-                    print("    [OK] socrates_specs: Connected")
-                except Exception as e:
-                    print("    [ERROR] socrates_specs: {}".format(str(e)[:50]))
-
-                print()
+                response = requests.get("{}/api/v1/admin/health".format(API_URL), timeout=2)
+                if response.status_code == 200:
+                    print("[OK] API is healthy")
+                    print(json.dumps(response.json(), indent=2))
+                else:
+                    print("[ERROR] API health check failed")
             except Exception as e:
-                print("[ERROR] {}".format(e))
-                print()
-
-        elif cmd == 'info':
-            print()
-            print("=" * 70)
-            print("  SOCRATES2 PROJECT INFORMATION")
-            print("=" * 70)
-            print()
-            print("[*] Project Details:")
-            print("    Version:         0.1.0")
-            print("    Implementation:  Phases 1-9 (Complete)")
-            print("    Status:          Active Development")
-            print("    Framework:       FastAPI (Python 3.12)")
-            print()
-            print("[*] Databases:")
-            print("    * socrates_auth:  User authentication & profiles")
-            print("    * socrates_specs: Projects, specs, conversations")
-            print()
-            print("[*] Registered Agents (12 Total):")
-            agents = [
-                "Project Manager", "Socratic Counselor", "Context Analyzer",
-                "Conflict Detector", "Code Generator", "Quality Controller",
-                "User Learning", "Direct Chat", "Team Collaboration",
-                "Export Agent", "Multi-LLM Manager", "GitHub Integration"
-            ]
-            for i, agent in enumerate(agents, 1):
-                print("    {}. {}".format(i, agent))
-            print()
-            print("[*] Test Coverage:")
-            print("    Total Tests:  144+ tests")
-            print("    Phases:       All phases (1-9)")
-            print("    Migrations:   19 database migrations")
-            print()
-            print("[*] Project Location:")
-            print("    {}".format(PROJECT_ROOT))
-            print()
-            print("=" * 70)
+                print("[ERROR] Cannot reach API: {}".format(e))
             print()
 
+        # Status
         elif cmd == 'status':
             print()
-            print("=" * 70)
-            print("  PROJECT STATUS")
-            print("=" * 70)
-            print()
             os.chdir(PROJECT_ROOT)
-
-            # Git status
-            try:
-                result = subprocess.run(
-                    ["git", "status", "--short"],
-                    capture_output=True,
-                    text=True,
-                    timeout=5
-                )
-                if result.returncode == 0:
-                    print("[*] Git Status:")
-                    if result.stdout.strip():
-                        for line in result.stdout.strip().split('\n'):
-                            print("    {}".format(line))
-                    else:
-                        print("    Clean [OK]")
-                    print()
-            except Exception:
-                pass
-
-            # Branch
-            try:
-                result = subprocess.run(
-                    ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                    capture_output=True,
-                    text=True,
-                    timeout=5
-                )
-                if result.returncode == 0:
-                    branch = result.stdout.strip()
-                    print("[*] Current Branch: {}".format(branch))
-                    print()
-            except Exception:
-                pass
-
-            print("=" * 70)
+            result = subprocess.run(
+                ["git", "status", "--short"],
+                capture_output=True,
+                text=True
+            )
+            if result.stdout.strip():
+                print("[*] Git Status:")
+                for line in result.stdout.strip().split('\n'):
+                    print("    {}".format(line))
+            else:
+                print("[OK] Working directory clean")
             print()
 
-        elif cmd == 'docs':
-            print()
-            print("=" * 70)
-            print("  API DOCUMENTATION")
-            print("=" * 70)
-            print()
-            print("[*] Start the server first:")
-            print("    Command: start")
-            print()
-            print("[*] Then open in your browser:")
-            print()
-            print("    Interactive Docs (Swagger UI):")
-            print("      http://localhost:8000/docs")
-            print()
-            print("    Alternative Docs (ReDoc):")
-            print("      http://localhost:8000/redoc")
-            print()
-            print("    OpenAPI Schema (JSON):")
-            print("      http://localhost:8000/openapi.json")
-            print()
-            print("[*] Key API Endpoints:")
-            print("    GET  /                    - API root")
-            print("    GET  /api/v1/info         - API information")
-            print("    GET  /api/v1/admin/health - Health check")
-            print("    POST /api/v1/auth/register - User registration")
-            print("    POST /api/v1/auth/login    - User login")
-            print()
-            print("=" * 70)
-            print()
+        # Server
+        elif cmd == 'stop':
+            self.stop_server()
+            self.running = False
 
-        elif cmd == 'setup':
-            print()
-            self.check_and_setup()
-
+        # Help
         elif cmd == 'help':
             self.print_help()
 
+        # Exit
         elif cmd in ('exit', 'quit'):
+            print("[*] Stopping server and exiting...")
+            self.stop_server()
             print("[*] Goodbye!")
             self.running = False
 
         else:
             print("[ERROR] Unknown command: '{}'. Type 'help' for available commands.".format(cmd))
-            print()
 
     def run(self):
         """Start the interactive shell"""
         self.print_banner()
 
-        # Auto-check setup on startup
-        if not self.check_and_setup():
-            print("[!] Setup incomplete. Exiting.")
+        # Check setup
+        if not self.check_setup():
+            print("[!] Setup failed. Exiting.")
             sys.exit(1)
 
-        # Check database connections
-        if not self.check_database_connections():
-            print("[!] Database connections failed.")
-            print("[*] Try running: migrate")
-            print()
+        # Start server
+        print()
+        if not self.start_server():
+            print("[!] Failed to start server. Exiting.")
+            sys.exit(1)
 
-        # Main interactive loop
+        # Print quick start
+        print("=" * 80)
+        print("  QUICK START")
+        print("=" * 80)
+        print()
+        print("  1. Type 'help' to see all available commands")
+        print("  2. Or open your browser: http://localhost:8000/docs")
+        print()
+        print("  Example workflow:")
+        print("    socrates> register user@test.com mypassword")
+        print("    socrates> login user@test.com mypassword")
+        print("    socrates> project-create 'My Project' 'Testing'")
+        print("    socrates> projects")
+        print("    socrates> session-create <PROJECT_ID>")
+        print("    socrates> session-chat <SESSION_ID> 'Hello, let's discuss requirements'")
+        print()
+        print("=" * 80)
+        print()
+
+        # Interactive loop
         while self.running:
             try:
                 user_input = input("socrates> ").strip()
@@ -465,55 +504,15 @@ class SocratesShell:
                     self.handle_command(user_input)
             except KeyboardInterrupt:
                 print()
-                print("[*] Type 'exit' to quit, or continue with another command")
-                print()
+                print("[*] Type 'exit' to quit")
             except EOFError:
-                print()
                 self.running = False
 
 
 def main():
     """Main entry point"""
-    # If arguments provided, run legacy CLI mode
-    if len(sys.argv) > 1:
-        # Parse command
-        cmd = sys.argv[1].lower()
-
-        if cmd == '--version':
-            print("Socrates2, version 0.1.0")
-        elif cmd == '--help':
-            print("Usage: python Socrates.py [COMMAND]")
-            print()
-            print("Without arguments, starts the interactive shell.")
-            print()
-            print("Commands:")
-            print("  start         Start API server")
-            print("  test          Run tests")
-            print("  test-phase N  Run phase tests")
-            print("  migrate       Run migrations")
-            print("  health        Check health")
-            print("  info          Show info")
-            print("  status        Show status")
-            print("  docs          Show docs")
-            print("  setup         Setup project")
-            print("  help          Show help")
-            print("  exit          Exit shell")
-        else:
-            # Start shell and execute command
-            shell = SocratesShell()
-            shell.print_banner()
-
-            if not shell.check_and_setup():
-                print("[!] Setup incomplete. Exiting.")
-                sys.exit(1)
-
-            shell.check_database_connections()
-            shell.handle_command(" ".join(sys.argv[1:]))
-            sys.exit(0)
-    else:
-        # Interactive shell mode (default)
-        shell = SocratesShell()
-        shell.run()
+    app = SocratesApp()
+    app.run()
 
 
 if __name__ == "__main__":
