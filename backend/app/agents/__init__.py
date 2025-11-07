@@ -7,6 +7,7 @@ from .project import ProjectManagerAgent
 from .socratic import SocraticCounselorAgent
 from .context import ContextAnalyzerAgent
 from .conflict_detector import ConflictDetectorAgent
+from .code_generator import CodeGeneratorAgent
 
 __all__ = [
     'BaseAgent',
@@ -17,4 +18,5 @@ __all__ = [
     'SocraticCounselorAgent',
     'ContextAnalyzerAgent',
     'ConflictDetectorAgent',
+    'CodeGeneratorAgent',
 ]
