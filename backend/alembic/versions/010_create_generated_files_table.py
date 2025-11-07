@@ -19,10 +19,10 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         'generated_files',
-        sa.Column('id', sa.String(length=36), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
-        sa.Column('generated_project_id', sa.String(length=36), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column('generated_project_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('file_path', sa.String(length=500), nullable=False),
         sa.Column('file_content', sa.Text(), nullable=True),
         sa.Column('file_size', sa.Integer(), nullable=True),

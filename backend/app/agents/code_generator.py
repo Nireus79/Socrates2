@@ -343,7 +343,7 @@ class CodeGeneratorAgent(BaseAgent):
         """Group specifications by category."""
         grouped = {}
         for spec in specs:
-            category = spec.category.value
+            category = spec.category  # Already a string, not an enum
             if category not in grouped:
                 grouped[category] = []
             grouped[category].append(spec)
