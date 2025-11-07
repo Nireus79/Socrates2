@@ -6,6 +6,45 @@
 
 ---
 
+## ⚠️ CRITICAL: Read Before Implementation
+
+**MANDATORY:** Review [CRITICAL_LESSONS_LEARNED.md](../CRITICAL_LESSONS_LEARNED.md) before starting Phase 8.
+
+**Critical Checklist for Phase 8:**
+
+### Models (teams, team_members, project_shares):
+- [ ] Inherits from BaseModel? → Include id, created_at, updated_at in migration
+- [ ] AVOID column names: metadata, query, session
+- [ ] Use team_metadata NOT just "metadata" (if storing metadata)
+- [ ] Use share_metadata NOT just "metadata" (if storing metadata)
+
+### Migrations (Phase 8 migrations):
+- [ ] **TWO DATABASES**: teams, team_members go to `socrates_auth`
+- [ ] **TWO DATABASES**: project_shares goes to `socrates_specs`
+- [ ] Add `import os` and `_should_run()` function for EACH migration
+- [ ] Check DATABASE_URL contains "socrates_auth" OR "socrates_specs" (depends on table)
+- [ ] Add check to BOTH upgrade() and downgrade()
+- [ ] Verify BaseModel columns if model inherits
+
+### Tests (test_phase_8_team_collaboration.py):
+- [ ] Use `auth_session` NOT `db_auth` (for teams, team_members)
+- [ ] Use `specs_session` NOT `db_specs` (for project_shares)
+- [ ] Use `mock_claude_client` fixture, NOT @patch decorators
+- [ ] DO NOT patch instance attributes
+
+### TeamCollaborationAgent:
+- [ ] Accept ServiceContainer in __init__
+- [ ] Store as self.services (instance attribute)
+- [ ] Get auth database via self.services.get_database_auth() (for teams)
+- [ ] Get specs database via self.services.get_database_specs() (for project_shares)
+- [ ] Get Claude client via self.services.get_claude_client()
+
+**Database:** Phase 8 uses BOTH databases:
+- `socrates_auth`: teams, team_members
+- `socrates_specs`: project_shares
+
+---
+
 ## 📋 Objectives
 
 1. Create TeamCollaborationAgent

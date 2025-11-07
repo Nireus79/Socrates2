@@ -6,6 +6,38 @@
 
 ---
 
+## ⚠️ CRITICAL: Read Before Implementation
+
+**MANDATORY:** Review [CRITICAL_LESSONS_LEARNED.md](../CRITICAL_LESSONS_LEARNED.md) before starting Phase 7.
+
+**Critical Checklist for Phase 7:**
+
+### Models (No new models - uses existing sessions, conversation_history):
+- [ ] If modifying existing models, check for reserved words: metadata, query, session
+- [ ] If adding columns, ensure BaseModel columns are in migration
+
+### Migrations (Phase 7 migrations - if any):
+- [ ] Add `import os` and `_should_run()` function
+- [ ] Check DATABASE_URL contains "socrates_specs"
+- [ ] Add check to BOTH upgrade() and downgrade()
+- [ ] Verify BaseModel columns if model inherits
+
+### Tests (test_phase_7_direct_chat.py):
+- [ ] Use `auth_session` NOT `db_auth`
+- [ ] Use `specs_session` NOT `db_specs`
+- [ ] Use `mock_claude_client` fixture, NOT @patch decorators
+- [ ] DO NOT patch instance attributes
+
+### DirectChatAgent:
+- [ ] Accept ServiceContainer in __init__
+- [ ] Store as self.services (instance attribute)
+- [ ] Get database via self.services.get_database_specs()
+- [ ] Get Claude client via self.services.get_claude_client()
+
+**Database:** Phase 7 uses existing `socrates_specs` tables (sessions, conversation_history)
+
+---
+
 ## 📋 Objectives
 
 1. Add Direct Chat Mode to sessions (toggle between Socratic and Direct Chat)
