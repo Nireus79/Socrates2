@@ -9,6 +9,9 @@ from .context import ContextAnalyzerAgent
 from .conflict_detector import ConflictDetectorAgent
 from .code_generator import CodeGeneratorAgent
 from .team_collaboration import TeamCollaborationAgent
+from .export import ExportAgent
+from .multi_llm import MultiLLMManager
+from .github_integration import GitHubIntegrationAgent
 
 __all__ = [
     'BaseAgent',
@@ -21,4 +24,7 @@ __all__ = [
     'ConflictDetectorAgent',
     'CodeGeneratorAgent',
     'TeamCollaborationAgent',
+    'ExportAgent',
+    'MultiLLMManager',
+    'GitHubIntegrationAgent',
 ]

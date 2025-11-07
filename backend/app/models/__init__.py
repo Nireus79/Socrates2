@@ -18,6 +18,8 @@ from .knowledge_base_document import KnowledgeBaseDocument
 from .team import Team
 from .team_member import TeamMember
 from .project_share import ProjectShare
+from .api_key import APIKey
+from .llm_usage_tracking import LLMUsageTracking
 
 __all__ = [
     'BaseModel',
@@ -37,4 +39,6 @@ __all__ = [
     'Team',
     'TeamMember',
     'ProjectShare',
+    'APIKey',
+    'LLMUsageTracking',
 ]
