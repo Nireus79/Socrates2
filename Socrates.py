@@ -216,8 +216,8 @@ def health():
     sys.path.insert(0, str(BACKEND_DIR))
 
     try:
-        from app.core.config import settings
-        from app.core.database import get_db_auth, get_db_specs
+        from backend.app.core.config import settings
+        from backend.app.core.database import get_db_auth, get_db_specs
 
         # Check configuration
         click.echo("[*] Configuration:")
