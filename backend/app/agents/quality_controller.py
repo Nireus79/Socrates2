@@ -294,7 +294,7 @@ class QualityControllerAgent(BaseAgent):
             }
             paths.append(greedy_path)
 
-        # Recommend lowest total cost with acceptable risk
+        # Recommend best path: prefer LOW risk, then high confidence, then lowest cost
         # Filter out high-risk paths if maturity is low
         acceptable_paths = [
             p for p in paths
@@ -304,7 +304,12 @@ class QualityControllerAgent(BaseAgent):
         if not acceptable_paths:
             acceptable_paths = paths  # Fallback to all paths
 
-        recommended = min(acceptable_paths, key=lambda p: p['total_cost_tokens'])
+        # Sort by: LOW risk paths first, then highest confidence, then lowest cost
+        recommended = min(acceptable_paths, key=lambda p: (
+            0 if p['risk'] == 'LOW' else (1 if p['risk'] == 'MEDIUM' else 2),  # Risk priority
+            -p['confidence'],  # Higher confidence is better (negative to reverse)
+            p['total_cost_tokens']  # Lower cost is better
+        ))
 
         recommendation_reason = (
             f"Based on {maturity_score}% maturity, the {recommended['name']} "

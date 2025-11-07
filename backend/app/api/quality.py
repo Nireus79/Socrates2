@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, UUID4
 from typing import Optional, Dict, List, Any
 
-from ..core.dependencies import get_current_user, get_orchestrator
-from ..agents.orchestrator import AgentOrchestrator
+from ..core.security import get_current_active_user
+from ..agents.orchestrator import get_orchestrator, AgentOrchestrator
 from ..models import User, Project
 
 router = APIRouter(prefix="/quality", tags=["quality"])
@@ -35,7 +35,7 @@ class QualityAnalysisResponse(BaseModel):
 async def get_quality_metrics(
     project_id: UUID4,
     metric_type: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     orchestrator: AgentOrchestrator = Depends(get_orchestrator)
 ):
     """
@@ -69,7 +69,7 @@ async def get_quality_metrics(
 @router.get("/project/{project_id}/analysis", response_model=QualityAnalysisResponse)
 async def get_quality_analysis(
     project_id: UUID4,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     orchestrator: AgentOrchestrator = Depends(get_orchestrator)
 ):
     """
@@ -133,7 +133,7 @@ async def get_quality_analysis(
 @router.get("/project/{project_id}/recommendations")
 async def get_quality_recommendations(
     project_id: UUID4,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     orchestrator: AgentOrchestrator = Depends(get_orchestrator)
 ):
     """

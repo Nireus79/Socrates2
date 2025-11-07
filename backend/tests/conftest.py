@@ -81,3 +81,36 @@ def mock_claude_client():
     """Create a mock Claude API client for testing"""
     from unittest.mock import Mock
     return Mock()
+
+
+@pytest.fixture
+def service_container(specs_session, auth_session, mock_claude_client):
+    """Create service container for testing."""
+    from app.core.dependencies import ServiceContainer
+
+    container = ServiceContainer()
+    container._db_session_specs = specs_session
+    container._db_session_auth = auth_session
+    container._claude_client = mock_claude_client
+    return container
+
+
+@pytest.fixture
+def test_user(auth_session):
+    """Create a test user in auth database."""
+    from app.models.user import User
+    import uuid
+
+    user = User(
+        id=uuid.uuid4(),
+        email=f"test{uuid.uuid4().hex[:8]}@example.com",
+        hashed_password=User.hash_password("testpassword123"),
+        is_active=True,
+        is_verified=True,
+        status='active',
+        role='user'
+    )
+    auth_session.add(user)
+    auth_session.commit()
+    auth_session.refresh(user)
+    return user

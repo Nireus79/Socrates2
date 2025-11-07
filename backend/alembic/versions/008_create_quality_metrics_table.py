@@ -1,7 +1,7 @@
 """create quality_metrics table
 
-Revision ID: 008
-Revises: 007
+Revision ID: 011
+Revises: 010
 Create Date: 2025-11-07
 
 """
@@ -12,8 +12,8 @@ import os
 
 
 # revision identifiers, used by Alembic.
-revision = '008'
-down_revision = '007'
+revision = '011'
+down_revision = '010'
 branch_labels = None
 depends_on = None
 
