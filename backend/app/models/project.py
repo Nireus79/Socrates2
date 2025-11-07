@@ -87,6 +87,7 @@ class Project(BaseModel):
     sessions = relationship("Session", back_populates="project", cascade="all, delete-orphan")
     questions = relationship("Question", back_populates="project", cascade="all, delete-orphan")
     specifications = relationship("Specification", back_populates="project", cascade="all, delete-orphan")
+    quality_metrics = relationship("QualityMetric", back_populates="project", cascade="all, delete-orphan")
 
     def __repr__(self):
         """String representation of project"""
