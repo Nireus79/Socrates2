@@ -10,6 +10,7 @@ Test suite for:
 import pytest
 from unittest.mock import Mock, patch
 from datetime import datetime, timezone
+import uuid
 
 from app.agents.conflict_detector import ConflictDetectorAgent
 from app.agents.context import ContextAnalyzerAgent
@@ -20,16 +21,18 @@ from app.models.conflict import Conflict, ConflictType, ConflictSeverity, Confli
 from app.models.specification import Specification
 from app.models.project import Project
 from app.models.session import Session
-from app.models.question import Question, QuestionCategory
+from app.models.question import Question
 from app.core.dependencies import ServiceContainer
 
 
 @pytest.fixture
-def service_container(db_specs_session, db_auth_session, mock_claude_client):
+def service_container(specs_session, auth_session):
     """Create service container for testing."""
+    from unittest.mock import Mock
     container = ServiceContainer()
-    container._db_session_specs = db_specs_session
-    container._db_session_auth = db_auth_session
+    container._db_session_specs = specs_session
+    container._db_session_auth = auth_session
+    mock_claude_client = Mock()
     container._claude_client = mock_claude_client
     return container
 
@@ -41,46 +44,47 @@ def conflict_agent(service_container):
 
 
 @pytest.fixture
-def test_project(db_specs_session):
+def test_project(specs_session):
     """Create a test project."""
     project = Project(
-        user_id="test-user-id",
+        user_id=uuid.uuid4(),
         name="Test Project",
         description="Test description",
         maturity_score=0.0
     )
-    db_specs_session.add(project)
-    db_specs_session.commit()
-    db_specs_session.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
     return project
 
 
 @pytest.fixture
-def test_session(db_specs_session, test_project):
+def test_session(specs_session, test_project):
     """Create a test session."""
     session = Session(
         project_id=test_project.id,
-        mode="socratic"
+        mode="socratic",
+        started_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add(session)
-    db_specs_session.commit()
-    db_specs_session.refresh(session)
+    specs_session.add(session)
+    specs_session.commit()
+    specs_session.refresh(session)
     return session
 
 
 @pytest.fixture
-def test_question(db_specs_session, test_project, test_session):
+def test_question(specs_session, test_project, test_session):
     """Create a test question."""
     question = Question(
         project_id=test_project.id,
         session_id=test_session.id,
         text="What database do you want to use?",
-        category=QuestionCategory.TECH_STACK,
+        category="tech_stack",
         quality_score=1.0
     )
-    db_specs_session.add(question)
-    db_specs_session.commit()
-    db_specs_session.refresh(question)
+    specs_session.add(question)
+    specs_session.commit()
+    specs_session.refresh(question)
     return question
 
 
@@ -127,26 +131,26 @@ def test_detect_conflicts_no_existing_specs(conflict_agent, test_project):
 
 
 @patch('anthropic.Anthropic')
-def test_detect_conflicts_with_contradiction(mock_anthropic, conflict_agent, test_project, db_specs_session):
+def test_detect_conflicts_with_contradiction(mock_anthropic, conflict_agent, test_project, test_session, specs_session):
     """Test conflict detection when specs contradict."""
     # Create existing spec
     existing_spec = Specification(
         project_id=test_project.id,
-        session_id="session-id",
-        category=QuestionCategory.TECH_STACK,
+        session_id=test_session.id,
+        category="tech_stack",
         content="Use PostgreSQL as primary database",
         source='extracted',
         confidence=0.9,
         is_current=True
     )
-    db_specs_session.add(existing_spec)
-    db_specs_session.commit()
-    db_specs_session.refresh(existing_spec)
+    specs_session.add(existing_spec)
+    specs_session.commit()
+    specs_session.refresh(existing_spec)
 
     # Mock Claude response indicating conflict
     mock_response = Mock()
     mock_response.content = [
-        Mock(text='{"conflicts_detected": true, "conflicts": [{"type": "technology", "description": "Conflicting database choices: PostgreSQL vs MySQL", "severity": "high", "spec_ids": ["' + existing_spec.id + '"], "reasoning": "Cannot use both databases"}]}')
+        Mock(text='{"conflicts_detected": true, "conflicts": [{"type": "technology", "description": "Conflicting database choices: PostgreSQL vs MySQL", "severity": "high", "spec_ids": ["' + str(existing_spec.id) + '"], "reasoning": "Cannot use both databases"}]}')
     ]
     conflict_agent.services.get_claude_client().messages.create.return_value = mock_response
 
@@ -172,7 +176,7 @@ def test_detect_conflicts_with_contradiction(mock_anthropic, conflict_agent, tes
     assert result['safe_to_save'] is False
 
     # Verify conflict was saved to database
-    conflict = db_specs_session.query(Conflict).filter(
+    conflict = specs_session.query(Conflict).filter(
         Conflict.project_id == test_project.id
     ).first()
     assert conflict is not None
@@ -191,7 +195,7 @@ def test_detect_conflicts_validation_error(conflict_agent):
 # ==================== Conflict Resolution Tests ====================
 
 
-def test_resolve_conflict_keep_old(conflict_agent, test_project, db_specs_session):
+def test_resolve_conflict_keep_old(conflict_agent, test_project, specs_session):
     """Test resolving conflict by keeping old specification."""
     # Create a conflict
     conflict = Conflict(
@@ -203,9 +207,9 @@ def test_resolve_conflict_keep_old(conflict_agent, test_project, db_specs_sessio
         status=ConflictStatus.OPEN,
         detected_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add(conflict)
-    db_specs_session.commit()
-    db_specs_session.refresh(conflict)
+    specs_session.add(conflict)
+    specs_session.commit()
+    specs_session.refresh(conflict)
 
     # Resolve conflict
     result = conflict_agent.process_request('resolve_conflict', {
@@ -219,13 +223,13 @@ def test_resolve_conflict_keep_old(conflict_agent, test_project, db_specs_sessio
     assert 'keep_old' in result['conflict']['resolution']
 
     # Verify in database
-    db_specs_session.refresh(conflict)
+    specs_session.refresh(conflict)
     assert conflict.status == ConflictStatus.RESOLVED
     assert conflict.resolved_at is not None
     assert conflict.resolved_by_user is True
 
 
-def test_resolve_conflict_ignore(conflict_agent, test_project, db_specs_session):
+def test_resolve_conflict_ignore(conflict_agent, test_project, specs_session):
     """Test resolving conflict by ignoring it."""
     # Create a conflict
     conflict = Conflict(
@@ -237,9 +241,9 @@ def test_resolve_conflict_ignore(conflict_agent, test_project, db_specs_session)
         status=ConflictStatus.OPEN,
         detected_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add(conflict)
-    db_specs_session.commit()
-    db_specs_session.refresh(conflict)
+    specs_session.add(conflict)
+    specs_session.commit()
+    specs_session.refresh(conflict)
 
     # Resolve by ignoring
     result = conflict_agent.process_request('resolve_conflict', {
@@ -251,11 +255,11 @@ def test_resolve_conflict_ignore(conflict_agent, test_project, db_specs_session)
     assert result['conflict']['status'] == 'ignored'
 
     # Verify in database
-    db_specs_session.refresh(conflict)
+    specs_session.refresh(conflict)
     assert conflict.status == ConflictStatus.IGNORED
 
 
-def test_resolve_conflict_invalid_resolution(conflict_agent, test_project, db_specs_session):
+def test_resolve_conflict_invalid_resolution(conflict_agent, test_project, specs_session):
     """Test resolve_conflict rejects invalid resolution type."""
     # Create a conflict
     conflict = Conflict(
@@ -267,9 +271,9 @@ def test_resolve_conflict_invalid_resolution(conflict_agent, test_project, db_sp
         status=ConflictStatus.OPEN,
         detected_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add(conflict)
-    db_specs_session.commit()
-    db_specs_session.refresh(conflict)
+    specs_session.add(conflict)
+    specs_session.commit()
+    specs_session.refresh(conflict)
 
     # Try invalid resolution
     result = conflict_agent.process_request('resolve_conflict', {
@@ -295,7 +299,7 @@ def test_resolve_conflict_not_found(conflict_agent):
 # ==================== List Conflicts Tests ====================
 
 
-def test_list_conflicts(conflict_agent, test_project, db_specs_session):
+def test_list_conflicts(conflict_agent, test_project, specs_session):
     """Test listing conflicts for a project."""
     # Create multiple conflicts
     conflict1 = Conflict(
@@ -317,8 +321,8 @@ def test_list_conflicts(conflict_agent, test_project, db_specs_session):
         detected_at=datetime.now(timezone.utc),
         resolved_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add_all([conflict1, conflict2])
-    db_specs_session.commit()
+    specs_session.add_all([conflict1, conflict2])
+    specs_session.commit()
 
     # List all conflicts
     result = conflict_agent.process_request('list_conflicts', {
@@ -330,7 +334,7 @@ def test_list_conflicts(conflict_agent, test_project, db_specs_session):
     assert len(result['conflicts']) == 2
 
 
-def test_list_conflicts_filtered_by_status(conflict_agent, test_project, db_specs_session):
+def test_list_conflicts_filtered_by_status(conflict_agent, test_project, specs_session):
     """Test listing conflicts filtered by status."""
     # Create conflicts with different statuses
     conflict1 = Conflict(
@@ -352,8 +356,8 @@ def test_list_conflicts_filtered_by_status(conflict_agent, test_project, db_spec
         detected_at=datetime.now(timezone.utc),
         resolved_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add_all([conflict1, conflict2])
-    db_specs_session.commit()
+    specs_session.add_all([conflict1, conflict2])
+    specs_session.commit()
 
     # List only open conflicts
     result = conflict_agent.process_request('list_conflicts', {
@@ -369,34 +373,34 @@ def test_list_conflicts_filtered_by_status(conflict_agent, test_project, db_spec
 # ==================== Get Conflict Details Tests ====================
 
 
-def test_get_conflict_details(conflict_agent, test_project, db_specs_session):
+def test_get_conflict_details(conflict_agent, test_project, test_session, specs_session):
     """Test getting detailed conflict information."""
     # Create a conflict with related specs
     spec1 = Specification(
         project_id=test_project.id,
-        session_id="session-1",
-        category=QuestionCategory.TECH_STACK,
+        session_id=test_session.id,
+        category="tech_stack",
         content="Use PostgreSQL",
         source='extracted',
         confidence=0.9,
         is_current=True
     )
-    db_specs_session.add(spec1)
-    db_specs_session.commit()
-    db_specs_session.refresh(spec1)
+    specs_session.add(spec1)
+    specs_session.commit()
+    specs_session.refresh(spec1)
 
     conflict = Conflict(
         project_id=test_project.id,
         type=ConflictType.TECHNOLOGY,
         description="Database conflict",
-        spec_ids=[spec1.id],
+        spec_ids=[str(spec1.id)],
         severity=ConflictSeverity.HIGH,
         status=ConflictStatus.OPEN,
         detected_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add(conflict)
-    db_specs_session.commit()
-    db_specs_session.refresh(conflict)
+    specs_session.add(conflict)
+    specs_session.commit()
+    specs_session.refresh(conflict)
 
     # Get details
     result = conflict_agent.process_request('get_conflict_details', {
@@ -404,9 +408,9 @@ def test_get_conflict_details(conflict_agent, test_project, db_specs_session):
     })
 
     assert result['success'] is True
-    assert result['conflict']['id'] == conflict.id
+    assert result['conflict']['id'] == str(conflict.id)
     assert len(result['specifications']) == 1
-    assert result['specifications'][0]['id'] == spec1.id
+    assert result['specifications'][0]['id'] == str(spec1.id)
 
 
 # ==================== Integration Tests ====================
@@ -419,24 +423,24 @@ def test_context_analyzer_blocks_on_conflict(
     test_project,
     test_session,
     test_question,
-    db_specs_session
+    specs_session
 ):
     """Test ContextAnalyzerAgent blocks saving when conflicts detected."""
     # Create existing spec
     existing_spec = Specification(
         project_id=test_project.id,
         session_id=test_session.id,
-        category=QuestionCategory.TECH_STACK,
+        category="tech_stack",
         content="Use PostgreSQL",
         source='extracted',
         confidence=0.9,
         is_current=True
     )
-    db_specs_session.add(existing_spec)
-    db_specs_session.commit()
+    specs_session.add(existing_spec)
+    specs_session.commit()
 
-    # Setup orchestrator with agents
-    orchestrator = AgentOrchestrator(service_container)
+    # Setup orchestrator with agents (get the one from service_container to ensure consistency)
+    orchestrator = service_container.get_orchestrator()
     context_agent = ContextAnalyzerAgent("context", "Context Analyzer", service_container)
     conflict_agent = ConflictDetectorAgent("conflict", "Conflict Detector", service_container)
     orchestrator.register_agent(context_agent)
@@ -452,7 +456,7 @@ def test_context_analyzer_blocks_on_conflict(
     # Second response: detect conflict
     conflict_response = Mock()
     conflict_response.content = [
-        Mock(text='{"conflicts_detected": true, "conflicts": [{"type": "technology", "description": "Database conflict: PostgreSQL vs MySQL", "severity": "high", "spec_ids": ["' + existing_spec.id + '"], "reasoning": "Cannot use both"}]}')
+        Mock(text='{"conflicts_detected": true, "conflicts": [{"type": "technology", "description": "Database conflict: PostgreSQL vs MySQL", "severity": "high", "spec_ids": ["' + str(existing_spec.id) + '"], "reasoning": "Cannot use both"}]}')
     ]
 
     service_container.get_claude_client().messages.create.side_effect = [
@@ -473,13 +477,13 @@ def test_context_analyzer_blocks_on_conflict(
     assert len(result['conflicts']) > 0
 
     # Verify no specs were saved
-    spec_count = db_specs_session.query(Specification).filter(
+    spec_count = specs_session.query(Specification).filter(
         Specification.content.like('%MySQL%')
     ).count()
     assert spec_count == 0
 
     # Verify conflict was saved
-    conflict_count = db_specs_session.query(Conflict).filter(
+    conflict_count = specs_session.query(Conflict).filter(
         Conflict.project_id == test_project.id
     ).count()
     assert conflict_count > 0
@@ -492,11 +496,11 @@ def test_context_analyzer_saves_when_no_conflict(
     test_project,
     test_session,
     test_question,
-    db_specs_session
+    specs_session
 ):
     """Test ContextAnalyzerAgent saves specs when no conflicts."""
-    # Setup orchestrator with agents
-    orchestrator = AgentOrchestrator(service_container)
+    # Setup orchestrator with agents (get the one from service_container to ensure consistency)
+    orchestrator = service_container.get_orchestrator()
     context_agent = ContextAnalyzerAgent("context", "Context Analyzer", service_container)
     conflict_agent = ConflictDetectorAgent("conflict", "Conflict Detector", service_container)
     orchestrator.register_agent(context_agent)
@@ -532,7 +536,7 @@ def test_context_analyzer_saves_when_no_conflict(
     assert result['specs_extracted'] > 0
 
     # Verify specs were saved
-    spec_count = db_specs_session.query(Specification).filter(
+    spec_count = specs_session.query(Specification).filter(
         Specification.content.like('%PostgreSQL%')
     ).count()
     assert spec_count > 0

@@ -17,15 +17,15 @@ from fastapi.testclient import TestClient
 from jose import jwt
 import uuid
 
-from backend.app.core.config import settings
-from backend.app.core.database import get_db_auth, get_db_specs, Base, engine_auth, engine_specs
-from backend.app.core.security import create_access_token, decode_access_token
-from backend.app.core.dependencies import ServiceContainer, reset_service_container
-from backend.app.models.base import BaseModel
-from backend.app.models.user import User
-from backend.app.agents.base import BaseAgent
-from backend.app.agents.orchestrator import AgentOrchestrator, reset_orchestrator
-from backend.app.main import app
+from app.core.config import settings
+from app.core.database import get_db_auth, get_db_specs, Base, engine_auth, engine_specs
+from app.core.security import create_access_token, decode_access_token
+from app.core.dependencies import ServiceContainer, reset_service_container
+from app.models.base import BaseModel
+from app.models.user import User
+from app.agents.base import BaseAgent
+from app.agents.orchestrator import AgentOrchestrator, reset_orchestrator
+from app.main import app
 
 
 # Test client for API endpoints

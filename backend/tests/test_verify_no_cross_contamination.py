@@ -51,10 +51,11 @@ class TestNoCrossContamination:
         inspector = inspect(engine)
         tables = set(inspector.get_table_names())
 
-        # Expected tables in socrates_specs (Phase 1 + Phase 2)
+        # Expected tables in socrates_specs (Phase 1 + Phase 2 + Phase 3)
         expected_tables = {
             "projects", "sessions",  # Phase 1
             "questions", "specifications", "conversation_history",  # Phase 2
+            "conflicts",  # Phase 3
             "alembic_version"
         }
 

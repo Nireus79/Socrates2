@@ -152,6 +152,8 @@ class ConflictDetectorAgent(BaseAgent):
         Returns:
             {'success': bool, 'conflict': dict}
         """
+        import uuid
+
         conflict_id = data.get('conflict_id')
         resolution = data.get('resolution')
         resolution_notes = data.get('resolution_notes', '')
@@ -161,6 +163,16 @@ class ConflictDetectorAgent(BaseAgent):
                 'success': False,
                 'error': 'conflict_id and resolution are required',
                 'error_code': 'VALIDATION_ERROR'
+            }
+
+        # Validate conflict_id is a valid UUID
+        try:
+            conflict_uuid = uuid.UUID(conflict_id) if isinstance(conflict_id, str) else conflict_id
+        except (ValueError, AttributeError):
+            return {
+                'success': False,
+                'error': f'Invalid conflict_id format: {conflict_id}',
+                'error_code': 'CONFLICT_NOT_FOUND'
             }
 
         valid_resolutions = ['keep_old', 'replace', 'merge', 'ignore']
@@ -175,7 +187,7 @@ class ConflictDetectorAgent(BaseAgent):
         db = self.services.get_database_specs()
 
         # Load conflict
-        conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()
+        conflict = db.query(Conflict).filter(Conflict.id == conflict_uuid).first()
         if not conflict:
             return {
                 'success': False,
@@ -355,7 +367,7 @@ If no conflicts found, return:
         lines = []
         for spec in specs:
             lines.append(
-                f"- [{spec.id}] {spec.category.value}.{spec.key} = {spec.value} "
-                f"(confidence: {spec.confidence})"
+                f"- [{spec.id}] {spec.category}: {spec.content} "
+                f"(confidence: {spec.confidence}, source: {spec.source})"
             )
         return "\n".join(lines)

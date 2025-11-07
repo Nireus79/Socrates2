@@ -6,17 +6,21 @@ Provides centralized access to:
 - Logging
 - Configuration
 - Claude API client
+- Agent Orchestrator
 
 ⚠️  NO FALLBACKS - All dependencies are REQUIRED.
 Missing dependencies raise clear errors instead of returning None.
 """
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 import logging
 from anthropic import Anthropic
 from sqlalchemy.orm import Session
 
 from .config import settings
 from .database import SessionLocalAuth, SessionLocalSpecs
+
+if TYPE_CHECKING:
+    from ..agents.orchestrator import AgentOrchestrator
 
 
 class ServiceContainer:
@@ -39,6 +43,7 @@ class ServiceContainer:
         self._db_session_specs: Optional[Session] = None
         self._claude_client: Optional[Anthropic] = None
         self._logger_cache: dict = {}
+        self._orchestrator: Optional['AgentOrchestrator'] = None
 
     def get_database_auth(self) -> Session:
         """
@@ -146,6 +151,25 @@ class ServiceContainer:
                 raise RuntimeError(f"Failed to create Claude API client: {e}")
 
         return self._claude_client
+
+    def get_orchestrator(self) -> 'AgentOrchestrator':
+        """
+        Get Agent Orchestrator instance.
+
+        Returns:
+            AgentOrchestrator instance
+
+        Raises:
+            RuntimeError: If orchestrator creation fails
+        """
+        if self._orchestrator is None:
+            try:
+                from ..agents.orchestrator import AgentOrchestrator
+                self._orchestrator = AgentOrchestrator(self)
+            except Exception as e:
+                raise RuntimeError(f"Failed to create orchestrator: {e}")
+
+        return self._orchestrator
 
     def close(self):
         """

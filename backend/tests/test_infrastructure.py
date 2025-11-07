@@ -223,10 +223,9 @@ class TestMigrationState:
             result = conn.execute(text("SELECT version_num FROM alembic_version"))
             version = result.scalar()
 
-            # Should be at migration 004 (all migrations run)
-            # Minimum version 002 (users + refresh_tokens created)
-            assert version in ["002", "003", "004"], \
-                f"Expected migration 002-004, got {version}"
+            # Should be at migration 007 (Phase 1: 001-004, Phase 2: 005-007)
+            assert version == "007", \
+                f"Expected migration 007, got {version}"
 
         engine.dispose()
 
@@ -238,8 +237,8 @@ class TestMigrationState:
             result = conn.execute(text("SELECT version_num FROM alembic_version"))
             version = result.scalar()
 
-            # Should be at migration 007 (Phase 1: 001-004, Phase 2: 005-007)
-            assert version == "007", f"Expected migration 007, got {version}"
+            # Should be at migration 008 (Phase 1: 001-004, Phase 2: 005-007, Phase 3: 008)
+            assert version == "008", f"Expected migration 008, got {version}"
 
         engine.dispose()
 
