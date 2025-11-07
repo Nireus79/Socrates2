@@ -11,7 +11,7 @@ import logging
 
 from .core.config import settings
 from .core.database import close_db_connections
-from .api import auth, admin, conflicts, code_generation, quality, sessions, teams
+from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
 from .api import export_endpoints, llm_endpoints, github_endpoints
 
 # Configure logging
@@ -111,6 +111,8 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(projects.router)
+app.include_router(sessions.router)
 app.include_router(conflicts.router)
 app.include_router(code_generation.router)
 app.include_router(quality.router)
