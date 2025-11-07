@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - Authentication Database
+  postgres-auth:
+    image: postgres:17
+    container_name: socrates-postgres-auth
+    environment:
+      POSTGRES_DB: socrates_auth
+      POSTGRES_USER: ${AUTH_DB_USER:-socrates_auth_user}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:?AUTH_DB_PASSWORD must be set}
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql/data
+    networks:
+      - socrates-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USER:-socrates_auth_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # PostgreSQL - Specifications Database
+  postgres-specs:
+    image: postgres:17
+    container_name: socrates-postgres-specs
+    environment:
+      POSTGRES_DB: socrates_specs
+      POSTGRES_USER: ${SPECS_DB_USER:-socrates_specs_user}
+      POSTGRES_PASSWORD: ${SPECS_DB_PASSWORD:?SPECS_DB_PASSWORD must be set}
+    volumes:
+      - postgres-specs-data:/var/lib/postgresql/data
+    networks:
+      - socrates-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SPECS_DB_USER:-socrates_specs_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis - Caching and Session Storage
+  redis:
+    image: redis:7-alpine
+    container_name: socrates-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - socrates-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Socrates API Application
+  socrates-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: socrates-api
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      # Database URLs
+      - DATABASE_URL_AUTH=postgresql://${AUTH_DB_USER:-socrates_auth_user}:${AUTH_DB_PASSWORD}@postgres-auth:5432/socrates_auth
+      - DATABASE_URL_SPECS=postgresql://${SPECS_DB_USER:-socrates_specs_user}:${SPECS_DB_PASSWORD}@postgres-specs:5432/socrates_specs
+
+      # Security
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY must be set}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+      # LLM API
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY must be set}
+
+      # Application
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DEBUG=${DEBUG:-False}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+      # CORS
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+
+      # Redis (for future caching)
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+      postgres-specs:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - socrates-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/admin/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Database Migration Runner (runs once on startup)
+  migration-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: socrates-migrations
+    environment:
+      # Auth database for migrations
+      - DATABASE_URL=postgresql://${AUTH_DB_USER:-socrates_auth_user}:${AUTH_DB_PASSWORD}@postgres-auth:5432/socrates_auth
+    command: >
+      sh -c "
+        echo 'Running migrations for socrates_auth...' &&
+        cd backend &&
+        python -m alembic upgrade head &&
+        echo 'Auth database migrations complete!'
+      "
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+    networks:
+      - socrates-network
+    restart: "no"
+
+  # Specs Database Migration Runner
+  migration-runner-specs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: socrates-migrations-specs
+    environment:
+      # Specs database for migrations
+      - DATABASE_URL=postgresql://${SPECS_DB_USER:-socrates_specs_user}:${SPECS_DB_PASSWORD}@postgres-specs:5432/socrates_specs
+    command: >
+      sh -c "
+        echo 'Running migrations for socrates_specs...' &&
+        cd backend &&
+        python -m alembic upgrade head &&
+        echo 'Specs database migrations complete!'
+      "
+    depends_on:
+      postgres-specs:
+        condition: service_healthy
+    networks:
+      - socrates-network
+    restart: "no"
+
+volumes:
+  postgres-auth-data:
+    driver: local
+  postgres-specs-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  socrates-network:
+    driver: bridge
