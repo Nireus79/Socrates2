@@ -12,6 +12,7 @@ import logging
 from .core.config import settings
 from .core.database import close_db_connections
 from .api import auth, admin, conflicts, code_generation, quality, teams
+from .api import export_endpoints, llm_endpoints, github_endpoints
 
 # Configure logging
 logging.basicConfig(
@@ -41,6 +42,9 @@ async def lifespan(app: FastAPI):
     from .agents.code_generator import CodeGeneratorAgent
     from .agents.quality_controller import QualityControllerAgent
     from .agents.team_collaboration import TeamCollaborationAgent
+    from .agents.export import ExportAgent
+    from .agents.multi_llm import MultiLLMManager
+    from .agents.github_integration import GitHubIntegrationAgent
     from .core.dependencies import get_service_container
 
     orchestrator = get_orchestrator()
@@ -53,6 +57,9 @@ async def lifespan(app: FastAPI):
     conflict_agent = ConflictDetectorAgent("conflict", "Conflict Detector", services)
     code_gen_agent = CodeGeneratorAgent("code_generator", "Code Generator", services)
     team_agent = TeamCollaborationAgent("team", "Team Collaboration", services)
+    export_agent = ExportAgent("export", "Export Agent", services)
+    llm_agent = MultiLLMManager("llm", "Multi-LLM Manager", services)
+    github_agent = GitHubIntegrationAgent("github", "GitHub Integration", services)
     quality_agent = QualityControllerAgent("quality", "Quality Controller", services)
 
     orchestrator.register_agent(pm_agent)
@@ -61,6 +68,9 @@ async def lifespan(app: FastAPI):
     orchestrator.register_agent(conflict_agent)
     orchestrator.register_agent(code_gen_agent)
     orchestrator.register_agent(team_agent)
+    orchestrator.register_agent(export_agent)
+    orchestrator.register_agent(llm_agent)
+    orchestrator.register_agent(github_agent)
     orchestrator.register_agent(quality_agent)  # Register quality agent LAST to enable gates
 
     logger.info("AgentOrchestrator initialized")
@@ -100,6 +110,9 @@ app.include_router(code_generation.router)
 app.include_router(quality.router)
 app.include_router(teams.router)
 app.include_router(teams.projects_router)
+app.include_router(export_endpoints.router)
+app.include_router(llm_endpoints.router)
+app.include_router(github_endpoints.router)
 
 
 @app.get("/")
