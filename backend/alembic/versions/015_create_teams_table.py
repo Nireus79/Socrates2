@@ -19,9 +19,9 @@ depends_on = None
 
 
 def _should_run():
-    """Only run this migration for socrates_auth database"""
+    """Only run this migration for socrates_specs database"""
     db_url = os.getenv("DATABASE_URL", "")
-    return "socrates_auth" in db_url
+    return "socrates_specs" in db_url
 
 
 def upgrade():
