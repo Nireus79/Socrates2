@@ -12,6 +12,9 @@ from .conflict import Conflict
 from .generated_project import GeneratedProject
 from .generated_file import GeneratedFile
 from .quality_metric import QualityMetric
+from .team import Team
+from .team_member import TeamMember
+from .project_share import ProjectShare
 
 __all__ = [
     'BaseModel',
@@ -25,4 +28,7 @@ __all__ = [
     'GeneratedProject',
     'GeneratedFile',
     'QualityMetric',
+    'Team',
+    'TeamMember',
+    'ProjectShare',
 ]
