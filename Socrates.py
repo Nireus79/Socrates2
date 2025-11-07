@@ -111,21 +111,21 @@ class SocratesAPI:
             self.console.print(f"[red]Request error: {e}[/red]")
             raise
 
-    def register(self, email: str, password: str, full_name: str) -> Dict[str, Any]:
+    def register(self, email: str, password: str) -> Dict[str, Any]:
         """Register new user"""
         response = self._request("POST", "/api/v1/auth/register", json={
             "email": email,
-            "password": password,
-            "full_name": full_name
+            "password": password
         })
         return response.json()
 
     def login(self, email: str, password: str) -> Dict[str, Any]:
         """Login user and return tokens"""
-        response = self._request("POST", "/api/v1/auth/login", json={
-            "email": email,
+        # OAuth2PasswordRequestForm expects form data, not JSON
+        response = self._request("POST", "/api/v1/auth/login", data={
+            "username": email,  # OAuth2 uses 'username' field
             "password": password
-        })
+        }, headers={"Content-Type": "application/x-www-form-urlencoded"})
         return response.json()
 
     def logout(self) -> Dict[str, Any]:
@@ -333,7 +333,6 @@ No session required.
         self.console.print("\n[bold cyan]Register New Account[/bold cyan]\n")
 
         email = Prompt.ask("Email")
-        full_name = Prompt.ask("Full name")
         password = Prompt.ask("Password", password=True)
         password_confirm = Prompt.ask("Confirm password", password=True)
 
@@ -345,11 +344,13 @@ No session required.
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
                          console=self.console, transient=True) as progress:
                 progress.add_task("Creating account...", total=None)
-                result = self.api.register(email, password, full_name)
+                result = self.api.register(email, password)
 
-            if result.get("success"):
+            # Backend returns user_id on success (no "success" field)
+            if result.get("user_id"):
                 self.console.print(f"[green]✓ Account created successfully![/green]")
                 self.console.print(f"[dim]User ID: {result.get('user_id')}[/dim]")
+                self.console.print(f"[dim]Email: {result.get('email')}[/dim]")
                 self.console.print("\n[yellow]Please login with /login[/yellow]")
             else:
                 self.console.print(f"[red]✗ Registration failed: {result.get('message', 'Unknown error')}[/red]")
