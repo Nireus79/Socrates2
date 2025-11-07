@@ -20,7 +20,7 @@ client = TestClient(app)
 def test_create_project(test_user):
     """Test POST /api/v1/projects - Create a new project"""
     # Create access token
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     response = client.post(
         "/api/v1/projects",
@@ -57,7 +57,7 @@ def test_create_project_unauthorized():
 
 def test_create_project_validation(test_user):
     """Test validation when creating project"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Missing name
     response = client.post(
@@ -73,7 +73,7 @@ def test_create_project_validation(test_user):
 
 def test_list_projects(test_user):
     """Test GET /api/v1/projects - List user's projects"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create a project first
     client.post(
@@ -103,7 +103,7 @@ def test_list_projects(test_user):
 
 def test_list_projects_pagination(test_user):
     """Test pagination in list projects"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create multiple projects
     for i in range(3):
@@ -129,7 +129,7 @@ def test_list_projects_pagination(test_user):
 
 def test_get_project(test_user):
     """Test GET /api/v1/projects/{id} - Get project details"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project
     create_response = client.post(
@@ -156,7 +156,7 @@ def test_get_project(test_user):
 
 def test_get_nonexistent_project(test_user):
     """Test getting a project that doesn't exist"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Random UUID that doesn't exist
     from uuid import uuid4
@@ -195,7 +195,7 @@ def test_get_other_user_project(test_user, auth_session):
     project_id = create_response.json()['project_id']
 
     # Try to access as test_user
-    test_token = create_access_token(data={"sub": test_user.email})
+    test_token = create_access_token(data={"sub": str(test_user.id)})
     response = client.get(
         f"/api/v1/projects/{project_id}",
         headers={"Authorization": f"Bearer {test_token}"}
@@ -206,7 +206,7 @@ def test_get_other_user_project(test_user, auth_session):
 
 def test_update_project(test_user):
     """Test PUT /api/v1/projects/{id} - Update project"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project
     create_response = client.post(
@@ -237,7 +237,7 @@ def test_update_project(test_user):
 
 def test_update_nonexistent_project(test_user):
     """Test updating a project that doesn't exist"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     from uuid import uuid4
     fake_id = str(uuid4())
@@ -253,7 +253,7 @@ def test_update_nonexistent_project(test_user):
 
 def test_delete_project(test_user):
     """Test DELETE /api/v1/projects/{id} - Delete project"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project
     create_response = client.post(
@@ -286,7 +286,7 @@ def test_delete_project(test_user):
 
 def test_get_project_status(test_user):
     """Test GET /api/v1/projects/{id}/status - Get project status"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project
     create_response = client.post(
@@ -319,7 +319,7 @@ def test_get_project_status(test_user):
 
 def test_list_projects_filters(test_user):
     """Test filtering in list projects endpoint"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create projects with different statuses
     client.post(
@@ -376,7 +376,7 @@ def test_list_projects_empty(test_user):
 
 def test_create_project_with_optional_description(test_user):
     """Test creating project without description (optional)"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     response = client.post(
         "/api/v1/projects",
@@ -395,7 +395,7 @@ def test_create_project_with_optional_description(test_user):
 
 def test_update_project_partial(test_user):
     """Test updating only some fields of a project"""
-    token = create_access_token(data={"sub": test_user.email})
+    token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project
     create_response = client.post(
