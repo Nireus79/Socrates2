@@ -6,6 +6,44 @@
 
 ---
 
+## ⚠️ CRITICAL: Read Before Implementation
+
+**MANDATORY:** Review [CRITICAL_LESSONS_LEARNED.md](../CRITICAL_LESSONS_LEARNED.md) before starting Phase 10.
+
+**Critical Checklist for Phase 10:**
+
+### Models (No new models - production hardening):
+- [ ] Review ALL existing models for SQLAlchemy reserved words
+- [ ] Verify ALL migrations have _should_run() database checks
+- [ ] Ensure ALL BaseModel columns are in ALL migrations
+
+### Migrations (No new migrations - verification only):
+- [ ] Run `alembic history` to verify all migrations applied
+- [ ] Test rollback: `alembic downgrade -1` then `alembic upgrade head`
+- [ ] Verify database routing works for both socrates_auth and socrates_specs
+
+### Tests (Integration and E2E tests):
+- [ ] Use `auth_session` NOT `db_auth`
+- [ ] Use `specs_session` NOT `db_specs`
+- [ ] Use `mock_claude_client` fixture, NOT @patch decorators
+- [ ] Run FULL test suite: `pytest backend/tests/ -v --cov`
+- [ ] Verify test coverage > 90%
+
+### Production Hardening:
+- [ ] Review ALL agent code for proper ServiceContainer usage
+- [ ] Verify ALL database queries use proper sessions
+- [ ] Check ALL error handling uses proper exception classes
+- [ ] Ensure ALL API endpoints have proper authentication
+- [ ] Verify ALL sensitive data is encrypted
+
+**Database:** Phase 10 uses BOTH databases:
+- `socrates_auth`: users, refresh_tokens, teams, team_members, api_keys
+- `socrates_specs`: projects, sessions, questions, specifications, conversation_history, conflicts, etc.
+
+**Focus:** Production deployment, monitoring, documentation - NO new features
+
+---
+
 ## 📋 Objectives
 
 1. Comprehensive error handling and logging

@@ -6,6 +6,45 @@
 
 ---
 
+## ⚠️ CRITICAL: Read Before Implementation
+
+**MANDATORY:** Review [CRITICAL_LESSONS_LEARNED.md](../CRITICAL_LESSONS_LEARNED.md) before starting Phase 9.
+
+**Critical Checklist for Phase 9:**
+
+### Models (api_keys, llm_usage_tracking):
+- [ ] Inherits from BaseModel? → Include id, created_at, updated_at in migration
+- [ ] AVOID column names: metadata, query, session
+- [ ] Use usage_metadata NOT just "metadata" (if storing metadata)
+- [ ] Use key_metadata NOT just "metadata" (if storing metadata)
+
+### Migrations (Phase 9 migrations):
+- [ ] **TWO DATABASES**: api_keys goes to `socrates_auth`
+- [ ] **TWO DATABASES**: llm_usage_tracking goes to `socrates_specs`
+- [ ] Add `import os` and `_should_run()` function for EACH migration
+- [ ] Check DATABASE_URL contains "socrates_auth" OR "socrates_specs" (depends on table)
+- [ ] Add check to BOTH upgrade() and downgrade()
+- [ ] Verify BaseModel columns if model inherits
+
+### Tests (test_phase_9_advanced_features.py):
+- [ ] Use `auth_session` NOT `db_auth` (for api_keys)
+- [ ] Use `specs_session` NOT `db_specs` (for llm_usage_tracking)
+- [ ] Use `mock_claude_client` fixture, NOT @patch decorators
+- [ ] DO NOT patch instance attributes
+
+### MultiLLMManager, GitHubIntegrationAgent, ExportAgent:
+- [ ] Accept ServiceContainer in __init__
+- [ ] Store as self.services (instance attribute)
+- [ ] Get auth database via self.services.get_database_auth() (for api_keys)
+- [ ] Get specs database via self.services.get_database_specs() (for usage tracking)
+- [ ] Get Claude client via self.services.get_claude_client()
+
+**Database:** Phase 9 uses BOTH databases:
+- `socrates_auth`: api_keys
+- `socrates_specs`: llm_usage_tracking
+
+---
+
 ## 📋 Objectives
 
 1. Implement Multi-LLM support (Claude, GPT-4, Local models)

@@ -6,6 +6,40 @@
 
 ---
 
+## ⚠️ CRITICAL: Read Before Implementation
+
+**MANDATORY:** Review [CRITICAL_LESSONS_LEARNED.md](../CRITICAL_LESSONS_LEARNED.md) before starting Phase 6.
+
+**Critical Checklist for Phase 6:**
+
+### Models (user_behavior_patterns, question_effectiveness, knowledge_base_documents):
+- [ ] Inherits from BaseModel? → Include id, created_at, updated_at in migration
+- [ ] AVOID column names: metadata, query, session
+- [ ] Use pattern_metadata NOT just "metadata" (if storing metadata)
+- [ ] Use document_metadata NOT just "metadata" (if storing metadata)
+
+### Migrations (Phase 6 migrations):
+- [ ] Add `import os` and `_should_run()` function
+- [ ] Check DATABASE_URL contains "socrates_specs"
+- [ ] Add check to BOTH upgrade() and downgrade()
+- [ ] Verify BaseModel columns if model inherits
+
+### Tests (test_phase_6_user_learning.py):
+- [ ] Use `auth_session` NOT `db_auth`
+- [ ] Use `specs_session` NOT `db_specs`
+- [ ] Use `mock_claude_client` fixture, NOT @patch decorators
+- [ ] DO NOT patch instance attributes
+
+### UserLearningAgent:
+- [ ] Accept ServiceContainer in __init__
+- [ ] Store as self.services (instance attribute)
+- [ ] Get database via self.services.get_database_specs()
+- [ ] Get Claude client via self.services.get_claude_client()
+
+**Database:** All Phase 6 tables go to `socrates_specs`
+
+---
+
 ## 📋 Objectives
 
 1. Create UserLearningAgent
