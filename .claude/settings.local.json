@@ -1,16 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(timeout 10 python:*)",
-      "Bash(netstat:*)",
-      "Bash(timeout 20 python:*)",
-      "Bash(git fetch:*)",
-      "Bash(git merge:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git checkout:*)",
-      "Bash(python -m pytest:*)",
-      "Bash(python:*)"
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

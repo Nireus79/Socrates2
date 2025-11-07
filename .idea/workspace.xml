@@ -7,11 +7,8 @@
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="phase 10">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Socrates.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/models/knowledge_base_document.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/knowledge_base_document.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/models/quality_metric.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/quality_metric.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/models/question_effectiveness.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/question_effectiveness.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/models/user_behavior_pattern.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/user_behavior_pattern.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/models/conflict.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/conflict.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/models/generated_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/generated_file.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

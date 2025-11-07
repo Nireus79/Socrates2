@@ -90,18 +90,23 @@ class QualityMetric(Base):
     # Relationships
     project = relationship("Project", back_populates="quality_metrics")
 
-    def to_dict(self) -> dict:
+    def to_dict(self, exclude_fields: set = None) -> dict:
         """Convert model instance to dictionary for JSON serialization"""
-        return {
+        result = {
             'id': str(self.id),
             'project_id': str(self.project_id),
             'metric_type': self.metric_type,
-            'metric_value': float(self.metric_value),  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
-            'threshold': float(self.threshold) if self.threshold else None,  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
+            'metric_value': float(self.metric_value),
+            'threshold': float(self.threshold) if self.threshold else None,
             'passed': self.passed,
             'details': self.details,
             'calculated_at': self.calculated_at.isoformat()
         }
+
+        if exclude_fields:
+            result = {k: v for k, v in result.items() if k not in exclude_fields}
+
+        return result
 
     def __repr__(self):
         """String representation of quality metric"""

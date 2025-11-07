@@ -51,9 +51,9 @@ class Conflict(BaseModel):
     resolved_at = Column(DateTime, nullable=True)
     resolved_by_user = Column(Boolean, default=False)
 
-    def to_dict(self):  # TODO Signature of method 'Conflict.to_dict()' does not match signature of the base method in class 'BaseModel'
+    def to_dict(self, exclude_fields: set = None) -> dict:
         """Convert to dictionary."""
-        base_dict = super().to_dict()
+        base_dict = super().to_dict(exclude_fields)
         base_dict.update({
             'project_id': self.project_id,
             'type': self.type.value if self.type else None,

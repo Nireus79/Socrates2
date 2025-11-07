@@ -86,18 +86,23 @@ class UserBehaviorPattern(Base):
         comment="Timestamp when pattern was last updated"
     )
 
-    def to_dict(self) -> dict:
+    def to_dict(self, exclude_fields: set = None) -> dict:
         """Convert model instance to dictionary for JSON serialization"""
-        return {
+        result = {
             'id': str(self.id),
             'user_id': str(self.user_id),
             'pattern_type': self.pattern_type,
             'pattern_data': self.pattern_data,
-            'confidence': float(self.confidence),  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
+            'confidence': float(self.confidence),
             'learned_from_projects': [str(p) for p in self.learned_from_projects] if self.learned_from_projects else [],
             'learned_at': self.learned_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }
+
+        if exclude_fields:
+            result = {k: v for k, v in result.items() if k not in exclude_fields}
+
+        return result
 
     def __repr__(self):
         """String representation of user behavior pattern"""

@@ -41,11 +41,11 @@ class GeneratedProject(BaseModel):
     # Relationships
     files = relationship("GeneratedFile", back_populates="generated_project", cascade="all, delete-orphan")
 
-    def to_dict(self):
+    def to_dict(self, exclude_fields: set = None) -> dict:
         """Convert to dictionary."""
         import uuid as uuid_module
 
-        base_dict = super().to_dict()
+        base_dict = super().to_dict(exclude_fields)
         base_dict.update({
             'project_id': str(self.project_id) if isinstance(self.project_id, uuid_module.UUID) else self.project_id,
             'generation_version': self.generation_version,

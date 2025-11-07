@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from decimal import Decimal
+import uuid as uuid_module
 
 from ..core.database import Base
 
@@ -143,7 +144,9 @@ class LLMUsageTracking(Base):
                 value = getattr(self, column.name)
 
                 # Convert types for JSON serialization
-                if isinstance(value, datetime):
+                if isinstance(value, uuid_module.UUID):
+                    value = str(value)
+                elif isinstance(value, datetime):
                     value = value.isoformat()
                 elif isinstance(value, Decimal):
                     value = float(value)

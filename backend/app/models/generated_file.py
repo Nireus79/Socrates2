@@ -24,9 +24,9 @@ class GeneratedFile(BaseModel):
     # Relationships
     generated_project = relationship("GeneratedProject", back_populates="files")
 
-    def to_dict(self):  # TODO Signature of method 'GeneratedFile.to_dict()' does not match signature of the base method in class 'BaseModel'
+    def to_dict(self, exclude_fields: set = None) -> dict:
         """Convert to dictionary."""
-        base_dict = super().to_dict()
+        base_dict = super().to_dict(exclude_fields)
         base_dict.update({
             'generated_project_id': self.generated_project_id,
             'file_path': self.file_path,

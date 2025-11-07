@@ -95,9 +95,9 @@ class KnowledgeBaseDocument(Base):
     # Relationships
     project = relationship("Project", back_populates="knowledge_base_documents")
 
-    def to_dict(self) -> dict:
+    def to_dict(self, exclude_fields: set = None) -> dict:
         """Convert model instance to dictionary for JSON serialization"""
-        return {
+        result = {
             'id': str(self.id),
             'project_id': str(self.project_id),
             'user_id': str(self.user_id),
@@ -107,6 +107,11 @@ class KnowledgeBaseDocument(Base):
             'uploaded_at': self.uploaded_at.isoformat()
             # Note: content and embedding not included in API response for performance
         }
+
+        if exclude_fields:
+            result = {k: v for k, v in result.items() if k not in exclude_fields}
+
+        return result
 
     def __repr__(self):
         """String representation of knowledge base document"""

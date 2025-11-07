@@ -109,9 +109,9 @@ class QuestionEffectiveness(Base):
         comment="Timestamp when record was last updated"
     )
 
-    def to_dict(self) -> dict:
+    def to_dict(self, exclude_fields: set = None) -> dict:
         """Convert model instance to dictionary for JSON serialization"""
-        return {
+        result = {
             'id': str(self.id),
             'user_id': str(self.user_id),
             'question_template_id': self.question_template_id,
@@ -119,11 +119,16 @@ class QuestionEffectiveness(Base):
             'times_asked': self.times_asked,
             'times_answered_well': self.times_answered_well,
             'average_answer_length': self.average_answer_length,
-            'average_spec_extraction_count': float(self.average_spec_extraction_count) if self.average_spec_extraction_count else None,  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
-            'effectiveness_score': float(self.effectiveness_score) if self.effectiveness_score else None,  # TODO Expected type 'str | Buffer | SupportsFloat | SupportsIndex', got 'Column[Decimal]' instead
+            'average_spec_extraction_count': float(self.average_spec_extraction_count) if self.average_spec_extraction_count else None,
+            'effectiveness_score': float(self.effectiveness_score) if self.effectiveness_score else None,
             'last_asked_at': self.last_asked_at.isoformat() if self.last_asked_at else None,
             'updated_at': self.updated_at.isoformat()
         }
+
+        if exclude_fields:
+            result = {k: v for k, v in result.items() if k not in exclude_fields}
+
+        return result
 
     def __repr__(self):
         """String representation of question effectiveness"""
