@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Socrates2 - Interactive Development Shell
-
-Automatically:
-1. Starts the FastAPI server in the background
-2. Keeps an interactive shell for testing and management
-3. Provides commands to interact with the API
+Socrates2 - Interactive Development Shell with Working Workflow
 
 Usage:
-    python Socrates.py        # Start with server running in background
+    python Socrates.py        # Start server + interactive shell
 """
 
 import subprocess
@@ -18,29 +13,28 @@ import os
 import time
 import requests
 import json
+import shlex
 from pathlib import Path
 
-# Get project root
 PROJECT_ROOT = Path(__file__).parent
 BACKEND_DIR = PROJECT_ROOT / "backend"
-
-# Ensure backend is in path
 sys.path.insert(0, str(BACKEND_DIR))
 
 API_URL = "http://localhost:8000"
 
 
 class SocratesApp:
-    """Socrates2 Development Shell with Background Server"""
+    """Socrates2 Development Shell"""
 
     def __init__(self):
         self.running = True
         self.server_process = None
         self.access_token = None
         self.user_id = None
+        self.current_project_id = None
+        self.current_session_id = None
 
     def print_banner(self):
-        """Print welcome banner"""
         print()
         print("=" * 80)
         print("  SOCRATES2 - AI-Powered Specification Assistant")
@@ -48,37 +42,27 @@ class SocratesApp:
         print()
 
     def check_setup(self):
-        """Check if setup is complete"""
         print("[*] Checking project setup...")
-
         os.chdir(BACKEND_DIR)
 
-        # Check .env file
         if not (BACKEND_DIR / ".env").exists():
             print("[!] .env file not found")
             response = input("[?] Create .env file now? (y/n): ").strip().lower()
-            if response == 'y':
-                print("[*] Creating .env file...")
-                try:
-                    subprocess.run(
-                        [sys.executable, "scripts/setup_env.py"],
-                        check=True
-                    )
-                    print("[OK] .env file created")
-                except subprocess.CalledProcessError:
-                    print("[ERROR] Failed to create .env file")
-                    return False
-            else:
+            if response != 'y':
+                return False
+            print("[*] Creating .env file...")
+            try:
+                subprocess.run([sys.executable, "scripts/setup_env.py"], check=True)
+                print("[OK] .env file created")
+            except subprocess.CalledProcessError:
+                print("[ERROR] Failed to create .env file")
                 return False
 
-        # Check dependencies
         print("[*] Verifying dependencies...")
         try:
             result = subprocess.run(
                 [sys.executable, "scripts/verify_dependencies.py"],
-                capture_output=True,
-                text=True,
-                timeout=30
+                capture_output=True, text=True, timeout=30
             )
             if result.returncode == 0:
                 print("[OK] All dependencies OK")
@@ -89,7 +73,6 @@ class SocratesApp:
             print("[ERROR] Dependency check timed out")
             return False
 
-        # Check database connections
         print("[*] Checking database connections...")
         try:
             from app.core.database import get_db_auth, get_db_specs
@@ -112,50 +95,37 @@ class SocratesApp:
         return True
 
     def start_server(self):
-        """Start the FastAPI server in background"""
         print("[*] Starting API server in background...")
-
         os.chdir(BACKEND_DIR)
 
-        cmd = [
-            sys.executable,
-            "-m",
-            "uvicorn",
-            "app.main:app",
-            "--host=0.0.0.0",
-            "--port=8000",
-            "--reload"
-        ]
+        cmd = [sys.executable, "-m", "uvicorn", "app.main:app",
+               "--host=0.0.0.0", "--port=8000", "--reload"]
 
         try:
             self.server_process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
 
-            # Wait longer for server to fully start and initialize all agents
             print("[*] Waiting for server to initialize...")
-            for i in range(15):  # Try for up to 15 seconds
+            for i in range(15):
                 time.sleep(1)
                 try:
                     response = requests.get(API_URL, timeout=1)
                     if response.status_code == 200:
                         print("[OK] Server running at {}".format(API_URL))
-                        print("[OK] API Docs:  {}/docs".format(API_URL))
+                        print("[OK] API Docs: {}/docs".format(API_URL))
                         print()
                         return True
                 except Exception:
                     pass
 
-            print("[ERROR] Server started but didn't respond in time")
+            print("[ERROR] Server started but didn't respond")
             return False
         except Exception as e:
             print("[ERROR] Failed to start server: {}".format(e))
             return False
 
     def stop_server(self):
-        """Stop the background server"""
         if self.server_process:
             print("[*] Stopping server...")
             self.server_process.terminate()
@@ -166,265 +136,245 @@ class SocratesApp:
                 self.server_process.kill()
                 print("[OK] Server killed")
             self.server_process = None
-        else:
-            print("[!] No server running")
 
-    def register(self, email: str, password: str):
+    def register(self, email, password):
         """Register a new user"""
         try:
-            response = requests.post(
+            r = requests.post(
                 "{}/api/v1/auth/register".format(API_URL),
-                json={"email": email, "password": password},
-                timeout=5
+                json={"email": email, "password": password}, timeout=5
             )
-            if response.status_code == 201:
-                data = response.json()
+            if r.status_code in (200, 201):
                 print("[OK] User registered: {}".format(email))
-                print("     User ID: {}".format(data.get('id')))
                 return True
             else:
-                print("[ERROR] Registration failed: {}".format(response.text))
+                print("[ERROR] {}".format(r.text[:100]))
                 return False
         except Exception as e:
             print("[ERROR] {}".format(e))
             return False
 
-    def login(self, email: str, password: str):
-        """Login user and get access token"""
+    def login(self, email, password):
+        """Login and get access token"""
         try:
-            response = requests.post(
+            r = requests.post(
                 "{}/api/v1/auth/login".format(API_URL),
-                data={"username": email, "password": password},
-                timeout=5
+                data={"username": email, "password": password}, timeout=5
             )
-            if response.status_code == 200:
-                data = response.json()
+            if r.status_code == 200:
+                data = r.json()
                 self.access_token = data.get('access_token')
+                self.user_id = data.get('user_id')
                 print("[OK] Logged in as: {}".format(email))
-                print("     Access Token: {}...".format(self.access_token[:20]))
+                print("     User ID: {}".format(self.user_id))
                 return True
             else:
-                print("[ERROR] Login failed: {}".format(response.text))
+                print("[ERROR] {}".format(r.text[:100]))
                 return False
         except Exception as e:
             print("[ERROR] {}".format(e))
             return False
 
     def get_headers(self):
-        """Get authorization headers"""
         if self.access_token:
             return {"Authorization": "Bearer {}".format(self.access_token)}
         return {}
 
-    def create_project(self, name: str, description: str):
-        """Create a new project"""
+    def create_project(self, name, description):
+        """Create a project"""
         try:
-            response = requests.post(
+            r = requests.post(
                 "{}/api/v1/projects".format(API_URL),
                 json={"name": name, "description": description},
-                headers=self.get_headers(),
-                timeout=5
+                headers=self.get_headers(), timeout=5
             )
-            if response.status_code in (200, 201):
-                data = response.json()
-                project_id = data.get('id')
+            if r.status_code in (200, 201):
+                data = r.json()
+                self.current_project_id = data.get('id')
                 print("[OK] Project created: {}".format(name))
-                print("     Project ID: {}".format(project_id))
-                return project_id
+                print("     ID: {}".format(self.current_project_id))
+                return self.current_project_id
             else:
-                print("[ERROR] Failed to create project: {}".format(response.text[:100]))
+                print("[ERROR] {}".format(r.text[:100]))
                 return None
         except Exception as e:
             print("[ERROR] {}".format(e))
             return None
 
     def list_projects(self):
-        """List all user projects"""
+        """List projects"""
         try:
-            response = requests.get(
+            r = requests.get(
                 "{}/api/v1/projects".format(API_URL),
-                headers=self.get_headers(),
-                timeout=5
+                headers=self.get_headers(), timeout=5
             )
-            if response.status_code == 200:
-                projects = response.json()
+            if r.status_code == 200:
+                projects = r.json()
                 print("[OK] Your Projects:")
                 if isinstance(projects, list):
                     for p in projects:
                         print("     - {} (ID: {})".format(p.get('name'), p.get('id')))
-                else:
-                    print("     {}".format(projects))
                 return projects
             else:
-                print("[ERROR] {}".format(response.text[:100]))
+                print("[ERROR] {}".format(r.text[:100]))
                 return None
         except Exception as e:
             print("[ERROR] {}".format(e))
             return None
 
-    def create_session(self, project_id: str, mode: str = "socratic"):
-        """Create a session for a project"""
+    def create_session(self, project_id):
+        """Create a session"""
         try:
-            response = requests.post(
+            r = requests.post(
                 "{}/api/v1/projects/{}/sessions".format(API_URL, project_id),
-                json={"mode": mode},
-                headers=self.get_headers(),
-                timeout=5
+                json={"mode": "socratic"},
+                headers=self.get_headers(), timeout=5
             )
-            if response.status_code in (200, 201):
-                data = response.json()
-                session_id = data.get('id')
-                print("[OK] Session created in {} mode".format(mode))
-                print("     Session ID: {}".format(session_id))
-                return session_id
+            if r.status_code in (200, 201):
+                data = r.json()
+                self.current_session_id = data.get('id')
+                print("[OK] Session created")
+                print("     ID: {}".format(self.current_session_id))
+                return self.current_session_id
             else:
-                print("[ERROR] Failed to create session: {}".format(response.text[:100]))
+                print("[ERROR] {}".format(r.text[:100]))
                 return None
         except Exception as e:
             print("[ERROR] {}".format(e))
             return None
 
-    def send_message(self, session_id: str, message: str):
-        """Send a message in a session"""
+    def send_message(self, session_id, message):
+        """Send a message"""
         try:
-            response = requests.post(
+            r = requests.post(
                 "{}/api/v1/sessions/{}/message".format(API_URL, session_id),
                 json={"message": message},
-                headers=self.get_headers(),
-                timeout=10
+                headers=self.get_headers(), timeout=10
             )
-            if response.status_code == 200:
-                data = response.json()
-                agent_response = data.get('response')
-                print()
+            if r.status_code == 200:
+                data = r.json()
+                response = data.get('response')
                 print("[*] AI Response:")
-                print("    {}".format(agent_response[:200]))
-                print()
-                return agent_response
+                print("    {}".format(response[:150]))
+                return response
             else:
-                print("[ERROR] {}".format(response.text[:100]))
+                print("[ERROR] {}".format(r.text[:100]))
                 return None
         except Exception as e:
             print("[ERROR] {}".format(e))
             return None
 
     def print_help(self):
-        """Print available commands"""
         print()
         print("=" * 80)
-        print("  AVAILABLE COMMANDS")
+        print("  COMMANDS")
         print("=" * 80)
         print()
-        print("  AUTHENTICATION:")
-        print("    register EMAIL PASSWORD      - Register new user")
-        print("    login EMAIL PASSWORD         - Login user")
+        print("  AUTH:")
+        print("    register EMAIL PASSWORD        - Register user")
+        print("    login EMAIL PASSWORD           - Login user")
         print()
         print("  PROJECTS:")
-        print("    projects                     - List your projects")
-        print("    project-create NAME DESC     - Create a new project")
+        print("    projects                       - List your projects")
+        print("    create-project NAME DESC       - Create project")
         print()
         print("  SESSIONS:")
-        print("    session-create PROJECT_ID    - Create session (socratic mode)")
-        print("    session-chat PROJECT_ID ID   - Send message to session")
+        print("    create-session [PROJECT_ID]    - Create session")
+        print("    chat [SESSION_ID] MESSAGE      - Send message")
         print()
-        print("  PROJECT MANAGEMENT:")
-        print("    test                         - Run all tests")
-        print("    test-phase N                 - Run phase N tests")
-        print("    health                       - Check API health")
-        print("    status                       - Show git status")
-        print()
-        print("  SERVER:")
-        print("    stop                         - Stop the API server")
+        print("  MANAGEMENT:")
+        print("    test [PHASE]                   - Run tests")
+        print("    health                         - API health check")
+        print("    status                         - Git status")
         print()
         print("  OTHER:")
-        print("    help                         - Show this help")
-        print("    exit / quit                  - Exit the shell")
-        print()
-        print("  QUICK START EXAMPLE:")
-        print("    1. register user@example.com password123")
-        print("    2. login user@example.com password123")
-        print("    3. project-create 'My Project' 'Test project'")
-        print("    4. session-create PROJECT_ID")
-        print("    5. session-chat SESSION_ID 'What are the main requirements?'")
+        print("    help                           - Show this help")
+        print("    exit                           - Exit and stop server")
         print()
         print("=" * 80)
         print()
 
-    def handle_command(self, cmd_line: str):
-        """Parse and execute a command"""
-        if not cmd_line.strip():
+    def handle_command(self, line):
+        """Handle user command"""
+        if not line.strip():
             return
 
-        parts = cmd_line.strip().split(None, 2)
+        try:
+            # Try to parse as quoted command
+            parts = shlex.split(line)
+        except:
+            # Fallback to simple split
+            parts = line.strip().split(None, 3)
+
+        if not parts:
+            return
+
         cmd = parts[0].lower()
-        args = parts[1:] if len(parts) > 1 else []
+        args = parts[1:]
 
-        # Authentication
-        if cmd == 'register' and len(args) >= 2:
-            email = args[0]
-            password = args[1]
-            self.register(email, password)
+        # Auth
+        if cmd == 'register':
+            if len(args) >= 2:
+                self.register(args[0], args[1])
+            else:
+                print("[!] Usage: register EMAIL PASSWORD")
 
-        elif cmd == 'login' and len(args) >= 2:
-            email = args[0]
-            password = args[1]
-            self.login(email, password)
+        elif cmd == 'login':
+            if len(args) >= 2:
+                self.login(args[0], args[1])
+            else:
+                print("[!] Usage: login EMAIL PASSWORD")
 
         # Projects
         elif cmd == 'projects':
             self.list_projects()
 
-        elif cmd == 'project-create' and args:
-            parts_full = cmd_line.strip().split(None, 1)
-            if len(parts_full) > 1:
-                remaining = parts_full[1]
-                parts_split = remaining.split(None, 1)
-                if len(parts_split) >= 2:
-                    name = parts_split[0]
-                    desc = parts_split[1]
-                    self.create_project(name, desc)
-                else:
-                    print("[ERROR] Usage: project-create NAME DESCRIPTION")
+        elif cmd == 'create-project':
+            if len(args) >= 2:
+                self.create_project(args[0], args[1])
+            else:
+                print("[!] Usage: create-project NAME DESCRIPTION")
 
         # Sessions
-        elif cmd == 'session-create' and args:
-            project_id = args[0]
-            self.create_session(project_id)
-
-        elif cmd == 'session-chat' and len(args) >= 2:
-            session_id = args[0]
-            message_parts = cmd_line.split(None, 2)
-            if len(message_parts) >= 3:
-                message = message_parts[2]
-                self.send_message(session_id, message)
+        elif cmd == 'create-session':
+            project_id = args[0] if args else self.current_project_id
+            if project_id:
+                self.create_session(project_id)
             else:
-                print("[ERROR] Usage: session-chat SESSION_ID 'Your message'")
+                print("[!] Please provide PROJECT_ID or select a project first")
+
+        elif cmd == 'chat':
+            if len(args) >= 2:
+                session_id = args[0]
+                message = ' '.join(args[1:])
+                self.send_message(session_id, message)
+            elif len(args) == 1 and self.current_session_id:
+                message = args[0]
+                self.send_message(self.current_session_id, message)
+            else:
+                print("[!] Usage: chat [SESSION_ID] MESSAGE")
 
         # Testing
         elif cmd == 'test':
             print()
-            print("[*] Running test suite...")
             os.chdir(BACKEND_DIR)
-            subprocess.run([sys.executable, "-m", "pytest", "tests/", "-q"])
-            print()
-
-        elif cmd == 'test-phase' and args:
-            phase = args[0]
-            print()
-            print("[*] Running Phase {} tests...".format(phase))
-            os.chdir(BACKEND_DIR)
-            subprocess.run([sys.executable, "-m", "pytest",
-                           "tests/test_phase_{}_*.py".format(phase), "-v"])
+            if args and args[0].isdigit():
+                phase = args[0]
+                print("[*] Running Phase {} tests...".format(phase))
+                subprocess.run([sys.executable, "-m", "pytest",
+                               "tests/test_phase_{}_*.py".format(phase), "-q"])
+            else:
+                print("[*] Running all tests...")
+                subprocess.run([sys.executable, "-m", "pytest", "tests/", "-q"])
             print()
 
         # Health
         elif cmd == 'health':
             print()
             try:
-                response = requests.get("{}/api/v1/admin/health".format(API_URL), timeout=2)
-                if response.status_code == 200:
+                r = requests.get("{}/api/v1/admin/health".format(API_URL), timeout=2)
+                if r.status_code == 200:
                     print("[OK] API is healthy")
-                    print(json.dumps(response.json(), indent=2))
                 else:
                     print("[ERROR] API health check failed")
             except Exception as e:
@@ -437,8 +387,7 @@ class SocratesApp:
             os.chdir(PROJECT_ROOT)
             result = subprocess.run(
                 ["git", "status", "--short"],
-                capture_output=True,
-                text=True
+                capture_output=True, text=True
             )
             if result.stdout.strip():
                 print("[*] Git Status:")
@@ -447,11 +396,6 @@ class SocratesApp:
             else:
                 print("[OK] Working directory clean")
             print()
-
-        # Server
-        elif cmd == 'stop':
-            self.stop_server()
-            self.running = False
 
         # Help
         elif cmd == 'help':
@@ -465,43 +409,36 @@ class SocratesApp:
             self.running = False
 
         else:
-            print("[ERROR] Unknown command: '{}'. Type 'help' for available commands.".format(cmd))
+            print("[ERROR] Unknown command: '{}'. Type 'help' for help.".format(cmd))
 
     def run(self):
-        """Start the interactive shell"""
         self.print_banner()
 
-        # Check setup
         if not self.check_setup():
-            print("[!] Setup failed. Exiting.")
+            print("[!] Setup failed.")
             sys.exit(1)
 
-        # Start server
         print()
         if not self.start_server():
-            print("[!] Failed to start server. Exiting.")
+            print("[!] Failed to start server.")
             sys.exit(1)
 
-        # Print quick start
         print("=" * 80)
-        print("  QUICK START")
+        print("  QUICK START - Try This Workflow:")
         print("=" * 80)
         print()
-        print("  1. Type 'help' to see all available commands")
-        print("  2. Or open your browser: http://localhost:8000/docs")
+        print("  1. register user@test.com mypassword")
+        print("  2. login user@test.com mypassword")
+        print("  3. create-project 'My Project' 'A test project'")
+        print("  4. projects")
+        print("  5. create-session <PROJECT_ID>")
+        print("  6. chat <SESSION_ID> 'What are the main requirements?'")
+        print("  7. chat 'What features should we build?'")
         print()
-        print("  Example workflow:")
-        print("    socrates> register user@test.com mypassword")
-        print("    socrates> login user@test.com mypassword")
-        print("    socrates> project-create 'My Project' 'Testing'")
-        print("    socrates> projects")
-        print("    socrates> session-create <PROJECT_ID>")
-        print("    socrates> session-chat <SESSION_ID> 'Hello, let's discuss requirements'")
-        print()
+        print("  Type 'help' for all commands")
         print("=" * 80)
         print()
 
-        # Interactive loop
         while self.running:
             try:
                 user_input = input("socrates> ").strip()
@@ -515,7 +452,6 @@ class SocratesApp:
 
 
 def main():
-    """Main entry point"""
     app = SocratesApp()
     app.run()
 
