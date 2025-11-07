@@ -11,6 +11,7 @@ from .conversation_history import ConversationHistory
 from .conflict import Conflict
 from .generated_project import GeneratedProject
 from .generated_file import GeneratedFile
+from .quality_metric import QualityMetric
 
 __all__ = [
     'BaseModel',
@@ -23,4 +24,5 @@ __all__ = [
     'Conflict',
     'GeneratedProject',
     'GeneratedFile',
+    'QualityMetric',
 ]

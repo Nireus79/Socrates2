@@ -41,6 +41,7 @@ class AgentOrchestrator:
         self.services = services
         self.logger = services.get_logger("orchestrator")
         self.agents: Dict[str, BaseAgent] = {}
+        self.quality_controller = None  # Will be set after registration
 
         self.logger.info("AgentOrchestrator initialized")
 
@@ -66,6 +67,11 @@ class AgentOrchestrator:
             )
 
         self.agents[agent.agent_id] = agent
+
+        # Store reference to quality controller if registered
+        if agent.agent_id == 'quality':
+            self.quality_controller = agent
+            self.logger.info("Quality Controller registered - quality gates enabled")
 
         capabilities = agent.get_capabilities()
         self.logger.info(
@@ -139,6 +145,35 @@ class AgentOrchestrator:
                 'available_capabilities': capabilities
             }
 
+        # Quality Control Gate (Phase 5)
+        if self.quality_controller and self._is_major_operation(agent_id, action):
+            self.logger.info(f"Applying quality gates to {agent_id}.{action}")
+            quality_result = self.quality_controller.process_request(
+                'verify_operation',
+                {
+                    'agent_id': agent_id,
+                    'action': action,
+                    'operation_data': data
+                }
+            )
+
+            if quality_result.get('is_blocking'):
+                self.logger.warning(
+                    f"Quality control BLOCKED {agent_id}.{action}: "
+                    f"{quality_result['reason']}"
+                )
+                return {
+                    'success': False,
+                    'blocked_by': 'quality_control',
+                    'reason': quality_result['reason'],
+                    'quality_checks': quality_result.get('quality_checks', {}),
+                    'error_code': 'QUALITY_GATE_FAILED'
+                }
+
+            self.logger.info(
+                f"Quality gates passed for {agent_id}.{action}"
+            )
+
         # Route to agent
         self.logger.info(f"Routing to {agent_id}.{action}")
 
@@ -158,6 +193,29 @@ class AgentOrchestrator:
                 'agent_id': agent_id,
                 'action': action
             }
+
+    def _is_major_operation(self, agent_id: str, action: str) -> bool:
+        """
+        Determine if an operation needs quality control.
+
+        Major operations that need quality gates:
+        - socratic.generate_question: Check for bias
+        - code.generate_code: Check coverage
+        - context.extract_specifications: (optional, could add later)
+
+        Args:
+            agent_id: Agent identifier
+            action: Action being performed
+
+        Returns:
+            True if quality control is needed
+        """
+        major_ops = {
+            'socratic': ['generate_question'],
+            'code': ['generate_code'],
+        }
+
+        return agent_id in major_ops and action in major_ops[agent_id]
 
     def get_all_agents(self) -> List[Dict[str, Any]]:
         """
