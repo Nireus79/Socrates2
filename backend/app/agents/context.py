@@ -145,10 +145,44 @@ class ContextAnalyzerAgent(BaseAgent):
                 'error_code': 'API_ERROR'
             }
 
-        # NOTE: Phase 3 will add conflict detection HERE
-        # For now, save directly
+        # Phase 3: Check for conflicts before saving
+        # Convert extracted specs to format expected by conflict detector
+        specs_for_conflict_check = []
+        for spec_data in extracted_specs:
+            specs_for_conflict_check.append({
+                'category': spec_data.get('category', question.category),
+                'key': spec_data['content'][:100],  # Use first 100 chars as key
+                'value': spec_data['content'],
+                'confidence': spec_data.get('confidence', 0.9)
+            })
 
-        # Save specifications
+        # Get orchestrator and check for conflicts
+        orchestrator = self.services.get_orchestrator()
+        conflict_result = orchestrator.route_request(
+            agent_id='conflict',
+            action='detect_conflicts',
+            data={
+                'project_id': project.id,
+                'new_specs': specs_for_conflict_check,
+                'source_id': str(question_id)
+            }
+        )
+
+        # If conflicts detected, return them without saving
+        if conflict_result.get('conflicts_detected'):
+            self.logger.warning(
+                f"Conflicts detected for project {project.id}: "
+                f"{len(conflict_result.get('conflicts', []))} conflicts"
+            )
+            return {
+                'success': False,
+                'conflicts_detected': True,
+                'conflicts': conflict_result.get('conflicts', []),
+                'message': 'Specifications contain conflicts. Please resolve before proceeding.',
+                'specs_extracted': 0
+            }
+
+        # No conflicts, proceed with saving specifications
         saved_specs = []
         for spec_data in extracted_specs:
             spec = Specification(
