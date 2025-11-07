@@ -6,6 +6,39 @@
 
 ---
 
+## ⚠️ CRITICAL: Read Before Implementation
+
+**MANDATORY:** Review [CRITICAL_LESSONS_LEARNED.md](../CRITICAL_LESSONS_LEARNED.md) before starting Phase 5.
+
+**Critical Checklist for Phase 5:**
+
+### Models (quality_metrics table):
+- [ ] Inherits from BaseModel? → Include id, created_at, updated_at in migration
+- [ ] AVOID column names: metadata, query, session
+- [ ] Use quality_metadata NOT just "metadata"
+
+### Migration (Phase 5 migrations):
+- [ ] Add `import os` and `_should_run()` function
+- [ ] Check DATABASE_URL contains "socrates_specs"
+- [ ] Add check to BOTH upgrade() and downgrade()
+- [ ] Verify BaseModel columns if model inherits
+
+### Tests (test_phase_5_*.py):
+- [ ] Use `auth_session` NOT `db_auth`
+- [ ] Use `specs_session` NOT `db_specs`
+- [ ] Use `mock_claude_client` fixture, NOT @patch decorators
+- [ ] DO NOT patch instance attributes
+
+### QualityControllerAgent:
+- [ ] Accept ServiceContainer in __init__
+- [ ] Store as self.services (instance attribute)
+- [ ] Get database via self.services.get_database_specs()
+- [ ] Get Claude client via self.services.get_claude_client()
+
+**Database:** All Phase 5 tables go to `socrates_specs`
+
+---
+
 ## 📋 Objectives
 
 1. Create QualityControllerAgent
