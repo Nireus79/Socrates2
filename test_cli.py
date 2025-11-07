@@ -161,7 +161,7 @@ class TestSocratesAPI(unittest.TestCase):
         mock_request.side_effect = requests.exceptions.ConnectionError()
 
         with self.assertRaises(requests.exceptions.ConnectionError):
-            self.api.register("test@example.com", "password", "Test")
+            self.api.register("test@example.com", "password123")
 
         # Verify error message was printed
         self.mock_console.print.assert_called()
