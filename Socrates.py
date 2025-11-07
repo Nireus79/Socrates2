@@ -133,18 +133,23 @@ class SocratesApp:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
-            time.sleep(3)  # Wait for server to start
 
-            # Check if server is running
-            try:
-                response = requests.get(API_URL, timeout=2)
-                print("[OK] Server running at {}".format(API_URL))
-                print("[OK] API Docs:  {}/docs".format(API_URL))
-                print()
-                return True
-            except Exception:
-                print("[ERROR] Server failed to start")
-                return False
+            # Wait longer for server to fully start and initialize all agents
+            print("[*] Waiting for server to initialize...")
+            for i in range(15):  # Try for up to 15 seconds
+                time.sleep(1)
+                try:
+                    response = requests.get(API_URL, timeout=1)
+                    if response.status_code == 200:
+                        print("[OK] Server running at {}".format(API_URL))
+                        print("[OK] API Docs:  {}/docs".format(API_URL))
+                        print()
+                        return True
+                except Exception:
+                    pass
+
+            print("[ERROR] Server started but didn't respond in time")
+            return False
         except Exception as e:
             print("[ERROR] Failed to start server: {}".format(e))
             return False
