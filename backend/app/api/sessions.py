@@ -140,13 +140,16 @@ def get_next_question(
         }
     """
     from ..models.session import Session as SessionModel
+    from ..models.project import Project
 
     # Verify session exists and user has access
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    if str(session.user_id) != str(current_user.id):
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Permission denied")
 
     # Check session is active
@@ -224,13 +227,16 @@ def submit_answer(
     from ..models.session import Session as SessionModel
     from ..models.conversation_history import ConversationHistory
     from ..models.question import Question
+    from ..models.project import Project
 
     # Verify session exists and user has access
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    if str(session.user_id) != str(current_user.id):
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Permission denied")
 
     # Check session is active
@@ -312,12 +318,15 @@ def get_session(
         }
     """
     from ..models.session import Session as SessionModel
+    from ..models.project import Project
 
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    if str(session.user_id) != str(current_user.id):
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Permission denied")
 
     return {
@@ -370,13 +379,16 @@ def get_session_history(
     """
     from ..models.session import Session as SessionModel
     from ..models.conversation_history import ConversationHistory
+    from ..models.project import Project
 
     # Verify session exists and user has access
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    if str(session.user_id) != str(current_user.id):
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Permission denied")
 
     # Get conversation history
@@ -423,12 +435,15 @@ def end_session(
         }
     """
     from ..models.session import Session as SessionModel
+    from ..models.project import Project
 
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    if str(session.user_id) != str(current_user.id):
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Permission denied")
 
     # Update session status
