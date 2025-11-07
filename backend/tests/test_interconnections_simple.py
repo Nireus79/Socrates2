@@ -40,7 +40,7 @@ def test_import_all_agents():
 
     try:
         from app.agents.base import BaseAgent
-        from app.agents.project import ProjectAgent
+        from app.agents.project import ProjectManagerAgent
         from app.agents.socratic import SocraticCounselorAgent
         from app.agents.context import ContextAnalyzerAgent
         from app.agents.conflict_detector import ConflictDetectorAgent
@@ -59,7 +59,7 @@ def test_agent_capabilities():
     """Test that all agents expose their capabilities correctly"""
     print("\n=== Testing Agent Capabilities ===")
 
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
     from app.agents.socratic import SocraticCounselorAgent
     from app.agents.context import ContextAnalyzerAgent
     from app.agents.conflict_detector import ConflictDetectorAgent
@@ -71,7 +71,7 @@ def test_agent_capabilities():
     mock_services = Mock()
 
     agents = [
-        ProjectAgent("project", "ProjectAgent", mock_services),
+        ProjectManagerAgent("project", "ProjectManagerAgent", mock_services),
         SocraticCounselorAgent("socratic", "SocraticCounselorAgent", mock_services),
         ContextAnalyzerAgent("context", "ContextAnalyzerAgent", mock_services),
         ConflictDetectorAgent("conflict", "ConflictDetectorAgent", mock_services),
@@ -94,7 +94,7 @@ def test_agent_error_handling():
     """Test that agents handle errors gracefully with proper error codes"""
     print("\n=== Testing Agent Error Handling ===")
 
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
 
     # Create mock service container with mock database session
     mock_db = MagicMock()
@@ -102,7 +102,7 @@ def test_agent_error_handling():
     mock_services.get_database_specs.return_value = mock_db
     mock_services.get_database_auth.return_value = mock_db
 
-    agent = ProjectAgent("project", "ProjectAgent", mock_services)
+    agent = ProjectManagerAgent("project", "ProjectManagerAgent", mock_services)
 
     # Test validation error
     result = agent.execute({
@@ -132,7 +132,7 @@ def test_orchestrator_agent_registration():
     print("\n=== Testing Orchestrator Agent Registration ===")
 
     from app.agents.orchestrator import AgentOrchestrator
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
 
     # Create mock service container
     mock_services = Mock()
@@ -143,7 +143,7 @@ def test_orchestrator_agent_registration():
     registered_agents = list(orchestrator.agents.keys())
     print(f"  Registered agents: {registered_agents}")
 
-    assert 'project' in registered_agents, "ProjectAgent should be registered"
+    assert 'project' in registered_agents, "ProjectManagerAgent should be registered"
     assert 'socratic' in registered_agents, "SocraticCounselorAgent should be registered"
     assert 'context' in registered_agents, "ContextAnalyzerAgent should be registered"
     assert 'conflict' in registered_agents, "ConflictDetectorAgent should be registered"
@@ -159,7 +159,7 @@ def test_database_session_cleanup():
     """Test that database sessions are properly cleaned up in finally blocks"""
     print("\n=== Testing Database Session Cleanup ===")
 
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
 
     # Create mock database session
     mock_db = MagicMock()
@@ -170,7 +170,7 @@ def test_database_session_cleanup():
     mock_services.get_database_specs.return_value = mock_db
     mock_services.get_database_auth.return_value = mock_db
 
-    agent = ProjectAgent("project", "ProjectAgent", mock_services)
+    agent = ProjectManagerAgent("project", "ProjectManagerAgent", mock_services)
 
     # Trigger an error by providing invalid data
     result = agent.execute({
@@ -189,14 +189,14 @@ def test_error_logging():
     """Test that errors are logged with proper information"""
     print("\n=== Testing Error Logging ===")
 
-    from app.agents.project import ProjectAgent
+    from app.agents.project import ProjectManagerAgent
 
     mock_db = MagicMock()
     mock_services = Mock()
     mock_services.get_database_specs.return_value = mock_db
     mock_services.get_database_auth.return_value = mock_db
 
-    agent = ProjectAgent("project", "ProjectAgent", mock_services)
+    agent = ProjectManagerAgent("project", "ProjectManagerAgent", mock_services)
 
     # Agent should have a logger
     assert hasattr(agent, 'logger'), "Agent should have a logger"
