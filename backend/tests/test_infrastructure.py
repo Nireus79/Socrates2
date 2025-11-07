@@ -237,8 +237,8 @@ class TestMigrationState:
             result = conn.execute(text("SELECT version_num FROM alembic_version"))
             version = result.scalar()
 
-            # Should be at migration 008 (Phase 1: 001-004, Phase 2: 005-007, Phase 3: 008)
-            assert version == "008", f"Expected migration 008, got {version}"
+            # Should be at migration 014 (Phase 1: 001-004, Phase 2: 005-007, Phase 3: 008, Phase 4: 009-010, Phase 5: 011, Phase 6: 012-014)
+            assert version == "014", f"Expected migration 014, got {version}"
 
         engine.dispose()
 
