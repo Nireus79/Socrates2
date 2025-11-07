@@ -474,7 +474,8 @@ No session required.
                         self.current_project = project_result.get("project")
                         self.console.print(f"[cyan]Selected project: {name}[/cyan]")
                 else:
-                    self.console.print(f"[red]✗ Failed: {result.get('message')}[/red]")
+                    error_msg = result.get('error') or result.get('detail') or result.get('message') or 'Unknown error'
+                    self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
             except Exception as e:
                 self.console.print(f"[red]Error: {e}[/red]")
 
@@ -528,7 +529,8 @@ No session required.
                             self.current_project = None
                             self.current_session = None
                     else:
-                        self.console.print(f"[red]✗ Failed: {result.get('message')}[/red]")
+                        error_msg = result.get('error') or result.get('detail') or result.get('message') or 'Unknown error'
+                    self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
                 except Exception as e:
                     self.console.print(f"[red]Error: {e}[/red]")
 
@@ -566,7 +568,8 @@ No session required.
                     # Get first question
                     self.get_next_question()
                 else:
-                    self.console.print(f"[red]✗ Failed: {result.get('message')}[/red]")
+                    error_msg = result.get('error') or result.get('detail') or result.get('message') or 'Unknown error'
+                    self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
             except Exception as e:
                 self.console.print(f"[red]Error: {e}[/red]")
 
@@ -583,7 +586,8 @@ No session required.
                         self.current_session = None
                         self.current_question = None
                     else:
-                        self.console.print(f"[red]✗ Failed: {result.get('message')}[/red]")
+                        error_msg = result.get('error') or result.get('detail') or result.get('message') or 'Unknown error'
+                    self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
                 except Exception as e:
                     self.console.print(f"[red]Error: {e}[/red]")
 
@@ -766,7 +770,8 @@ No session required.
                         self.console.print(f"  • [cyan]{spec}[/cyan]")
                     self.console.print()
             else:
-                self.console.print(f"[red]Failed: {result.get('message', 'Unknown error')}[/red]")
+                error_msg = result.get('error') or result.get('detail') or result.get('message') or 'Unknown error'
+                self.console.print(f"[red]Failed: {error_msg}[/red]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
 
