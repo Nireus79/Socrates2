@@ -47,21 +47,21 @@ def check_package(name: str, min_version: str, purpose: str, optional: bool = Fa
         min_version_tuple = parse_version(min_version)
 
         if version_tuple >= min_version_tuple:
-            print(f"✅ {name}=={version} ({purpose})")
+            print("[OK] {}=={} ({})".format(name, version, purpose))
             return True
         else:
-            marker = "⚠️" if optional else "❌"
-            print(f"{marker} {name}=={version} - Need >={min_version} ({purpose})")
+            marker = "[!]" if optional else "[X]"
+            print("{} {}=={} - Need >={} ({})".format(marker, name, version, min_version, purpose))
             return optional  # Optional packages don't fail
     except Exception:
-        marker = "⚠️" if optional else "❌"
-        print(f"{marker} {name} NOT INSTALLED ({purpose})")
+        marker = "[!]" if optional else "[X]"
+        print("{} {} NOT INSTALLED ({})".format(marker, name, purpose))
         return optional  # Optional packages don't fail
 
 
 def main():
     """Run all dependency checks."""
-    print("🔍 Checking Socrates2 Dependencies...\n")
+    print("[*] Checking Socrates2 Dependencies...\n")
     print("=" * 70)
     print("REQUIRED PACKAGES (Production)")
     print("=" * 70)
@@ -80,19 +80,19 @@ def main():
 
     print("\n" + "=" * 70)
     if all_ok:
-        print("✅ ALL REQUIRED DEPENDENCIES OK - Ready for Phase 1!")
+        print("[OK] ALL REQUIRED DEPENDENCIES OK - Ready for Phase 1!")
         print("\nYou can now run:")
         print("  1. alembic upgrade head  # Create database tables")
         print("  2. pytest               # Run tests")
         print("  3. uvicorn app.main:app # Start server")
         sys.exit(0)
     else:
-        print("❌ MISSING OR OUTDATED DEPENDENCIES")
-        print("\n📦 To install all dependencies:")
+        print("[X] MISSING OR OUTDATED DEPENDENCIES")
+        print("\n[*] To install all dependencies:")
         print("  pip install -r requirements.txt")
-        print("\n📦 To install dev dependencies:")
+        print("\n[*] To install dev dependencies:")
         print("  pip install -r requirements-dev.txt")
-        print("\n📖 See DEPENDENCIES_AND_CONFLICTS.md for details")
+        print("\n[*] See DEPENDENCIES_AND_CONFLICTS.md for details")
         sys.exit(1)
 
 
