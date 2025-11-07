@@ -11,7 +11,7 @@ import logging
 
 from .core.config import settings
 from .core.database import close_db_connections
-from .api import auth, admin
+from .api import auth, admin, conflicts
 
 # Configure logging
 logging.basicConfig(
@@ -32,9 +32,28 @@ async def lifespan(app: FastAPI):
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     logger.info(f"Debug mode: {settings.DEBUG}")
 
-    # Initialize orchestrator (will be done when first accessed)
+    # Initialize orchestrator and register agents
     from .agents.orchestrator import get_orchestrator
+    from .agents.project import ProjectManagerAgent
+    from .agents.socratic import SocraticCounselorAgent
+    from .agents.context import ContextAnalyzerAgent
+    from .agents.conflict_detector import ConflictDetectorAgent
+    from .core.dependencies import get_service_container
+
     orchestrator = get_orchestrator()
+    services = get_service_container()
+
+    # Register all agents
+    pm_agent = ProjectManagerAgent("project", "Project Manager", services)
+    socratic_agent = SocraticCounselorAgent("socratic", "Socratic Counselor", services)
+    context_agent = ContextAnalyzerAgent("context", "Context Analyzer", services)
+    conflict_agent = ConflictDetectorAgent("conflict", "Conflict Detector", services)
+
+    orchestrator.register_agent(pm_agent)
+    orchestrator.register_agent(socratic_agent)
+    orchestrator.register_agent(context_agent)
+    orchestrator.register_agent(conflict_agent)
+
     logger.info("AgentOrchestrator initialized")
     logger.info(f"Registered agents: {list(orchestrator.agents.keys())}")
 
@@ -67,6 +86,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(conflicts.router)
 
 
 @app.get("/")

@@ -4,7 +4,26 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="merge" />
+    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="merge">
+      <change afterPath="$PROJECT_DIR$/backend/alembic/versions/008_create_conflicts_table.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/agents/conflict_detector.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/api/conflicts.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/app/models/conflict.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/tests/test_phase_3_conflict_detection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PHASE_0_1_VERIFICATION_REPORT.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/004_create_sessions_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/alembic/versions/004_create_sessions_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/005_create_questions_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/alembic/versions/005_create_questions_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/agents/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/agents/context.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/context.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_1_infrastructure.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_1_infrastructure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_2_core_agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_2_core_agents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/implementation_documents/PHASES_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/PHASES_SUMMARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/implementation_documents/PHASE_2.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/PHASE_2.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/implementation_documents/PHASE_3.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/PHASE_3.md" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -34,13 +53,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Python tests in test_phase_2_core_agents.py.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "Merging master",
+    "ignore.virus.scanning.warn.message": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />
@@ -50,7 +71,7 @@
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\first_attempt" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python tests.Python tests in test_phase_2_core_agents.py">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="Socrates2" />
       <option name="ENV_FILES" value="" />
@@ -73,6 +94,26 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="Python tests in test_phase_2_core_agents.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="Socrates2" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/backend/tests/test_phase_2_core_agents.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python tests.Python tests in test_phase_2_core_agents.py" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -202,7 +243,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762455439997</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="merge">
+      <option name="closed" value="true" />
+      <created>1762455707092</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1762455707092</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

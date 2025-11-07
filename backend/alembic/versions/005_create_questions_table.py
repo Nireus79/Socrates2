@@ -16,10 +16,12 @@ down_revision = '004'
 branch_labels = None
 depends_on = None
 
+
 def _should_run():
     """Only run this migration for socrates_specs database"""
     db_url = os.getenv("DATABASE_URL", "")
     return "socrates_specs" in db_url
+
 
 def upgrade():
     if not _should_run():
@@ -65,6 +67,7 @@ def upgrade():
         'questions',
         'quality_score >= 0.00 AND quality_score <= 1.00'
     )
+
 
 def downgrade():
     if not _should_run():

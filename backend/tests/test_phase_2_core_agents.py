@@ -13,17 +13,17 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 from decimal import Decimal
 
-from app.models.user import User
-from app.models.project import Project
-from app.models.session import Session
-from app.models.question import Question
-from app.models.specification import Specification
-from app.models.conversation_history import ConversationHistory
-from app.agents.project import ProjectManagerAgent
-from app.agents.socratic import SocraticCounselorAgent
-from app.agents.context import ContextAnalyzerAgent
-from app.agents.orchestrator import AgentOrchestrator
-from app.core.dependencies import ServiceContainer
+from backend.app.models.user import User
+from backend.app.models.project import Project
+from backend.app.models.session import Session
+from backend.app.models.question import Question
+from backend.app.models.specification import Specification
+from backend.app.models.conversation_history import ConversationHistory
+from backend.app.agents.project import ProjectManagerAgent
+from backend.app.agents.socratic import SocraticCounselorAgent
+from backend.app.agents.context import ContextAnalyzerAgent
+from backend.app.agents.orchestrator import AgentOrchestrator
+from backend.app.core.dependencies import ServiceContainer
 
 
 # ============================================================================
