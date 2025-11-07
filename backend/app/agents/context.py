@@ -70,159 +70,193 @@ class ContextAnalyzerAgent(BaseAgent):
 
         # Validate
         if not all([session_id, question_id, answer]):
+            self.logger.warning("Validation error: missing session_id, question_id, or answer")
             return {
                 'success': False,
                 'error': 'session_id, question_id, and answer are required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = self.services.get_database_specs()
-
-        # Load context
-        session = db.query(Session).filter(Session.id == session_id).first()
-        if not session:
-            return {
-                'success': False,
-                'error': f'Session not found: {session_id}',
-                'error_code': 'SESSION_NOT_FOUND'
-            }
-
-        question = db.query(Question).filter(Question.id == question_id).first()
-        if not question:
-            return {
-                'success': False,
-                'error': f'Question not found: {question_id}',
-                'error_code': 'QUESTION_NOT_FOUND'
-            }
-
-        project = db.query(Project).filter(Project.id == session.project_id).first()
-        if not project:
-            return {
-                'success': False,
-                'error': f'Project not found: {session.project_id}',
-                'error_code': 'PROJECT_NOT_FOUND'
-            }
-
-        # Load existing specs
-        existing_specs = db.query(Specification).filter(
-            Specification.project_id == project.id,
-            Specification.is_current == True
-        ).all()
-
-        # Build extraction prompt
-        prompt = self._build_extraction_prompt(question, answer, existing_specs)
-
-        # Call Claude API
-        try:
-            response = self.services.get_claude_client().messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=2000,
-                messages=[{"role": "user", "content": prompt}]
-            )
-
-            # Extract text from response
-            response_text = response.content[0].text
-
-            # Parse JSON response
-            extracted_specs = json.loads(response_text)
-
-            # Ensure it's a list
-            if not isinstance(extracted_specs, list):
-                raise ValueError("Expected list of specifications")
-
-        except json.JSONDecodeError as e:
-            self.logger.error(f"Failed to parse Claude response: {e}")
-            return {
-                'success': False,
-                'error': 'Failed to parse specifications from Claude API',
-                'error_code': 'PARSE_ERROR'
-            }
-        except Exception as e:
-            self.logger.error(f"Claude API error: {e}")
-            return {
-                'success': False,
-                'error': f'Claude API error: {str(e)}',
-                'error_code': 'API_ERROR'
-            }
-
-        # Phase 3: Check for conflicts before saving
-        # Convert extracted specs to format expected by conflict detector
-        specs_for_conflict_check = []
-        for spec_data in extracted_specs:
-            specs_for_conflict_check.append({
-                'category': spec_data.get('category', question.category),
-                'key': spec_data['content'][:100],  # Use first 100 chars as key
-                'value': spec_data['content'],
-                'confidence': spec_data.get('confidence', 0.9)
-            })
-
-        # Get orchestrator and check for conflicts
-        orchestrator = self.services.get_orchestrator()
-        conflict_result = orchestrator.route_request(
-            agent_id='conflict',
-            action='detect_conflicts',
-            data={
-                'project_id': project.id,
-                'new_specs': specs_for_conflict_check,
-                'source_id': str(question_id)
-            }
-        )
-
-        # If conflicts detected, return them without saving
-        if conflict_result.get('conflicts_detected'):
-            self.logger.warning(
-                f"Conflicts detected for project {project.id}: "
-                f"{len(conflict_result.get('conflicts', []))} conflicts"
-            )
-            return {
-                'success': False,
-                'conflicts_detected': True,
-                'conflicts': conflict_result.get('conflicts', []),
-                'message': 'Specifications contain conflicts. Please resolve before proceeding.',
-                'specs_extracted': 0
-            }
-
-        # No conflicts, proceed with saving specifications
+        db = None
         saved_specs = []
-        for spec_data in extracted_specs:
-            spec = Specification(
-                project_id=project.id,
-                session_id=session_id,
-                category=spec_data.get('category', question.category),
-                content=spec_data['content'],
-                source='extracted',
-                confidence=Decimal(str(spec_data.get('confidence', 0.9))),
-                is_current=True,
-                spec_metadata={
-                    'question_id': str(question_id),
-                    'reasoning': spec_data.get('reasoning')
+
+        try:
+            db = self.services.get_database_specs()
+
+            # Load context
+            session = db.query(Session).filter(Session.id == session_id).first()
+            if not session:
+                self.logger.warning(f"Session not found: {session_id}")
+                return {
+                    'success': False,
+                    'error': f'Session not found: {session_id}',
+                    'error_code': 'SESSION_NOT_FOUND'
                 }
+
+            question = db.query(Question).filter(Question.id == question_id).first()
+            if not question:
+                self.logger.warning(f"Question not found: {question_id}")
+                return {
+                    'success': False,
+                    'error': f'Question not found: {question_id}',
+                    'error_code': 'QUESTION_NOT_FOUND'
+                }
+
+            project = db.query(Project).filter(Project.id == session.project_id).first()
+            if not project:
+                self.logger.warning(f"Project not found: {session.project_id}")
+                return {
+                    'success': False,
+                    'error': f'Project not found: {session.project_id}',
+                    'error_code': 'PROJECT_NOT_FOUND'
+                }
+
+            # Load existing specs
+            existing_specs = db.query(Specification).filter(
+                Specification.project_id == project.id,
+                Specification.is_current == True
+            ).all()
+
+            # Build extraction prompt
+            prompt = self._build_extraction_prompt(question, answer, existing_specs)
+
+            # Call Claude API (separate from DB transaction)
+            try:
+                self.logger.debug(f"Calling Claude API to extract specs from answer (question: {question_id})")
+                response = self.services.get_claude_client().messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=2000,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+
+                # Extract text from response
+                response_text = response.content[0].text
+                self.logger.debug(f"Claude API response received: {len(response_text)} chars")
+
+                # Parse JSON response
+                extracted_specs = json.loads(response_text)
+
+                # Ensure it's a list
+                if not isinstance(extracted_specs, list):
+                    raise ValueError("Expected list of specifications")
+
+                self.logger.info(f"Claude extracted {len(extracted_specs)} specifications")
+
+            except json.JSONDecodeError as e:
+                self.logger.error(f"Failed to parse Claude response as JSON: {e}", exc_info=True)
+                return {
+                    'success': False,
+                    'error': 'Failed to parse specifications from Claude API response',
+                    'error_code': 'PARSE_ERROR'
+                }
+            except Exception as e:
+                self.logger.error(f"Claude API error: {e}", exc_info=True)
+                return {
+                    'success': False,
+                    'error': f'Claude API error: {str(e)}',
+                    'error_code': 'API_ERROR'
+                }
+
+            # Phase 3: Check for conflicts before saving
+            # Convert extracted specs to format expected by conflict detector
+            specs_for_conflict_check = []
+            for spec_data in extracted_specs:
+                specs_for_conflict_check.append({
+                    'category': spec_data.get('category', question.category),
+                    'key': spec_data['content'][:100],  # Use first 100 chars as key
+                    'value': spec_data['content'],
+                    'confidence': spec_data.get('confidence', 0.9)
+                })
+
+            # Get orchestrator and check for conflicts (separate from DB transaction)
+            try:
+                from .orchestrator import get_orchestrator
+                orchestrator = get_orchestrator()
+                conflict_result = orchestrator.route_request(
+                    agent_id='conflict',
+                    action='detect_conflicts',
+                    data={
+                        'project_id': str(project.id),
+                        'new_specs': specs_for_conflict_check,
+                        'source_id': str(question_id)
+                    }
+                )
+
+                # If conflicts detected, return them without saving
+                if conflict_result.get('conflicts_detected'):
+                    self.logger.warning(
+                        f"Conflicts detected for project {project.id}: "
+                        f"{len(conflict_result.get('conflicts', []))} conflicts"
+                    )
+                    return {
+                        'success': False,
+                        'conflicts_detected': True,
+                        'conflicts': conflict_result.get('conflicts', []),
+                        'message': 'Specifications contain conflicts. Please resolve before proceeding.',
+                        'specs_extracted': 0
+                    }
+
+            except Exception as e:
+                # Conflict detection failed, but we can still proceed
+                self.logger.warning(f"Conflict detection failed, proceeding anyway: {e}")
+
+            # No conflicts, proceed with saving specifications
+            for spec_data in extracted_specs:
+                spec = Specification(
+                    project_id=project.id,
+                    session_id=session_id,
+                    category=spec_data.get('category', question.category),
+                    content=spec_data['content'],
+                    source='extracted',
+                    confidence=Decimal(str(spec_data.get('confidence', 0.9))),
+                    is_current=True,
+                    spec_metadata={
+                        'question_id': str(question_id),
+                        'reasoning': spec_data.get('reasoning')
+                    }
+                )
+                db.add(spec)
+                saved_specs.append(spec)
+
+            # Commit all specifications
+            db.commit()
+            self.logger.info(f"Saved {len(saved_specs)} specifications to database")
+
+            # Refresh to get IDs
+            for spec in saved_specs:
+                db.refresh(spec)
+
+            # Update maturity score
+            old_maturity = project.maturity_score
+            new_maturity = self._calculate_maturity(project.id, db)
+            project.maturity_score = new_maturity
+            db.commit()
+
+            self.logger.info(
+                f"Extracted {len(saved_specs)} specs from answer to question {question_id}. "
+                f"Maturity: {old_maturity}% -> {new_maturity}%"
             )
-            db.add(spec)
-            saved_specs.append(spec)
 
-        db.commit()
+            return {
+                'success': True,
+                'specs_extracted': len(saved_specs),
+                'specifications': [s.to_dict() for s in saved_specs],
+                'maturity_score': float(new_maturity)
+            }
 
-        # Refresh to get IDs
-        for spec in saved_specs:
-            db.refresh(spec)
+        except Exception as e:
+            self.logger.error(f"Error extracting specifications: {e}", exc_info=True)
+            if db:
+                db.rollback()
+            return {
+                'success': False,
+                'error': f'Failed to extract specifications: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
 
-        # Update maturity score
-        new_maturity = self._calculate_maturity(project.id, db)
-        project.maturity_score = new_maturity
-        db.commit()
-
-        self.logger.info(
-            f"Extracted {len(saved_specs)} specs from answer to question {question_id}. "
-            f"Maturity: {new_maturity}%"
-        )
-
-        return {
-            'success': True,
-            'specs_extracted': len(saved_specs),
-            'specifications': [s.to_dict() for s in saved_specs],
-            'maturity_score': float(new_maturity)
-        }
+        finally:
+            if db:
+                db.close()
 
     def _analyze_context(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
