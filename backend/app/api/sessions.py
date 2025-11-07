@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, UUID4
 from typing import Optional
 
-from ..core.dependencies import get_current_user, get_orchestrator
-from ..agents.orchestrator import AgentOrchestrator
+from ..core.security import get_current_active_user
+from ..agents.orchestrator import get_orchestrator, AgentOrchestrator
 from ..models import User
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -53,7 +53,7 @@ class SessionModeResponse(BaseModel):
 async def toggle_session_mode(
     session_id: UUID4,
     request: ToggleModeRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     orchestrator: AgentOrchestrator = Depends(get_orchestrator)
 ):
     """
@@ -90,7 +90,7 @@ async def toggle_session_mode(
 async def send_chat_message(
     session_id: UUID4,
     request: ChatMessageRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     orchestrator: AgentOrchestrator = Depends(get_orchestrator)
 ):
     """
@@ -141,7 +141,7 @@ async def send_chat_message(
 @router.get("/{session_id}/mode", response_model=SessionModeResponse)
 async def get_session_mode(
     session_id: UUID4,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     orchestrator: AgentOrchestrator = Depends(get_orchestrator)
 ):
     """
