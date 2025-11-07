@@ -4,8 +4,23 @@ Question model for Socratic questioning workflow.
 from sqlalchemy import Column, String, Text, Numeric, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
+import enum
 
 from .base import BaseModel
+
+
+class QuestionCategory(enum.Enum):
+    """Question category for Socratic questioning."""
+    GOALS = "goals"
+    REQUIREMENTS = "requirements"
+    TECH_STACK = "tech_stack"
+    SCALABILITY = "scalability"
+    SECURITY = "security"
+    PERFORMANCE = "performance"
+    TESTING = "testing"
+    MONITORING = "monitoring"
+    DATA_RETENTION = "data_retention"
+    DISASTER_RECOVERY = "disaster_recovery"
 
 
 class Question(BaseModel):

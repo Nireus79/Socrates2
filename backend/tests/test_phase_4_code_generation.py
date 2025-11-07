@@ -12,6 +12,7 @@ import pytest
 from unittest.mock import Mock, patch
 from datetime import datetime, timezone
 from decimal import Decimal
+import uuid
 
 from app.agents.code_generator import CodeGeneratorAgent
 from app.agents.orchestrator import AgentOrchestrator
@@ -25,11 +26,13 @@ from app.core.dependencies import ServiceContainer
 
 
 @pytest.fixture
-def service_container(db_specs_session, db_auth_session, mock_claude_client):
+def service_container(specs_session, auth_session):
     """Create service container for testing."""
+    from unittest.mock import Mock
     container = ServiceContainer()
-    container._db_session_specs = db_specs_session
-    container._db_session_auth = db_auth_session
+    container._db_session_specs = specs_session
+    container._db_session_auth = auth_session
+    mock_claude_client = Mock()
     container._claude_client = mock_claude_client
     return container
 
@@ -41,34 +44,34 @@ def code_gen_agent(service_container):
 
 
 @pytest.fixture
-def incomplete_project(db_specs_session):
+def incomplete_project(specs_session):
     """Create a project with < 100% maturity."""
     project = Project(
-        user_id="test-user-id",
+        user_id=uuid.uuid4(),
         name="Incomplete Project",
         description="Test project with low maturity",
-        maturity_score=Decimal("45.5"),
-        phase=ProjectPhase.DISCOVERY
+        maturity_score=45,
+        current_phase="discovery"
     )
-    db_specs_session.add(project)
-    db_specs_session.commit()
-    db_specs_session.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
     return project
 
 
 @pytest.fixture
-def complete_project(db_specs_session):
+def complete_project(specs_session):
     """Create a project with 100% maturity."""
     project = Project(
-        user_id="test-user-id",
+        user_id=uuid.uuid4(),
         name="Complete Project",
         description="Test project with full maturity",
-        maturity_score=Decimal("100.0"),
-        phase=ProjectPhase.SPECIFICATION
+        maturity_score=100,
+        current_phase="implementation"
     )
-    db_specs_session.add(project)
-    db_specs_session.commit()
-    db_specs_session.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
 
     # Add specifications across all categories
     categories = [
@@ -88,16 +91,16 @@ def complete_project(db_specs_session):
         for j in range(5):  # 5 specs per category
             spec = Specification(
                 project_id=project.id,
-                session_id="test-session",
-                category=category,
+                session_id=None,  # Specs don't need to reference a specific session
+                category=category.value,  # Use the string value of the enum
                 content=f"{category.value} specification {j+1}",
                 source='extracted',
                 confidence=Decimal("0.9"),
                 is_current=True
             )
-            db_specs_session.add(spec)
+            specs_session.add(spec)
 
-    db_specs_session.commit()
+    specs_session.commit()
     return project
 
 
@@ -117,21 +120,21 @@ def test_maturity_gate_blocks_low_maturity(code_gen_agent, incomplete_project):
     assert len(result['missing_categories']) > 0
 
 
-def test_maturity_gate_identifies_missing_categories(code_gen_agent, incomplete_project, db_specs_session):
+def test_maturity_gate_identifies_missing_categories(code_gen_agent, incomplete_project, specs_session):
     """Test maturity gate identifies which categories need more specs."""
     # Add only a few specs to goals category
     for i in range(2):
         spec = Specification(
             project_id=incomplete_project.id,
-            session_id="test-session",
-            category=QuestionCategory.GOALS,
+            session_id=None,  # Specs don't need to reference a specific session
+            category=QuestionCategory.GOALS.value,  # Use string value
             content=f"Goal {i+1}",
             source='extracted',
             confidence=Decimal("0.9"),
             is_current=True
         )
-        db_specs_session.add(spec)
-    db_specs_session.commit()
+        specs_session.add(spec)
+    specs_session.commit()
 
     result = code_gen_agent.process_request('generate_code', {
         'project_id': incomplete_project.id
@@ -150,7 +153,7 @@ def test_maturity_gate_identifies_missing_categories(code_gen_agent, incomplete_
 # ==================== Conflict Gate Tests ====================
 
 
-def test_conflict_gate_blocks_unresolved_conflicts(code_gen_agent, complete_project, db_specs_session):
+def test_conflict_gate_blocks_unresolved_conflicts(code_gen_agent, complete_project, specs_session):
     """Test code generation blocked when unresolved conflicts exist."""
     # Create an unresolved conflict
     conflict = Conflict(
@@ -162,8 +165,8 @@ def test_conflict_gate_blocks_unresolved_conflicts(code_gen_agent, complete_proj
         status=ConflictStatus.OPEN,
         detected_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add(conflict)
-    db_specs_session.commit()
+    specs_session.add(conflict)
+    specs_session.commit()
 
     result = code_gen_agent.process_request('generate_code', {
         'project_id': complete_project.id
@@ -174,7 +177,7 @@ def test_conflict_gate_blocks_unresolved_conflicts(code_gen_agent, complete_proj
     assert result['unresolved_count'] == 1
 
 
-def test_conflict_gate_allows_resolved_conflicts(code_gen_agent, complete_project, db_specs_session, mock_claude_client):
+def test_conflict_gate_allows_resolved_conflicts(code_gen_agent, complete_project, specs_session, mock_claude_client):
     """Test code generation proceeds when conflicts are resolved."""
     # Create a resolved conflict
     conflict = Conflict(
@@ -187,8 +190,8 @@ def test_conflict_gate_allows_resolved_conflicts(code_gen_agent, complete_projec
         detected_at=datetime.now(timezone.utc),
         resolved_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add(conflict)
-    db_specs_session.commit()
+    specs_session.add(conflict)
+    specs_session.commit()
 
     # Mock Claude response
     mock_response = Mock()
@@ -212,7 +215,7 @@ print("Hello World")
 
 
 @patch('anthropic.Anthropic')
-def test_generate_code_success(mock_anthropic, code_gen_agent, complete_project, db_specs_session):
+def test_generate_code_success(mock_anthropic, code_gen_agent, complete_project, specs_session):
     """Test successful code generation."""
     # Mock Claude response with multiple files
     mock_response = Mock()
@@ -263,7 +266,7 @@ uvicorn main:app --reload
     assert result['generation_version'] == 1
 
     # Verify generation record created
-    generation = db_specs_session.query(GeneratedProject).filter(
+    generation = specs_session.query(GeneratedProject).filter(
         GeneratedProject.id == result['generation_id']
     ).first()
     assert generation is not None
@@ -271,7 +274,7 @@ uvicorn main:app --reload
     assert generation.total_files == 3
 
     # Verify files saved
-    files = db_specs_session.query(GeneratedFile).filter(
+    files = specs_session.query(GeneratedFile).filter(
         GeneratedFile.generated_project_id == generation.id
     ).all()
     assert len(files) == 3
@@ -283,7 +286,7 @@ uvicorn main:app --reload
 
 
 @patch('anthropic.Anthropic')
-def test_generate_code_versioning(mock_anthropic, code_gen_agent, complete_project, db_specs_session):
+def test_generate_code_versioning(mock_anthropic, code_gen_agent, complete_project, specs_session):
     """Test generation versioning increments correctly."""
     # Mock Claude response
     mock_response = Mock()
@@ -308,24 +311,24 @@ def test_generate_code_versioning(mock_anthropic, code_gen_agent, complete_proje
     assert result2['generation_version'] == 2
 
     # Verify both generations exist
-    generations = db_specs_session.query(GeneratedProject).filter(
+    generations = specs_session.query(GeneratedProject).filter(
         GeneratedProject.project_id == complete_project.id
     ).all()
     assert len(generations) == 2
 
 
-def test_generate_code_no_specifications(code_gen_agent, db_specs_session):
+def test_generate_code_no_specifications(code_gen_agent, specs_session):
     """Test code generation fails when no specifications exist."""
     # Create project with 100% maturity but no specs
     project = Project(
-        user_id="test-user-id",
+        user_id=uuid.uuid4(),
         name="Empty Project",
         description="Project with no specs",
-        maturity_score=Decimal("100.0")
+        maturity_score=100
     )
-    db_specs_session.add(project)
-    db_specs_session.commit()
-    db_specs_session.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
 
     result = code_gen_agent.process_request('generate_code', {
         'project_id': project.id
@@ -382,7 +385,7 @@ def test_parse_generated_code_empty(code_gen_agent):
 # ==================== Get Generation Status Tests ====================
 
 
-def test_get_generation_status(code_gen_agent, complete_project, db_specs_session):
+def test_get_generation_status(code_gen_agent, complete_project, specs_session):
     """Test getting status of a generation."""
     # Create a generation
     generation = GeneratedProject(
@@ -394,9 +397,9 @@ def test_get_generation_status(code_gen_agent, complete_project, db_specs_sessio
         generation_status=GenerationStatus.COMPLETED,
         generation_completed_at=datetime.now(timezone.utc)
     )
-    db_specs_session.add(generation)
-    db_specs_session.commit()
-    db_specs_session.refresh(generation)
+    specs_session.add(generation)
+    specs_session.commit()
+    specs_session.refresh(generation)
 
     result = code_gen_agent.process_request('get_generation_status', {
         'generation_id': generation.id
@@ -421,7 +424,7 @@ def test_get_generation_status_not_found(code_gen_agent):
 # ==================== List Generations Tests ====================
 
 
-def test_list_generations(code_gen_agent, complete_project, db_specs_session):
+def test_list_generations(code_gen_agent, complete_project, specs_session):
     """Test listing all generations for a project."""
     # Create multiple generations
     for i in range(3):
@@ -434,8 +437,8 @@ def test_list_generations(code_gen_agent, complete_project, db_specs_session):
             generation_status=GenerationStatus.COMPLETED,
             generation_completed_at=datetime.now(timezone.utc)
         )
-        db_specs_session.add(generation)
-    db_specs_session.commit()
+        specs_session.add(generation)
+    specs_session.commit()
 
     result = code_gen_agent.process_request('list_generations', {
         'project_id': complete_project.id
@@ -464,10 +467,10 @@ def test_list_generations_empty(code_gen_agent, complete_project):
 # ==================== Group Specs Tests ====================
 
 
-def test_group_specs_by_category(code_gen_agent, db_specs_session, complete_project):
+def test_group_specs_by_category(code_gen_agent, specs_session, complete_project):
     """Test grouping specifications by category."""
     # Specs already added in complete_project fixture
-    specs = db_specs_session.query(Specification).filter(
+    specs = specs_session.query(Specification).filter(
         Specification.project_id == complete_project.id
     ).all()
 
@@ -486,9 +489,9 @@ def test_group_specs_by_category(code_gen_agent, db_specs_session, complete_proj
 # ==================== Build Prompt Tests ====================
 
 
-def test_build_code_generation_prompt(code_gen_agent, complete_project, db_specs_session):
+def test_build_code_generation_prompt(code_gen_agent, complete_project, specs_session):
     """Test building comprehensive code generation prompt."""
-    specs = db_specs_session.query(Specification).filter(
+    specs = specs_session.query(Specification).filter(
         Specification.project_id == complete_project.id
     ).all()
 

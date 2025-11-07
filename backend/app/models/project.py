@@ -4,8 +4,17 @@ Project model for user projects.
 from sqlalchemy import Column, String, Text, Integer, DateTime, Index
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
+import enum
 
 from .base import BaseModel
+
+
+class ProjectPhase(enum.Enum):
+    """Project workflow phases."""
+    DISCOVERY = "discovery"
+    ANALYSIS = "analysis"
+    DESIGN = "design"
+    IMPLEMENTATION = "implementation"
 
 
 class Project(BaseModel):

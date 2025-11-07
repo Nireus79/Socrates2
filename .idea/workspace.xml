@@ -6,15 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="phase 3">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/008_create_conflicts_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/alembic/versions/008_create_conflicts_table.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/agents/conflict_detector.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/conflict_detector.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/core/dependencies.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/dependencies.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/models/conflict.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/conflict.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_infrastructure.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_infrastructure.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_1_infrastructure.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_1_infrastructure.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_2_core_agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_2_core_agents.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_3_conflict_detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_3_conflict_detection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_verify_no_cross_contamination.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_verify_no_cross_contamination.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
