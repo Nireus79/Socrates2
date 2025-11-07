@@ -54,43 +54,66 @@ class ProjectManagerAgent(BaseAgent):
 
         # Validate
         if not user_id or not name:
+            self.logger.warning(f"Validation error: missing user_id or name")
             return {
                 'success': False,
                 'error': 'user_id and name are required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Check user exists (in socrates_auth database)
-        user = self.services.get_database_auth().query(User).filter(User.id == user_id).first()
-        if not user:
+        db_auth = None
+        db_specs = None
+
+        try:
+            # Check user exists (in socrates_auth database)
+            db_auth = self.services.get_database_auth()
+            user = db_auth.query(User).filter(User.id == user_id).first()
+            if not user:
+                self.logger.warning(f"User not found: {user_id}")
+                return {
+                    'success': False,
+                    'error': f'User not found: {user_id}',
+                    'error_code': 'USER_NOT_FOUND'
+                }
+
+            # Create project
+            db_specs = self.services.get_database_specs()
+            project = Project(
+                user_id=user_id,
+                name=name,
+                description=description,
+                current_phase='discovery',
+                maturity_score=0,
+                status='active'
+            )
+
+            db_specs.add(project)
+            db_specs.commit()
+            db_specs.refresh(project)
+
+            self.logger.info(f"Created project: {project.id} for user: {user_id}")
+
             return {
-                'success': False,
-                'error': f'User not found: {user_id}',
-                'error_code': 'USER_NOT_FOUND'
+                'success': True,
+                'project_id': str(project.id),
+                'project': project.to_dict()
             }
 
-        # Create project
-        project = Project(
-            user_id=user_id,
-            name=name,
-            description=description,
-            current_phase='discovery',
-            maturity_score=0,
-            status='active'
-        )
+        except Exception as e:
+            self.logger.error(f"Error creating project: {e}", exc_info=True)
+            if db_specs:
+                db_specs.rollback()
+            return {
+                'success': False,
+                'error': f'Failed to create project: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
 
-        db = self.services.get_database_specs()
-        db.add(project)
-        db.commit()
-        db.refresh(project)
-
-        self.logger.info(f"Created project: {project.id} for user: {user_id}")
-
-        return {
-            'success': True,
-            'project_id': str(project.id),
-            'project': project.to_dict()
-        }
+        finally:
+            if db_auth:
+                db_auth.close()
+            if db_specs:
+                db_specs.close()
 
     def _get_project(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -107,26 +130,42 @@ class ProjectManagerAgent(BaseAgent):
         project_id = data.get('project_id')
 
         if not project_id:
+            self.logger.warning("Validation error: missing project_id")
             return {
                 'success': False,
                 'error': 'project_id is required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = self.services.get_database_specs()
-        project = db.query(Project).filter(Project.id == project_id).first()
+        db = None
+        try:
+            db = self.services.get_database_specs()
+            project = db.query(Project).filter(Project.id == project_id).first()
 
-        if not project:
+            if not project:
+                self.logger.warning(f"Project not found: {project_id}")
+                return {
+                    'success': False,
+                    'error': f'Project not found: {project_id}',
+                    'error_code': 'PROJECT_NOT_FOUND'
+                }
+
             return {
-                'success': False,
-                'error': f'Project not found: {project_id}',
-                'error_code': 'PROJECT_NOT_FOUND'
+                'success': True,
+                'project': project.to_dict()
             }
 
-        return {
-            'success': True,
-            'project': project.to_dict()
-        }
+        except Exception as e:
+            self.logger.error(f"Error getting project {project_id}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': f'Failed to get project: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
+
+        finally:
+            if db:
+                db.close()
 
     def _update_project(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -147,41 +186,64 @@ class ProjectManagerAgent(BaseAgent):
         project_id = data.get('project_id')
 
         if not project_id:
+            self.logger.warning("Validation error: missing project_id")
             return {
                 'success': False,
                 'error': 'project_id is required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = self.services.get_database_specs()
-        project = db.query(Project).filter(Project.id == project_id).first()
+        db = None
+        try:
+            db = self.services.get_database_specs()
+            project = db.query(Project).filter(Project.id == project_id).first()
 
-        if not project:
+            if not project:
+                self.logger.warning(f"Project not found: {project_id}")
+                return {
+                    'success': False,
+                    'error': f'Project not found: {project_id}',
+                    'error_code': 'PROJECT_NOT_FOUND'
+                }
+
+            # Update fields if provided
+            updates = []
+            if 'name' in data:
+                project.name = data['name']
+                updates.append(f"name={data['name']}")
+            if 'description' in data:
+                project.description = data['description']
+                updates.append("description updated")
+            if 'current_phase' in data:
+                project.current_phase = data['current_phase']
+                updates.append(f"current_phase={data['current_phase']}")
+            if 'status' in data:
+                project.status = data['status']
+                updates.append(f"status={data['status']}")
+
+            db.commit()
+            db.refresh(project)
+
+            self.logger.info(f"Updated project {project.id}: {', '.join(updates)}")
+
             return {
-                'success': False,
-                'error': f'Project not found: {project_id}',
-                'error_code': 'PROJECT_NOT_FOUND'
+                'success': True,
+                'project': project.to_dict()
             }
 
-        # Update fields if provided
-        if 'name' in data:
-            project.name = data['name']
-        if 'description' in data:
-            project.description = data['description']
-        if 'current_phase' in data:
-            project.current_phase = data['current_phase']
-        if 'status' in data:
-            project.status = data['status']
+        except Exception as e:
+            self.logger.error(f"Error updating project {project_id}: {e}", exc_info=True)
+            if db:
+                db.rollback()
+            return {
+                'success': False,
+                'error': f'Failed to update project: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
 
-        db.commit()
-        db.refresh(project)
-
-        self.logger.info(f"Updated project: {project.id}")
-
-        return {
-            'success': True,
-            'project': project.to_dict()
-        }
+        finally:
+            if db:
+                db.close()
 
     def _delete_project(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -198,32 +260,50 @@ class ProjectManagerAgent(BaseAgent):
         project_id = data.get('project_id')
 
         if not project_id:
+            self.logger.warning("Validation error: missing project_id")
             return {
                 'success': False,
                 'error': 'project_id is required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = self.services.get_database_specs()
-        project = db.query(Project).filter(Project.id == project_id).first()
+        db = None
+        try:
+            db = self.services.get_database_specs()
+            project = db.query(Project).filter(Project.id == project_id).first()
 
-        if not project:
+            if not project:
+                self.logger.warning(f"Project not found: {project_id}")
+                return {
+                    'success': False,
+                    'error': f'Project not found: {project_id}',
+                    'error_code': 'PROJECT_NOT_FOUND'
+                }
+
+            # Soft delete (archive)
+            project.status = 'archived'
+            db.commit()
+
+            self.logger.info(f"Archived project: {project.id}")
+
             return {
-                'success': False,
-                'error': f'Project not found: {project_id}',
-                'error_code': 'PROJECT_NOT_FOUND'
+                'success': True,
+                'project_id': str(project.id)
             }
 
-        # Soft delete (archive)
-        project.status = 'archived'
-        db.commit()
+        except Exception as e:
+            self.logger.error(f"Error archiving project {project_id}: {e}", exc_info=True)
+            if db:
+                db.rollback()
+            return {
+                'success': False,
+                'error': f'Failed to archive project: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
 
-        self.logger.info(f"Archived project: {project.id}")
-
-        return {
-            'success': True,
-            'project_id': str(project.id)
-        }
+        finally:
+            if db:
+                db.close()
 
     def _list_projects(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -231,32 +311,59 @@ class ProjectManagerAgent(BaseAgent):
 
         Args:
             data: {
-                'user_id': str (UUID)
+                'user_id': str (UUID),
+                'skip': int (optional),
+                'limit': int (optional)
             }
 
         Returns:
-            {'success': bool, 'projects': list, 'count': int}
+            {'success': bool, 'projects': list, 'total': int}
         """
         user_id = data.get('user_id')
+        skip = data.get('skip', 0)
+        limit = data.get('limit', 100)
 
         if not user_id:
+            self.logger.warning("Validation error: missing user_id")
             return {
                 'success': False,
                 'error': 'user_id is required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = self.services.get_database_specs()
-        projects = db.query(Project).filter(
-            Project.user_id == user_id,
-            Project.status != 'archived'
-        ).order_by(Project.created_at.desc()).all()
+        db = None
+        try:
+            db = self.services.get_database_specs()
+            query = db.query(Project).filter(
+                Project.user_id == user_id,
+                Project.status != 'archived'
+            ).order_by(Project.created_at.desc())
 
-        return {
-            'success': True,
-            'projects': [p.to_dict() for p in projects],
-            'count': len(projects)
-        }
+            # Get total count before pagination
+            total = query.count()
+
+            # Apply pagination
+            projects = query.offset(skip).limit(limit).all()
+
+            self.logger.debug(f"Listed {len(projects)} projects for user {user_id}")
+
+            return {
+                'success': True,
+                'projects': [p.to_dict() for p in projects],
+                'total': total
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error listing projects for user {user_id}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': f'Failed to list projects: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
+
+        finally:
+            if db:
+                db.close()
 
     def _update_maturity(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -275,6 +382,7 @@ class ProjectManagerAgent(BaseAgent):
         maturity_score = data.get('maturity_score')
 
         if not project_id or maturity_score is None:
+            self.logger.warning("Validation error: missing project_id or maturity_score")
             return {
                 'success': False,
                 'error': 'project_id and maturity_score are required',
@@ -282,28 +390,47 @@ class ProjectManagerAgent(BaseAgent):
             }
 
         if not (0 <= maturity_score <= 100):
+            self.logger.warning(f"Invalid maturity_score: {maturity_score}")
             return {
                 'success': False,
                 'error': 'maturity_score must be between 0 and 100',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = self.services.get_database_specs()
-        project = db.query(Project).filter(Project.id == project_id).first()
+        db = None
+        try:
+            db = self.services.get_database_specs()
+            project = db.query(Project).filter(Project.id == project_id).first()
 
-        if not project:
+            if not project:
+                self.logger.warning(f"Project not found: {project_id}")
+                return {
+                    'success': False,
+                    'error': f'Project not found: {project_id}',
+                    'error_code': 'PROJECT_NOT_FOUND'
+                }
+
+            old_score = project.maturity_score
+            project.maturity_score = maturity_score
+            db.commit()
+
+            self.logger.info(f"Updated maturity for project {project.id}: {old_score}% -> {maturity_score}%")
+
             return {
-                'success': False,
-                'error': f'Project not found: {project_id}',
-                'error_code': 'PROJECT_NOT_FOUND'
+                'success': True,
+                'maturity_score': maturity_score
             }
 
-        project.maturity_score = maturity_score
-        db.commit()
+        except Exception as e:
+            self.logger.error(f"Error updating maturity for project {project_id}: {e}", exc_info=True)
+            if db:
+                db.rollback()
+            return {
+                'success': False,
+                'error': f'Failed to update maturity: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
 
-        self.logger.info(f"Updated maturity for project {project.id}: {maturity_score}%")
-
-        return {
-            'success': True,
-            'maturity_score': maturity_score
-        }
+        finally:
+            if db:
+                db.close()

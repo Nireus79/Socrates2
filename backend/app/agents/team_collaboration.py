@@ -66,41 +66,60 @@ class TeamCollaborationAgent(BaseAgent):
         description = data.get('description', '')
         created_by = data.get('created_by')
 
+        # Validate
         if not name or not created_by:
+            self.logger.warning("Validation error: missing name or created_by")
             return {
                 'success': False,
                 'error': 'name and created_by are required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Get auth database (teams table is in socrates_auth)
-        db_auth = self.services.get_database_auth()
+        db_auth = None
 
-        # Create team
-        team = Team(
-            name=name,
-            description=description,
-            created_by=created_by
-        )
-        db_auth.add(team)
-        db_auth.flush()
+        try:
+            # Get auth database (teams table is in socrates_auth)
+            db_auth = self.services.get_database_auth()
 
-        # Add creator as owner
-        owner_member = TeamMember(
-            team_id=team.id,
-            user_id=created_by,
-            role='owner'
-        )
-        db_auth.add(owner_member)
-        db_auth.commit()
+            # Create team
+            team = Team(
+                name=name,
+                description=description,
+                created_by=created_by
+            )
+            db_auth.add(team)
+            db_auth.flush()
 
-        self.logger.info(f"Team created: {team.name} (ID: {team.id})")
+            # Add creator as owner
+            owner_member = TeamMember(
+                team_id=team.id,
+                user_id=created_by,
+                role='owner'
+            )
+            db_auth.add(owner_member)
+            db_auth.commit()
 
-        return {
-            'success': True,
-            'team_id': str(team.id),
-            'name': team.name
-        }
+            self.logger.info(f"Team created: {team.name} (ID: {team.id})")
+
+            return {
+                'success': True,
+                'team_id': str(team.id),
+                'name': team.name
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error creating team: {e}", exc_info=True)
+            if db_auth:
+                db_auth.rollback()
+            return {
+                'success': False,
+                'error': f'Failed to create team: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
+
+        finally:
+            if db_auth:
+                db_auth.close()
 
     def _add_team_member(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -122,58 +141,79 @@ class TeamCollaborationAgent(BaseAgent):
         role = data.get('role')
         invited_by = data.get('invited_by')
 
+        # Validate
         if not all([team_id, user_id, role, invited_by]):
+            self.logger.warning("Validation error: missing required fields for add_team_member")
             return {
                 'success': False,
                 'error': 'team_id, user_id, role, and invited_by are required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Get auth database
-        db_auth = self.services.get_database_auth()
+        db_auth = None
 
-        # Verify inviter has permission (must be owner or lead)
-        inviter_member = db_auth.query(TeamMember).filter_by(
-            team_id=team_id,
-            user_id=invited_by
-        ).first()
+        try:
+            # Get auth database
+            db_auth = self.services.get_database_auth()
 
-        if not inviter_member or inviter_member.role not in ['owner', 'lead']:
+            # Verify inviter has permission (must be owner or lead)
+            inviter_member = db_auth.query(TeamMember).filter_by(
+                team_id=team_id,
+                user_id=invited_by
+            ).first()
+
+            if not inviter_member or inviter_member.role not in ['owner', 'lead']:
+                self.logger.warning(f"Permission denied: User {invited_by} cannot invite to team {team_id}")
+                return {
+                    'success': False,
+                    'error': 'Permission denied: Only owners and leads can invite members',
+                    'error_code': 'PERMISSION_DENIED'
+                }
+
+            # Check if user is already a member
+            existing = db_auth.query(TeamMember).filter_by(
+                team_id=team_id,
+                user_id=user_id
+            ).first()
+
+            if existing:
+                self.logger.warning(f"User {user_id} is already a member of team {team_id}")
+                return {
+                    'success': False,
+                    'error': 'User is already a team member',
+                    'error_code': 'ALREADY_EXISTS'
+                }
+
+            # Add team member
+            member = TeamMember(
+                team_id=team_id,
+                user_id=user_id,
+                role=role
+            )
+            db_auth.add(member)
+            db_auth.commit()
+
+            self.logger.info(f"User {user_id} added to team {team_id} as {role}")
+
             return {
-                'success': False,
-                'error': 'Permission denied: Only owners and leads can invite members',
-                'error_code': 'PERMISSION_DENIED'
+                'success': True,
+                'member_id': str(member.id),
+                'role': role
             }
 
-        # Check if user is already a member
-        existing = db_auth.query(TeamMember).filter_by(
-            team_id=team_id,
-            user_id=user_id
-        ).first()
-
-        if existing:
+        except Exception as e:
+            self.logger.error(f"Error adding member to team {team_id}: {e}", exc_info=True)
+            if db_auth:
+                db_auth.rollback()
             return {
                 'success': False,
-                'error': 'User is already a team member',
-                'error_code': 'ALREADY_EXISTS'
+                'error': f'Failed to add team member: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
             }
 
-        # Add team member
-        member = TeamMember(
-            team_id=team_id,
-            user_id=user_id,
-            role=role
-        )
-        db_auth.add(member)
-        db_auth.commit()
-
-        self.logger.info(f"User {user_id} added to team {team_id} as {role}")
-
-        return {
-            'success': True,
-            'member_id': str(member.id),
-            'role': role
-        }
+        finally:
+            if db_auth:
+                db_auth.close()
 
     def _remove_team_member(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -193,65 +233,87 @@ class TeamCollaborationAgent(BaseAgent):
         user_id = data.get('user_id')
         removed_by = data.get('removed_by')
 
+        # Validate
         if not all([team_id, user_id, removed_by]):
+            self.logger.warning("Validation error: missing required fields for remove_team_member")
             return {
                 'success': False,
                 'error': 'team_id, user_id, and removed_by are required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Get auth database
-        db_auth = self.services.get_database_auth()
+        db_auth = None
 
-        # Verify remover has permission (must be owner)
-        remover_member = db_auth.query(TeamMember).filter_by(
-            team_id=team_id,
-            user_id=removed_by
-        ).first()
+        try:
+            # Get auth database
+            db_auth = self.services.get_database_auth()
 
-        if not remover_member or remover_member.role != 'owner':
-            return {
-                'success': False,
-                'error': 'Permission denied: Only owners can remove members',
-                'error_code': 'PERMISSION_DENIED'
-            }
-
-        # Find member to remove
-        member = db_auth.query(TeamMember).filter_by(
-            team_id=team_id,
-            user_id=user_id
-        ).first()
-
-        if not member:
-            return {
-                'success': False,
-                'error': 'User is not a team member',
-                'error_code': 'NOT_FOUND'
-            }
-
-        # Cannot remove last owner
-        if member.role == 'owner':
-            owner_count = db_auth.query(TeamMember).filter_by(
+            # Verify remover has permission (must be owner)
+            remover_member = db_auth.query(TeamMember).filter_by(
                 team_id=team_id,
-                role='owner'
-            ).count()
-            if owner_count <= 1:
+                user_id=removed_by
+            ).first()
+
+            if not remover_member or remover_member.role != 'owner':
+                self.logger.warning(f"Permission denied: User {removed_by} cannot remove from team {team_id}")
                 return {
                     'success': False,
-                    'error': 'Cannot remove last owner',
-                    'error_code': 'VALIDATION_ERROR'
+                    'error': 'Permission denied: Only owners can remove members',
+                    'error_code': 'PERMISSION_DENIED'
                 }
 
-        # Remove member
-        db_auth.delete(member)
-        db_auth.commit()
+            # Find member to remove
+            member = db_auth.query(TeamMember).filter_by(
+                team_id=team_id,
+                user_id=user_id
+            ).first()
 
-        self.logger.info(f"User {user_id} removed from team {team_id}")
+            if not member:
+                self.logger.warning(f"User {user_id} is not a member of team {team_id}")
+                return {
+                    'success': False,
+                    'error': 'User is not a team member',
+                    'error_code': 'NOT_FOUND'
+                }
 
-        return {
-            'success': True,
-            'removed_user_id': str(user_id)
-        }
+            # Cannot remove last owner
+            if member.role == 'owner':
+                owner_count = db_auth.query(TeamMember).filter_by(
+                    team_id=team_id,
+                    role='owner'
+                ).count()
+                if owner_count <= 1:
+                    self.logger.warning(f"Cannot remove last owner from team {team_id}")
+                    return {
+                        'success': False,
+                        'error': 'Cannot remove last owner',
+                        'error_code': 'VALIDATION_ERROR'
+                    }
+
+            # Remove member
+            db_auth.delete(member)
+            db_auth.commit()
+
+            self.logger.info(f"User {user_id} removed from team {team_id}")
+
+            return {
+                'success': True,
+                'removed_user_id': str(user_id)
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error removing member from team {team_id}: {e}", exc_info=True)
+            if db_auth:
+                db_auth.rollback()
+            return {
+                'success': False,
+                'error': f'Failed to remove team member: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
+
+        finally:
+            if db_auth:
+                db_auth.close()
 
     def _get_team_details(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -325,59 +387,82 @@ class TeamCollaborationAgent(BaseAgent):
         description = data.get('description', '')
         created_by = data.get('created_by')
 
+        # Validate
         if not all([team_id, name, created_by]):
+            self.logger.warning("Validation error: missing required fields for create_team_project")
             return {
                 'success': False,
                 'error': 'team_id, name, and created_by are required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Get databases
-        db_auth = self.services.get_database_auth()
-        db_specs = self.services.get_database_specs()
+        db_auth = None
+        db_specs = None
 
-        # Verify user is team member
-        member = db_auth.query(TeamMember).filter_by(
-            team_id=team_id,
-            user_id=created_by
-        ).first()
+        try:
+            # Get databases
+            db_auth = self.services.get_database_auth()
+            db_specs = self.services.get_database_specs()
 
-        if not member:
+            # Verify user is team member
+            member = db_auth.query(TeamMember).filter_by(
+                team_id=team_id,
+                user_id=created_by
+            ).first()
+
+            if not member:
+                self.logger.warning(f"Permission denied: User {created_by} is not member of team {team_id}")
+                return {
+                    'success': False,
+                    'error': 'User is not a team member',
+                    'error_code': 'PERMISSION_DENIED'
+                }
+
+            # Create project
+            project = Project(
+                user_id=created_by,
+                name=name,
+                description=description,
+                current_phase='discovery',
+                maturity_score=0,
+                status='active'
+            )
+            db_specs.add(project)
+            db_specs.flush()
+
+            # Create project share record (in socrates_specs database)
+            share = ProjectShare(
+                project_id=project.id,
+                team_id=team_id,
+                shared_by=created_by,
+                permission_level='admin'  # Team members have admin access
+            )
+            db_specs.add(share)
+            db_specs.commit()
+
+            self.logger.info(f"Team project created: {name} (ID: {project.id})")
+
             return {
-                'success': False,
-                'error': 'User is not a team member',
-                'error_code': 'PERMISSION_DENIED'
+                'success': True,
+                'project_id': str(project.id),
+                'team_id': str(team_id)
             }
 
-        # Create project
-        project = Project(
-            user_id=created_by,
-            name=name,
-            description=description,
-            current_phase='discovery',
-            maturity_score=0,
-            status='active'
-        )
-        db_specs.add(project)
-        db_specs.flush()
+        except Exception as e:
+            self.logger.error(f"Error creating team project: {e}", exc_info=True)
+            if db_specs:
+                db_specs.rollback()
+            return {
+                'success': False,
+                'error': f'Failed to create team project: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
 
-        # Create project share record (in socrates_specs database)
-        share = ProjectShare(
-            project_id=project.id,
-            team_id=team_id,
-            shared_by=created_by,
-            permission_level='admin'  # Team members have admin access
-        )
-        db_specs.add(share)
-        db_specs.commit()
-
-        self.logger.info(f"Team project created: {name} (ID: {project.id})")
-
-        return {
-            'success': True,
-            'project_id': str(project.id),
-            'team_id': str(team_id)
-        }
+        finally:
+            if db_auth:
+                db_auth.close()
+            if db_specs:
+                db_specs.close()
 
     def _share_project(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -399,61 +484,83 @@ class TeamCollaborationAgent(BaseAgent):
         shared_by = data.get('shared_by')
         permission_level = data.get('permission_level', 'read')
 
+        # Validate
         if not all([project_id, team_id, shared_by]):
+            self.logger.warning("Validation error: missing required fields for share_project")
             return {
                 'success': False,
                 'error': 'project_id, team_id, and shared_by are required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Get specs database
-        db_specs = self.services.get_database_specs()
+        db_specs = None
 
-        # Verify project ownership
-        project = db_specs.query(Project).filter_by(id=project_id).first()
-        if not project:
+        try:
+            # Get specs database
+            db_specs = self.services.get_database_specs()
+
+            # Verify project ownership
+            project = db_specs.query(Project).filter_by(id=project_id).first()
+            if not project:
+                self.logger.warning(f"Project not found: {project_id}")
+                return {
+                    'success': False,
+                    'error': f'Project not found: {project_id}',
+                    'error_code': 'NOT_FOUND'
+                }
+
+            if str(project.user_id) != str(shared_by):
+                self.logger.warning(f"Permission denied: User {shared_by} is not owner of project {project_id}")
+                return {
+                    'success': False,
+                    'error': 'Only project owner can share',
+                    'error_code': 'PERMISSION_DENIED'
+                }
+
+            # Check if already shared
+            existing = db_specs.query(ProjectShare).filter_by(
+                project_id=project_id,
+                team_id=team_id
+            ).first()
+
+            if existing:
+                self.logger.warning(f"Project {project_id} already shared with team {team_id}")
+                return {
+                    'success': False,
+                    'error': 'Project already shared with this team',
+                    'error_code': 'ALREADY_EXISTS'
+                }
+
+            # Create share
+            share = ProjectShare(
+                project_id=project_id,
+                team_id=team_id,
+                shared_by=shared_by,
+                permission_level=permission_level
+            )
+            db_specs.add(share)
+            db_specs.commit()
+
+            self.logger.info(f"Project {project_id} shared with team {team_id}")
+
             return {
-                'success': False,
-                'error': f'Project not found: {project_id}',
-                'error_code': 'NOT_FOUND'
+                'success': True,
+                'share_id': str(share.id)
             }
 
-        if str(project.user_id) != str(shared_by):
+        except Exception as e:
+            self.logger.error(f"Error sharing project {project_id} with team {team_id}: {e}", exc_info=True)
+            if db_specs:
+                db_specs.rollback()
             return {
                 'success': False,
-                'error': 'Only project owner can share',
-                'error_code': 'PERMISSION_DENIED'
+                'error': f'Failed to share project: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
             }
 
-        # Check if already shared
-        existing = db_specs.query(ProjectShare).filter_by(
-            project_id=project_id,
-            team_id=team_id
-        ).first()
-
-        if existing:
-            return {
-                'success': False,
-                'error': 'Project already shared with this team',
-                'error_code': 'ALREADY_EXISTS'
-            }
-
-        # Create share
-        share = ProjectShare(
-            project_id=project_id,
-            team_id=team_id,
-            shared_by=shared_by,
-            permission_level=permission_level
-        )
-        db_specs.add(share)
-        db_specs.commit()
-
-        self.logger.info(f"Project {project_id} shared with team {team_id}")
-
-        return {
-            'success': True,
-            'share_id': str(share.id)
-        }
+        finally:
+            if db_specs:
+                db_specs.close()
 
     def _get_team_activity(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """

@@ -74,105 +74,128 @@ class SocraticCounselorAgent(BaseAgent):
         project_id = data.get('project_id')
         session_id = data.get('session_id')
 
+        # Validate
         if not project_id or not session_id:
+            self.logger.warning("Validation error: missing project_id or session_id")
             return {
                 'success': False,
                 'error': 'project_id and session_id are required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = self.services.get_database_specs()
+        db = None
 
-        # Load project context
-        project = db.query(Project).filter(Project.id == project_id).first()
-        if not project:
-            return {
-                'success': False,
-                'error': f'Project not found: {project_id}',
-                'error_code': 'PROJECT_NOT_FOUND'
-            }
-
-        # Load session
-        session = db.query(Session).filter(Session.id == session_id).first()
-        if not session:
-            return {
-                'success': False,
-                'error': f'Session not found: {session_id}',
-                'error_code': 'SESSION_NOT_FOUND'
-            }
-
-        # Load existing specifications
-        existing_specs = db.query(Specification).filter(
-            Specification.project_id == project_id,
-            Specification.is_current == True
-        ).all()
-
-        # Load previous questions
-        previous_questions = db.query(Question).filter(
-            Question.project_id == project_id
-        ).order_by(Question.created_at.desc()).limit(10).all()
-
-        # Calculate coverage per category
-        coverage = self._calculate_coverage(existing_specs)
-
-        # Identify next category to focus on (lowest coverage)
-        next_category = self._identify_next_category(coverage)
-
-        # Build prompt for Claude
-        prompt = self._build_question_generation_prompt(
-            project, existing_specs, previous_questions, next_category
-        )
-
-        # Call Claude API
         try:
-            response = self.services.get_claude_client().messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=500,
-                messages=[{"role": "user", "content": prompt}]
+            db = self.services.get_database_specs()
+
+            # Load project context
+            project = db.query(Project).filter(Project.id == project_id).first()
+            if not project:
+                self.logger.warning(f"Project not found: {project_id}")
+                return {
+                    'success': False,
+                    'error': f'Project not found: {project_id}',
+                    'error_code': 'PROJECT_NOT_FOUND'
+                }
+
+            # Load session
+            session = db.query(Session).filter(Session.id == session_id).first()
+            if not session:
+                self.logger.warning(f"Session not found: {session_id}")
+                return {
+                    'success': False,
+                    'error': f'Session not found: {session_id}',
+                    'error_code': 'SESSION_NOT_FOUND'
+                }
+
+            # Load existing specifications
+            existing_specs = db.query(Specification).filter(
+                Specification.project_id == project_id,
+                Specification.is_current == True
+            ).all()
+
+            # Load previous questions
+            previous_questions = db.query(Question).filter(
+                Question.project_id == project_id
+            ).order_by(Question.created_at.desc()).limit(10).all()
+
+            # Calculate coverage per category
+            coverage = self._calculate_coverage(existing_specs)
+
+            # Identify next category to focus on (lowest coverage)
+            next_category = self._identify_next_category(coverage)
+
+            # Build prompt for Claude
+            prompt = self._build_question_generation_prompt(
+                project, existing_specs, previous_questions, next_category
             )
 
-            # Extract text from response
-            response_text = response.content[0].text
+            # Call Claude API (separate from DB transaction)
+            try:
+                self.logger.debug(f"Calling Claude API to generate question for project {project_id}, category: {next_category}")
+                response = self.services.get_claude_client().messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=500,
+                    messages=[{"role": "user", "content": prompt}]
+                )
 
-            # Parse JSON response
-            question_data = json.loads(response_text)
+                # Extract text from response
+                response_text = response.content[0].text
+                self.logger.debug(f"Claude API response received: {len(response_text)} chars")
 
-        except json.JSONDecodeError as e:
-            self.logger.error(f"Failed to parse Claude response: {e}")
+                # Parse JSON response
+                question_data = json.loads(response_text)
+
+            except json.JSONDecodeError as e:
+                self.logger.error(f"Failed to parse Claude response as JSON: {e}", exc_info=True)
+                return {
+                    'success': False,
+                    'error': 'Failed to parse question from Claude API',
+                    'error_code': 'PARSE_ERROR'
+                }
+            except Exception as e:
+                self.logger.error(f"Claude API error: {e}", exc_info=True)
+                return {
+                    'success': False,
+                    'error': f'Claude API error: {str(e)}',
+                    'error_code': 'API_ERROR'
+                }
+
+            # Save question
+            question = Question(
+                project_id=project_id,
+                session_id=session_id,
+                text=question_data['text'],
+                category=question_data['category'],
+                context=question_data.get('context'),
+                quality_score=Decimal('1.0')  # Phase 5 will add quality analysis
+            )
+
+            db.add(question)
+            db.commit()
+            db.refresh(question)
+
+            self.logger.info(f"Generated question {question.id} for project {project_id}, category: {question.category}")
+
             return {
-                'success': False,
-                'error': 'Failed to parse question from Claude API',
-                'error_code': 'PARSE_ERROR'
+                'success': True,
+                'question': question.to_dict(),
+                'question_id': str(question.id)
             }
+
         except Exception as e:
-            self.logger.error(f"Claude API error: {e}")
+            self.logger.error(f"Error generating question: {e}", exc_info=True)
+            if db:
+                db.rollback()
             return {
                 'success': False,
-                'error': f'Claude API error: {str(e)}',
-                'error_code': 'API_ERROR'
+                'error': f'Failed to generate question: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
             }
 
-        # Save question
-        question = Question(
-            project_id=project_id,
-            session_id=session_id,
-            text=question_data['text'],
-            category=question_data['category'],
-            context=question_data.get('context'),
-            quality_score=Decimal('1.0')  # Phase 5 will add quality analysis
-        )
-
-        db.add(question)
-        db.commit()
-        db.refresh(question)
-
-        self.logger.info(f"Generated question {question.id} for project {project_id}, category: {question.category}")
-
-        return {
-            'success': True,
-            'question': question.to_dict(),
-            'question_id': str(question.id)
-        }
+        finally:
+            if db:
+                db.close()
 
     def _generate_questions_batch(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """

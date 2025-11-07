@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
+from datetime import datetime, timezone
 
 from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
@@ -81,10 +82,12 @@ def start_session(
         raise HTTPException(status_code=403, detail="Permission denied")
 
     # Create session
+    # Note: user access is enforced via project ownership check above
+    # Session doesn't have user_id field - it's tracked via project.user_id
     session = SessionModel(
         project_id=request.project_id,
-        user_id=current_user.id,
-        status='active'
+        status='active',
+        started_at=datetime.now(timezone.utc)
     )
 
     db.add(session)
