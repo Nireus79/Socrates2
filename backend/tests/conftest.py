@@ -261,3 +261,28 @@ def phase5_service_container(phase5_specs_session, auth_session, mock_claude_cli
     container._db_session_auth = auth_session
     container._claude_client = mock_claude_client
     return container
+
+
+@pytest.fixture(autouse=True)
+def override_app_dependencies(auth_session, specs_session):
+    """Automatically override FastAPI app dependencies for API tests to use test sessions."""
+    try:
+        from app.main import app
+        from app.core.database import get_db_auth, get_db_specs
+
+        def override_get_db_auth():
+            return auth_session
+
+        def override_get_db_specs():
+            return specs_session
+
+        app.dependency_overrides[get_db_auth] = override_get_db_auth
+        app.dependency_overrides[get_db_specs] = override_get_db_specs
+
+        yield
+
+        # Clean up overrides after test
+        app.dependency_overrides.clear()
+    except Exception:
+        # If import fails, just skip the override (fixture is optional for non-API tests)
+        yield

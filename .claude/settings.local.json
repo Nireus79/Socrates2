@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(find:*)",
-      "Bash(timeout 180 python -m pytest:*)"
+      "Bash(timeout 180 python -m pytest:*)",
+      "Bash(timeout 120 python:*)",
+      "Bash(timeout 60 python -m pytest:*)"
     ],
     "deny": [],
     "ask": []
