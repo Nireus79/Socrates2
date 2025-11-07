@@ -10,7 +10,9 @@
       "Bash(git merge:*)",
       "Bash(git commit:*)",
       "Bash(git pull:*)",
-      "Bash(export DATABASE_URL=$DATABASE_URL_SPECS)"
+      "Bash(export DATABASE_URL=$DATABASE_URL_SPECS)",
+      "Bash(git push:*)",
+      "Bash(git remote prune:*)"
     ],
     "deny": [],
     "ask": []

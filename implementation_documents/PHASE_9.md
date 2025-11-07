@@ -8,7 +8,7 @@
 
 ## ⚠️ CRITICAL: Read Before Implementation
 
-**MANDATORY:** Review [CRITICAL_LESSONS_LEARNED.md](../CRITICAL_LESSONS_LEARNED.md) before starting Phase 9.
+**MANDATORY:** Review [CRITICAL_LESSONS_LEARNED.md](CRITICAL_LESSONS_LEARNED.md) before starting Phase 9.
 
 **Critical Checklist for Phase 9:**
 
