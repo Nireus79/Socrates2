@@ -57,48 +57,72 @@ class ConflictDetectorAgent(BaseAgent):
         new_specs = data.get('new_specs', [])
         source_id = data.get('source_id')
 
+        # Validate
         if not project_id or not new_specs:
+            self.logger.warning("Validation error: missing project_id or new_specs")
             return {
                 'success': False,
                 'error': 'project_id and new_specs are required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Get database session
-        db = self.services.get_database_specs()
+        db = None
+        conflicts_found = []
 
-        # Load existing specifications
-        existing_specs = db.query(Specification).filter(
-            Specification.project_id == project_id
-        ).all()
-
-        if not existing_specs:
-            # No existing specs, no conflicts possible
-            return {
-                'success': True,
-                'conflicts_detected': False,
-                'conflicts': [],
-                'safe_to_save': True
-            }
-
-        # Build conflict detection prompt
-        prompt = self._build_conflict_detection_prompt(new_specs, existing_specs)
-
-        # Call Claude API
         try:
-            claude_client = self.services.get_claude_client()
-            response = claude_client.messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=2000,
-                messages=[{"role": "user", "content": prompt}]
-            )
+            # Get database session
+            db = self.services.get_database_specs()
 
-            # Parse response
-            conflict_analysis = json.loads(response.content[0].text)
+            # Load existing specifications
+            existing_specs = db.query(Specification).filter(
+                Specification.project_id == project_id
+            ).all()
 
-            conflicts_found = []
+            if not existing_specs:
+                # No existing specs, no conflicts possible
+                self.logger.debug(f"No existing specs for project {project_id}, no conflicts possible")
+                return {
+                    'success': True,
+                    'conflicts_detected': False,
+                    'conflicts': [],
+                    'safe_to_save': True
+                }
+
+            # Build conflict detection prompt
+            prompt = self._build_conflict_detection_prompt(new_specs, existing_specs)
+
+            # Call Claude API (separate from DB transaction)
+            try:
+                self.logger.debug(f"Calling Claude API to detect conflicts for project {project_id}")
+                claude_client = self.services.get_claude_client()
+                response = claude_client.messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=2000,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+
+                # Parse response
+                response_text = response.content[0].text
+                self.logger.debug(f"Claude API response received: {len(response_text)} chars")
+                conflict_analysis = json.loads(response_text)
+
+            except json.JSONDecodeError as e:
+                self.logger.error(f"Failed to parse Claude response as JSON: {e}", exc_info=True)
+                return {
+                    'success': False,
+                    'error': 'Failed to parse conflict analysis from Claude API',
+                    'error_code': 'PARSE_ERROR'
+                }
+            except Exception as e:
+                self.logger.error(f"Claude API error: {e}", exc_info=True)
+                return {
+                    'success': False,
+                    'error': f'Claude API error: {str(e)}',
+                    'error_code': 'API_ERROR'
+                }
+
+            # Save conflicts to database if found
             if conflict_analysis.get('conflicts_detected'):
-                # Save conflicts to database
                 for conflict_data in conflict_analysis.get('conflicts', []):
                     conflict = Conflict(
                         project_id=project_id,
@@ -131,12 +155,18 @@ class ConflictDetectorAgent(BaseAgent):
             }
 
         except Exception as e:
-            self.logger.error(f"Error detecting conflicts: {str(e)}")
+            self.logger.error(f"Error detecting conflicts: {e}", exc_info=True)
+            if db:
+                db.rollback()
             return {
                 'success': False,
                 'error': f'Conflict detection failed: {str(e)}',
-                'error_code': 'DETECTION_ERROR'
+                'error_code': 'DATABASE_ERROR'
             }
+
+        finally:
+            if db:
+                db.close()
 
     def _resolve_conflict(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -156,7 +186,9 @@ class ConflictDetectorAgent(BaseAgent):
         resolution = data.get('resolution')
         resolution_notes = data.get('resolution_notes', '')
 
+        # Validate
         if not conflict_id or not resolution:
+            self.logger.warning("Validation error: missing conflict_id or resolution")
             return {
                 'success': False,
                 'error': 'conflict_id and resolution are required',
@@ -165,43 +197,62 @@ class ConflictDetectorAgent(BaseAgent):
 
         valid_resolutions = ['keep_old', 'replace', 'merge', 'ignore']
         if resolution not in valid_resolutions:
+            self.logger.warning(f"Invalid resolution: {resolution}")
             return {
                 'success': False,
                 'error': f'Invalid resolution. Must be one of: {valid_resolutions}',
                 'error_code': 'INVALID_RESOLUTION'
             }
 
-        # Get database session
-        db = self.services.get_database_specs()
+        db = None
 
-        # Load conflict
-        conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()
-        if not conflict:
+        try:
+            # Get database session
+            db = self.services.get_database_specs()
+
+            # Load conflict
+            conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()
+            if not conflict:
+                self.logger.warning(f"Conflict not found: {conflict_id}")
+                return {
+                    'success': False,
+                    'error': f'Conflict not found: {conflict_id}',
+                    'error_code': 'CONFLICT_NOT_FOUND'
+                }
+
+            # Update conflict
+            if resolution == 'ignore':
+                conflict.status = ConflictStatus.IGNORED
+            else:
+                conflict.status = ConflictStatus.RESOLVED
+
+            conflict.resolution = f"{resolution}: {resolution_notes}" if resolution_notes else resolution
+            conflict.resolved_at = datetime.now(timezone.utc)
+            conflict.resolved_by_user = True
+
+            db.commit()
+            db.refresh(conflict)
+
+            self.logger.info(f"Conflict {conflict_id} resolved with: {resolution}")
+
             return {
-                'success': False,
-                'error': f'Conflict not found: {conflict_id}',
-                'error_code': 'CONFLICT_NOT_FOUND'
+                'success': True,
+                'conflict': conflict.to_dict()
             }
 
-        # Update conflict
-        if resolution == 'ignore':
-            conflict.status = ConflictStatus.IGNORED
-        else:
-            conflict.status = ConflictStatus.RESOLVED
+        except Exception as e:
+            self.logger.error(f"Error resolving conflict {conflict_id}: {e}", exc_info=True)
+            if db:
+                db.rollback()
+            return {
+                'success': False,
+                'error': f'Failed to resolve conflict: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
 
-        conflict.resolution = f"{resolution}: {resolution_notes}" if resolution_notes else resolution
-        conflict.resolved_at = datetime.now(timezone.utc)
-        conflict.resolved_by_user = True
-
-        db.commit()
-        db.refresh(conflict)
-
-        self.logger.info(f"Conflict {conflict_id} resolved with: {resolution}")
-
-        return {
-            'success': True,
-            'conflict': conflict.to_dict()
-        }
+        finally:
+            if db:
+                db.close()
 
     def _list_conflicts(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -219,37 +270,57 @@ class ConflictDetectorAgent(BaseAgent):
         project_id = data.get('project_id')
         status_filter = data.get('status')
 
+        # Validate
         if not project_id:
+            self.logger.warning("Validation error: missing project_id")
             return {
                 'success': False,
                 'error': 'project_id is required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Get database session
-        db = self.services.get_database_specs()
+        db = None
 
-        # Build query
-        query = db.query(Conflict).filter(Conflict.project_id == project_id)
+        try:
+            # Get database session
+            db = self.services.get_database_specs()
 
-        if status_filter:
-            try:
-                status_enum = ConflictStatus[status_filter.upper()]
-                query = query.filter(Conflict.status == status_enum)
-            except KeyError:
-                return {
-                    'success': False,
-                    'error': f'Invalid status: {status_filter}',
-                    'error_code': 'INVALID_STATUS'
-                }
+            # Build query
+            query = db.query(Conflict).filter(Conflict.project_id == project_id)
 
-        conflicts = query.order_by(Conflict.detected_at.desc()).all()
+            if status_filter:
+                try:
+                    status_enum = ConflictStatus[status_filter.upper()]
+                    query = query.filter(Conflict.status == status_enum)
+                except KeyError:
+                    self.logger.warning(f"Invalid status filter: {status_filter}")
+                    return {
+                        'success': False,
+                        'error': f'Invalid status: {status_filter}',
+                        'error_code': 'INVALID_STATUS'
+                    }
 
-        return {
-            'success': True,
-            'conflicts': [c.to_dict() for c in conflicts],
-            'count': len(conflicts)
-        }
+            conflicts = query.order_by(Conflict.detected_at.desc()).all()
+
+            self.logger.debug(f"Listed {len(conflicts)} conflicts for project {project_id}")
+
+            return {
+                'success': True,
+                'conflicts': [c.to_dict() for c in conflicts],
+                'count': len(conflicts)
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error listing conflicts for project {project_id}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': f'Failed to list conflicts: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
+
+        finally:
+            if db:
+                db.close()
 
     def _get_conflict_details(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -263,37 +334,57 @@ class ConflictDetectorAgent(BaseAgent):
         """
         conflict_id = data.get('conflict_id')
 
+        # Validate
         if not conflict_id:
+            self.logger.warning("Validation error: missing conflict_id")
             return {
                 'success': False,
                 'error': 'conflict_id is required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Get database session
-        db = self.services.get_database_specs()
+        db = None
 
-        # Load conflict
-        conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()
-        if not conflict:
+        try:
+            # Get database session
+            db = self.services.get_database_specs()
+
+            # Load conflict
+            conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()
+            if not conflict:
+                self.logger.warning(f"Conflict not found: {conflict_id}")
+                return {
+                    'success': False,
+                    'error': f'Conflict not found: {conflict_id}',
+                    'error_code': 'CONFLICT_NOT_FOUND'
+                }
+
+            # Load related specifications
+            specs = []
+            if conflict.spec_ids:
+                specs = db.query(Specification).filter(
+                    Specification.id.in_(conflict.spec_ids)
+                ).all()
+
+            self.logger.debug(f"Retrieved conflict {conflict_id} with {len(specs)} related specs")
+
             return {
-                'success': False,
-                'error': f'Conflict not found: {conflict_id}',
-                'error_code': 'CONFLICT_NOT_FOUND'
+                'success': True,
+                'conflict': conflict.to_dict(),
+                'specifications': [s.to_dict() for s in specs]
             }
 
-        # Load related specifications
-        specs = []
-        if conflict.spec_ids:
-            specs = db.query(Specification).filter(
-                Specification.id.in_(conflict.spec_ids)
-            ).all()
+        except Exception as e:
+            self.logger.error(f"Error getting conflict details {conflict_id}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': f'Failed to get conflict details: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
 
-        return {
-            'success': True,
-            'conflict': conflict.to_dict(),
-            'specifications': [s.to_dict() for s in specs]
-        }
+        finally:
+            if db:
+                db.close()
 
     def _build_conflict_detection_prompt(
         self,
