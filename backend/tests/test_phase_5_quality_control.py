@@ -11,9 +11,9 @@ from app.models import Project, Specification, QualityMetric
 from app.agents.quality_controller import QualityControllerAgent
 
 
-def test_analyze_question_detects_bias(specs_session, service_container):
+def test_analyze_question_detects_bias(specs_session, phase5_service_container):
     """Test that biased questions are detected and blocked"""
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
 
     # Test biased question
     result = quality_agent.process_request('analyze_question', {
@@ -28,9 +28,9 @@ def test_analyze_question_detects_bias(specs_session, service_container):
     assert len(result['suggested_alternatives']) > 0
 
 
-def test_analyze_question_allows_unbiased(specs_session, service_container):
+def test_analyze_question_allows_unbiased(specs_session, phase5_service_container):
     """Test that unbiased questions are allowed"""
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
 
     # Test unbiased question
     result = quality_agent.process_request('analyze_question', {
@@ -43,7 +43,7 @@ def test_analyze_question_allows_unbiased(specs_session, service_container):
     assert result['quality_score'] >= 0.5
 
 
-def test_analyze_coverage_detects_gaps(auth_session, specs_session, test_user, service_container):
+def test_analyze_coverage_detects_gaps(auth_session, phase5_specs_session, test_user, phase5_service_container):
     """Test that coverage gaps are detected"""
     # Create project with insufficient coverage
     project = Project(
@@ -52,8 +52,8 @@ def test_analyze_coverage_detects_gaps(auth_session, specs_session, test_user, s
         description="Test",
         maturity_score=30
     )
-    specs_session.add(project)
-    specs_session.commit()
+    phase5_specs_session.add(project)
+    phase5_specs_session.commit()
 
     # Add only 1 spec (need 3 per category for good coverage)
     spec = Specification(
@@ -63,11 +63,11 @@ def test_analyze_coverage_detects_gaps(auth_session, specs_session, test_user, s
         source='user_input',
         confidence=Decimal('0.9')
     )
-    specs_session.add(spec)
-    specs_session.commit()
+    phase5_specs_session.add(spec)
+    phase5_specs_session.commit()
 
     # Analyze coverage
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
     result = quality_agent.process_request('analyze_coverage', {
         'project_id': project.id
     })
@@ -79,7 +79,7 @@ def test_analyze_coverage_detects_gaps(auth_session, specs_session, test_user, s
     assert 'suggested_actions' in result
 
 
-def test_analyze_coverage_passes_with_good_coverage(auth_session, specs_session, test_user, service_container):
+def test_analyze_coverage_passes_with_good_coverage(auth_session, phase5_specs_session, test_user, phase5_service_container):
     """Test that good coverage passes quality check"""
     # Create project with good coverage
     project = Project(
@@ -88,8 +88,8 @@ def test_analyze_coverage_passes_with_good_coverage(auth_session, specs_session,
         description="Test",
         maturity_score=80
     )
-    specs_session.add(project)
-    specs_session.commit()
+    phase5_specs_session.add(project)
+    phase5_specs_session.commit()
 
     # Add 3+ specs per category for most categories
     categories = ['goals', 'requirements', 'tech_stack', 'users', 'scalability', 'security', 'deployment']
@@ -102,12 +102,12 @@ def test_analyze_coverage_passes_with_good_coverage(auth_session, specs_session,
                 source='user_input',
                 confidence=Decimal('0.9')
             )
-            specs_session.add(spec)
+            phase5_specs_session.add(spec)
 
-    specs_session.commit()
+    phase5_specs_session.commit()
 
     # Analyze coverage
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
     result = quality_agent.process_request('analyze_coverage', {
         'project_id': project.id
     })
@@ -118,7 +118,7 @@ def test_analyze_coverage_passes_with_good_coverage(auth_session, specs_session,
     assert len(result['coverage_gaps']) <= 3
 
 
-def test_compare_paths_recommends_thorough(auth_session, specs_session, test_user, service_container):
+def test_compare_paths_recommends_thorough(auth_session, phase5_specs_session, test_user, phase5_service_container):
     """Test that path optimizer recommends thorough over greedy when maturity is high"""
     # Create project with high maturity
     project = Project(
@@ -127,10 +127,10 @@ def test_compare_paths_recommends_thorough(auth_session, specs_session, test_use
         description="Test",
         maturity_score=85
     )
-    specs_session.add(project)
-    specs_session.commit()
+    phase5_specs_session.add(project)
+    phase5_specs_session.commit()
 
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
     result = quality_agent.process_request('compare_paths', {
         'goal': 'generate_code',
         'project_id': project.id
@@ -143,7 +143,7 @@ def test_compare_paths_recommends_thorough(auth_session, specs_session, test_use
     assert result['recommended_path']['risk'] in ['LOW', 'MEDIUM']
 
 
-def test_compare_paths_warns_about_greedy(auth_session, specs_session, test_user, service_container):
+def test_compare_paths_warns_about_greedy(auth_session, phase5_specs_session, test_user, phase5_service_container):
     """Test that path optimizer warns about greedy path when maturity is low"""
     # Create project with low maturity
     project = Project(
@@ -152,10 +152,10 @@ def test_compare_paths_warns_about_greedy(auth_session, specs_session, test_user
         description="Test",
         maturity_score=30
     )
-    specs_session.add(project)
-    specs_session.commit()
+    phase5_specs_session.add(project)
+    phase5_specs_session.commit()
 
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
     result = quality_agent.process_request('compare_paths', {
         'goal': 'generate_code',
         'project_id': project.id
@@ -170,7 +170,7 @@ def test_compare_paths_warns_about_greedy(auth_session, specs_session, test_user
     assert greedy_path['total_cost_tokens'] > greedy_path['direct_cost_tokens']  # Has rework cost
 
 
-def test_get_quality_metrics(auth_session, specs_session, test_user, service_container):
+def test_get_quality_metrics(auth_session, phase5_specs_session, test_user, phase5_service_container):
     """Test getting quality metrics for a project"""
     # Create project
     project = Project(
@@ -179,8 +179,8 @@ def test_get_quality_metrics(auth_session, specs_session, test_user, service_con
         description="Test",
         maturity_score=50
     )
-    specs_session.add(project)
-    specs_session.commit()
+    phase5_specs_session.add(project)
+    phase5_specs_session.commit()
 
     # Create some quality metrics
     metric1 = QualityMetric(
@@ -201,11 +201,11 @@ def test_get_quality_metrics(auth_session, specs_session, test_user, service_con
         details={'bias_types': []},
         calculated_at=datetime.now(timezone.utc)
     )
-    specs_session.add_all([metric1, metric2])
-    specs_session.commit()
+    phase5_specs_session.add_all([metric1, metric2])
+    phase5_specs_session.commit()
 
     # Get metrics
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
     result = quality_agent.process_request('get_quality_metrics', {
         'project_id': project.id
     })
@@ -217,7 +217,7 @@ def test_get_quality_metrics(auth_session, specs_session, test_user, service_con
     assert result['summary']['pass_rate'] == 1.0
 
 
-def test_verify_operation_blocks_biased_question(auth_session, specs_session, test_user, service_container):
+def test_verify_operation_blocks_biased_question(auth_session, phase5_specs_session, test_user, phase5_service_container):
     """Test that verify_operation blocks biased questions"""
     # Create project
     project = Project(
@@ -226,10 +226,10 @@ def test_verify_operation_blocks_biased_question(auth_session, specs_session, te
         description="Test",
         maturity_score=50
     )
-    specs_session.add(project)
-    specs_session.commit()
+    phase5_specs_session.add(project)
+    phase5_specs_session.commit()
 
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
     result = quality_agent.process_request('verify_operation', {
         'agent_id': 'socratic',
         'action': 'generate_question',
@@ -244,7 +244,7 @@ def test_verify_operation_blocks_biased_question(auth_session, specs_session, te
     assert 'bias_check' in result['quality_checks']
 
 
-def test_verify_operation_blocks_premature_code_gen(auth_session, specs_session, test_user, service_container):
+def test_verify_operation_blocks_premature_code_gen(auth_session, phase5_specs_session, test_user, phase5_service_container):
     """Test that verify_operation blocks code generation with insufficient coverage"""
     # Create project with low coverage
     project = Project(
@@ -253,8 +253,8 @@ def test_verify_operation_blocks_premature_code_gen(auth_session, specs_session,
         description="Test",
         maturity_score=30
     )
-    specs_session.add(project)
-    specs_session.commit()
+    phase5_specs_session.add(project)
+    phase5_specs_session.commit()
 
     # Add only 1 spec (insufficient)
     spec = Specification(
@@ -264,10 +264,10 @@ def test_verify_operation_blocks_premature_code_gen(auth_session, specs_session,
         source='user_input',
         confidence=Decimal('0.9')
     )
-    specs_session.add(spec)
-    specs_session.commit()
+    phase5_specs_session.add(spec)
+    phase5_specs_session.commit()
 
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
     result = quality_agent.process_request('verify_operation', {
         'agent_id': 'code',
         'action': 'generate_code',
@@ -281,7 +281,7 @@ def test_verify_operation_blocks_premature_code_gen(auth_session, specs_session,
     assert 'coverage_check' in result['quality_checks']
 
 
-def test_verify_operation_allows_good_quality(auth_session, specs_session, test_user, service_container):
+def test_verify_operation_allows_good_quality(auth_session, phase5_specs_session, test_user, phase5_service_container):
     """Test that verify_operation allows operations with good quality"""
     # Create project with good coverage
     project = Project(
@@ -290,8 +290,8 @@ def test_verify_operation_allows_good_quality(auth_session, specs_session, test_
         description="Test",
         maturity_score=85
     )
-    specs_session.add(project)
-    specs_session.commit()
+    phase5_specs_session.add(project)
+    phase5_specs_session.commit()
 
     # Add good coverage
     categories = ['goals', 'requirements', 'tech_stack', 'users', 'scalability', 'security', 'deployment']
@@ -304,10 +304,10 @@ def test_verify_operation_allows_good_quality(auth_session, specs_session, test_
                 source='user_input',
                 confidence=Decimal('0.9')
             )
-            specs_session.add(spec)
-    specs_session.commit()
+            phase5_specs_session.add(spec)
+    phase5_specs_session.commit()
 
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
     result = quality_agent.process_request('verify_operation', {
         'agent_id': 'code',
         'action': 'generate_code',
@@ -320,7 +320,7 @@ def test_verify_operation_allows_good_quality(auth_session, specs_session, test_
     assert result['is_blocking'] == False
 
 
-def test_quality_metrics_stored_in_database(auth_session, specs_session, test_user, service_container):
+def test_quality_metrics_stored_in_database(auth_session, phase5_specs_session, test_user, phase5_service_container):
     """Test that quality metrics are persisted to database"""
     # Create project
     project = Project(
@@ -329,17 +329,17 @@ def test_quality_metrics_stored_in_database(auth_session, specs_session, test_us
         description="Test",
         maturity_score=50
     )
-    specs_session.add(project)
-    specs_session.commit()
+    phase5_specs_session.add(project)
+    phase5_specs_session.commit()
 
     # Run analysis that stores metrics
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", service_container)
+    quality_agent = QualityControllerAgent("quality", "Quality Controller", phase5_service_container)
     quality_agent.process_request('analyze_coverage', {
         'project_id': project.id
     })
 
     # Verify metric was stored
-    metrics = specs_session.query(QualityMetric).filter_by(project_id=project.id).all()
+    metrics = phase5_specs_session.query(QualityMetric).filter_by(project_id=project.id).all()
     assert len(metrics) >= 1
     assert metrics[0].metric_type == 'coverage'
     assert metrics[0].metric_value is not None
