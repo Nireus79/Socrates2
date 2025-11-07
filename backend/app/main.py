@@ -40,6 +40,7 @@ async def lifespan(app: FastAPI):
     from .agents.conflict_detector import ConflictDetectorAgent
     from .agents.code_generator import CodeGeneratorAgent
     from .agents.quality_controller import QualityControllerAgent
+    from .agents.user_learning import UserLearningAgent
     from .core.dependencies import get_service_container
 
     orchestrator = get_orchestrator()
@@ -52,13 +53,15 @@ async def lifespan(app: FastAPI):
     conflict_agent = ConflictDetectorAgent("conflict", "Conflict Detector", services)
     code_gen_agent = CodeGeneratorAgent("code_generator", "Code Generator", services)
     quality_agent = QualityControllerAgent("quality", "Quality Controller", services)
+    learning_agent = UserLearningAgent("learning", "User Learning", services)
 
     orchestrator.register_agent(pm_agent)
     orchestrator.register_agent(socratic_agent)
     orchestrator.register_agent(context_agent)
     orchestrator.register_agent(conflict_agent)
     orchestrator.register_agent(code_gen_agent)
-    orchestrator.register_agent(quality_agent)  # Register quality agent LAST to enable gates
+    orchestrator.register_agent(quality_agent)  # Register quality agent before learning
+    orchestrator.register_agent(learning_agent)
 
     logger.info("AgentOrchestrator initialized")
     logger.info(f"Registered agents: {list(orchestrator.agents.keys())}")
