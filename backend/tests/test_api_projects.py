@@ -186,7 +186,7 @@ def test_get_other_user_project(test_user, auth_session):
     auth_session.refresh(other_user)
 
     # Create project as other user
-    other_token = create_access_token(data={"sub": other_user.email})
+    other_token = create_access_token(data={"sub": str(other_user.id)})
     create_response = client.post(
         "/api/v1/projects",
         headers={"Authorization": f"Bearer {other_token}"},
@@ -359,7 +359,7 @@ def test_list_projects_empty(test_user):
     auth_db.commit()
     auth_db.refresh(new_user)
 
-    token = create_access_token(data={"sub": new_user.email})
+    token = create_access_token(data={"sub": str(new_user.id)})
 
     response = client.get(
         "/api/v1/projects",
