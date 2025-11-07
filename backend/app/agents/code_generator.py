@@ -68,71 +68,85 @@ class CodeGeneratorAgent(BaseAgent):
         """
         project_id = data.get('project_id')
 
+        # Validate
         if not project_id:
+            self.logger.warning("Validation error: missing project_id")
             return {
                 'success': False,
                 'error': 'project_id is required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # Get database session
-        db = self.services.get_database_specs()
-
-        # Load project
-        project = db.query(Project).filter(Project.id == project_id).first()
-        if not project:
-            return {
-                'success': False,
-                'error': f'Project not found: {project_id}',
-                'error_code': 'PROJECT_NOT_FOUND'
-            }
-
-        # GATE 1: Check maturity score
-        if project.maturity_score < 100.0:
-            missing_categories = self._identify_missing_categories(project_id, db)
-            return {
-                'success': False,
-                'error': f'Project maturity is {project.maturity_score}%. Need 100% to generate code.',
-                'error_code': 'MATURITY_NOT_REACHED',
-                'maturity_score': float(project.maturity_score),
-                'missing_categories': missing_categories
-            }
-
-        # GATE 2: Check for unresolved conflicts
-        unresolved_conflicts = db.query(Conflict).filter(
-            Conflict.project_id == project_id,
-            Conflict.status == ConflictStatus.OPEN
-        ).count()
-
-        if unresolved_conflicts > 0:
-            return {
-                'success': False,
-                'error': f'Project has {unresolved_conflicts} unresolved conflicts. Resolve them before generating code.',
-                'error_code': 'UNRESOLVED_CONFLICTS',
-                'unresolved_count': unresolved_conflicts
-            }
-
-        # Calculate next generation version
-        last_generation = db.query(GeneratedProject).filter(
-            GeneratedProject.project_id == project_id
-        ).order_by(GeneratedProject.generation_version.desc()).first()
-
-        next_version = (last_generation.generation_version + 1) if last_generation else 1
-
-        # Create generation record
-        generation = GeneratedProject(
-            project_id=project_id,
-            generation_version=next_version,
-            total_files=0,
-            total_lines=0,
-            generation_started_at=datetime.now(timezone.utc),
-            generation_status=GenerationStatus.IN_PROGRESS
-        )
-        db.add(generation)
-        db.commit()
-        db.refresh(generation)
+        db = None
+        generation = None
 
         try:
+            # Get database session
+            db = self.services.get_database_specs()
+
+            # Load project
+            project = db.query(Project).filter(Project.id == project_id).first()
+            if not project:
+                self.logger.warning(f"Project not found: {project_id}")
+                return {
+                    'success': False,
+                    'error': f'Project not found: {project_id}',
+                    'error_code': 'PROJECT_NOT_FOUND'
+                }
+
+            # GATE 1: Check maturity score
+            if project.maturity_score < 100.0:
+                missing_categories = self._identify_missing_categories(project_id, db)
+                self.logger.warning(
+                    f"Project {project_id} maturity is {project.maturity_score}%, need 100%"
+                )
+                return {
+                    'success': False,
+                    'error': f'Project maturity is {project.maturity_score}%. Need 100% to generate code.',
+                    'error_code': 'MATURITY_NOT_REACHED',
+                    'maturity_score': float(project.maturity_score),
+                    'missing_categories': missing_categories
+                }
+
+            # GATE 2: Check for unresolved conflicts
+            unresolved_conflicts = db.query(Conflict).filter(
+                Conflict.project_id == project_id,
+                Conflict.status == ConflictStatus.OPEN
+            ).count()
+
+            if unresolved_conflicts > 0:
+                self.logger.warning(
+                    f"Project {project_id} has {unresolved_conflicts} unresolved conflicts"
+                )
+                return {
+                    'success': False,
+                    'error': f'Project has {unresolved_conflicts} unresolved conflicts. Resolve them before generating code.',
+                    'error_code': 'UNRESOLVED_CONFLICTS',
+                    'unresolved_count': unresolved_conflicts
+                }
+
+            # Calculate next generation version
+            last_generation = db.query(GeneratedProject).filter(
+                GeneratedProject.project_id == project_id
+            ).order_by(GeneratedProject.generation_version.desc()).first()
+
+            next_version = (last_generation.generation_version + 1) if last_generation else 1
+
+            # Create generation record
+            generation = GeneratedProject(
+                project_id=project_id,
+                generation_version=next_version,
+                total_files=0,
+                total_lines=0,
+                generation_started_at=datetime.now(timezone.utc),
+                generation_status=GenerationStatus.IN_PROGRESS
+            )
+            db.add(generation)
+            db.commit()
+            db.refresh(generation)
+
+            self.logger.info(f"Started code generation for project {project_id}, version {next_version}")
+
             # Load ALL specifications
             specs = db.query(Specification).filter(
                 Specification.project_id == project_id,
@@ -140,6 +154,7 @@ class CodeGeneratorAgent(BaseAgent):
             ).all()
 
             if not specs:
+                self.logger.warning(f"No specifications found for project {project_id}")
                 generation.generation_status = GenerationStatus.FAILED
                 generation.error_message = "No specifications found"
                 db.commit()
@@ -155,23 +170,39 @@ class CodeGeneratorAgent(BaseAgent):
             # Build comprehensive code generation prompt
             prompt = self._build_code_generation_prompt(project, grouped_specs)
 
-            self.logger.info(f"Generating code for project {project_id} with {len(specs)} specifications")
+            # Call Claude API (separate from DB transaction)
+            try:
+                self.logger.debug(
+                    f"Calling Claude API to generate code for project {project_id} "
+                    f"with {len(specs)} specifications"
+                )
+                claude_client = self.services.get_claude_client()
+                response = claude_client.messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=16000,
+                    messages=[{"role": "user", "content": prompt}]
+                )
 
-            # Call Claude API with high token limit
-            claude_client = self.services.get_claude_client()
-            response = claude_client.messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=16000,
-                messages=[{"role": "user", "content": prompt}]
-            )
+                # Extract generated code
+                code_text = response.content[0].text
+                self.logger.debug(f"Claude API response received: {len(code_text)} chars")
 
-            # Extract generated code
-            code_text = response.content[0].text
+            except Exception as e:
+                self.logger.error(f"Claude API error: {e}", exc_info=True)
+                generation.generation_status = GenerationStatus.FAILED
+                generation.error_message = f"Claude API error: {str(e)}"
+                db.commit()
+                return {
+                    'success': False,
+                    'error': f'Claude API error: {str(e)}',
+                    'error_code': 'API_ERROR'
+                }
 
             # Parse code into individual files
             files = self._parse_generated_code(code_text)
 
             if not files:
+                self.logger.warning("Failed to parse generated code into files")
                 generation.generation_status = GenerationStatus.FAILED
                 generation.error_message = "Failed to parse generated code"
                 db.commit()
@@ -220,16 +251,27 @@ class CodeGeneratorAgent(BaseAgent):
             }
 
         except Exception as e:
-            self.logger.error(f"Code generation failed: {str(e)}")
-            generation.generation_status = GenerationStatus.FAILED
-            generation.error_message = str(e)
-            db.commit()
+            self.logger.error(f"Error generating code for project {project_id}: {e}", exc_info=True)
+            if db and generation:
+                try:
+                    generation.generation_status = GenerationStatus.FAILED
+                    generation.error_message = str(e)
+                    db.commit()
+                except Exception as commit_error:
+                    self.logger.error(f"Failed to update generation status: {commit_error}", exc_info=True)
+                    db.rollback()
+            elif db:
+                db.rollback()
 
             return {
                 'success': False,
                 'error': f'Code generation failed: {str(e)}',
                 'error_code': 'GENERATION_ERROR'
             }
+
+        finally:
+            if db:
+                db.close()
 
     def _get_generation_status(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -243,29 +285,49 @@ class CodeGeneratorAgent(BaseAgent):
         """
         generation_id = data.get('generation_id')
 
+        # Validate
         if not generation_id:
+            self.logger.warning("Validation error: missing generation_id")
             return {
                 'success': False,
                 'error': 'generation_id is required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = self.services.get_database_specs()
-        generation = db.query(GeneratedProject).filter(
-            GeneratedProject.id == generation_id
-        ).first()
+        db = None
 
-        if not generation:
+        try:
+            db = self.services.get_database_specs()
+            generation = db.query(GeneratedProject).filter(
+                GeneratedProject.id == generation_id
+            ).first()
+
+            if not generation:
+                self.logger.warning(f"Generation not found: {generation_id}")
+                return {
+                    'success': False,
+                    'error': f'Generation not found: {generation_id}',
+                    'error_code': 'GENERATION_NOT_FOUND'
+                }
+
+            self.logger.debug(f"Retrieved generation status for {generation_id}")
+
             return {
-                'success': False,
-                'error': f'Generation not found: {generation_id}',
-                'error_code': 'GENERATION_NOT_FOUND'
+                'success': True,
+                'generation': generation.to_dict()
             }
 
-        return {
-            'success': True,
-            'generation': generation.to_dict()
-        }
+        except Exception as e:
+            self.logger.error(f"Error getting generation status {generation_id}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': f'Failed to get generation status: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
+
+        finally:
+            if db:
+                db.close()
 
     def _list_generations(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -279,23 +341,42 @@ class CodeGeneratorAgent(BaseAgent):
         """
         project_id = data.get('project_id')
 
+        # Validate
         if not project_id:
+            self.logger.warning("Validation error: missing project_id")
             return {
                 'success': False,
                 'error': 'project_id is required',
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = self.services.get_database_specs()
-        generations = db.query(GeneratedProject).filter(
-            GeneratedProject.project_id == project_id
-        ).order_by(GeneratedProject.generation_version.desc()).all()
+        db = None
 
-        return {
-            'success': True,
-            'generations': [g.to_dict() for g in generations],
-            'count': len(generations)
-        }
+        try:
+            db = self.services.get_database_specs()
+            generations = db.query(GeneratedProject).filter(
+                GeneratedProject.project_id == project_id
+            ).order_by(GeneratedProject.generation_version.desc()).all()
+
+            self.logger.debug(f"Listed {len(generations)} generations for project {project_id}")
+
+            return {
+                'success': True,
+                'generations': [g.to_dict() for g in generations],
+                'count': len(generations)
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error listing generations for project {project_id}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': f'Failed to list generations: {str(e)}',
+                'error_code': 'DATABASE_ERROR'
+            }
+
+        finally:
+            if db:
+                db.close()
 
     def _identify_missing_categories(self, project_id: str, db) -> List[Dict[str, Any]]:
         """Identify which categories are missing specifications."""
