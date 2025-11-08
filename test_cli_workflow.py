@@ -40,7 +40,7 @@ class WorkflowTester:
         self.console = Console()
 
         # Test data
-        self.test_email = f"workflow_test_{uuid.uuid4().hex[:8]}@socrates.test"
+        self.test_email = f"workflow_test_{uuid.uuid4().hex[:8]}@example.com"
         self.test_password = "TestPassword123!"
 
         # State
@@ -110,7 +110,7 @@ class WorkflowTester:
             return success, response.status_code, data
 
         except requests.exceptions.ConnectionError:
-            self.log(f"✗ Cannot connect to {self.api_url}", "error")
+            self.log(f"[X] Cannot connect to {self.api_url}", "error")
             self.log("  Make sure backend is running:", "warning")
             self.log("    cd backend && uvicorn app.main:app --reload", "warning")
             return False, 0, {"detail": "Connection refused"}
@@ -127,15 +127,15 @@ class WorkflowTester:
             result = test_func()
             if result:
                 self.tests_passed += 1
-                self.log("  ✓ PASSED", "success")
+                self.log("  [OK] PASSED", "success")
                 return True
             else:
                 self.tests_failed += 1
-                self.log("  ✗ FAILED", "error")
+                self.log("  [X] FAILED", "error")
                 return False
         except Exception as e:
             self.tests_failed += 1
-            self.log(f"  ✗ EXCEPTION: {e}", "error")
+            self.log(f"  [X] EXCEPTION: {e}", "error")
             if self.verbose:
                 import traceback
                 traceback.print_exc()
@@ -460,22 +460,22 @@ class WorkflowTester:
 
     def run_all_workflows(self) -> bool:
         """Run all workflow tests"""
-        self.console.print("\n[bold]═" * 40 + "[/bold]")
+        self.console.print("\n[bold]=" * 40 + "[/bold]")
         self.console.print("[bold cyan]  Socrates CLI Workflow Tests[/bold cyan]")
-        self.console.print("[bold]═" * 40 + "[/bold]\n")
+        self.console.print("[bold]=" * 40 + "[/bold]\n")
 
         # Check if backend is running
         try:
             response = requests.get(f"{self.api_url}/docs", timeout=2)
             if response.status_code != 200:
-                self.log("✗ Backend not responding correctly", "error")
+                self.log("[X] Backend not responding correctly", "error")
                 return False
         except:
-            self.log(f"✗ Backend not running at {self.api_url}", "error")
+            self.log(f"[X] Backend not running at {self.api_url}", "error")
             self.log("  Start with: cd backend && uvicorn app.main:app --reload", "warning")
             return False
 
-        self.log(f"✓ Backend is running at {self.api_url}", "success")
+        self.log(f"[OK] Backend is running at {self.api_url}", "success")
 
         # Run tests in order
         tests = [
@@ -500,9 +500,9 @@ class WorkflowTester:
 
     def print_summary(self):
         """Print test summary"""
-        self.console.print("\n[bold]═" * 40 + "[/bold]")
+        self.console.print("\n[bold]=" * 40 + "[/bold]")
         self.console.print("[bold cyan]  Summary[/bold cyan]")
-        self.console.print("[bold]═" * 40 + "[/bold]\n")
+        self.console.print("[bold]=" * 40 + "[/bold]\n")
 
         # Test results
         total = self.tests_run
@@ -532,18 +532,18 @@ class WorkflowTester:
                     for i, issue in enumerate(issues, 1):
                         self.console.print(f"  {i}. {issue['issue']}")
                         if issue.get('recommendation'):
-                            self.console.print(f"     [dim]→ {issue['recommendation']}[/dim]")
+                            self.console.print(f"     [dim]-> {issue['recommendation']}[/dim]")
                     print()
 
         else:
-            self.console.print("\n[green]✓ No issues found![/green]")
+            self.console.print("\n[green][OK] No issues found![/green]")
 
         # Final status
         print()
         if failed == 0:
-            self.console.print("[bold green]✓ ALL WORKFLOWS PASSED[/bold green]")
+            self.console.print("[bold green][OK] ALL WORKFLOWS PASSED[/bold green]")
         else:
-            self.console.print("[bold red]✗ SOME WORKFLOWS FAILED[/bold red]")
+            self.console.print("[bold red][X] SOME WORKFLOWS FAILED[/bold red]")
             self.console.print("[yellow]Review issues above and fix the problems[/yellow]")
 
 

@@ -143,12 +143,21 @@ def register(
     )
 
     db.add(user)
-    # Commit happens in get_db_auth() dependency
+    db.commit()  # Commit to database first
+
+    # Query to get the actual user with ID from database
+    created_user = db.query(User).filter(User.email == request.email).first()
+
+    if not created_user:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve created user"
+        )
 
     return RegisterResponse(
         message="User registered successfully",
-        user_id=str(user.id),
-        email=user.email
+        user_id=str(created_user.id),
+        email=created_user.email
     )
 
 
