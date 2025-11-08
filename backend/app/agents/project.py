@@ -79,7 +79,9 @@ class ProjectManagerAgent(BaseAgent):
             # Create project
             db_specs = self.services.get_database_specs()
             project = Project(
-                user_id=user_id,
+                creator_id=user_id,  # Set creator_id (immutable audit trail)
+                owner_id=user_id,    # Set owner_id (current owner)
+                user_id=user_id,     # Deprecated but still required for backwards compatibility
                 name=name,
                 description=description,
                 current_phase='discovery',

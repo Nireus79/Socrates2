@@ -7,24 +7,6 @@
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="phase 10">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/008_create_conflicts_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/009_create_generated_projects_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/010_create_generated_files_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/011_create_quality_metrics_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/012_create_user_behavior_patterns_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/013_create_question_effectiveness_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/014_create_knowledge_base_documents_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/015_create_teams_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/016_create_team_members_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/017_create_project_shares_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/018_create_api_keys_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/019_create_llm_usage_tracking_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/api/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/api/teams.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/teams.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/core/security.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/security.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/models/project.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/project.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/user.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test_cli_workflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_cli_workflow.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

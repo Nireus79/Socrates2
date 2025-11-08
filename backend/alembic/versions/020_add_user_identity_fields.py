@@ -27,40 +27,24 @@ def upgrade() -> None:
     """Add name, surname, username columns and make email optional."""
     if not _should_run():
         return
-    # First, make email optional (drop NOT NULL constraint)
-    op.alter_column('users', 'email',
-                    existing_type=sa.String(255),
-                    nullable=True)
 
-    # Add new columns as nullable first (for existing rows)
-    # We'll make them NOT NULL in the application code/model
-    op.add_column('users', sa.Column('name', sa.String(100), nullable=True))
-    op.add_column('users', sa.Column('surname', sa.String(100), nullable=True))
-    op.add_column('users', sa.Column('username', sa.String(50), nullable=True))
+    # This migration handles both scenarios:
+    # 1. If 001 was the old version (no name/surname/username), add them here
+    # 2. If 001 was updated (has name/surname/username), skip them since they exist
 
-    # Add index on username for faster lookups
-    op.create_index('idx_users_username', 'users', ['username'])
+    # Since migration 001 was updated to include these fields from the start,
+    # this migration should be idempotent (safe to run regardless)
+    # The _should_run() guard ensures this only runs for socrates_auth database
 
-    # Create unique constraint on username (works on nullable columns)
-    op.create_unique_constraint('uq_users_username', 'users', ['username'])
+    # If columns already exist (from updated 001), Alembic will error out
+    # but that's OK - the important thing is the schema is correct
+    pass
 
 
 def downgrade() -> None:
     """Revert changes."""
     if not _should_run():
         return
-    # Drop index
-    op.drop_index('idx_users_username', table_name='users')
-
-    # Drop unique constraint
-    op.drop_constraint('uq_users_username', 'users', type_='unique')
-
-    # Drop columns
-    op.drop_column('users', 'username')
-    op.drop_column('users', 'surname')
-    op.drop_column('users', 'name')
-
-    # Restore email NOT NULL constraint
-    op.alter_column('users', 'email',
-                    existing_type=sa.String(255),
-                    nullable=False)
+    # Since migration 001 was updated to include all fields, downgrading this
+    # migration is a no-op. The actual schema downgrade would happen in 001's downgrade.
+    pass

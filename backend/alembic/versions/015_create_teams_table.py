@@ -34,7 +34,7 @@ def upgrade():
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()'), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False, comment='Team name'),
         sa.Column('description', sa.Text(), nullable=True, comment='Team description'),
-        sa.Column('created_by', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='RESTRICT'), nullable=False, comment='User who created the team'),
+        sa.Column('created_by', postgresql.UUID(as_uuid=True), nullable=False, comment='User who created the team (cross-database reference to socrates_auth.users.id)'),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('NOW()'), comment='Timestamp when team was created'),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('NOW()'), comment='Timestamp when team was last updated'),
     )

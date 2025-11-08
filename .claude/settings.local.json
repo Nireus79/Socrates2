@@ -6,7 +6,16 @@
       "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql\" -U postgres -d socrates_auth -c \"\\d users\")",
       "Bash(paste:*)",
       "Bash(timeout 60 python:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(python test_cli_workflow.py:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell -Command \"Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host ''Processes killed''\")",
+      "Bash(timeout 15 python:*)",
+      "Bash(psql:*)",
+      "Bash(python:*)",
+      "Bash(timeout:*)",
+      "Bash(export DATABASE_URL=\"postgresql://postgres:password@localhost:5432/socrates_auth\")",
+      "Bash(alembic upgrade:*)"
     ],
     "deny": [],
     "ask": []

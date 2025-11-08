@@ -33,7 +33,7 @@ def upgrade():
         'team_members',
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()'), nullable=False),
         sa.Column('team_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('teams.id', ondelete='CASCADE'), nullable=False, comment='Foreign key to teams table'),
-        sa.Column('user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, comment='Foreign key to users table'),
+        sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False, comment='Cross-database reference to socrates_auth.users.id'),
         sa.Column('role', sa.String(length=50), nullable=False, comment='Member role: owner, lead, developer, viewer'),
         sa.Column('joined_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('NOW()'), comment='Timestamp when member joined the team'),
         sa.CheckConstraint("role IN ('owner', 'lead', 'developer', 'viewer')", name='team_members_role_valid'),

@@ -118,7 +118,7 @@ class WorkflowTester:
             self.log("    cd backend && uvicorn app.main:app --reload", "warning")
             return False, 0, {"detail": "Connection refused"}
         except Exception as e:
-            self.log(f"✗ Request error: {e}", "error")
+            self.log(f"[X] Request error: {e}", "error")
             return False, 0, {"detail": str(e)}
 
     def test_step(self, name: str, test_func):
@@ -575,3 +575,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+#   2. Run: cd backend && uvicorn app.main:app --reload
+#   3. In another terminal, run: python test_cli_workflow.py

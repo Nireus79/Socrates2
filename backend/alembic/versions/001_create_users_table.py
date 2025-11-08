@@ -30,7 +30,10 @@ def upgrade():
     op.create_table(
         'users',
         sa.Column('id', UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()')),
-        sa.Column('email', sa.String(255), nullable=False, unique=True),
+        sa.Column('name', sa.String(100), nullable=False),
+        sa.Column('surname', sa.String(100), nullable=False),
+        sa.Column('username', sa.String(50), nullable=False, unique=True),
+        sa.Column('email', sa.String(255), nullable=True, unique=True),
         sa.Column('hashed_password', sa.String(255), nullable=False),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('true')),
         sa.Column('is_verified', sa.Boolean(), nullable=False, server_default=sa.text('false')),
@@ -40,6 +43,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()'))
     )
 
+    op.create_index('idx_users_username', 'users', ['username'])
     op.create_index('idx_users_email', 'users', ['email'])
     op.create_index('idx_users_is_active', 'users', ['is_active'])
     op.create_index('idx_users_status', 'users', ['status'])
