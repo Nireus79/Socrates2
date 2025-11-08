@@ -96,7 +96,7 @@ class ConflictDetectorAgent(BaseAgent):
                 self.logger.debug(f"Calling Claude API to detect conflicts for project {project_id}")
                 claude_client = self.services.get_claude_client()
                 response = claude_client.messages.create(
-                    model="claude-3-5-sonnet-20241022",
+                    model="claude-sonnet-4-5-20250929",
                     max_tokens=2000,
                     messages=[{"role": "user", "content": prompt}]
                 )

@@ -134,7 +134,7 @@ class SocraticCounselorAgent(BaseAgent):
             try:
                 self.logger.debug(f"Calling Claude API to generate question for project {project_id}, category: {next_category}")
                 response = self.services.get_claude_client().messages.create(
-                    model="claude-3-5-sonnet-20241022",
+                    model="claude-sonnet-4-5-20250929",
                     max_tokens=500,
                     messages=[{"role": "user", "content": prompt}]
                 )

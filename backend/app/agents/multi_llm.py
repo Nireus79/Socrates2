@@ -51,9 +51,9 @@ class MultiLLMManager(BaseAgent):
                 'id': 'claude',
                 'name': 'Anthropic Claude',
                 'models': [
-                    'claude-3-5-sonnet-20241022',
-                    'claude-3-5-haiku-20241022',
-                    'claude-3-opus-20240229'
+                    'claude-sonnet-4-5-20250929',
+                    'claude-haiku-4-5-20251001',
+                    'claude-opus-4-1-20250805'
                 ],
                 'requires_api_key': False,  # System default available
                 'cost_per_1k_tokens': {
@@ -337,7 +337,7 @@ class MultiLLMManager(BaseAgent):
         try:
             from cryptography.fernet import Fernet
             from cryptography.hazmat.primitives import hashes
-            from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+            from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2  # TODO Module 'PBKDF2' not found
             import base64
 
             # Derive a Fernet-compatible key from SECRET_KEY
@@ -374,7 +374,7 @@ class MultiLLMManager(BaseAgent):
         try:
             from cryptography.fernet import Fernet
             from cryptography.hazmat.primitives import hashes
-            from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+            from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2  # TODO Module 'PBKDF2' not found
             import base64
 
             # Derive the same Fernet key from SECRET_KEY
