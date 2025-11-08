@@ -76,6 +76,14 @@ class SocratesConfig:
         self.save()
 
 
+class HTTPError(Exception):
+    """HTTP error exception"""
+    def __init__(self, status_code: int, detail: str):
+        self.status_code = status_code
+        self.detail = detail
+        super().__init__(f"HTTP {status_code}: {detail}")
+
+
 class SocratesAPI:
     """API client for Socrates backend"""
 
@@ -102,11 +110,39 @@ class SocratesAPI:
 
         try:
             response = requests.request(method, url, **kwargs)
+
+            # Check HTTP status and provide helpful error messages
+            if response.status_code >= 400:
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get('detail') or error_data.get('message', 'Unknown error')
+                except:
+                    error_msg = response.text or f"HTTP {response.status_code}"
+
+                # Provide context-specific error messages
+                if response.status_code == 401:
+                    self.console.print("[red]✗ Unauthorized: Please login first (/login)[/red]")
+                elif response.status_code == 403:
+                    self.console.print("[red]✗ Forbidden: You don't have permission[/red]")
+                elif response.status_code == 404:
+                    self.console.print(f"[red]✗ Not Found: {error_msg}[/red]")
+                    self.console.print("[yellow]  Tip: Make sure backend is running and you're logged in[/yellow]")
+                elif response.status_code == 422:
+                    self.console.print(f"[red]✗ Validation Error: {error_msg}[/red]")
+                else:
+                    self.console.print(f"[red]✗ HTTP {response.status_code}: {error_msg}[/red]")
+
+                raise HTTPError(response.status_code, error_msg)
+
             return response
+
         except requests.exceptions.ConnectionError:
             self.console.print("[red]Error: Cannot connect to Socrates backend[/red]")
             self.console.print(f"[yellow]Make sure the server is running at {self.base_url}[/yellow]")
+            self.console.print("[yellow]  cd backend && uvicorn app.main:app --reload[/yellow]")
             raise
+        except HTTPError:
+            raise  # Re-raise HTTP errors
         except Exception as e:
             self.console.print(f"[red]Request error: {e}[/red]")
             raise
@@ -474,7 +510,12 @@ No session required.
                         self.current_project = project_result.get("project")
                         self.console.print(f"[cyan]Selected project: {name}[/cyan]")
                 else:
-                    self.console.print(f"[red]✗ Failed: {result.get('message')}[/red]")
+                    # Backend returned success=false
+                    error = result.get('detail') or result.get('error') or result.get('message', 'Unknown error')
+                    self.console.print(f"[red]✗ Failed: {error}[/red]")
+            except HTTPError:
+                # HTTP errors are already printed by _request
+                pass
             except Exception as e:
                 self.console.print(f"[red]Error: {e}[/red]")
 
