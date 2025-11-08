@@ -52,6 +52,18 @@ class ProjectManagerAgent(BaseAgent):
         name = data.get('name')
         description = data.get('description', '')
 
+        # DEBUG: Write to file to ensure we see it
+        try:
+            import os
+            debug_file = os.path.join(os.path.dirname(__file__), '..', '..', 'debug_create_project.txt')
+            with open(debug_file, 'a') as f:
+                f.write(f"DEBUG: _create_project called with user_id={user_id} (type={type(user_id).__name__}), name={name}\n")
+        except Exception as e:
+            pass  # Ignore file write errors
+
+        # DEBUG: Log incoming data with types
+        self.logger.info(f"DEBUG: _create_project called with user_id={user_id} (type={type(user_id).__name__}), name={name}")
+
         # Validate
         if not user_id or not name:
             self.logger.warning(f"Validation error: missing user_id or name")
@@ -78,6 +90,10 @@ class ProjectManagerAgent(BaseAgent):
 
             # Create project
             db_specs = self.services.get_database_specs()
+
+            # DEBUG: Log before Project creation
+            self.logger.info(f"DEBUG: About to create Project with creator_id={user_id}, owner_id={user_id}, user_id={user_id}")
+
             project = Project(
                 creator_id=user_id,  # Set creator_id (immutable audit trail)
                 owner_id=user_id,    # Set owner_id (current owner)
@@ -89,7 +105,19 @@ class ProjectManagerAgent(BaseAgent):
                 status='active'
             )
 
+            # DEBUG: Log after Project creation
+            self.logger.info(f"DEBUG: Project created with id={project.id}, creator_id={project.creator_id}, owner_id={project.owner_id}, user_id={project.user_id}")
+
+            # DEBUG: Check state before add
+            from sqlalchemy import inspect as sa_inspect
+            insp = sa_inspect(project)
+            self.logger.info(f"DEBUG: Before add - creator_id attr: {insp.attrs.creator_id.value}, owner_id attr: {insp.attrs.owner_id.value}")
+
             db_specs.add(project)
+
+            # DEBUG: Check state after add but before commit
+            self.logger.info(f"DEBUG: After add - creator_id: {project.creator_id}, owner_id: {project.owner_id}")
+
             db_specs.commit()
             db_specs.refresh(project)
 

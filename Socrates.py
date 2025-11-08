@@ -179,7 +179,7 @@ class SocratesAPI:
     def get_next_question(self, session_id: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
         """Get next Socratic question"""
         response = self._request("POST", f"/api/v1/sessions/{session_id}/next-question",
-                                json={"context": context or {}})
+                                 json={"context": context or {}})
         return response.json()
 
     def submit_answer(self, session_id: str, question_id: str, answer: str) -> Dict[str, Any]:
@@ -342,7 +342,7 @@ No session required.
 
         try:
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
-                         console=self.console, transient=True) as progress:
+                          console=self.console, transient=True) as progress:
                 progress.add_task("Creating account...", total=None)
                 result = self.api.register(email, password)
 
@@ -366,7 +366,7 @@ No session required.
 
         try:
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
-                         console=self.console, transient=True) as progress:
+                          console=self.console, transient=True) as progress:
                 progress.add_task("Logging in...", total=None)
                 result = self.api.login(email, password)
 
@@ -403,7 +403,8 @@ No session required.
         self.console.print(f"\n[cyan]Logged in as:[/cyan] [bold]{email}[/bold]")
 
         if self.current_project:
-            self.console.print(f"[cyan]Current project:[/cyan] [bold]{self.current_project['name']}[/bold] ({self.current_project['id']})")
+            self.console.print(
+                f"[cyan]Current project:[/cyan] [bold]{self.current_project['name']}[/bold] ({self.current_project['id']})")
 
         if self.current_session:
             self.console.print(f"[cyan]Active session:[/cyan] [bold]{self.current_session['id']}[/bold]")
@@ -552,7 +553,7 @@ No session required.
 
             try:
                 with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
-                             console=self.console, transient=True) as progress:
+                              console=self.console, transient=True) as progress:
                     progress.add_task("Starting session...", total=None)
                     result = self.api.start_session(self.current_project["id"])
 
@@ -561,7 +562,8 @@ No session required.
                     session_id = self.current_session["id"]
                     self.console.print(f"[green]✓ Session started: {session_id}[/green]")
                     self.console.print("\n[cyan]Ready to begin Socratic questioning![/cyan]")
-                    self.console.print("[dim]Just type your thoughts and press Enter to continue the conversation.[/dim]\n")
+                    self.console.print(
+                        "[dim]Just type your thoughts and press Enter to continue the conversation.[/dim]\n")
 
                     # Get first question
                     self.get_next_question()
@@ -671,7 +673,7 @@ No session required.
 
         try:
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
-                         console=self.console, transient=True) as progress:
+                          console=self.console, transient=True) as progress:
                 progress.add_task("Generating question...", total=None)
                 result = self.api.get_next_question(self.current_session["id"])
 
@@ -715,7 +717,7 @@ No session required.
         try:
             # Submit answer
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
-                         console=self.console, transient=True) as progress:
+                          console=self.console, transient=True) as progress:
                 progress.add_task("Processing answer...", total=None)
                 result = self.api.submit_answer(
                     self.current_session["id"],
@@ -748,7 +750,7 @@ No session required.
         try:
             # Send direct chat message
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
-                         console=self.console, transient=True) as progress:
+                          console=self.console, transient=True) as progress:
                 progress.add_task("Thinking...", total=None)
                 result = self.api.direct_chat(self.current_project["id"], message)
 

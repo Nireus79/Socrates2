@@ -42,6 +42,14 @@ def create_project(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db_specs)
 ) -> Dict[str, Any]:
+    # DEBUG - This should be first thing
+    import os
+    try:
+        debug_file = os.path.join(os.path.dirname(__file__), '..', '..', 'debug_route.txt')
+        with open(debug_file, 'a') as f:
+            f.write(f"ROUTE REACHED: current_user={current_user}, request={request}\n")
+    except Exception as e:
+        pass
     """
     Create a new project.
 
@@ -80,6 +88,15 @@ def create_project(
             }
         }
     """
+    # DEBUG
+    import os
+    try:
+        debug_file = os.path.join(os.path.dirname(__file__), '..', '..', 'debug_endpoint.txt')
+        with open(debug_file, 'a') as f:
+            f.write(f"Endpoint: create_project called with user_id={current_user.id}, name={request.name}\n")
+    except:
+        pass
+
     orchestrator = get_orchestrator()
 
     result = orchestrator.route_request(

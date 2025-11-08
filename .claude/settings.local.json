@@ -15,7 +15,11 @@
       "Bash(python:*)",
       "Bash(timeout:*)",
       "Bash(export DATABASE_URL=\"postgresql://postgres:password@localhost:5432/socrates_auth\")",
-      "Bash(alembic upgrade:*)"
+      "Bash(alembic upgrade:*)",
+      "Bash(find:*)",
+      "Bash(nul)",
+      "Bash(done)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
