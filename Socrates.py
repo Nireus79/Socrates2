@@ -293,6 +293,64 @@ class SocratesAPI:
         except Exception as e:
             return {"success": False, "error": str(e), "error_code": "TEMPLATE_FAILED"}
 
+    def search(self, query: str, resource_type: Optional[str] = None,
+               category: Optional[str] = None, skip: int = 0, limit: int = 20) -> Dict[str, Any]:
+        """Search across projects, specifications, and questions"""
+        try:
+            params = {"query": query, "skip": skip, "limit": limit}
+            if resource_type:
+                params["resource_type"] = resource_type
+            if category:
+                params["category"] = category
+            response = self._request("GET", "/api/v1/search", params=params)
+            return response.json()
+        except Exception as e:
+            return {"success": False, "error": str(e), "error_code": "SEARCH_FAILED"}
+
+    def get_insights(self, project_id: str, insight_type: Optional[str] = None) -> Dict[str, Any]:
+        """Get project insights (gaps, risks, opportunities)"""
+        try:
+            params = {}
+            if insight_type:
+                params["insight_type"] = insight_type
+            response = self._request("GET", f"/api/v1/insights/{project_id}", params=params)
+            return response.json()
+        except Exception as e:
+            return {"success": False, "error": str(e), "error_code": "INSIGHTS_FAILED"}
+
+    def get_template(self, template_id: str) -> Dict[str, Any]:
+        """Get template details by ID"""
+        try:
+            response = self._request("GET", f"/api/v1/templates/{template_id}")
+            return response.json()
+        except Exception as e:
+            return {"success": False, "error": str(e), "error_code": "TEMPLATE_FAILED"}
+
+    def apply_template(self, template_id: str, project_id: str) -> Dict[str, Any]:
+        """Apply template to project"""
+        try:
+            params = {"project_id": project_id}
+            response = self._request("POST", f"/api/v1/templates/{template_id}/apply", params=params)
+            return response.json()
+        except Exception as e:
+            return {"success": False, "error": str(e), "error_code": "APPLY_TEMPLATE_FAILED"}
+
+    def get_session(self, session_id: str) -> Dict[str, Any]:
+        """Get session details"""
+        try:
+            response = self._request("GET", f"/api/v1/sessions/{session_id}")
+            return response.json()
+        except Exception as e:
+            return {"success": False, "error": str(e), "error_code": "SESSION_NOT_FOUND"}
+
+    def list_recent_sessions(self, skip: int = 0, limit: int = 20) -> Dict[str, Any]:
+        """List recent sessions"""
+        try:
+            response = self._request("GET", "/api/v1/sessions", params={"skip": skip, "limit": limit})
+            return response.json()
+        except Exception as e:
+            return {"success": False, "error": str(e), "error_code": "SESSIONS_FAILED"}
+
 
 class SocratesCLI:
     """Main CLI application"""
@@ -315,7 +373,8 @@ class SocratesCLI:
             "/projects", "/project", "/sessions", "/session",
             "/history", "/clear", "/debug", "/mode", "/chat",
             "/config", "/theme", "/format", "/save",
-            "/export", "/stats", "/template"
+            "/export", "/stats", "/template",
+            "/search", "/insights", "/filter", "/resume", "/wizard", "/status"
         ]
         self.completer = WordCompleter(self.commands, ignore_case=True)
 
@@ -381,6 +440,12 @@ class SocratesCLI:
   /template              Manage project templates
   /template list         List available templates
   /template info <name>  Show template details
+  /search <query>        Search projects, specs, and questions
+  /insights [<id>]       Analyze project gaps, risks, opportunities
+  /filter [type] [cat]   Filter specifications by category
+  /resume <id>           Resume a paused session
+  /wizard                Interactive project setup with templates
+  /status                Show current project and session status
 
 [bold yellow]System:[/bold yellow]
   /help                  Show this help message
@@ -1340,6 +1405,431 @@ No session required.
         self.console.print("\n[dim]Use: /template info <name> for details[/dim]")
         self.console.print("[dim]Use: /project create --template <name> to create from template[/dim]\n")
 
+    # ==================== PRIORITY 3 COMMANDS ====================
+
+    def cmd_search(self, args: List[str]):
+        """Search across projects, specifications, and questions"""
+        if not self.ensure_authenticated():
+            return
+
+        if not args:
+            self.console.print("[yellow]Usage: /search <query> [resource_type] [category][/yellow]")
+            self.console.print("[dim]Resource types: projects, specifications, questions[/dim]")
+            return
+
+        query = args[0]
+        resource_type = args[1].lower() if len(args) > 1 else None
+        category = args[2].lower() if len(args) > 2 else None
+
+        # Validate resource type
+        valid_types = ["projects", "specifications", "questions"]
+        if resource_type and resource_type not in valid_types:
+            self.console.print(f"[red]Invalid resource type: {resource_type}[/red]")
+            self.console.print(f"[dim]Valid types: {', '.join(valid_types)}[/dim]")
+            return
+
+        try:
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Searching...", total=None)
+                result = self.api.search(query, resource_type=resource_type, category=category)
+
+            if result.get("success"):
+                self._display_search_results(result)
+            else:
+                error = result.get("error", "Search failed")
+                self.console.print(f"[red]✗ Search failed: {error}[/red]")
+
+        except Exception as e:
+            self.console.print(f"[red]Error: {e}[/red]")
+
+    def cmd_status(self, args: List[str]):
+        """Display current project and session status"""
+        if not self.ensure_authenticated():
+            return
+
+        self.console.print()
+
+        # Project Status
+        if self.current_project:
+            self._display_project_status(self.current_project)
+        else:
+            self.console.print("[dim]No project selected. Use /project select <id> or /project create[/dim]")
+
+        self.console.print()
+
+        # Session Status
+        if self.current_session:
+            self._display_session_status(self.current_session)
+        else:
+            self.console.print("[dim]No active session. Use /session start to begin[/dim]")
+
+        self.console.print()
+
+        # Next steps
+        self._display_next_steps()
+        self.console.print()
+
+    def cmd_filter(self, args: List[str]):
+        """Filter specifications by type and category"""
+        if not self.ensure_project_selected():
+            return
+
+        filter_type = args[0].lower() if args else "spec"  # 'spec' or 'question'
+        category = args[1].lower() if len(args) > 1 else None
+
+        # For now, use search with filters
+        try:
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Filtering...", total=None)
+
+                # Search for specifications
+                if filter_type in ["spec", "specification", "all"]:
+                    result = self.api.search("", resource_type="specifications", category=category)
+                    if result.get("success"):
+                        specs = result.get("results", [])
+                        self.console.print(f"\n[bold cyan]Specifications ({len(specs)} found)[/bold cyan]\n")
+                        self._display_filtered_results(specs, is_spec=True)
+
+                # Search for questions
+                if filter_type in ["question", "questions", "all"]:
+                    result = self.api.search("", resource_type="questions", category=category)
+                    if result.get("success"):
+                        questions = result.get("results", [])
+                        self.console.print(f"\n[bold cyan]Questions ({len(questions)} found)[/bold cyan]\n")
+                        self._display_filtered_results(questions, is_spec=False)
+
+        except Exception as e:
+            self.console.print(f"[red]Error: {e}[/red]")
+
+    def cmd_insights(self, args: List[str]):
+        """Get insights for project (gaps, risks, opportunities)"""
+        if not self.ensure_authenticated():
+            return
+
+        project_id = args[0] if args else (
+            self.current_project["id"] if self.current_project else None
+        )
+
+        if not project_id:
+            self.console.print("[yellow]Usage: /insights [project_id][/yellow]")
+            self.console.print("[dim]If no project_id provided, uses currently selected project[/dim]")
+            return
+
+        try:
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Analyzing project...", total=None)
+                result = self.api.get_insights(project_id)
+
+            if result.get("success"):
+                self._display_insights(result)
+            else:
+                error = result.get("error", "Failed to get insights")
+                self.console.print(f"[red]✗ {error}[/red]")
+
+        except Exception as e:
+            self.console.print(f"[red]Error: {e}[/red]")
+
+    def cmd_resume(self, args: List[str]):
+        """Resume a paused session"""
+        if not self.ensure_authenticated():
+            return
+
+        if not args:
+            # Show recent sessions
+            self._show_recent_sessions()
+            return
+
+        session_id = args[0]
+
+        try:
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Loading session...", total=None)
+                result = self.api.get_session(session_id)
+
+            if result.get("success"):
+                session = result.get("session")
+                self.current_session = session
+                self.console.print(f"[green]✓ Session resumed: {session_id}[/green]")
+                self._display_session_status(session)
+                self.console.print("\n[cyan]Type your next response to continue the session[/cyan]\n")
+            else:
+                error = result.get("error", "Session not found")
+                self.console.print(f"[red]✗ {error}[/red]")
+                self.console.print("[dim]Use /resume (without args) to see recent sessions[/dim]")
+
+        except Exception as e:
+            self.console.print(f"[red]Error: {e}[/red]")
+
+    def cmd_wizard(self, args: List[str]):
+        """Interactive project setup wizard"""
+        if not self.ensure_authenticated():
+            return
+
+        self.console.print("\n[bold cyan]✨ Project Setup Wizard[/bold cyan]\n")
+        self.console.print("[dim]Let's create a new project with templates![/dim]\n")
+
+        # Step 1: Get project name
+        project_name = Prompt.ask("[cyan]Project name")
+        if not project_name:
+            self.console.print("[yellow]Project name is required[/yellow]")
+            return
+
+        project_description = Prompt.ask("[cyan]Project description (optional)", default="")
+
+        # Step 2: Select template
+        template_id = self._wizard_select_template()
+        if not template_id:
+            self.console.print("[yellow]Template selection cancelled[/yellow]")
+            return
+
+        # Step 3: Create project
+        try:
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Creating project...", total=None)
+                create_result = self.api.create_project(project_name, project_description)
+
+            if not create_result.get("success"):
+                self.console.print(f"[red]✗ Project creation failed: {create_result.get('error')}[/red]")
+                return
+
+            project = create_result.get("project")
+            project_id = project["id"]
+            self.current_project = project
+
+            self.console.print(f"[green]✓ Project created: {project_name}[/green]")
+
+            # Step 4: Apply template
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Applying template...", total=None)
+                template_result = self.api.apply_template(template_id, project_id)
+
+            if template_result.get("success"):
+                specs_count = template_result.get("specs_created", 0)
+                self.console.print(f"[green]✓ Template applied: {specs_count} specifications created[/green]")
+                self._display_project_created(project, template_id)
+            else:
+                self.console.print(f"[yellow]⚠ Template application failed: {template_result.get('error')}[/yellow]")
+                self._display_project_created(project, None)
+
+        except Exception as e:
+            self.console.print(f"[red]Error: {e}[/red]")
+
+    # ==================== PRIORITY 3 HELPERS ====================
+
+    def _display_insights(self, result: Dict[str, Any]):
+        """Display project insights"""
+        project_name = result.get("project_name", "Unknown")
+        insights = result.get("insights", [])
+        summary = result.get("summary", {})
+
+        self.console.print(f"\n[bold cyan]Project Insights: {project_name}[/bold cyan]\n")
+
+        if not insights:
+            self.console.print("[dim]No insights to display[/dim]\n")
+            return
+
+        # Group insights by type
+        gaps = [i for i in insights if i.get("type") == "gap"]
+        risks = [i for i in insights if i.get("type") == "risk"]
+        opportunities = [i for i in insights if i.get("type") == "opportunity"]
+
+        # Display Gaps
+        if gaps:
+            self.console.print("[bold red]⚠ GAPS[/bold red]")
+            for gap in gaps:
+                severity = gap.get("severity", "medium")
+                severity_icon = "🔴" if severity == "high" else "🟡"
+                self.console.print(f"  {severity_icon} {gap.get('title')}")
+                self.console.print(f"     {gap.get('description')}")
+            self.console.print()
+
+        # Display Risks
+        if risks:
+            self.console.print("[bold yellow]⚡ RISKS[/bold yellow]")
+            for risk in risks:
+                self.console.print(f"  🟡 {risk.get('title')}")
+                self.console.print(f"     {risk.get('description')}")
+            self.console.print()
+
+        # Display Opportunities
+        if opportunities:
+            self.console.print("[bold green]✨ OPPORTUNITIES[/bold green]")
+            for opp in opportunities:
+                self.console.print(f"  🟢 {opp.get('title')}")
+                self.console.print(f"     {opp.get('description')}")
+            self.console.print()
+
+        # Summary
+        self.console.print("[bold cyan]Summary[/bold cyan]")
+        coverage = summary.get("coverage_percentage", 0)
+        coverage_bar = "█" * int(coverage / 10) + "░" * (10 - int(coverage / 10))
+        self.console.print(f"  Coverage: [{coverage_bar}] {coverage:.0f}%")
+        self.console.print(f"  Gaps: {summary.get('gaps_count', 0)}")
+        self.console.print(f"  Risks: {summary.get('risks_count', 0)}")
+        self.console.print(f"  Opportunities: {summary.get('opportunities_count', 0)}")
+        self.console.print()
+
+    def _display_search_results(self, result: Dict[str, Any]):
+        """Display search results"""
+        query = result.get("query", "")
+        results = result.get("results", [])
+        resource_counts = result.get("resource_counts", {})
+
+        self.console.print(f"\n[bold cyan]Search Results for: {query}[/bold cyan]\n")
+
+        if not results:
+            self.console.print("[dim]No results found[/dim]\n")
+            return
+
+        table = Table(show_header=True, header_style="bold cyan")
+        table.add_column("Type", style="bold")
+        table.add_column("Title")
+        table.add_column("Preview")
+
+        for res in results[:20]:  # Limit to 20 for display
+            res_type = res.get("resource_type", "unknown").capitalize()
+            title = res.get("title", "")[:40]
+            preview = res.get("preview", "")[:60]
+            table.add_row(res_type, title, preview)
+
+        self.console.print(table)
+        self.console.print(f"\n[dim]Found {resource_counts.get('projects', 0)} projects, "
+                          f"{resource_counts.get('specifications', 0)} specifications, "
+                          f"{resource_counts.get('questions', 0)} questions[/dim]\n")
+
+    def _display_filtered_results(self, results: List[Dict[str, Any]], is_spec: bool):
+        """Display filtered results"""
+        table = Table(show_header=True, header_style="bold cyan")
+        table.add_column("ID", style="dim")
+        table.add_column("Title")
+
+        if is_spec:
+            table.add_column("Category")
+
+        for res in results[:30]:  # Limit to 30
+            res_id = str(res.get("id", ""))[:8]
+            title = res.get("title", "")[:50]
+
+            if is_spec:
+                category = res.get("category", "")
+                table.add_row(res_id, title, category)
+            else:
+                table.add_row(res_id, title)
+
+        self.console.print(table)
+        self.console.print()
+
+    def _display_project_status(self, project: Dict[str, Any]):
+        """Display project status"""
+        self.console.print("[bold cyan]📋 Project Status[/bold cyan]")
+        self.console.print(f"  Name: {project.get('name', 'Unknown')}")
+        self.console.print(f"  ID: {project.get('id', 'Unknown')[:8]}")
+        self.console.print(f"  Phase: {project.get('current_phase', 'phase_1')}")
+        self.console.print(f"  Status: {project.get('status', 'active')}")
+        self.console.print(f"  Maturity: {project.get('maturity_score', 0):.0f}%")
+
+    def _display_session_status(self, session: Dict[str, Any]):
+        """Display session status"""
+        self.console.print("[bold cyan]💬 Session Status[/bold cyan]")
+        self.console.print(f"  ID: {session.get('id', 'Unknown')[:8]}")
+        self.console.print(f"  Mode: {session.get('mode', 'socratic')}")
+        self.console.print(f"  Status: {session.get('status', 'active')}")
+        started = session.get('started_at', 'N/A')
+        self.console.print(f"  Started: {started}")
+
+    def _display_next_steps(self):
+        """Display suggested next steps"""
+        self.console.print("[bold cyan]💡 Next Steps[/bold cyan]")
+
+        if not self.current_project:
+            self.console.print("  → Create a project with /project create")
+            self.console.print("  → Or use the wizard: /wizard")
+        elif not self.current_session:
+            self.console.print("  → Start a session: /session start")
+            self.console.print("  → Or search: /search <query>")
+        else:
+            self.console.print("  → Continue the session by typing your response")
+            self.console.print("  → Or view insights: /insights")
+            self.console.print("  → Or end session: /session end")
+
+    def _display_project_created(self, project: Dict[str, Any], template_id: Optional[str]):
+        """Display project creation confirmation"""
+        self.console.print(f"\n[bold green]✓ Project created successfully![/bold green]")
+        self.console.print(f"[cyan]Name:[/cyan] {project.get('name', 'Unknown')}")
+        self.console.print(f"[cyan]ID:[/cyan] {project.get('id', 'Unknown')[:8]}")
+        if template_id:
+            self.console.print(f"[cyan]Template:[/cyan] {template_id}")
+        self.console.print("\n[dim]You can now:[/dim]")
+        self.console.print("  • /session start - Begin gathering specifications")
+        self.console.print("  • /insights - View project recommendations")
+        self.console.print("  • /search - Search specifications")
+        self.console.print()
+
+    def _wizard_select_template(self) -> Optional[str]:
+        """Interactive template selection for wizard"""
+        templates = [
+            ("template-web-app", "Web Application"),
+            ("template-api", "REST API"),
+            ("template-mobile", "Mobile Application"),
+        ]
+
+        self.console.print("\n[cyan]Choose a template:[/cyan]\n")
+        for i, (template_id, template_name) in enumerate(templates, 1):
+            self.console.print(f"  {i}. {template_name}")
+
+        choice = Prompt.ask("\nTemplate (1-3)", choices=["1", "2", "3"], default="1")
+
+        if choice == "1":
+            return "template-web-app"
+        elif choice == "2":
+            return "template-api"
+        elif choice == "3":
+            return "template-mobile"
+        return None
+
+    def _show_recent_sessions(self):
+        """Show list of recent sessions"""
+        try:
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Loading recent sessions...", total=None)
+                result = self.api.list_recent_sessions()
+
+            if result.get("success"):
+                sessions = result.get("sessions", [])
+                self.console.print(f"\n[bold cyan]Recent Sessions[/bold cyan]\n")
+
+                if not sessions:
+                    self.console.print("[dim]No recent sessions[/dim]\n")
+                    return
+
+                table = Table(show_header=True, header_style="bold cyan")
+                table.add_column("ID", style="dim")
+                table.add_column("Project")
+                table.add_column("Status")
+                table.add_column("Mode")
+
+                for session in sessions[:10]:
+                    sess_id = str(session.get("id", ""))[:8]
+                    project = session.get("project_id", "Unknown")[:8]
+                    status = session.get("status", "unknown")
+                    mode = session.get("mode", "socratic")
+                    table.add_row(sess_id, project, status, mode)
+
+                self.console.print(table)
+                self.console.print(f"\n[dim]Use: /resume <session_id> to resume[/dim]\n")
+            else:
+                self.console.print("[yellow]Could not load recent sessions[/yellow]\n")
+
+        except Exception as e:
+            self.console.print(f"[red]Error loading sessions: {e}[/red]\n")
+
     def handle_command(self, user_input: str):
         """Parse and handle command"""
         parts = user_input.strip().split()
@@ -1434,6 +1924,24 @@ No session required.
 
         elif command == "/template":
             self.cmd_template(args)
+
+        elif command == "/search":
+            self.cmd_search(args)
+
+        elif command == "/status":
+            self.cmd_status(args)
+
+        elif command == "/insights":
+            self.cmd_insights(args)
+
+        elif command == "/filter":
+            self.cmd_filter(args)
+
+        elif command == "/resume":
+            self.cmd_resume(args)
+
+        elif command == "/wizard":
+            self.cmd_wizard(args)
 
         else:
             self.console.print(f"[red]Unknown command: {command}[/red]")
