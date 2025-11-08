@@ -7,6 +7,8 @@ from decimal import Decimal
 import json
 import re
 
+from sqlalchemy import and_
+
 from .base import BaseAgent
 from ..models.project import Project
 from ..models.specification import Specification
@@ -85,7 +87,7 @@ class CodeGeneratorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load project
-            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            project = db.query(Project).where(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
                 return {
@@ -109,9 +111,11 @@ class CodeGeneratorAgent(BaseAgent):
                 }
 
             # GATE 2: Check for unresolved conflicts
-            unresolved_conflicts = db.query(Conflict).filter(
-                Conflict.project_id == project_id,  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
-                Conflict.status == ConflictStatus.OPEN
+            unresolved_conflicts = db.query(Conflict).where(
+                and_(
+                    Conflict.project_id == project_id,
+                    Conflict.status == ConflictStatus.OPEN
+                )
             ).count()
 
             if unresolved_conflicts > 0:
@@ -126,8 +130,8 @@ class CodeGeneratorAgent(BaseAgent):
                 }
 
             # Calculate next generation version
-            last_generation = db.query(GeneratedProject).filter(
-                GeneratedProject.project_id == project_id  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            last_generation = db.query(GeneratedProject).where(
+                GeneratedProject.project_id == project_id
             ).order_by(GeneratedProject.generation_version.desc()).first()
 
             next_version = (last_generation.generation_version + 1) if last_generation else 1
@@ -148,9 +152,11 @@ class CodeGeneratorAgent(BaseAgent):
             self.logger.info(f"Started code generation for project {project_id}, version {next_version}")
 
             # Load ALL specifications
-            specs = db.query(Specification).filter(
-                Specification.project_id == project_id,  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
-                Specification.is_current == True
+            specs = db.query(Specification).where(
+                and_(
+                    Specification.project_id == project_id,
+                    Specification.is_current == True
+                )
             ).all()
 
             if not specs:
@@ -298,8 +304,8 @@ class CodeGeneratorAgent(BaseAgent):
 
         try:
             db = self.services.get_database_specs()
-            generation = db.query(GeneratedProject).filter(
-                GeneratedProject.id == generation_id  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            generation = db.query(GeneratedProject).where(
+                GeneratedProject.id == generation_id
             ).first()
 
             if not generation:
@@ -354,8 +360,8 @@ class CodeGeneratorAgent(BaseAgent):
 
         try:
             db = self.services.get_database_specs()
-            generations = db.query(GeneratedProject).filter(
-                GeneratedProject.project_id == project_id  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            generations = db.query(GeneratedProject).where(
+                GeneratedProject.project_id == project_id
             ).order_by(GeneratedProject.generation_version.desc()).all()
 
             self.logger.debug(f"Listed {len(generations)} generations for project {project_id}")
@@ -395,7 +401,7 @@ class CodeGeneratorAgent(BaseAgent):
         }
 
         # Count specs per category
-        specs = db.query(Specification).filter(
+        specs = db.query(Specification).where(
             Specification.project_id == project_id
         ).all()
 

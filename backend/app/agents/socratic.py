@@ -5,6 +5,8 @@ from typing import Dict, Any, List, Tuple
 from decimal import Decimal
 import json
 
+from sqlalchemy import and_
+
 from .base import BaseAgent
 from ..models.project import Project
 from ..models.session import Session
@@ -89,7 +91,7 @@ class SocraticCounselorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load project context
-            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            project = db.query(Project).where(Project.id == project_id).first()
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
                 return {
@@ -99,7 +101,7 @@ class SocraticCounselorAgent(BaseAgent):
                 }
 
             # Load session
-            session = db.query(Session).filter(Session.id == session_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            session = db.query(Session).where(Session.id == session_id).first()
             if not session:
                 self.logger.warning(f"Session not found: {session_id}")
                 return {
@@ -109,14 +111,16 @@ class SocraticCounselorAgent(BaseAgent):
                 }
 
             # Load existing specifications
-            existing_specs = db.query(Specification).filter(
-                Specification.project_id == project_id,  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
-                Specification.is_current == True
+            existing_specs = db.query(Specification).where(
+                and_(
+                    Specification.project_id == project_id,
+                    Specification.is_current == True
+                )
             ).all()
 
             # Load previous questions
-            previous_questions = db.query(Question).filter(
-                Question.project_id == project_id  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            previous_questions = db.query(Question).where(
+                Question.project_id == project_id
             ).order_by(Question.created_at.desc()).limit(10).all()
 
             # Calculate coverage per category
