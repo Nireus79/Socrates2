@@ -373,7 +373,8 @@ class WorkflowTester:
 
         success, status, data = self.api_request(
             "POST",
-            f"/api/v1/projects/{self.project_id}/sessions"
+            "/api/v1/sessions",
+            json={"project_id": self.project_id}
         )
 
         if not success:
@@ -390,19 +391,12 @@ class WorkflowTester:
                 severity="medium"
             )
 
-        if "session" not in data:
-            self.add_issue(
-                "Start session response missing 'session' field",
-                severity="high"
-            )
-            return False
-
-        session = data.get("session", {})
-        self.session_id = session.get("id")
+        # Get session ID from top-level session_id field
+        self.session_id = data.get("session_id")
 
         if not self.session_id:
             self.add_issue(
-                "Session object missing 'id' field",
+                "Start session response missing 'session_id' field",
                 severity="high"
             )
             return False
