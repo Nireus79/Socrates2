@@ -24,7 +24,9 @@ class Project(BaseModel):
 
     Fields:
     - id: UUID (inherited from BaseModel)
-    - user_id: Foreign key to users table (in socrates_auth database)
+    - creator_id: UUID of user who created the project (immutable, for audit trail)
+    - owner_id: UUID of current project owner (transferable)
+    - user_id: [DEPRECATED] Kept for backwards compatibility, maps to owner_id
     - name: Project name
     - description: Project description
     - current_phase: Current workflow phase (discovery, analysis, design, implementation)
@@ -35,16 +37,30 @@ class Project(BaseModel):
     """
     __tablename__ = "projects"
     __table_args__ = (
+        Index('idx_projects_creator_id', 'creator_id'),
+        Index('idx_projects_owner_id', 'owner_id'),
         Index('idx_projects_user_id', 'user_id'),
         Index('idx_projects_status', 'status'),
         Index('idx_projects_current_phase', 'current_phase'),
         Index('idx_projects_maturity_score', 'maturity_score'),
     )
 
+    creator_id = Column(
+        PG_UUID(as_uuid=True),
+        nullable=False,
+        comment="UUID of user who created the project (immutable, audit trail)"
+    )
+
+    owner_id = Column(
+        PG_UUID(as_uuid=True),
+        nullable=False,
+        comment="UUID of current project owner (transferable)"
+    )
+
     user_id = Column(
         PG_UUID(as_uuid=True),
         nullable=False,
-        comment="Foreign key to users table (in socrates_auth database)"
+        comment="[DEPRECATED] Kept for backwards compatibility, use owner_id instead"
     )
 
     name = Column(

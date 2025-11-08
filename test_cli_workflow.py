@@ -40,8 +40,11 @@ class WorkflowTester:
         self.console = Console()
 
         # Test data
-        self.test_email = f"workflow_test_{uuid.uuid4().hex[:8]}@example.com"
+        self.test_username = f"workflow_test_{uuid.uuid4().hex[:8]}"
+        self.test_email = f"{self.test_username}@example.com"
         self.test_password = "TestPassword123!"
+        self.test_name = "Workflow"
+        self.test_surname = "Tester"
 
         # State
         self.access_token = None
@@ -157,8 +160,11 @@ class WorkflowTester:
             "POST",
             "/api/v1/auth/register",
             json={
-                "email": self.test_email,
-                "password": self.test_password
+                "name": self.test_name,
+                "surname": self.test_surname,
+                "username": self.test_username,
+                "password": self.test_password,
+                "email": self.test_email
             }
         )
 
@@ -196,7 +202,7 @@ class WorkflowTester:
             "POST",
             "/api/v1/auth/login",
             data={
-                "username": self.test_email,  # OAuth2 uses 'username'
+                "username": self.test_username,  # OAuth2 uses 'username' field
                 "password": self.test_password
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"}
@@ -555,9 +561,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument('--api-url', default='http://localhost:8000',
-                       help='Backend API URL')
+                        help='Backend API URL')
     parser.add_argument('--verbose', '-v', action='store_true',
-                       help='Verbose output with debug info')
+                        help='Verbose output with debug info')
 
     args = parser.parse_args()
 

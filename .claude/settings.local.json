@@ -1,19 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find:*)",
-      "Bash(timeout 180 python -m pytest:*)",
-      "Bash(timeout 120 python:*)",
-      "Bash(timeout 60 python -m pytest:*)",
-      "Bash(python test_cli_workflow.py:*)",
-      "Bash(tasklist:*)",
-      "Bash(findstr:*)",
-      "Bash(curl:*)",
-      "Bash(netstat:*)",
-      "Bash(powershell:*)",
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Fix critical bugs in test_cli_workflow and auth registration\n\n## Bugs Fixed\n\n1. **Unicode Encoding Errors** (test_cli_workflow.py)\n   - Replaced Unicode box characters (═) with ASCII (=)\n   - Replaced check marks (✓) with [OK] and X marks (✗) with [X]\n   - Replaced arrow (→) with ->\n   - Fixes UnicodeEncodeError on Windows console\n\n2. **Invalid Email Domain** (test_cli_workflow.py)\n   - Changed test email from @socrates.test to @example.com\n   - Fixes email validation errors in registration\n\n3. **User Registration Returns \"None\" as user_id** (auth.py)\n   - Root cause: user.id was None before DB commit\n   - Solution: Explicitly commit and query user after insert\n   - Returns actual UUID instead of \"None\" string\n\n4. **Updated API Module Imports** (__init__.py)\n   - Added all missing endpoint module imports\n   - Ensures proper module loading\n\nAll tests now pass except projects endpoints which need backend restart\nto load the latest code with registered routers.\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit:*)"
+      "Bash(tee:*)",
+      "Bash(test:*)",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql\" -U postgres -d socrates_auth -c \"\\d users\")",
+      "Bash(paste:*)",
+      "Bash(timeout 60 python:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

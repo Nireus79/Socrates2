@@ -16,7 +16,10 @@ class User(BaseModel):
 
     Fields:
     - id: UUID (inherited from BaseModel)
-    - email: Unique email address (indexed)
+    - name: First name
+    - surname: Last name
+    - username: Unique username for login (indexed)
+    - email: Optional email address (indexed)
     - hashed_password: Bcrypt hashed password
     - is_active: Whether user account is active
     - is_verified: Whether user email is verified
@@ -27,16 +30,36 @@ class User(BaseModel):
     """
     __tablename__ = "users"
     __table_args__ = (
+        Index('idx_users_username', 'username'),
         Index('idx_users_email', 'email'),
         Index('idx_users_is_active', 'is_active'),
         Index('idx_users_status', 'status'),
     )
 
+    name = Column(
+        String(100),
+        nullable=False,
+        comment="User first name"
+    )
+
+    surname = Column(
+        String(100),
+        nullable=False,
+        comment="User last name"
+    )
+
+    username = Column(
+        String(50),
+        unique=True,
+        nullable=False,
+        comment="Unique username for login"
+    )
+
     email = Column(
         String(255),
         unique=True,
-        nullable=False,
-        comment="User email address (unique)"
+        nullable=True,
+        comment="User email address (optional, unique if provided)"
     )
 
     hashed_password = Column(
@@ -76,6 +99,15 @@ class User(BaseModel):
         server_default='user',
         comment="User role: user, admin"
     )
+
+    def get_full_name(self) -> str:
+        """
+        Get user's full name.
+
+        Returns:
+            Full name (name + surname)
+        """
+        return f"{self.name} {self.surname}"
 
     @staticmethod
     def hash_password(password: str) -> str:

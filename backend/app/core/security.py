@@ -115,7 +115,8 @@ def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    # Query user from database
+    # Query user from database by ID
+    # Note: user_id comes from the JWT 'sub' claim (stored during login)
     user = db.query(User).filter(User.id == user_id).first()
 
     if user is None:

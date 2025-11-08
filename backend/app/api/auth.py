@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr, Field
-from typing import Dict
+from typing import Dict, Optional
 from datetime import timedelta
 
 from ..core.database import get_db_auth
@@ -28,14 +28,20 @@ router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 # Pydantic schemas for request/response
 class RegisterRequest(BaseModel):
     """User registration request"""
-    email: EmailStr
+    name: str = Field(..., min_length=2, max_length=100)
+    surname: str = Field(..., min_length=2, max_length=100)
+    username: str = Field(..., min_length=3, max_length=50, pattern="^[a-zA-Z0-9_-]+$")
     password: str = Field(..., min_length=8, max_length=100)
+    email: Optional[EmailStr] = None
 
     class Config:
         json_schema_extra = {
             "example": {
-                "email": "user@example.com",
-                "password": "SecurePassword123!"
+                "name": "John",
+                "surname": "Doe",
+                "username": "johndoe",
+                "password": "SecurePassword123!",
+                "email": "john@example.com"
             }
         }
 
@@ -44,14 +50,20 @@ class RegisterResponse(BaseModel):
     """User registration response"""
     message: str
     user_id: str
-    email: str
+    username: str
+    name: str
+    surname: str
+    email: Optional[str] = None
 
     class Config:
         json_schema_extra = {
             "example": {
                 "message": "User registered successfully",
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
-                "email": "user@example.com"
+                "username": "johndoe",
+                "name": "John",
+                "surname": "Doe",
+                "email": "john@example.com"
             }
         }
 
@@ -61,7 +73,9 @@ class LoginResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user_id: str
-    email: str
+    username: str
+    name: str
+    surname: str
 
     class Config:
         json_schema_extra = {
@@ -69,7 +83,9 @@ class LoginResponse(BaseModel):
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "token_type": "bearer",
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
-                "email": "user@example.com"
+                "username": "johndoe",
+                "name": "John",
+                "surname": "Doe"
             }
         }
 
@@ -77,7 +93,10 @@ class LoginResponse(BaseModel):
 class UserResponse(BaseModel):
     """User information response"""
     id: str
-    email: str
+    username: str
+    name: str
+    surname: str
+    email: Optional[str] = None
     is_active: bool
     is_verified: bool
     status: str
@@ -94,46 +113,66 @@ def register(
     Register a new user.
 
     Creates a new user account with:
-    - Unique email address
+    - Unique username (for login)
+    - First and last name
     - Bcrypt-hashed password
+    - Optional email address
     - Default role: 'user'
     - Default status: 'active'
     - is_verified: False (requires email verification)
 
     Args:
-        request: Registration data (email, password)
+        request: Registration data (name, surname, username, password, optional email)
         db: Database session
 
     Returns:
-        RegisterResponse with user_id and email
+        RegisterResponse with user_id, username, and user details
 
     Raises:
-        HTTPException 400: If email already exists
+        HTTPException 400: If username or email already exists
 
     Example:
         POST /api/v1/auth/register
         {
-            "email": "newuser@example.com",
-            "password": "SecurePass123!"
+            "name": "John",
+            "surname": "Doe",
+            "username": "johndoe",
+            "password": "SecurePass123!",
+            "email": "john@example.com"
         }
 
         Response 201:
         {
             "message": "User registered successfully",
             "user_id": "550e8400-e29b-41d4-a716-446655440000",
-            "email": "newuser@example.com"
+            "username": "johndoe",
+            "name": "John",
+            "surname": "Doe",
+            "email": "john@example.com"
         }
     """
-    # Check if user already exists
-    existing_user = db.query(User).filter(User.email == request.email).first()
+    # Check if username already exists
+    existing_user = db.query(User).filter(User.username == request.username).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            detail="Username already taken"
         )
+
+    # Check if email already exists (if provided)
+    if request.email:
+        existing_email = db.query(User).filter(User.email == request.email).first()
+        if existing_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
 
     # Create new user
     user = User(
+        name=request.name,
+        surname=request.surname,
+        username=request.username,
         email=request.email,
         hashed_password=User.hash_password(request.password),
         is_active=True,
@@ -143,19 +182,15 @@ def register(
     )
 
     db.add(user)
-    db.flush()  # Flush to assign the ID from the database
-
-    # Debug: Check what user.id is
-    import logging
-    logging.warning(f"DEBUG: user.id type: {type(user.id)}, value: {repr(user.id)}")
-
-    user_id = str(user.id) if user.id is not None else None  # Capture the ID right after flush
-
-    db.commit()  # Then commit the transaction
+    db.commit()  # Commit to ensure UUID is assigned from database
+    db.refresh(user)  # Refresh to get the ID from database
 
     return RegisterResponse(
         message="User registered successfully",
-        user_id=user_id if user_id else "FAILED_TO_GET_ID",
+        user_id=str(user.id),
+        username=user.username,
+        name=user.name,
+        surname=user.surname,
         email=user.email
     )
 
@@ -171,7 +206,7 @@ def login(
     Validates credentials and returns JWT token for authentication.
 
     Args:
-        form_data: OAuth2 password form (username=email, password)
+        form_data: OAuth2 password form (username, password)
         db: Database session
 
     Returns:
@@ -184,24 +219,26 @@ def login(
         POST /api/v1/auth/login
         Content-Type: application/x-www-form-urlencoded
 
-        username=user@example.com&password=SecurePass123!
+        username=johndoe&password=SecurePass123!
 
         Response 200:
         {
             "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
             "token_type": "bearer",
             "user_id": "550e8400-e29b-41d4-a716-446655440000",
-            "email": "user@example.com"
+            "username": "johndoe",
+            "name": "John",
+            "surname": "Doe"
         }
     """
-    # Find user by email
-    user = db.query(User).filter(User.email == form_data.username).first()
+    # Find user by username
+    user = db.query(User).filter(User.username == form_data.username).first()
 
     # Validate user exists and password is correct
     if not user or not user.verify_password(form_data.password):  # type: ignore[arg-type]  # form_data.password exists, type checker limitation
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -223,7 +260,9 @@ def login(
         access_token=access_token,
         token_type="bearer",
         user_id=str(user.id),
-        email=user.email
+        username=user.username,
+        name=user.name,
+        surname=user.surname
     )
 
 
@@ -279,7 +318,10 @@ def get_current_user_info(
         Response 200:
         {
             "id": "550e8400-e29b-41d4-a716-446655440000",
-            "email": "user@example.com",
+            "username": "johndoe",
+            "name": "John",
+            "surname": "Doe",
+            "email": "john@example.com",
             "is_active": true,
             "is_verified": false,
             "status": "active",
@@ -289,6 +331,9 @@ def get_current_user_info(
     """
     return UserResponse(
         id=str(current_user.id),
+        username=current_user.username,
+        name=current_user.name,
+        surname=current_user.surname,
         email=current_user.email,
         is_active=current_user.is_active,
         is_verified=current_user.is_verified,
