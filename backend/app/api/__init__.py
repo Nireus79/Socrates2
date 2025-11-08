@@ -12,7 +12,10 @@ from . import (
     teams,
     export_endpoints,
     llm_endpoints,
-    github_endpoints
+    github_endpoints,
+    search,
+    insights,
+    templates
 )
 
 __all__ = [
@@ -27,4 +30,7 @@ __all__ = [
     'export_endpoints',
     'llm_endpoints',
     'github_endpoints',
+    'search',
+    'insights',
+    'templates',
 ]
