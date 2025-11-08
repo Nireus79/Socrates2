@@ -143,21 +143,20 @@ def register(
     )
 
     db.add(user)
-    db.commit()  # Commit to database first
+    db.flush()  # Flush to assign the ID from the database
 
-    # Query to get the actual user with ID from database
-    created_user = db.query(User).filter(User.email == request.email).first()
+    # Debug: Check what user.id is
+    import logging
+    logging.warning(f"DEBUG: user.id type: {type(user.id)}, value: {repr(user.id)}")
 
-    if not created_user:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve created user"
-        )
+    user_id = str(user.id) if user.id is not None else None  # Capture the ID right after flush
+
+    db.commit()  # Then commit the transaction
 
     return RegisterResponse(
         message="User registered successfully",
-        user_id=str(created_user.id),
-        email=created_user.email
+        user_id=user_id if user_id else "FAILED_TO_GET_ID",
+        email=user.email
     )
 
 
