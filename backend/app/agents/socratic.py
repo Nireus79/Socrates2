@@ -133,8 +133,15 @@ class SocraticCounselorAgent(BaseAgent):
             # Call Claude API (separate from DB transaction)
             try:
                 self.logger.debug(f"Calling Claude API to generate question for project {project_id}, category: {next_category}")
+                model_name = "claude-sonnet-4-5-20250929"
+                self.logger.info(f"🎯 ABOUT TO CALL CLAUDE API WITH MODEL={model_name}")
+                import sys
+                print(f"\n=== SOCRATIC AGENT CALLING CLAUDE ===" , file=sys.stderr)
+                print(f"MODEL={model_name}", file=sys.stderr)
+                print(f"CATEGORY={next_category}", file=sys.stderr)
+                sys.stderr.flush()
                 response = self.services.get_claude_client().messages.create(
-                    model="claude-sonnet-4-5-20250929",
+                    model=model_name,
                     max_tokens=500,
                     messages=[{"role": "user", "content": prompt}]
                 )
@@ -142,6 +149,19 @@ class SocraticCounselorAgent(BaseAgent):
                 # Extract text from response
                 response_text = response.content[0].text
                 self.logger.debug(f"Claude API response received: {len(response_text)} chars")
+                self.logger.debug(f"Response text preview (first 200 chars): {response_text[:200]}")
+
+                # Strip markdown code fences if present (Claude sometimes wraps in ```json ... ```)
+                if response_text.startswith('```json'):
+                    response_text = response_text[7:]  # Remove ```json
+                if response_text.startswith('```'):
+                    response_text = response_text[3:]  # Remove ```
+                if response_text.endswith('```'):
+                    response_text = response_text[:-3]  # Remove ```
+
+                response_text = response_text.strip()
+
+                self.logger.debug(f"Cleaned response text preview (first 100 chars): {response_text[:100]}")
 
                 # Parse JSON response
                 question_data = json.loads(response_text)

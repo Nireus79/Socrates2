@@ -438,7 +438,14 @@ class WorkflowTester:
             )
             return False
 
-        self.log(f"  Question: {data['question'][:60]}...", "success")
+        # Extract question text (can be dict or string)
+        question_data = data['question']
+        if isinstance(question_data, dict):
+            question_text = question_data.get('text', str(question_data))
+        else:
+            question_text = str(question_data)
+
+        self.log(f"  Question: {question_text[:60]}...", "success")
         return True
 
     def test_cleanup(self) -> bool:
@@ -460,9 +467,9 @@ class WorkflowTester:
 
     def run_all_workflows(self) -> bool:
         """Run all workflow tests"""
-        self.console.print("\n[bold]=" * 40 + "[/bold]")
+        # self.console.print("\n[bold]=" * 40 + "[/bold]")
         self.console.print("[bold cyan]  Socrates CLI Workflow Tests[/bold cyan]")
-        self.console.print("[bold]=" * 40 + "[/bold]\n")
+        # self.console.print("[bold]=" * 40 + "[/bold]\n")
 
         # Check if backend is running
         try:
@@ -500,9 +507,9 @@ class WorkflowTester:
 
     def print_summary(self):
         """Print test summary"""
-        self.console.print("\n[bold]=" * 40 + "[/bold]")
+        # self.console.print("\n[bold]=" * 40 + "[/bold]")
         self.console.print("[bold cyan]  Summary[/bold cyan]")
-        self.console.print("[bold]=" * 40 + "[/bold]\n")
+        # self.console.print("[bold]=" * 40 + "[/bold]\n")
 
         # Test results
         total = self.tests_run
