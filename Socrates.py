@@ -228,7 +228,8 @@ class SocratesCLI:
             "/help", "/exit", "/quit",
             "/register", "/login", "/logout", "/whoami",
             "/projects", "/project", "/sessions", "/session",
-            "/history", "/clear", "/debug", "/mode", "/chat"
+            "/history", "/clear", "/debug", "/mode", "/chat",
+            "/config", "/theme", "/format", "/save"
         ]
         self.completer = WordCompleter(self.commands, ignore_case=True)
 
@@ -279,6 +280,14 @@ class SocratesCLI:
   /mode                  Toggle between Socratic and direct chat modes
   /mode socratic         Switch to Socratic questioning mode
   /mode direct           Switch to direct chat mode
+
+[bold yellow]Configuration & Export:[/bold yellow]
+  /config                Show/manage configuration settings
+  /config set <key> <val> Set configuration value
+  /config get <key>      Get configuration value
+  /theme [<name>]        Show/change color theme
+  /format [<name>]       Show/change output format
+  /save [<filename>]     Save session to Markdown file
 
 [bold yellow]System:[/bold yellow]
   /help                  Show this help message
@@ -772,6 +781,214 @@ No session required.
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
 
+    def cmd_config(self, args: List[str]):
+        """Manage CLI configuration settings"""
+        if not args:
+            # List all configuration
+            self.console.print("\n[bold cyan]Current Configuration:[/bold cyan]\n")
+            config_data = self.config.data
+            if not config_data:
+                self.console.print("[dim]No custom settings configured[/dim]")
+                return
+
+            table = Table(show_header=True, header_style="bold cyan")
+            table.add_column("Setting", style="bold")
+            table.add_column("Value")
+
+            for key, value in sorted(config_data.items()):
+                # Hide sensitive values
+                if key in ["access_token", "password"]:
+                    value = "***hidden***"
+                table.add_row(str(key), str(value))
+
+            self.console.print(table)
+            self.console.print()
+            return
+
+        subcommand = args[0].lower()
+
+        if subcommand == "list":
+            # List all configuration
+            self.cmd_config([])
+
+        elif subcommand == "set":
+            if len(args) < 3:
+                self.console.print("[yellow]Usage: /config set <key> <value>[/yellow]")
+                return
+
+            key = args[1]
+            value = " ".join(args[2:])
+
+            # Basic validation for common keys
+            if key == "theme" and value not in ["dark", "light", "colorblind", "monokai"]:
+                self.console.print(f"[yellow]Theme options: dark, light, colorblind, monokai[/yellow]")
+                return
+
+            if key == "format" and value not in ["rich", "json", "table", "minimal"]:
+                self.console.print(f"[yellow]Format options: rich, json, table, minimal[/yellow]")
+                return
+
+            self.config.set(key, value)
+            self.console.print(f"[green]✓ Set {key} = {value}[/green]")
+
+        elif subcommand == "get":
+            if len(args) < 2:
+                self.console.print("[yellow]Usage: /config get <key>[/yellow]")
+                return
+
+            key = args[1]
+            value = self.config.get(key)
+
+            if value is None:
+                self.console.print(f"[yellow]Setting '{key}' not found[/yellow]")
+            else:
+                self.console.print(f"[cyan]{key}[/cyan] = [bold]{value}[/bold]")
+
+        elif subcommand == "reset":
+            if len(args) > 1 and args[1] == "--all":
+                if Confirm.ask("[red]Reset all settings to defaults?[/red]"):
+                    self.config.clear()
+                    self.console.print("[green]✓ Configuration reset to defaults[/green]")
+            else:
+                self.console.print("[yellow]Usage: /config reset --all[/yellow]")
+
+        else:
+            self.console.print(f"[yellow]Unknown subcommand: {subcommand}[/yellow]")
+            self.console.print("[dim]Use: /config [list|set|get|reset][/dim]")
+
+    def cmd_theme(self, args: List[str]):
+        """Change CLI color theme"""
+        themes = {
+            "dark": "Dark theme with bright colors",
+            "light": "Light theme with muted colors",
+            "colorblind": "Color-blind friendly theme",
+            "monokai": "Monokai dark theme"
+        }
+
+        if not args:
+            # List available themes
+            self.console.print("\n[bold cyan]Available Themes:[/bold cyan]\n")
+            current = self.config.get("theme", "dark")
+
+            for theme_name, description in themes.items():
+                marker = "→ " if theme_name == current else "  "
+                self.console.print(f"{marker}[bold]{theme_name}[/bold] - {description}")
+
+            self.console.print(f"\n[dim]Current theme: {current}[/dim]")
+            self.console.print("[dim]Use: /theme <name> to change[/dim]\n")
+            return
+
+        theme_name = args[0].lower()
+
+        if theme_name not in themes:
+            self.console.print(f"[red]Unknown theme: {theme_name}[/red]")
+            self.console.print(f"[yellow]Available: {', '.join(themes.keys())}[/yellow]")
+            return
+
+        self.config.set("theme", theme_name)
+        self.console.print(f"[green]✓ Theme changed to: {theme_name}[/green]")
+        self.console.print(f"[dim]{themes[theme_name]}[/dim]")
+
+        # Note: Full theme implementation would require reloading console colors
+        self.console.print("[dim](Theme will apply on next session)[/dim]")
+
+    def cmd_format(self, args: List[str]):
+        """Change output format"""
+        formats = {
+            "rich": "Rich formatted output with colors and styles (default)",
+            "table": "Formatted as tables",
+            "json": "JSON format (machine-readable)",
+            "minimal": "Minimal text format"
+        }
+
+        if not args:
+            # List available formats
+            self.console.print("\n[bold cyan]Available Formats:[/bold cyan]\n")
+            current = self.config.get("format", "rich")
+
+            for fmt_name, description in formats.items():
+                marker = "→ " if fmt_name == current else "  "
+                self.console.print(f"{marker}[bold]{fmt_name}[/bold] - {description}")
+
+            self.console.print(f"\n[dim]Current format: {current}[/dim]")
+            self.console.print("[dim]Use: /format <name> to change[/dim]\n")
+            return
+
+        format_name = args[0].lower()
+
+        if format_name not in formats:
+            self.console.print(f"[red]Unknown format: {format_name}[/red]")
+            self.console.print(f"[yellow]Available: {', '.join(formats.keys())}[/yellow]")
+            return
+
+        self.config.set("format", format_name)
+        self.console.print(f"[green]✓ Format changed to: {format_name}[/green]")
+        self.console.print(f"[dim]{formats[format_name]}[/dim]")
+
+    def cmd_save(self, args: List[str]):
+        """Save current session or project to file"""
+        if not self.current_session and not self.current_project:
+            self.console.print("[yellow]No active session or project to save[/yellow]")
+            return
+
+        # Generate filename
+        if args:
+            filename = args[0]
+        else:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            if self.current_session:
+                filename = f"session_{timestamp}.md"
+            else:
+                filename = f"project_{timestamp}.md"
+
+        # Ensure .md extension
+        if not filename.endswith(".md"):
+            filename += ".md"
+
+        try:
+            content = self._generate_export_markdown()
+            output_path = Path.home() / "Downloads" / filename
+
+            # Create Downloads directory if it doesn't exist
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Write to file
+            with open(output_path, 'w') as f:
+                f.write(content)
+
+            self.console.print(f"[green]✓ Saved to: {output_path}[/green]")
+            self.console.print(f"[dim]File size: {output_path.stat().st_size} bytes[/dim]")
+
+        except Exception as e:
+            self.console.print(f"[red]Error saving file: {e}[/red]")
+            if self.debug:
+                import traceback
+                self.console.print(traceback.format_exc())
+
+    def _generate_export_markdown(self) -> str:
+        """Generate Markdown content for export"""
+        lines = []
+
+        # Header
+        if self.current_project:
+            lines.append(f"# {self.current_project['name']}")
+            lines.append(f"\n**Project ID:** `{self.current_project['id']}`\n")
+            if self.current_project.get('description'):
+                lines.append(f"**Description:** {self.current_project['description']}\n")
+
+        if self.current_session:
+            lines.append(f"\n## Session")
+            lines.append(f"\n**Session ID:** `{self.current_session['id']}`")
+            lines.append(f"**Status:** {self.current_session.get('status', 'unknown')}\n")
+
+        # Metadata
+        lines.append(f"\n## Export Information\n")
+        lines.append(f"- **Exported:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"- **User:** {self.config.get('user_email', 'Unknown')}")
+        lines.append(f"- **Mode:** {self.chat_mode.capitalize()}")
+
+        return "\n".join(lines)
+
     def handle_command(self, user_input: str):
         """Parse and handle command"""
         parts = user_input.strip().split()
@@ -845,6 +1062,18 @@ No session required.
                     self.console.print("[dim]Socratic mode: Thoughtful questioning to extract specifications[/dim]")
                 else:
                     self.console.print("[dim]Direct mode: Direct conversation with AI assistant[/dim]")
+
+        elif command == "/config":
+            self.cmd_config(args)
+
+        elif command == "/theme":
+            self.cmd_theme(args)
+
+        elif command == "/format":
+            self.cmd_format(args)
+
+        elif command == "/save":
+            self.cmd_save(args)
 
         else:
             self.console.print(f"[red]Unknown command: {command}[/red]")
