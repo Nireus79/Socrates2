@@ -8,7 +8,7 @@ This agent orchestrates the user learning process:
 4. Saves results back to database
 
 The pure business logic (behavior analysis, metrics calculation)
-is handled by the LearningEngine in backend/app/core/learning_engine.py.
+is handled by the LearningEngine in the Socrates library.
 This separation enables testing without database and library extraction.
 """
 import logging
@@ -19,8 +19,9 @@ import json
 
 from ..models import UserBehaviorPattern, QuestionEffectiveness, KnowledgeBaseDocument, Project
 from .base import BaseAgent
-from ..core.learning_engine import LearningEngine
-from ..core.models import UserBehaviorData
+# Import from Socrates library instead of local core
+from socrates import LearningEngine
+from socrates import UserBehaviorData
 
 
 class UserLearningAgent(BaseAgent):

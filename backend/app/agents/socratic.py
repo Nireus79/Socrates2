@@ -8,7 +8,7 @@ This agent orchestrates the question generation process:
 4. Saves results back to database
 
 The pure business logic (calculating coverage, building prompts, parsing responses)
-is handled by the QuestionGenerator in backend/app/core/question_engine.py.
+is handled by the QuestionGenerator in the Socrates library.
 This separation enables testing without database and library extraction.
 """
 from typing import Dict, Any, List
@@ -23,8 +23,9 @@ from ..models.session import Session
 from ..models.question import Question
 from ..models.specification import Specification
 from ..core.dependencies import ServiceContainer
-from ..core.question_engine import QuestionGenerator
-from ..core.models import (
+# Import from Socrates library instead of local core
+from socrates import QuestionGenerator
+from socrates import (
     project_db_to_data,
     specs_db_to_data,
     questions_db_to_data,

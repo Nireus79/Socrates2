@@ -8,7 +8,7 @@ This agent orchestrates quality control by:
 4. Managing quality metrics in database
 
 The pure business logic (bias detection, coverage analysis) is handled by
-BiasDetectionEngine in backend/app/core/quality_engine.py.
+BiasDetectionEngine in the Socrates library.
 This separation enables testing without database and library extraction.
 """
 import logging
@@ -18,8 +18,9 @@ from typing import Dict, List, Any
 
 from ..models import Project, Specification, QualityMetric
 from .base import BaseAgent
-from ..core.quality_engine import BiasDetectionEngine
-from ..core.models import specs_db_to_data
+# Import from Socrates library instead of local core
+from socrates import BiasDetectionEngine
+from socrates import specs_db_to_data
 
 
 class QualityControllerAgent(BaseAgent):

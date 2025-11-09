@@ -1,6 +1,10 @@
 # Socrates2 - Production Dependencies
 # Python version: 3.12
-# Last updated: 2025-11-05
+# Last updated: 2025-11-09
+
+# ===== SOCRATES LIBRARY =====
+# Extracted pure logic library for Socratic questioning and specification analysis
+-e /home/user/socrates
 
 # =====WEB FRAMEWORK & SERVER =====
 fastapi==0.121.0

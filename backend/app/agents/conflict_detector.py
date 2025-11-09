@@ -8,7 +8,7 @@ This agent orchestrates the conflict detection process:
 4. Saves results back to database
 
 The pure business logic (building prompts, parsing responses)
-is handled by the ConflictDetectionEngine in backend/app/core/conflict_engine.py.
+is handled by the ConflictDetectionEngine in the Socrates library.
 This separation enables testing without database and library extraction.
 """
 from typing import Dict, Any, List
@@ -21,8 +21,9 @@ from sqlalchemy import and_
 from .base import BaseAgent
 from ..models.specification import Specification
 from ..models.conflict import Conflict, ConflictType, ConflictSeverity, ConflictStatus
-from ..core.conflict_engine import ConflictDetectionEngine
-from ..core.models import specs_db_to_data, SpecificationData
+# Import from Socrates library instead of local core
+from socrates import ConflictDetectionEngine
+from socrates import specs_db_to_data, SpecificationData
 
 
 class ConflictDetectorAgent(BaseAgent):
