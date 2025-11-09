@@ -33,10 +33,11 @@ try:
     from rich.prompt import Prompt, Confirm
     from rich.syntax import Syntax
     from rich.progress import Progress, SpinnerColumn, TextColumn
-    from prompt_toolkit import PromptSession
+    from prompt_toolkit import PromptSession, prompt
     from prompt_toolkit.history import FileHistory
     from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
     from prompt_toolkit.completion import WordCompleter
+    from getpass import getpass
 except ImportError as e:
     _cli_imports_available = False
     _cli_import_error = e
@@ -117,9 +118,12 @@ class SocratesAPI:
             self.console.print(f"[red]Request error: {e}[/red]")
             raise
 
-    def register(self, email: str, password: str) -> Dict[str, Any]:
+    def register(self, username: str, name: str, surname: str, email: str, password: str) -> Dict[str, Any]:
         """Register new user"""
         response = self._request("POST", "/api/v1/auth/register", json={
+            "username": username,
+            "name": name,
+            "surname": surname,
             "email": email,
             "password": password
         })
@@ -501,32 +505,161 @@ No session required.
             return False
         return True
 
+    def prompt_with_back(self, prompt_text: str, password: bool = False, default: str = None) -> Optional[str]:
+        """
+        Prompt user for input with back navigation support.
+        Returns None if user enters 'back' (to go back to previous step).
+        Returns the input string if valid.
+        Password inputs show asterisks for each character.
+        """
+        if default and not password:
+            prompt_text += f" ({default})"
+
+        if password:
+            # Use prompt_toolkit's prompt for better password masking
+            try:
+                user_input = prompt(f"{prompt_text}: ", is_password=True)
+            except EOFError:
+                return None
+        else:
+            user_input = Prompt.ask(prompt_text, default=default or "").strip()
+
+        if user_input and user_input.lower() == "back":
+            return None
+
+        return user_input if user_input else None
+
+    def confirm_action(self, question: str) -> Optional[bool]:
+        """
+        Ask for confirmation with back option.
+        Returns True/False for yes/no, None for back.
+        """
+        try:
+            user_input = Prompt.ask(question + " (y/n/back)", choices=["y", "n", "back"]).lower()
+            if user_input == "back":
+                return None
+            return user_input == "y"
+        except:
+            return False
+
     def cmd_register(self):
         """Handle /register command"""
         self.console.print("\n[bold cyan]Register New Account[/bold cyan]\n")
-
-        email = Prompt.ask("Email")
-        password = Prompt.ask("Password", password=True)
-        password_confirm = Prompt.ask("Confirm password", password=True)
-
-        if password != password_confirm:
-            self.console.print("[red]Passwords do not match![/red]")
-            return
+        self.console.print("[dim]Tip: Type 'back' at any step to go back[/dim]\n")
 
         try:
+            data = {}
+
+            # Step 1: Username
+            while True:
+                username = self.prompt_with_back("Username")
+                if username is None:
+                    self.console.print("[yellow]Registration cancelled[/yellow]")
+                    return
+                if username:
+                    data['username'] = username
+                    break
+                self.console.print("[yellow]Username is required[/yellow]")
+
+            # Step 2: Name
+            while True:
+                name = self.prompt_with_back("First name")
+                if name is None:
+                    # Go back to username
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    data.pop('username', None)
+                    self.cmd_register()
+                    return
+                if name:
+                    data['name'] = name
+                    break
+                self.console.print("[yellow]First name is required[/yellow]")
+
+            # Step 3: Surname
+            while True:
+                surname = self.prompt_with_back("Last name")
+                if surname is None:
+                    # Go back to name
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    data.pop('name', None)
+                    # Restart from Step 2
+                    self.cmd_register()
+                    return
+                if surname:
+                    data['surname'] = surname
+                    break
+                self.console.print("[yellow]Last name is required[/yellow]")
+
+            # Step 4: Email
+            while True:
+                email = self.prompt_with_back("Email")
+                if email is None:
+                    # Go back to surname
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    data.pop('surname', None)
+                    self.cmd_register()
+                    return
+                if email:
+                    data['email'] = email
+                    break
+                self.console.print("[yellow]Email is required[/yellow]")
+
+            # Step 5: Password
+            while True:
+                password = self.prompt_with_back("Password", password=True)
+                if password is None:
+                    # Go back to email
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    data.pop('email', None)
+                    self.cmd_register()
+                    return
+                if password:
+                    data['password'] = password
+                    break
+                self.console.print("[yellow]Password is required[/yellow]")
+
+            # Step 6: Confirm password
+            while True:
+                password_confirm = self.prompt_with_back("Confirm password", password=True)
+                if password_confirm is None:
+                    # Go back to password
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    data.pop('password', None)
+                    self.cmd_register()
+                    return
+                if password_confirm:
+                    break
+                self.console.print("[yellow]Please confirm your password[/yellow]")
+
+            if data['password'] != password_confirm:
+                self.console.print("[red]Passwords do not match![/red]")
+                return
+
+            # Step 7: Review and confirm
+            self.console.print("\n[cyan]Review your information:[/cyan]")
+            self.console.print(f"  Username: {data['username']}")
+            self.console.print(f"  Name: {data['name']} {data['surname']}")
+            self.console.print(f"  Email: {data['email']}")
+
+            proceed = Confirm.ask("\n[cyan]Proceed with registration?[/cyan]")
+            if not proceed:
+                self.console.print("[yellow]Registration cancelled[/yellow]")
+                return
+
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Creating account...", total=None)
-                result = self.api.register(email, password)
+                result = self.api.register(data['username'], data['name'], data['surname'], data['email'], data['password'])
 
             # Backend returns user_id on success (no "success" field)
             if result.get("user_id"):
-                self.console.print(f"[green]✓ Account created successfully![/green]")
+                self.console.print(f"\n[green]✓ Account created successfully![/green]")
                 self.console.print(f"[dim]User ID: {result.get('user_id')}[/dim]")
-                self.console.print(f"[dim]Email: {result.get('email')}[/dim]")
+                self.console.print(f"[dim]Username: {data['username']}[/dim]")
+                self.console.print(f"[dim]Email: {data['email']}[/dim]")
                 self.console.print("\n[yellow]Please login with /login[/yellow]")
             else:
-                self.console.print(f"[red]✗ Registration failed: {result.get('message', 'Unknown error')}[/red]")
+                self.console.print(f"\n[red]✗ Registration failed: {result.get('message', 'Unknown error')}[/red]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
 
@@ -535,7 +668,10 @@ No session required.
         self.console.print("\n[bold cyan]Login[/bold cyan]\n")
 
         email = Prompt.ask("Email")
-        password = Prompt.ask("Password", password=True)
+        password = self.prompt_with_back("Password", password=True)
+        if password is None:
+            self.console.print("[yellow]Login cancelled[/yellow]")
+            return
 
         try:
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
@@ -633,14 +769,36 @@ No session required.
 
         if subcommand == "create":
             self.console.print("\n[bold cyan]Create New Project[/bold cyan]\n")
-            name = Prompt.ask("Project name")
-            description = Prompt.ask("Description (optional)", default="")
+            self.console.print("[dim]Tip: Type 'back' to cancel[/dim]\n")
+
+            # Step 1: Project name
+            while True:
+                name = self.prompt_with_back("Project name")
+                if name is None:
+                    self.console.print("[yellow]Project creation cancelled[/yellow]")
+                    return
+                if name:
+                    break
+                self.console.print("[yellow]Project name is required[/yellow]")
+
+            # Step 2: Description (optional)
+            description = self.prompt_with_back("Description (optional)", default="")
+            if description is None:
+                self.console.print("[yellow]Going back...[/yellow]")
+                self.cmd_project(["create"])
+                return
+
+            description = description or ""
 
             try:
-                result = self.api.create_project(name, description)
+                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                              console=self.console, transient=True) as progress:
+                    progress.add_task("Creating project...", total=None)
+                    result = self.api.create_project(name, description)
+
                 if result.get("success"):
                     project_id = result.get("project_id")
-                    self.console.print(f"[green]✓ Project created: {project_id}[/green]")
+                    self.console.print(f"\n[green]✓ Project created: {project_id}[/green]")
 
                     # Auto-select the new project
                     project_result = self.api.get_project(project_id)
@@ -1576,15 +1734,27 @@ No session required.
             return
 
         self.console.print("\n[bold cyan]✨ Project Setup Wizard[/bold cyan]\n")
-        self.console.print("[dim]Let's create a new project with templates![/dim]\n")
+        self.console.print("[dim]Let's create a new project with templates![/dim]")
+        self.console.print("[dim]Tip: Type 'back' at any step to go back[/dim]\n")
 
         # Step 1: Get project name
-        project_name = Prompt.ask("[cyan]Project name")
-        if not project_name:
+        while True:
+            project_name = self.prompt_with_back("Project name")
+            if project_name is None:
+                self.console.print("[yellow]Wizard cancelled[/yellow]")
+                return
+            if project_name:
+                break
             self.console.print("[yellow]Project name is required[/yellow]")
+
+        # Step 2: Project description
+        project_description = self.prompt_with_back("Project description (optional)", default="")
+        if project_description is None:
+            self.console.print("[yellow]Going back...[/yellow]")
+            self.cmd_wizard([])
             return
 
-        project_description = Prompt.ask("[cyan]Project description (optional)", default="")
+        project_description = project_description or ""
 
         # Step 2: Select template
         template_id = self._wizard_select_template()
@@ -1789,15 +1959,17 @@ No session required.
         for i, (template_id, template_name) in enumerate(templates, 1):
             self.console.print(f"  {i}. {template_name}")
 
-        choice = Prompt.ask("\nTemplate (1-3)", choices=["1", "2", "3"], default="1")
+        while True:
+            choice = Prompt.ask("\nTemplate (1-3 or 'back')", choices=["1", "2", "3", "back"], default="1")
 
-        if choice == "1":
-            return "template-web-app"
-        elif choice == "2":
-            return "template-api"
-        elif choice == "3":
-            return "template-mobile"
-        return None
+            if choice == "back":
+                return None
+            elif choice == "1":
+                return "template-web-app"
+            elif choice == "2":
+                return "template-api"
+            elif choice == "3":
+                return "template-mobile"
 
     def _show_recent_sessions(self):
         """Show list of recent sessions"""

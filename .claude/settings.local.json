@@ -4,7 +4,8 @@
       "Bash(dir \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\alembic\\versions\")",
       "Bash(ls:*)",
       "Bash(set DATABASE_URL=postgresql://postgres@localhost:5432/socrates_auth:*)",
-      "Bash(alembic current:*)"
+      "Bash(alembic current:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
