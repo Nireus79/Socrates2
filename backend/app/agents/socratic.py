@@ -206,6 +206,40 @@ class SocraticCounselorAgent(BaseAgent):
                     'error_code': 'API_ERROR'
                 }
 
+            # Analyze question for bias before saving
+            quality_check_passed = True
+            quality_score = Decimal('1.0')
+            try:
+                from .orchestrator import get_orchestrator
+                orchestrator = get_orchestrator()
+                bias_check = orchestrator.route_request(
+                    'quality',
+                    'analyze_question',
+                    {
+                        'question_text': question_data['text'],
+                        'project_id': project_id
+                    }
+                )
+                if bias_check.get('success'):
+                    quality_score = Decimal(str(1.0 - bias_check.get('bias_score', 0.0)))
+                    if bias_check.get('is_blocking'):
+                        self.logger.warning(f"Question blocked due to bias: {bias_check.get('reason')}")
+                        quality_check_passed = False
+                    else:
+                        self.logger.debug(f"Question passed bias check: score={bias_check.get('bias_score', 0.0):.2f}")
+            except Exception as e:
+                self.logger.warning(f"Could not perform bias check: {e}, proceeding with question")
+                quality_check_passed = True
+
+            # If quality check failed, return error with suggestion
+            if not quality_check_passed:
+                return {
+                    'success': False,
+                    'error': bias_check.get('reason', 'Question quality check failed'),
+                    'error_code': 'QUALITY_CHECK_FAILED',
+                    'suggested_alternatives': bias_check.get('suggested_alternatives', [])
+                }
+
             # Save question
             question = Question(
                 project_id=project_id,
@@ -213,14 +247,14 @@ class SocraticCounselorAgent(BaseAgent):
                 text=question_data['text'],
                 category=question_data['category'],
                 context=question_data.get('context'),
-                quality_score=Decimal('1.0')  # Phase 5 will add quality analysis
+                quality_score=quality_score
             )
 
             db.add(question)
             db.commit()
             db.refresh(question)
 
-            self.logger.info(f"Generated question {question.id} for project {project_id}, category: {question.category}")
+            self.logger.info(f"Generated question {question.id} for project {project_id}, category: {question.category}, quality_score: {quality_score}")
 
             return {
                 'success': True,

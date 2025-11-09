@@ -129,6 +129,37 @@ class CodeGeneratorAgent(BaseAgent):
                     'unresolved_count': unresolved_conflicts
                 }
 
+            # GATE 3: Analyze specification coverage quality
+            coverage_check_passed = True
+            coverage_details = {}
+            try:
+                from .orchestrator import get_orchestrator
+                orchestrator = get_orchestrator()
+                coverage_result = orchestrator.route_request(
+                    'quality',
+                    'analyze_coverage',
+                    {'project_id': project_id}
+                )
+                if coverage_result.get('success'):
+                    coverage_details = coverage_result
+                    if coverage_result.get('is_blocking'):
+                        self.logger.warning(f"Code generation blocked by coverage check: {coverage_result.get('reason')}")
+                        coverage_check_passed = False
+                    else:
+                        self.logger.info(f"Coverage check passed: {coverage_result.get('coverage_score', 0):.0%}")
+            except Exception as e:
+                self.logger.warning(f"Could not perform coverage check: {e}, proceeding with generation")
+                coverage_check_passed = True
+
+            if not coverage_check_passed:
+                return {
+                    'success': False,
+                    'error': coverage_details.get('reason', 'Coverage quality check failed'),
+                    'error_code': 'QUALITY_CHECK_FAILED',
+                    'coverage_gaps': coverage_details.get('coverage_gaps', []),
+                    'suggested_actions': coverage_details.get('suggested_actions', [])
+                }
+
             # Calculate next generation version
             last_generation = db.query(GeneratedProject).filter(
                 GeneratedProject.project_id == project_id
