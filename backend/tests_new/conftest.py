@@ -25,6 +25,16 @@ os.environ["ANTHROPIC_API_KEY"] = "test-key-sk-test"
 os.environ["SECRET_KEY"] = "test-secret-key-for-testing-only"
 os.environ["DEBUG"] = "True"
 
+# Security and token configuration
+os.environ["ALGORITHM"] = "HS256"
+os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
+
+# CORS configuration
+os.environ["CORS_ORIGINS"] = "http://localhost:3000,http://localhost:5173"
+
+# Logging configuration
+os.environ["LOG_LEVEL"] = "INFO"
+
 
 @pytest.fixture(scope="session")
 def test_db_auth():

@@ -18,21 +18,33 @@ from .config import settings
 logger = logging.getLogger(__name__)
 
 # Create two engines for two-database architecture
-engine_auth = create_engine(
-    settings.DATABASE_URL_AUTH,
-    pool_pre_ping=True,  # Verify connections before using
-    pool_size=5,
-    max_overflow=10,
-    echo=settings.DEBUG,  # Log SQL in debug mode
-)
+# SQLite doesn't support pool_size/max_overflow, so detect and configure appropriately
+def _create_engine(url: str):
+    """Create SQLAlchemy engine with appropriate pooling for database type."""
+    engine_kwargs = {
+        "echo": settings.DEBUG,  # Log SQL in debug mode
+    }
 
-engine_specs = create_engine(
-    settings.DATABASE_URL_SPECS,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
-    echo=settings.DEBUG,
-)
+    # Only use pooling parameters for PostgreSQL, not SQLite
+    if url and not url.startswith("sqlite"):
+        engine_kwargs.update({
+            "pool_pre_ping": True,  # Verify connections before using
+            "pool_size": 5,
+            "max_overflow": 10,
+        })
+    elif url and url.startswith("sqlite"):
+        # SQLite-specific settings for in-memory testing
+        if ":memory:" in url:
+            engine_kwargs.update({
+                "connect_args": {"check_same_thread": False},
+                "poolclass": None,  # Don't use connection pooling for memory DB
+            })
+
+    return create_engine(url, **engine_kwargs)
+
+engine_auth = _create_engine(settings.DATABASE_URL_AUTH)
+
+engine_specs = _create_engine(settings.DATABASE_URL_SPECS)
 
 # Create session factories
 SessionLocalAuth = sessionmaker(
