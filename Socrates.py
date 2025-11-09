@@ -7,15 +7,23 @@ Usage:
     python Socrates.py [--api-url URL] [--debug]
 """
 
+from __future__ import annotations
+
 import os
 import sys
 import json
 import argparse
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, TYPE_CHECKING
 from datetime import datetime
 from pathlib import Path
 
-# Check for required packages
+if TYPE_CHECKING:
+    from rich.console import Console
+
+# Try to import CLI dependencies - defer error to runtime
+_cli_imports_available = True
+_cli_import_error = None
+
 try:
     import requests
     from rich.console import Console
@@ -30,10 +38,8 @@ try:
     from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
     from prompt_toolkit.completion import WordCompleter
 except ImportError as e:
-    print(f"Error: Missing required package: {e}")
-    print("\nPlease install CLI dependencies:")
-    print("    pip install -r cli-requirements.txt")
-    sys.exit(1)
+    _cli_imports_available = False
+    _cli_import_error = e
 
 
 class SocratesConfig:
@@ -2006,6 +2012,13 @@ No session required.
 
 def main():
     """Main entry point"""
+    # Check if CLI dependencies are available
+    if not _cli_imports_available:
+        print(f"Error: Missing required package: {_cli_import_error}")
+        print("\nPlease install CLI dependencies:")
+        print("    pip install requests rich prompt-toolkit")
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(description="Socrates CLI - AI-Powered Specification Gathering")
     parser.add_argument(
         "--api-url",

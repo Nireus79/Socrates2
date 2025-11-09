@@ -86,7 +86,7 @@ class ContextAnalyzerAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load context
-            session = db.query(Session).where(Session.id == session_id).first()
+            session = db.query(Session).filter(Session.id == session_id).first()
             if not session:
                 self.logger.warning(f"Session not found: {session_id}")
                 return {
@@ -95,7 +95,7 @@ class ContextAnalyzerAgent(BaseAgent):
                     'error_code': 'SESSION_NOT_FOUND'
                 }
 
-            question = db.query(Question).where(Question.id == question_id).first()
+            question = db.query(Question).filter(Question.id == question_id).first()
             if not question:
                 self.logger.warning(f"Question not found: {question_id}")
                 return {
@@ -104,7 +104,7 @@ class ContextAnalyzerAgent(BaseAgent):
                     'error_code': 'QUESTION_NOT_FOUND'
                 }
 
-            project = db.query(Project).where(Project.id == session.project_id).first()
+            project = db.query(Project).filter(Project.id == session.project_id).first()
             if not project:
                 self.logger.warning(f"Project not found: {session.project_id}")
                 return {
@@ -114,7 +114,7 @@ class ContextAnalyzerAgent(BaseAgent):
                 }
 
             # Load existing specs
-            existing_specs = db.query(Specification).where(
+            existing_specs = db.query(Specification).filter(
                 and_(
                     Specification.project_id == project.id,
                     Specification.is_current == True
@@ -259,8 +259,7 @@ class ContextAnalyzerAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _analyze_context(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """

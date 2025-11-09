@@ -87,7 +87,7 @@ class CodeGeneratorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load project
-            project = db.query(Project).where(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
                 return {
@@ -111,7 +111,7 @@ class CodeGeneratorAgent(BaseAgent):
                 }
 
             # GATE 2: Check for unresolved conflicts
-            unresolved_conflicts = db.query(Conflict).where(
+            unresolved_conflicts = db.query(Conflict).filter(
                 and_(
                     Conflict.project_id == project_id,
                     Conflict.status == ConflictStatus.OPEN
@@ -130,7 +130,7 @@ class CodeGeneratorAgent(BaseAgent):
                 }
 
             # Calculate next generation version
-            last_generation = db.query(GeneratedProject).where(
+            last_generation = db.query(GeneratedProject).filter(
                 GeneratedProject.project_id == project_id
             ).order_by(GeneratedProject.generation_version.desc()).first()
 
@@ -152,7 +152,7 @@ class CodeGeneratorAgent(BaseAgent):
             self.logger.info(f"Started code generation for project {project_id}, version {next_version}")
 
             # Load ALL specifications
-            specs = db.query(Specification).where(
+            specs = db.query(Specification).filter(
                 and_(
                     Specification.project_id == project_id,
                     Specification.is_current == True
@@ -276,8 +276,7 @@ class CodeGeneratorAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _get_generation_status(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -304,7 +303,7 @@ class CodeGeneratorAgent(BaseAgent):
 
         try:
             db = self.services.get_database_specs()
-            generation = db.query(GeneratedProject).where(
+            generation = db.query(GeneratedProject).filter(
                 GeneratedProject.id == generation_id
             ).first()
 
@@ -332,8 +331,7 @@ class CodeGeneratorAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _list_generations(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -360,7 +358,7 @@ class CodeGeneratorAgent(BaseAgent):
 
         try:
             db = self.services.get_database_specs()
-            generations = db.query(GeneratedProject).where(
+            generations = db.query(GeneratedProject).filter(
                 GeneratedProject.project_id == project_id
             ).order_by(GeneratedProject.generation_version.desc()).all()
 
@@ -381,8 +379,7 @@ class CodeGeneratorAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _identify_missing_categories(self, project_id: str, db) -> List[Dict[str, Any]]:
         """Identify which categories are missing specifications."""
@@ -401,7 +398,7 @@ class CodeGeneratorAgent(BaseAgent):
         }
 
         # Count specs per category
-        specs = db.query(Specification).where(
+        specs = db.query(Specification).filter(
             Specification.project_id == project_id
         ).all()
 

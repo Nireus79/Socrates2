@@ -77,7 +77,7 @@ class ConflictDetectorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load existing specifications
-            existing_specs = db.query(Specification).where(
+            existing_specs = db.query(Specification).filter(
                 Specification.project_id == project_id
             ).all()
 
@@ -292,12 +292,12 @@ class ConflictDetectorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Build query
-            query = db.query(Conflict).where(Conflict.project_id == project_id)  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            query = db.query(Conflict).filter(Conflict.project_id == project_id)
 
             if status_filter:
                 try:
                     status_enum = ConflictStatus[status_filter.upper()]
-                    query = query.where(Conflict.status == status_enum)
+                    query = query.filter(Conflict.status == status_enum)
                 except KeyError:
                     self.logger.warning(f"Invalid status filter: {status_filter}")
                     return {
@@ -352,7 +352,7 @@ class ConflictDetectorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load conflict
-            conflict = db.query(Conflict).where(Conflict.id == conflict_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()
             if not conflict:
                 self.logger.warning(f"Conflict not found: {conflict_id}")
                 return {
@@ -364,7 +364,7 @@ class ConflictDetectorAgent(BaseAgent):
             # Load related specifications
             specs = []
             if conflict.spec_ids:
-                specs = db.query(Specification).where(
+                specs = db.query(Specification).filter(
                     Specification.id.in_(conflict.spec_ids)
                 ).all()
 
