@@ -13,6 +13,7 @@ from .core.config import settings
 from .core.database import close_db_connections
 from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
 from .api import export_endpoints, llm_endpoints, github_endpoints
+from .api import search, insights, templates
 
 # Configure logging
 logging.basicConfig(
@@ -120,6 +121,9 @@ app.include_router(teams.router)
 app.include_router(export_endpoints.router)
 app.include_router(llm_endpoints.router)
 app.include_router(github_endpoints.router)
+app.include_router(search.router)
+app.include_router(insights.router)
+app.include_router(templates.router)
 
 
 @app.get("/")
