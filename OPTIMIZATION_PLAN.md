@@ -26,6 +26,19 @@ The Socrates2 project is **well-architected and production-ready** but has signi
 
 ---
 
+## 📚 OPTIONAL: Library-Ready Architecture
+
+**Note:** This optimization plan can be implemented with library extraction in mind.
+See `ARCHITECTURE_LIBRARY_PREP.md` for details.
+
+**Key Addition:** When creating `backend/app/core/` modules during optimization,
+use plain dataclasses instead of database models. This adds zero effort but makes
+library extraction trivial later.
+
+See **Data Model Templates** section at end of this document.
+
+---
+
 ## PART 1: CRITICAL FIXES (Do First - 2-4 hours)
 
 ### 1.1 Remove Debug File I/O from Production Code
@@ -884,6 +897,104 @@ These 5 optimizations take < 30 minutes total and provide immediate benefits:
 2. **Next week:** Implement high-impact optimizations (Part 2)
 3. **Following weeks:** Medium-impact and infrastructure work (Parts 3-4)
 4. **Monthly:** Review metrics and adjust plan based on actual impact
+
+---
+
+## DATA MODEL TEMPLATES (For Library-Ready Code)
+
+If preparing architecture for future library extraction, use these templates
+when creating `backend/app/core/` modules. **This adds zero complexity** but
+enables library extraction later without rework.
+
+### Template 1: Project Data
+```python
+# backend/app/core/models.py
+from dataclasses import dataclass
+
+@dataclass
+class ProjectData:
+    """Plain project data (database-agnostic)"""
+    id: str
+    name: str
+    description: str
+    current_phase: str
+    maturity_score: float
+    user_id: str
+```
+
+### Template 2: Specification Data
+```python
+@dataclass
+class SpecificationData:
+    """Plain specification data"""
+    id: str
+    category: str
+    key: str
+    value: str
+    confidence: float
+    source: str = 'user_input'
+```
+
+### Template 3: Question Data
+```python
+@dataclass
+class QuestionData:
+    """Plain question data"""
+    id: str
+    text: str
+    category: str
+    context: str
+    quality_score: float
+```
+
+### Template 4: Conversion Function
+```python
+def db_to_data_models():
+    """Convert database models to plain data (optional)"""
+    # Example: Convert SQLAlchemy Project to ProjectData
+    project_data = ProjectData(
+        id=str(project_db.id),
+        name=project_db.name,
+        description=project_db.description,
+        current_phase=project_db.current_phase,
+        maturity_score=float(project_db.maturity_score),
+        user_id=str(project_db.user_id)
+    )
+    return project_data
+```
+
+### Using These Templates
+When you create core modules (question_engine, conflict_engine, etc.):
+1. Use dataclass versions of models (no SQLAlchemy)
+2. Accept plain data in function arguments
+3. Return plain data from functions
+4. Keep database conversion at API/Agent layer
+
+**Example:**
+```python
+# ✅ Good (library-ready)
+class QuestionGenerator:
+    def generate(self, project: ProjectData, specs: List[SpecificationData]) -> QuestionData:
+        # Pure logic with plain data
+        return QuestionData(...)
+
+# ❌ Avoid (not library-ready)
+class QuestionGenerator:
+    def generate(self, project: Project, specs: List[Specification]) -> Question:
+        # Depends on SQLAlchemy models
+        return Question(...)
+```
+
+**When to Use:**
+- Always when creating new `core/` modules
+- When refactoring existing agent logic
+- When extracting pure business logic
+
+**Zero Overhead:**
+- Same amount of code
+- Same performance
+- Just using dataclasses instead of ORM models
+- Makes library extraction trivial later
 
 ---
 
