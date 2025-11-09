@@ -196,8 +196,7 @@ class ProjectManagerAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _update_project(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -274,8 +273,7 @@ class ProjectManagerAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _delete_project(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -334,8 +332,7 @@ class ProjectManagerAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _list_projects(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -396,8 +393,7 @@ class ProjectManagerAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _update_maturity(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -466,5 +462,4 @@ class ProjectManagerAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection

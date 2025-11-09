@@ -259,8 +259,7 @@ class ContextAnalyzerAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _analyze_context(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """

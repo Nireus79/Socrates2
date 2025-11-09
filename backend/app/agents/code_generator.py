@@ -276,8 +276,7 @@ class CodeGeneratorAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _get_generation_status(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -332,8 +331,7 @@ class CodeGeneratorAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _list_generations(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -381,8 +379,7 @@ class CodeGeneratorAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _identify_missing_categories(self, project_id: str, db) -> List[Dict[str, Any]]:
         """Identify which categories are missing specifications."""

@@ -218,8 +218,7 @@ class SocraticCounselorAgent(BaseAgent):
             }
 
         finally:
-            if db:
-                db.close()
+            pass  # Session managed by caller/dependency injection
 
     def _generate_questions_batch(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
