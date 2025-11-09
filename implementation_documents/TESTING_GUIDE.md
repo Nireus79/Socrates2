@@ -312,4 +312,4 @@ jobs:
 - [pytest Documentation](https://docs.pytest.org/)
 - [SQLAlchemy Testing Guide](https://docs.sqlalchemy.org/en/20/orm/session_basics.html#session-basics)
 - [FastAPI Testing](https://fastapi.tiangolo.com/advanced/testing-dependencies/)
-- [Project README](./README.md)
+- [Project README](../README.md)

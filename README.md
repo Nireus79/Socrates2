@@ -357,7 +357,7 @@ Socrates2/
 
 ## Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment instructions including:
+See [DEPLOYMENT.md](implementation_documents/DEPLOYMENT.md) for comprehensive deployment instructions including:
 - Docker Compose setup
 - Manual deployment
 - Database configuration

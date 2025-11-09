@@ -5,7 +5,7 @@ import os
 import shutil
 from pathlib import Path
 
-VERSIONS_DIR = Path("backend/alembic/versions")
+VERSIONS_DIR = Path("../backend/alembic/versions")
 
 # Migrations for socrates_auth database
 AUTH_MIGRATIONS = {

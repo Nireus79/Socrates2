@@ -5,10 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="cli tests pass">
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/agents/conflict_detector.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/conflict_detector.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/debug_create_project.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/debug_create_project.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/debug_route.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/debug_route.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/conftest.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/conftest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/implementation_documents/TESTING_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/TESTING_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/implementation_documents/audit_migrations.py" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/audit_migrations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,8 +61,8 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\themi\PycharmProjects\Socrates2\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />
+      <recent name="C:\Users\themi\PycharmProjects\Socrates2\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\foundation_docs" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\user_workflow_simulation\discovery_phase" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\user_workflow_simulation" />
