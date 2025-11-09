@@ -4,10 +4,15 @@ ExportAgent - Export project specifications and code to various formats.
 from typing import Dict, Any, List
 from datetime import datetime, timezone
 import json
+import io
+import zipfile
+import base64
 
 from .base import BaseAgent
 from ..models.project import Project
 from ..models.specification import Specification
+from ..models.generated_project import GeneratedProject
+from ..models.generated_file import GeneratedFile
 from ..core.dependencies import ServiceContainer
 
 
@@ -205,13 +210,15 @@ class ExportAgent(BaseAgent):
 
     def _export_code(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Export generated code files (placeholder implementation).
+        Export generated code files as ZIP archive.
 
         Args:
             data: {'project_id': UUID}
 
         Returns:
-            {'success': bool, 'message': str}
+            {'success': bool, 'archive_base64': str, 'filename': str, 'file_count': int}
+            OR on failure:
+            {'success': False, 'error': str, 'error_code': str}
         """
         project_id = data.get('project_id')
 
@@ -222,12 +229,76 @@ class ExportAgent(BaseAgent):
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        # TODO: Implement code export
-        # This would query GeneratedProject and GeneratedFile models
-        # and create a ZIP archive of the generated code
+        db = None
+        try:
+            db = self.services.get_database_specs()
 
-        return {
-            'success': True,
-            'message': 'Code export not yet implemented. Requires GeneratedProject and GeneratedFile data.',
-            'note': 'Use code generation endpoint first to generate code for this project'
-        }
+            # Load project
+            project = db.query(Project).filter_by(id=project_id).first()
+            if not project:
+                return {
+                    'success': False,
+                    'error': f'Project not found: {project_id}',
+                    'error_code': 'PROJECT_NOT_FOUND'
+                }
+
+            # Find latest generation
+            generation = db.query(GeneratedProject).filter_by(
+                project_id=project_id
+            ).order_by(GeneratedProject.generation_version.desc()).first()
+
+            if not generation:
+                return {
+                    'success': False,
+                    'error': 'No generated code found for this project. Generate code first.',
+                    'error_code': 'NO_GENERATED_CODE'
+                }
+
+            # Load all generated files for this generation
+            files = db.query(GeneratedFile).filter_by(
+                generation_id=generation.id
+            ).all()
+
+            if not files:
+                return {
+                    'success': False,
+                    'error': 'No files found in the latest generation.',
+                    'error_code': 'NO_FILES'
+                }
+
+            # Create ZIP archive in memory
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for file in files:
+                    # Use relative path within ZIP
+                    arcname = file.file_path.lstrip('/')
+                    zip_file.writestr(arcname, file.content)
+
+            # Encode as base64 for transmission
+            zip_buffer.seek(0)
+            archive_base64 = base64.b64encode(zip_buffer.read()).decode('utf-8')
+
+            filename = f"{project.name.replace(' ', '_').lower()}_v{generation.generation_version}.zip"
+
+            self.logger.info(f"Exported {len(files)} files for project {project_id} (generation {generation.generation_version})")
+
+            return {
+                'success': True,
+                'archive_base64': archive_base64,
+                'filename': filename,
+                'file_count': len(files),
+                'generation_version': generation.generation_version,
+                'total_lines': generation.total_lines
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error exporting code for project {project_id}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': f'Failed to export code: {str(e)}',
+                'error_code': 'EXPORT_ERROR'
+            }
+
+        finally:
+            if db:
+                db.close()

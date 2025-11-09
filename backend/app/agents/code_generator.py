@@ -87,7 +87,7 @@ class CodeGeneratorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load project
-            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            project = db.query(Project).filter(Project.id == project_id).first()
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
                 return {
@@ -129,6 +129,37 @@ class CodeGeneratorAgent(BaseAgent):
                     'unresolved_count': unresolved_conflicts
                 }
 
+            # GATE 3: Analyze specification coverage quality
+            coverage_check_passed = True
+            coverage_details = {}
+            try:
+                from .orchestrator import get_orchestrator
+                orchestrator = get_orchestrator()
+                coverage_result = orchestrator.route_request(
+                    'quality',
+                    'analyze_coverage',
+                    {'project_id': project_id}
+                )
+                if coverage_result.get('success'):
+                    coverage_details = coverage_result
+                    if coverage_result.get('is_blocking'):
+                        self.logger.warning(f"Code generation blocked by coverage check: {coverage_result.get('reason')}")
+                        coverage_check_passed = False
+                    else:
+                        self.logger.info(f"Coverage check passed: {coverage_result.get('coverage_score', 0):.0%}")
+            except Exception as e:
+                self.logger.warning(f"Could not perform coverage check: {e}, proceeding with generation")
+                coverage_check_passed = True
+
+            if not coverage_check_passed:
+                return {
+                    'success': False,
+                    'error': coverage_details.get('reason', 'Coverage quality check failed'),
+                    'error_code': 'QUALITY_CHECK_FAILED',
+                    'coverage_gaps': coverage_details.get('coverage_gaps', []),
+                    'suggested_actions': coverage_details.get('suggested_actions', [])
+                }
+
             # Calculate next generation version
             last_generation = db.query(GeneratedProject).filter(
                 GeneratedProject.project_id == project_id
@@ -151,13 +182,13 @@ class CodeGeneratorAgent(BaseAgent):
 
             self.logger.info(f"Started code generation for project {project_id}, version {next_version}")
 
-            # Load ALL specifications
+            # Load ALL specifications (with reasonable limit for memory safety)
             specs = db.query(Specification).filter(
                 and_(
                     Specification.project_id == project_id,
                     Specification.is_current == True
                 )
-            ).all()
+            ).limit(1000).all()
 
             if not specs:
                 self.logger.warning(f"No specifications found for project {project_id}")
@@ -171,7 +202,7 @@ class CodeGeneratorAgent(BaseAgent):
                 }
 
             # Group specifications by category
-            grouped_specs = self._group_specs_by_category(specs)  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
+            grouped_specs = self._group_specs_by_category(specs)
 
             # Build comprehensive code generation prompt
             prompt = self._build_code_generation_prompt(project, grouped_specs)
@@ -397,10 +428,10 @@ class CodeGeneratorAgent(BaseAgent):
             QuestionCategory.DISASTER_RECOVERY: 4
         }
 
-        # Count specs per category
+        # Count specs per category (with limit for memory safety)
         specs = db.query(Specification).filter(
             Specification.project_id == project_id
-        ).all()
+        ).limit(1000).all()
 
         category_counts = {}
         for spec in specs:

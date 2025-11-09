@@ -1,5 +1,15 @@
 """
 ConflictDetectorAgent - Detects and manages specification conflicts.
+
+This agent orchestrates the conflict detection process:
+1. Loads data from databases
+2. Converts to plain data models
+3. Uses ConflictDetectionEngine core engine for business logic
+4. Saves results back to database
+
+The pure business logic (building prompts, parsing responses)
+is handled by the ConflictDetectionEngine in the Socrates library.
+This separation enables testing without database and library extraction.
 """
 from typing import Dict, Any, List
 from datetime import datetime, timezone
@@ -11,6 +21,9 @@ from sqlalchemy import and_
 from .base import BaseAgent
 from ..models.specification import Specification
 from ..models.conflict import Conflict, ConflictType, ConflictSeverity, ConflictStatus
+# Import from Socrates library instead of local core
+from socrates import ConflictDetectionEngine
+from socrates import specs_db_to_data, SpecificationData
 
 
 class ConflictDetectorAgent(BaseAgent):
@@ -23,10 +36,20 @@ class ConflictDetectorAgent(BaseAgent):
     - Manage conflict resolution
     - Track conflict history
 
+    Architecture:
+    - This agent handles: Database I/O, API orchestration, validation, persistence
+    - ConflictDetectionEngine handles: Prompt building, response parsing
+    - Clear separation enables testing without database and library extraction
+
     Used by:
     - Phase 3: ContextAnalyzerAgent (before saving specs)
     - Phase 4+: Validation before code generation
     """
+
+    def __init__(self, agent_id: str = 'conflict', name: str = 'Conflict Detector', services=None):
+        """Initialize agent with conflict detection engine"""
+        super().__init__(agent_id, name, services)
+        self.conflict_engine = ConflictDetectionEngine(self.logger)
 
     def get_capabilities(self) -> List[str]:
         """Return list of capabilities."""
@@ -79,7 +102,7 @@ class ConflictDetectorAgent(BaseAgent):
             # Load existing specifications
             existing_specs = db.query(Specification).filter(
                 Specification.project_id == project_id
-            ).all()
+            ).limit(100).all()
 
             if not existing_specs:
                 # No existing specs, no conflicts possible
@@ -91,10 +114,30 @@ class ConflictDetectorAgent(BaseAgent):
                     'safe_to_save': True
                 }
 
-            # Build conflict detection prompt
-            prompt = self._build_conflict_detection_prompt(new_specs, existing_specs)
+            # PHASE 1: Convert DB models to plain data models (for ConflictDetectionEngine)
+            # Convert new specs (dicts) to SpecificationData
+            new_specs_data = []
+            for spec_dict in new_specs:
+                new_specs_data.append(SpecificationData(
+                    id=spec_dict.get('id', ''),
+                    project_id=project_id,
+                    category=spec_dict.get('category', 'unknown'),
+                    key=spec_dict.get('key', ''),
+                    value=spec_dict.get('value', ''),
+                    confidence=spec_dict.get('confidence', 0.8)
+                ))
 
-            # Call Claude API (separate from DB transaction)
+            # Convert existing specs to SpecificationData
+            existing_specs_data = specs_db_to_data(existing_specs)
+
+            # PHASE 2: Use ConflictDetectionEngine for pure business logic
+            # Build prompt using engine
+            prompt = self.conflict_engine.build_conflict_detection_prompt(
+                new_specs_data,
+                existing_specs_data
+            )
+
+            # PHASE 3: Call Claude API (Agent responsibility - not in core engine)
             try:
                 self.logger.debug(f"Calling Claude API to detect conflicts for project {project_id}")
                 claude_client = self.services.get_claude_client()
@@ -104,16 +147,29 @@ class ConflictDetectorAgent(BaseAgent):
                     messages=[{"role": "user", "content": prompt}]
                 )
 
-                # Parse response
+                # Extract and parse response using ConflictDetectionEngine
                 response_text = response.content[0].text
                 self.logger.debug(f"Claude API response received: {len(response_text)} chars")
-                conflict_analysis = json.loads(response_text)
+
+                # Use ConflictDetectionEngine to parse response
+                conflict_analysis = self.conflict_engine.parse_conflict_analysis(
+                    response_text,
+                    new_specs_data,
+                    existing_specs_data
+                )
 
             except json.JSONDecodeError as e:
                 self.logger.error(f"Failed to parse Claude response as JSON: {e}", exc_info=True)
                 return {
                     'success': False,
                     'error': 'Failed to parse conflict analysis from Claude API',
+                    'error_code': 'PARSE_ERROR'
+                }
+            except ValueError as e:
+                self.logger.error(f"Invalid conflict data from Claude: {e}", exc_info=True)
+                return {
+                    'success': False,
+                    'error': 'Invalid conflict data from Claude API',
                     'error_code': 'PARSE_ERROR'
                 }
             except Exception as e:
@@ -124,7 +180,7 @@ class ConflictDetectorAgent(BaseAgent):
                     'error_code': 'API_ERROR'
                 }
 
-            # Save conflicts to database if found
+            # PHASE 4: Save conflicts to database if found
             if conflict_analysis.get('conflicts_detected'):
                 for conflict_data in conflict_analysis.get('conflicts', []):
                     conflict = Conflict(
@@ -384,67 +440,3 @@ class ConflictDetectorAgent(BaseAgent):
                 'error_code': 'DATABASE_ERROR'
             }
 
-    def _build_conflict_detection_prompt(
-        self,
-        new_specs: List[Dict],
-        existing_specs: List[Specification]
-    ) -> str:
-        """Build prompt for Claude to detect conflicts."""
-        prompt = f"""Analyze these new specifications for conflicts with existing ones.
-
-EXISTING SPECIFICATIONS:
-{self._format_specs_for_prompt(existing_specs)}
-
-NEW SPECIFICATIONS TO CHECK:
-{json.dumps(new_specs, indent=2)}
-
-TASK:
-Identify any contradictions or conflicts between new and existing specifications.
-
-CONFLICT TYPES:
-- technology: Different tech choices for same purpose
-- requirement: Contradicting functional requirements
-- timeline: Conflicting deadlines or schedules
-- resource: Incompatible resource allocations
-
-SEVERITY LEVELS:
-- critical: Complete contradiction, cannot coexist
-- high: Major conflict, needs immediate resolution
-- medium: Moderate conflict, should be addressed
-- low: Minor inconsistency, can be resolved later
-
-Return JSON format:
-{{
-  "conflicts_detected": true/false,
-  "conflicts": [
-    {{
-      "type": "technology|requirement|timeline|resource",
-      "description": "Clear description of the conflict",
-      "severity": "critical|high|medium|low",
-      "spec_ids": ["existing_spec_id_1", "existing_spec_id_2"],
-      "new_spec_keys": ["new_spec_key"],
-      "reasoning": "Why this is a conflict"
-    }}
-  ]
-}}
-
-If no conflicts found, return:
-{{
-  "conflicts_detected": false,
-  "conflicts": []
-}}
-"""
-        return prompt
-
-    def _format_specs_for_prompt(self, specs: List[Specification]) -> str:
-        """Format specifications for prompt."""
-        if not specs:
-            return "None"
-
-        lines = []
-        for spec in specs:
-            lines.append(
-                f"- [{spec.id}] {spec.category}: {spec.content} "
-                f"(confidence: {spec.confidence})"
-            )
-        return "\n".join(lines)

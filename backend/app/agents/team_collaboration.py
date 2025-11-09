@@ -1,9 +1,15 @@
 """
 TeamCollaborationAgent - Manages team collaboration and multi-user projects.
+
+Optimizations (Week 3):
+- Uses selectinload() for eager loading to prevent N+1 query patterns
+- Eliminates unnecessary database round-trips when accessing relationships
 """
 from typing import Dict, Any, List
 from datetime import datetime, timezone
 from uuid import UUID
+
+from sqlalchemy.orm import selectinload
 
 from .base import BaseAgent
 from ..models.team import Team
@@ -346,13 +352,15 @@ class TeamCollaborationAgent(BaseAgent):
                 'error_code': 'NOT_FOUND'
             }
 
-        # Get members
-        members = db_auth.query(TeamMember).filter_by(team_id=team_id).all()
+        # Get members with eager loading of User relationship (prevents N+1 query problem)
+        # OPTIMIZATION: Instead of 1 query + N user lookups, this does 2 total queries
+        members = db_auth.query(TeamMember).filter_by(team_id=team_id)\
+            .options(selectinload(TeamMember.user)).all()
 
         # Get user details for members
         member_data = []
         for member in members:
-            user = db_auth.query(User).filter_by(id=member.user_id).first()
+            user = member.user  # Already loaded by selectinload, no additional query
             member_data.append({
                 'member_id': str(member.id),
                 'user_id': str(member.user_id),
@@ -585,11 +593,13 @@ class TeamCollaborationAgent(BaseAgent):
         db_auth = self.services.get_database_auth()
         db_specs = self.services.get_database_specs()
 
-        # Get team members
-        members = db_auth.query(TeamMember).filter_by(team_id=team_id).all()
+        # Get team members with eager loading (prevents N+1 query problem)
+        # OPTIMIZATION: Loads members and their users in 2 queries instead of 1+N
+        members = db_auth.query(TeamMember).filter_by(team_id=team_id)\
+            .options(selectinload(TeamMember.user)).all()
         member_data = []
         for member in members:
-            user = db_auth.query(User).filter_by(id=member.user_id).first()
+            user = member.user  # Already loaded by selectinload, no additional query
             member_data.append({
                 'user_id': str(member.user_id),
                 'email': user.email if user else None,
@@ -597,11 +607,13 @@ class TeamCollaborationAgent(BaseAgent):
                 'joined_at': member.joined_at.isoformat()
             })
 
-        # Get shared projects
-        shares = db_specs.query(ProjectShare).filter_by(team_id=team_id).all()
+        # Get shared projects with eager loading (prevents N+1 query problem)
+        # OPTIMIZATION: Loads shares and their projects in 2 queries instead of 1+N
+        shares = db_specs.query(ProjectShare).filter_by(team_id=team_id)\
+            .options(selectinload(ProjectShare.project)).all()
         project_data = []
         for share in shares:
-            project = db_specs.query(Project).filter_by(id=share.project_id).first()
+            project = share.project  # Already loaded by selectinload, no additional query
             if project:
                 project_data.append({
                     'project_id': str(project.id),

@@ -113,16 +113,16 @@ class ContextAnalyzerAgent(BaseAgent):
                     'error_code': 'PROJECT_NOT_FOUND'
                 }
 
-            # Load existing specs
+            # Load existing specs (limit to recent for performance)
             existing_specs = db.query(Specification).filter(
                 and_(
                     Specification.project_id == project.id,
                     Specification.is_current == True
                 )
-            ).all()
+            ).order_by(Specification.created_at.desc()).limit(100).all()
 
             # Build extraction prompt
-            prompt = self._build_extraction_prompt(question, answer, existing_specs)  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
+            prompt = self._build_extraction_prompt(question, answer, existing_specs)
 
             # Call Claude API (separate from DB transaction)
             try:

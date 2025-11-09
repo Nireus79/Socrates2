@@ -1,11 +1,15 @@
 """
 UserLearningAgent - Learns user behavior patterns and adapts question selection.
 
-This agent tracks:
-1. Question effectiveness per user
-2. User behavior patterns (communication style, detail level)
-3. Knowledge base documents for semantic search
-4. Personalized question recommendations
+This agent orchestrates the user learning process:
+1. Loads data from databases
+2. Converts to plain data models
+3. Uses LearningEngine core engine for business logic
+4. Saves results back to database
+
+The pure business logic (behavior analysis, metrics calculation)
+is handled by the LearningEngine in the Socrates library.
+This separation enables testing without database and library extraction.
 """
 import logging
 from datetime import datetime, timezone
@@ -15,6 +19,9 @@ import json
 
 from ..models import UserBehaviorPattern, QuestionEffectiveness, KnowledgeBaseDocument, Project
 from .base import BaseAgent
+# Import from Socrates library instead of local core
+from socrates import LearningEngine
+from socrates import UserBehaviorData
 
 
 class UserLearningAgent(BaseAgent):
@@ -27,12 +34,17 @@ class UserLearningAgent(BaseAgent):
     - recommend_next_question: Recommend best question based on learned data
     - upload_knowledge_document: Upload and process knowledge base documents
     - get_user_profile: Get complete user learning profile
+
+    Architecture:
+    - This agent handles: Database I/O, API orchestration, validation, persistence
+    - LearningEngine handles: Behavior analysis, metrics calculation, personalization
+    - Clear separation enables testing without database and library extraction
     """
 
-    def __init__(self, agent_id: str, name: str, services=None):
-        """Initialize User Learning Agent"""
+    def __init__(self, agent_id: str = 'learning', name: str = 'User Learning', services=None):
+        """Initialize agent with learning engine"""
         super().__init__(agent_id, name, services)
-        self.logger = logging.getLogger(__name__)
+        self.learning_engine = LearningEngine(self.logger)
 
     def get_capabilities(self) -> List[str]:
         """Return list of capabilities this agent provides"""
@@ -317,37 +329,76 @@ class UserLearningAgent(BaseAgent):
                 'behavior_patterns': List[dict],
                 'question_effectiveness': List[dict],
                 'total_questions_asked': int,
-                'overall_response_quality': float
+                'overall_response_quality': float,
+                'engagement_score': float,
+                'learning_velocity': float,
+                'personalization_hints': dict
             }
         """
         user_id = data['user_id']
         specs_session = self.services.get_database_specs()
 
-        # Get behavior patterns
+        # Load behavior patterns and question effectiveness from database
         patterns = specs_session.query(UserBehaviorPattern).filter_by(
             user_id=user_id
         ).all()
 
-        # Get question effectiveness
         effectiveness = specs_session.query(QuestionEffectiveness).filter_by(
             user_id=user_id
-        ).all()
+        ).limit(100).all()
 
-        # Calculate aggregates
-        total_questions_asked = sum(e.times_asked for e in effectiveness)
-        total_answered_well = sum(e.times_answered_well for e in effectiveness)
-        overall_quality = (
-            total_answered_well / total_questions_asked
-            if total_questions_asked > 0 else 0.0
+        # PHASE 1: Convert DB data to plain data models (for LearningEngine)
+        # Extract data from effectiveness records to build user behavior
+        questions_asked = [
+            {
+                'id': e.question_template_id,
+                'times_asked': e.times_asked,
+                'times_answered_well': e.times_answered_well
+            }
+            for e in effectiveness
+        ]
+
+        response_qualities = [
+            float(e.effectiveness_score) if e.effectiveness_score else 0.5
+            for e in effectiveness
+        ]
+
+        topic_interactions = [p.pattern_type for p in patterns] if patterns else []
+
+        projects_completed = len(set(
+            pid for p in patterns if p.learned_from_projects
+            for pid in p.learned_from_projects
+        ))
+
+        # PHASE 2: Use LearningEngine for pure business logic
+        # Build user behavior profile
+        user_behavior = self.learning_engine.build_user_profile(
+            user_id=str(user_id),
+            questions_asked=questions_asked,
+            responses_quality=response_qualities,
+            topic_interactions=topic_interactions,
+            projects_completed=projects_completed
         )
 
+        # Calculate metrics using engine
+        metrics = self.learning_engine.calculate_learning_metrics(user_behavior)
+
+        # Get personalization hints
+        hints = self.learning_engine.get_personalization_hints(user_behavior)
+
+        # Return structured response with both database data and engine-calculated metrics
         return {
             'success': True,
             'user_id': str(user_id),
-            'behavior_patterns': [p.to_dict() for p in patterns],  # TODO Parameter 'self' unfilled
-            'question_effectiveness': [e.to_dict() for e in effectiveness],  # TODO Parameter 'self' unfilled
-            'total_questions_asked': total_questions_asked,
-            'overall_response_quality': overall_quality
+            'behavior_patterns': [p.to_dict() for p in patterns],
+            'question_effectiveness': [e.to_dict() for e in effectiveness],
+            'total_questions_asked': user_behavior.total_questions_asked,
+            'overall_response_quality': user_behavior.overall_response_quality,
+            'engagement_score': metrics['engagement_score'],
+            'learning_velocity': metrics['learning_velocity'],
+            'experience_level': metrics['experience_level'],
+            'topics_explored': metrics['topics_explored'],
+            'personalization_hints': hints
         }
 
     def _merge_pattern_data(self, existing: dict, new: dict) -> dict:

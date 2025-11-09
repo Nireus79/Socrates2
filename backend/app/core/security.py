@@ -131,7 +131,7 @@ def get_current_user(
             detail="User account is inactive"
         )
 
-    return user  # TODO xpected type 'User', got 'Type[User]' instead
+    return user  # Type narrowed by assert above
 
 
 def get_current_active_user(

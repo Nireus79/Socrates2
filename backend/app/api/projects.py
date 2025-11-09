@@ -8,15 +8,16 @@ Provides:
 - Update project
 - Delete project
 - Get project status/maturity
+
+All CRUD operations are routed through the ProjectManagerAgent via the orchestrator.
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
-from sqlalchemy.orm import Session
 
-from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
+from ..agents.orchestrator import get_orchestrator
 
 router = APIRouter(prefix="/api/v1/projects", tags=["projects"])
 
@@ -39,24 +40,14 @@ class UpdateProjectRequest(BaseModel):
 @router.post("")
 def create_project(
     request: CreateProjectRequest,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db_specs)
+    current_user: User = Depends(get_current_active_user)
 ) -> Dict[str, Any]:
-    # DEBUG - This should be first thing
-    import os
-    try:
-        debug_file = os.path.join(os.path.dirname(__file__), '..', '..', 'debug_route.txt')
-        with open(debug_file, 'a') as f:
-            f.write(f"ROUTE REACHED: current_user={current_user}, request={request}\n")
-    except Exception as e:
-        pass
     """
     Create a new project.
 
     Args:
         request: Project details (name, description)
         current_user: Authenticated user
-        db: Database session
 
     Returns:
         {
@@ -88,62 +79,36 @@ def create_project(
             }
         }
     """
-    # Create project directly in database
-    from app.models.project import Project
-    from sqlalchemy.exc import IntegrityError
-
-    try:
-        project = Project(
-            creator_id=current_user.id,
-            owner_id=current_user.id,
-            user_id=current_user.id,
-            name=request.name,
-            description=request.description,
-            current_phase='discovery',
-            maturity_score=0,
-            status='active'
-        )
-        db.add(project)
-        db.commit()
-        db.refresh(project)
-
-        return {
-            'success': True,
-            'project_id': str(project.id),
-            'project': {
-                'id': str(project.id),
-                'name': project.name,
-                'description': project.description,
-                'current_phase': project.current_phase,
-                'maturity_score': project.maturity_score,
-                'status': project.status,
-                'creator_id': str(project.creator_id),
-                'owner_id': str(project.owner_id),
-                'user_id': str(project.user_id),
-                'created_at': project.created_at.isoformat() if project.created_at else None,
-                'updated_at': project.updated_at.isoformat() if project.updated_at else None
-            }
+    # Route through ProjectManagerAgent
+    orchestrator = get_orchestrator()
+    result = orchestrator.route_request(
+        'project',
+        'create_project',
+        {
+            'user_id': str(current_user.id),
+            'name': request.name,
+            'description': request.description or ''
         }
-    except IntegrityError as e:
-        db.rollback()
+    )
+
+    if not result.get('success'):
         raise HTTPException(
             status_code=400,
-            detail=f"Failed to create project: {str(e)}"
+            detail=result.get('error', 'Failed to create project')
         )
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {str(e)}"
-        )
+
+    return {
+        'success': True,
+        'project_id': result.get('project_id'),
+        'project': result.get('project')
+    }
 
 
 @router.get("")
 def list_projects(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db_specs)
+    current_user: User = Depends(get_current_active_user)
 ) -> Dict[str, Any]:
     """
     List all projects for the current user.
@@ -152,7 +117,6 @@ def list_projects(
         skip: Number of projects to skip (pagination)
         limit: Maximum number of projects to return
         current_user: Authenticated user
-        db: Database session
 
     Returns:
         {
@@ -184,55 +148,37 @@ def list_projects(
             "limit": 10
         }
     """
-    from app.models.project import Project
-
-    try:
-        # Query projects where user_id = current_user.id
-        query = db.query(Project).filter(Project.user_id == current_user.id)
-
-        # Get total count
-        total = query.count()
-
-        # Get paginated results
-        projects = query.offset(skip).limit(limit).all()
-
-        # Convert to dict list
-        projects_list = [
-            {
-                'id': str(project.id),
-                'name': project.name,
-                'description': project.description,
-                'current_phase': project.current_phase,
-                'maturity_score': project.maturity_score,
-                'status': project.status,
-                'creator_id': str(project.creator_id),
-                'owner_id': str(project.owner_id),
-                'user_id': str(project.user_id),
-                'created_at': project.created_at.isoformat() if project.created_at else None,
-                'updated_at': project.updated_at.isoformat() if project.updated_at else None
-            }
-            for project in projects
-        ]
-
-        return {
-            'success': True,
-            'projects': projects_list,
-            'total': total,
+    # Route through ProjectManagerAgent
+    orchestrator = get_orchestrator()
+    result = orchestrator.route_request(
+        'project',
+        'list_projects',
+        {
+            'user_id': str(current_user.id),
             'skip': skip,
             'limit': limit
         }
-    except Exception as e:
+    )
+
+    if not result.get('success'):
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error: {str(e)}"
+            detail=result.get('error', 'Failed to list projects')
         )
+
+    return {
+        'success': True,
+        'projects': result.get('projects', []),
+        'total': result.get('count', 0),  # Agent returns 'count', API returns 'total'
+        'skip': skip,
+        'limit': limit
+    }
 
 
 @router.get("/{project_id}")
 def get_project(
     project_id: str,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db_specs)
+    current_user: User = Depends(get_current_active_user)
 ) -> Dict[str, Any]:
     """
     Get project details.
@@ -240,7 +186,6 @@ def get_project(
     Args:
         project_id: Project UUID
         current_user: Authenticated user
-        db: Database session
 
     Returns:
         {
@@ -267,58 +212,46 @@ def get_project(
             }
         }
     """
-    from app.models.project import Project
+    # Route through ProjectManagerAgent
+    orchestrator = get_orchestrator()
+    result = orchestrator.route_request(
+        'project',
+        'get_project',
+        {'project_id': project_id}
+    )
 
-    try:
-        # First, check if project exists at all
-        project = db.query(Project).filter(Project.id == project_id).first()
-
-        # Return 404 if project doesn't exist
-        if not project:
+    # Handle not found
+    if not result.get('success'):
+        error_code = result.get('error_code')
+        if error_code == 'PROJECT_NOT_FOUND':
             raise HTTPException(
                 status_code=404,
-                detail=f"Project not found: {project_id}"
+                detail=result.get('error', f'Project not found: {project_id}')
             )
-
-        # Then check if user has permission to view it
-        if str(project.user_id) != str(current_user.id):
-            raise HTTPException(
-                status_code=403,
-                detail="Permission denied: you don't have access to this project"
-            )
-
-        # Return project
-        return {
-            'success': True,
-            'project': {
-                'id': str(project.id),
-                'name': project.name,
-                'description': project.description,
-                'current_phase': project.current_phase,
-                'maturity_score': project.maturity_score,
-                'status': project.status,
-                'creator_id': str(project.creator_id),
-                'owner_id': str(project.owner_id),
-                'user_id': str(project.user_id),
-                'created_at': project.created_at.isoformat() if project.created_at else None,
-                'updated_at': project.updated_at.isoformat() if project.updated_at else None
-            }
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error: {str(e)}"
+            detail=result.get('error', 'Failed to get project')
         )
+
+    # Validate permissions (user must have access to this project)
+    project = result.get('project', {})
+    if str(project.get('user_id')) != str(current_user.id):
+        raise HTTPException(
+            status_code=403,
+            detail="Permission denied: you don't have access to this project"
+        )
+
+    return {
+        'success': True,
+        'project': project
+    }
 
 
 @router.put("/{project_id}")
 def update_project(
     project_id: str,
     request: UpdateProjectRequest,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db_specs)
+    current_user: User = Depends(get_current_active_user)
 ) -> Dict[str, Any]:
     """
     Update project details.
@@ -327,7 +260,6 @@ def update_project(
         project_id: Project UUID
         request: Fields to update
         current_user: Authenticated user
-        db: Database session
 
     Returns:
         {
@@ -349,73 +281,71 @@ def update_project(
             "project": {...}
         }
     """
-    from app.models.project import Project
+    orchestrator = get_orchestrator()
 
-    try:
-        # Get project
-        project = db.query(Project).filter(Project.id == project_id).first()
+    # First, get project to validate permissions
+    get_result = orchestrator.route_request(
+        'project',
+        'get_project',
+        {'project_id': project_id}
+    )
 
-        # Return 404 if not found
-        if not project:
+    if not get_result.get('success'):
+        error_code = get_result.get('error_code')
+        if error_code == 'PROJECT_NOT_FOUND':
             raise HTTPException(
                 status_code=404,
-                detail=f"Project not found: {project_id}"
+                detail=get_result.get('error', f'Project not found: {project_id}')
             )
-
-        # Only allow updates if user is owner (owner_id = current_user.id)
-        if str(project.owner_id) != str(current_user.id):
-            raise HTTPException(
-                status_code=403,
-                detail="Permission denied: only project owner can update project"
-            )
-
-        # Update fields: name, description, current_phase, status, maturity_score
-        if request.name is not None:
-            project.name = request.name
-        if request.description is not None:
-            project.description = request.description
-        if request.current_phase is not None:
-            project.current_phase = request.current_phase
-        if request.status is not None:
-            project.status = request.status
-        if request.maturity_score is not None:
-            project.maturity_score = request.maturity_score
-
-        # Commit changes
-        db.commit()
-        db.refresh(project)
-
-        return {
-            'success': True,
-            'project': {
-                'id': str(project.id),
-                'name': project.name,
-                'description': project.description,
-                'current_phase': project.current_phase,
-                'maturity_score': project.maturity_score,
-                'status': project.status,
-                'creator_id': str(project.creator_id),
-                'owner_id': str(project.owner_id),
-                'user_id': str(project.user_id),
-                'created_at': project.created_at.isoformat() if project.created_at else None,
-                'updated_at': project.updated_at.isoformat() if project.updated_at else None
-            }
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        db.rollback()
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error: {str(e)}"
+            detail=get_result.get('error', 'Failed to get project')
         )
+
+    # Validate permissions (only owner can update)
+    project = get_result.get('project', {})
+    if str(project.get('owner_id')) != str(current_user.id):
+        raise HTTPException(
+            status_code=403,
+            detail="Permission denied: only project owner can update project"
+        )
+
+    # Build update data (only include fields that are provided)
+    update_data = {'project_id': project_id}
+    if request.name is not None:
+        update_data['name'] = request.name
+    if request.description is not None:
+        update_data['description'] = request.description
+    if request.current_phase is not None:
+        update_data['current_phase'] = request.current_phase
+    if request.status is not None:
+        update_data['status'] = request.status
+    if request.maturity_score is not None:
+        update_data['maturity_score'] = request.maturity_score
+
+    # Route update through agent
+    result = orchestrator.route_request(
+        'project',
+        'update_project',
+        update_data
+    )
+
+    if not result.get('success'):
+        raise HTTPException(
+            status_code=500,
+            detail=result.get('error', 'Failed to update project')
+        )
+
+    return {
+        'success': True,
+        'project': result.get('project')
+    }
 
 
 @router.delete("/{project_id}")
 def delete_project(
     project_id: str,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db_specs)
+    current_user: User = Depends(get_current_active_user)
 ) -> Dict[str, Any]:
     """
     Delete (archive) a project.
@@ -423,7 +353,6 @@ def delete_project(
     Args:
         project_id: Project UUID
         current_user: Authenticated user
-        db: Database session
 
     Returns:
         {
@@ -441,49 +370,58 @@ def delete_project(
             "message": "Project deleted"
         }
     """
-    from app.models.project import Project
+    orchestrator = get_orchestrator()
 
-    try:
-        # Get project
-        project = db.query(Project).filter(Project.id == project_id).first()
+    # First, get project to validate permissions
+    get_result = orchestrator.route_request(
+        'project',
+        'get_project',
+        {'project_id': project_id}
+    )
 
-        # Return 404 if not found
-        if not project:
+    if not get_result.get('success'):
+        error_code = get_result.get('error_code')
+        if error_code == 'PROJECT_NOT_FOUND':
             raise HTTPException(
                 status_code=404,
-                detail=f"Project not found: {project_id}"
+                detail=get_result.get('error', f'Project not found: {project_id}')
             )
-
-        # Only allow deletion if user is creator (creator_id = current_user.id)
-        if str(project.creator_id) != str(current_user.id):
-            raise HTTPException(
-                status_code=403,
-                detail="Permission denied: only project creator can delete project"
-            )
-
-        # Delete project
-        db.delete(project)
-        db.commit()
-
-        return {
-            'success': True,
-            'message': 'Project deleted'
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        db.rollback()
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error: {str(e)}"
+            detail=get_result.get('error', 'Failed to get project')
         )
+
+    # Validate permissions (only creator can delete)
+    project = get_result.get('project', {})
+    if str(project.get('creator_id')) != str(current_user.id):
+        raise HTTPException(
+            status_code=403,
+            detail="Permission denied: only project creator can delete project"
+        )
+
+    # Route delete through agent (archives the project)
+    result = orchestrator.route_request(
+        'project',
+        'delete_project',
+        {'project_id': project_id}
+    )
+
+    if not result.get('success'):
+        raise HTTPException(
+            status_code=500,
+            detail=result.get('error', 'Failed to delete project')
+        )
+
+    return {
+        'success': True,
+        'message': 'Project deleted'
+    }
 
 
 @router.get("/{project_id}/status")
 def get_project_status(
     project_id: str,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db_specs)
+    current_user: User = Depends(get_current_active_user)
 ) -> Dict[str, Any]:
     """
     Get project status including maturity score and phase.
@@ -491,7 +429,6 @@ def get_project_status(
     Args:
         project_id: Project UUID
         current_user: Authenticated user
-        db: Database session
 
     Returns:
         {
@@ -513,37 +450,40 @@ def get_project_status(
             "maturity_score": 45.5
         }
     """
-    from app.models.project import Project
+    # Route through ProjectManagerAgent
+    orchestrator = get_orchestrator()
+    result = orchestrator.route_request(
+        'project',
+        'get_project',
+        {'project_id': project_id}
+    )
 
-    try:
-        # Get project
-        project = db.query(Project).filter(Project.id == project_id).first()
-
-        # Return 404 if not found
-        if not project:
+    # Handle not found
+    if not result.get('success'):
+        error_code = result.get('error_code')
+        if error_code == 'PROJECT_NOT_FOUND':
             raise HTTPException(
                 status_code=404,
-                detail=f"Project not found: {project_id}"
+                detail=result.get('error', f'Project not found: {project_id}')
             )
-
-        # Verify user has access
-        if str(project.user_id) != str(current_user.id):
-            raise HTTPException(
-                status_code=403,
-                detail="Permission denied"
-            )
-
-        return {
-            'success': True,
-            'project_id': str(project.id),
-            'status': project.status,
-            'current_phase': project.current_phase,
-            'maturity_score': project.maturity_score
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error: {str(e)}"
+            detail=result.get('error', 'Failed to get project')
         )
+
+    # Validate permissions
+    project = result.get('project', {})
+    if str(project.get('user_id')) != str(current_user.id):
+        raise HTTPException(
+            status_code=403,
+            detail="Permission denied"
+        )
+
+    # Extract and return status fields
+    return {
+        'success': True,
+        'project_id': project_id,
+        'status': project.get('status'),
+        'current_phase': project.get('current_phase'),
+        'maturity_score': project.get('maturity_score')
+    }
