@@ -8,7 +8,7 @@ Tests the natural language understanding, intent parsing, and command execution.
 import json
 import pytest
 from unittest.mock import Mock, patch
-from implementation_documents.conversational_cli import ConversationalCLI, MenuContext
+from archive.implementation_documents.conversational_cli import ConversationalCLI, MenuContext
 
 
 class TestConversationalCLI:

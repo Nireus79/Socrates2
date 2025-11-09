@@ -381,7 +381,7 @@ python conversational_cli.py
 Option 2: From Socrates.py main
 
 ```python
-from implementation_documents.conversational_cli import ConversationalCLI
+from archive.implementation_documents.conversational_cli import ConversationalCLI
 
 
 def main():

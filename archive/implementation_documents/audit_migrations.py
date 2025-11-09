@@ -4,7 +4,7 @@
 from pathlib import Path
 import re
 
-VERSIONS_DIR = Path("../backend/alembic/versions")
+VERSIONS_DIR = Path("../../backend/alembic/versions")
 
 # Manually map migrations to their target database
 MIGRATION_TARGETS = {
