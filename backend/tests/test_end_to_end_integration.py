@@ -65,9 +65,13 @@ class TestEndToEndUserWorkflow:
     @pytest.fixture
     def test_user(self, auth_session):
         """Create a test user"""
+        user_hex = uuid4().hex[:8]
         user = User(
-            email=f"testuser_{uuid4().hex[:8]}@example.com",
-            hashed_password=pwd_context.hash("testpassword123"),
+            name="Test",
+            surname="User",
+            username=f"testuser{user_hex}",
+            email=f"testuser_{user_hex}@example.com",
+            hashed_password=User.hash_password("testpassword123"),
             role="user",
             status="active"
         )

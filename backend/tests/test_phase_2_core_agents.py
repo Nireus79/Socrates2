@@ -33,7 +33,12 @@ from app.core.dependencies import ServiceContainer
 @pytest.fixture
 def test_user(auth_session):
     """Create test user in auth database"""
+    import uuid
+
     user = User(
+        name="Test",
+        surname="User",
+        username=f"testuser{uuid.uuid4().hex[:8]}",
         email="testuser@example.com",
         hashed_password=User.hash_password("testpass123"),
         is_active=True,

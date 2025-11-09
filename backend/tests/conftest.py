@@ -130,9 +130,15 @@ def test_user(auth_session):
     from app.models.user import User
     import uuid
 
+    user_id = uuid.uuid4()
+    user_hex = user_id.hex[:8]
+
     user = User(
-        id=uuid.uuid4(),
-        email=f"test{uuid.uuid4().hex[:8]}@example.com",
+        id=user_id,
+        name="Test",
+        surname="User",
+        username=f"testuser{user_hex}",
+        email=f"test{user_hex}@example.com",
         hashed_password=User.hash_password("testpassword123"),
         is_active=True,
         is_verified=True,
