@@ -1,11 +1,15 @@
 """
 QualityControllerAgent - Implements quality control and anti-greedy algorithm gates.
 
-This agent prevents greedy algorithm decisions by:
-1. Detecting bias in questions
-2. Analyzing coverage gaps
-3. Recommending optimal paths
-4. Blocking operations that fail quality checks
+This agent orchestrates quality control by:
+1. Loading project data from database
+2. Using BiasDetectionEngine for bias and coverage analysis (pure logic)
+3. Storing results and making block/pass decisions
+4. Managing quality metrics in database
+
+The pure business logic (bias detection, coverage analysis) is handled by
+BiasDetectionEngine in backend/app/core/quality_engine.py.
+This separation enables testing without database and library extraction.
 """
 import logging
 from datetime import datetime, timezone
@@ -14,6 +18,8 @@ from typing import Dict, List, Any
 
 from ..models import Project, Specification, QualityMetric
 from .base import BaseAgent
+from ..core.quality_engine import BiasDetectionEngine
+from ..core.models import specs_db_to_data
 
 
 class QualityControllerAgent(BaseAgent):
@@ -26,25 +32,27 @@ class QualityControllerAgent(BaseAgent):
     - compare_paths: Recommend optimal path (thorough vs. greedy)
     - get_quality_metrics: Get quality metrics for a project
     - verify_operation: Verify if operation should proceed (used by orchestrator)
+
+    Architecture:
+    - This agent handles: Database I/O, validation, metrics persistence
+    - BiasDetectionEngine handles: Bias detection, coverage analysis, quality scoring
+    - Clear separation enables testing without database and library extraction
     """
 
     def __init__(self, agent_id: str, name: str, services=None):
-        """Initialize Quality Controller Agent"""
+        """Initialize Quality Controller Agent with bias detection engine"""
         super().__init__(agent_id, name, services)
         self.logger = logging.getLogger(__name__)
 
-        # Bias detection patterns
-        self.solution_bias = ["should we use", "let's use", "we need to use", "you should use"]
-        self.technology_bias = ["best framework", "industry standard", "everyone uses", "standard practice"]
-        self.leading_patterns = ["you need", "obviously", "clearly", "of course", "the only way"]
+        # Pure logic engine for quality analysis
+        self.quality_engine = BiasDetectionEngine(self.logger)
 
-        # Coverage categories and minimum specs per category
-        self.coverage_categories = [
+        # Required categories for coverage analysis
+        self.required_categories = [
             'goals', 'requirements', 'tech_stack', 'users',
             'scalability', 'security', 'deployment', 'testing',
             'timeline', 'constraints'
         ]
-        self.min_specs_per_category = 3
 
     def get_capabilities(self) -> List[str]:
         """Return list of capabilities this agent provides"""
@@ -76,33 +84,11 @@ class QualityControllerAgent(BaseAgent):
                 'suggested_alternatives': List[str] (if blocking)
             }
         """
-        question_text = data['question_text'].lower()
+        question_text = data.get('question_text', '')
         project_id = data.get('project_id')
 
-        # Detect different types of bias
-        bias_types = []
-        bias_count = 0
-
-        # Check for solution bias
-        solution_bias_count = sum(1 for pattern in self.solution_bias if pattern in question_text)
-        if solution_bias_count > 0:
-            bias_types.append('solution_bias')
-            bias_count += solution_bias_count
-
-        # Check for technology bias
-        tech_bias_count = sum(1 for pattern in self.technology_bias if pattern in question_text)
-        if tech_bias_count > 0:
-            bias_types.append('technology_bias')
-            bias_count += tech_bias_count
-
-        # Check for leading questions
-        leading_count = sum(1 for pattern in self.leading_patterns if pattern in question_text)
-        if leading_count > 0:
-            bias_types.append('leading_question')
-            bias_count += leading_count
-
-        # Calculate bias score (0.0 = no bias, 1.0 = extreme bias)
-        bias_score = min(1.0, bias_count * 0.3)
+        # Use BiasDetectionEngine for pure logic
+        bias_result = self.quality_engine.detect_bias_in_question(question_text)
 
         # Store quality metric if project_id provided
         if project_id:
@@ -112,47 +98,45 @@ class QualityControllerAgent(BaseAgent):
                 metric = QualityMetric(
                     project_id=project_id,
                     metric_type='question_bias',
-                    metric_value=Decimal(str(bias_score)),
+                    metric_value=Decimal(str(bias_result.bias_score)),
                     threshold=Decimal('0.5'),
-                    passed=(bias_score <= 0.5),
+                    passed=(bias_result.bias_score <= 0.5),
                     details={
-                        'question_text': data['question_text'],
-                        'bias_types': bias_types,
-                        'bias_count': bias_count
+                        'question_text': question_text,
+                        'bias_types': bias_result.bias_types,
+                        'is_blocking': bias_result.is_blocking
                     },
                     calculated_at=datetime.now(timezone.utc)
                 )
                 specs_session.add(metric)
                 specs_session.commit()
-                self.logger.debug(f"Stored quality metric for project {project_id}: bias_score={bias_score:.2f}")
+                self.logger.debug(f"Stored quality metric for project {project_id}: bias_score={bias_result.bias_score:.2f}")
             except Exception as e:
                 self.logger.error(f"Error storing quality metric: {e}", exc_info=True)
                 if specs_session:
                     specs_session.rollback()
-                # Don't fail the operation if metric storage fails
             finally:
                 if specs_session:
                     specs_session.close()
 
-        # Block if bias score too high
-        if bias_score > 0.5:
-            alternatives = self._generate_unbiased_alternatives(question_text)
-            self.logger.warning(f"Question blocked due to high bias score: {bias_score:.2f}")
+        # Return result based on bias analysis
+        if bias_result.is_blocking:
+            self.logger.warning(f"Question blocked due to high bias score: {bias_result.bias_score:.2f}")
             return {
                 'success': False,
                 'is_blocking': True,
-                'bias_score': bias_score,
-                'bias_types': bias_types,
-                'reason': f'Question has excessive bias (score: {bias_score:.2f}). Detected: {", ".join(bias_types)}',
-                'suggested_alternatives': alternatives
+                'bias_score': bias_result.bias_score,
+                'bias_types': bias_result.bias_types,
+                'reason': bias_result.reason or 'Question has excessive bias',
+                'suggested_alternatives': bias_result.suggested_alternatives
             }
 
         return {
             'success': True,
             'is_blocking': False,
-            'bias_score': bias_score,
-            'bias_types': bias_types,
-            'quality_score': 1.0 - bias_score
+            'bias_score': bias_result.bias_score,
+            'bias_types': bias_result.bias_types,
+            'quality_score': 1.0 - bias_result.bias_score
         }
 
     def _analyze_coverage(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -166,14 +150,14 @@ class QualityControllerAgent(BaseAgent):
             {
                 'success': bool,
                 'is_blocking': bool,
-                'coverage': Dict[str, int],  # category -> spec count
-                'coverage_gaps': List[str],  # categories with < 3 specs
+                'coverage': Dict[str, int],
+                'coverage_gaps': List[str],
                 'coverage_score': float (0.0-1.0),
                 'reason': str (if blocking),
                 'suggested_actions': List[str] (if blocking)
             }
         """
-        project_id = data['project_id']
+        project_id = data.get('project_id')
         specs_session = None
 
         try:
@@ -184,63 +168,52 @@ class QualityControllerAgent(BaseAgent):
                 project_id=project_id
             ).all()
 
-            # Calculate coverage per category
-            coverage = {}
-            for category in self.coverage_categories:
-                category_specs = [s for s in specs if s.category == category]
-                coverage[category] = len(category_specs)
+            # Convert to plain data for engine
+            specs_data = specs_db_to_data(specs)
 
-            # Identify coverage gaps (< min specs)
-            coverage_gaps = [
-                cat for cat, count in coverage.items()
-                if count < self.min_specs_per_category
-            ]
-
-            # Calculate overall coverage score
-            total_possible = len(self.coverage_categories) * self.min_specs_per_category
-            total_actual = sum(min(count, self.min_specs_per_category) for count in coverage.values())
-            coverage_score = total_actual / total_possible if total_possible > 0 else 0.0
+            # Use BiasDetectionEngine for coverage analysis (pure logic)
+            coverage_result = self.quality_engine.analyze_coverage(
+                specs_data,
+                self.required_categories
+            )
 
             # Store quality metric
             metric = QualityMetric(
                 project_id=project_id,
                 metric_type='coverage',
-                metric_value=Decimal(str(coverage_score)),
+                metric_value=Decimal(str(coverage_result.coverage_score)),
                 threshold=Decimal('0.7'),
-                passed=(coverage_score >= 0.7),
+                passed=coverage_result.is_sufficient,
                 details={
-                    'coverage': coverage,
-                    'coverage_gaps': coverage_gaps
+                    'coverage_by_category': coverage_result.coverage_by_category,
+                    'gaps': coverage_result.gaps
                 },
                 calculated_at=datetime.now(timezone.utc)
             )
             specs_session.add(metric)
             specs_session.commit()
 
-            self.logger.debug(f"Analyzed coverage for project {project_id}: score={coverage_score:.2f}")
+            self.logger.debug(f"Analyzed coverage for project {project_id}: score={coverage_result.coverage_score:.2f}")
 
-            # Block if too many gaps (< 70% coverage)
-            if coverage_score < 0.7:
-                suggested_actions = [
-                    f"Ask questions about: {gap}" for gap in coverage_gaps[:3]
-                ]
-                self.logger.warning(f"Coverage insufficient for project {project_id}: {coverage_score:.0%}")
+            # Block if insufficient coverage
+            if not coverage_result.is_sufficient:
+                self.logger.warning(f"Coverage insufficient for project {project_id}: {coverage_result.coverage_score:.0%}")
                 return {
                     'success': False,
                     'is_blocking': True,
-                    'coverage': coverage,
-                    'coverage_gaps': coverage_gaps,
-                    'coverage_score': coverage_score,
-                    'reason': f'Insufficient coverage ({coverage_score:.0%}). Gaps: {", ".join(coverage_gaps[:5])}',
-                    'suggested_actions': suggested_actions
+                    'coverage': coverage_result.coverage_by_category,
+                    'coverage_gaps': coverage_result.gaps,
+                    'coverage_score': coverage_result.coverage_score,
+                    'reason': f'Insufficient coverage ({coverage_result.coverage_score:.0%}). Gaps: {", ".join(coverage_result.gaps[:5])}',
+                    'suggested_actions': coverage_result.suggested_actions
                 }
 
             return {
                 'success': True,
                 'is_blocking': False,
-                'coverage': coverage,
-                'coverage_gaps': coverage_gaps,
-                'coverage_score': coverage_score
+                'coverage': coverage_result.coverage_by_category,
+                'coverage_gaps': coverage_result.gaps,
+                'coverage_score': coverage_result.coverage_score
             }
 
         except Exception as e:
