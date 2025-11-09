@@ -129,9 +129,30 @@ class SocraticCounselorAgent(BaseAgent):
             # Identify next category to focus on (lowest coverage)
             next_category = self._identify_next_category(coverage)
 
-            # Build prompt for Claude
+            # Get user learning profile for personalization
+            user_behavior_patterns = {}
+            try:
+                from .orchestrator import get_orchestrator
+                orchestrator = get_orchestrator()
+                learning_result = orchestrator.route_request(
+                    'learning',
+                    'get_user_profile',
+                    {'user_id': str(project.user_id)}
+                )
+                if learning_result.get('success'):
+                    user_behavior_patterns = {
+                        'patterns': learning_result.get('behavior_patterns', []),
+                        'total_questions_asked': learning_result.get('total_questions_asked', 0),
+                        'overall_response_quality': learning_result.get('overall_response_quality', 0.5)
+                    }
+                    self.logger.debug(f"Retrieved user learning profile: {len(user_behavior_patterns.get('patterns', []))} patterns, {user_behavior_patterns['total_questions_asked']} questions asked")
+            except Exception as e:
+                self.logger.warning(f"Could not retrieve user learning profile: {e}")
+                user_behavior_patterns = {}
+
+            # Build prompt for Claude with user learning context
             prompt = self._build_question_generation_prompt(
-                project, existing_specs, previous_questions, next_category  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
+                project, existing_specs, previous_questions, next_category, user_behavior_patterns  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
             )
 
             # Call Claude API (separate from DB transaction)
@@ -306,7 +327,8 @@ class SocraticCounselorAgent(BaseAgent):
         project: Project,
         specs: List[Specification],
         previous_questions: List[Question],
-        next_category: str
+        next_category: str,
+        user_behavior_patterns: Dict[str, Any] = None
     ) -> str:
         """
         Build prompt for Claude to generate question.
@@ -316,10 +338,28 @@ class SocraticCounselorAgent(BaseAgent):
             specs: List of existing specifications
             previous_questions: List of previous questions
             next_category: Category to focus on
+            user_behavior_patterns: Optional user learning profile
 
         Returns:
             Prompt string for Claude API
         """
+        user_behavior_patterns = user_behavior_patterns or {}
+
+        # Format user learning context if available
+        user_learning_context = ""
+        if user_behavior_patterns:
+            total_q = user_behavior_patterns.get('total_questions_asked', 0)
+            quality = user_behavior_patterns.get('overall_response_quality', 0.5)
+            if total_q > 0:
+                user_learning_context = f"""
+USER LEARNING PROFILE:
+- Experience: {total_q} questions answered previously
+- Response quality: {quality:.0%}
+- Known patterns: {len(user_behavior_patterns.get('patterns', []))} learned behavior patterns
+
+Adapt your question style based on this user's experience level and communication style.
+"""
+
         prompt = f"""You are a Socratic counselor helping gather requirements for a software project.
 
 PROJECT CONTEXT:
@@ -333,7 +373,7 @@ EXISTING SPECIFICATIONS:
 
 PREVIOUS QUESTIONS ASKED:
 {self._format_questions(previous_questions)}
-
+{user_learning_context}
 NEXT FOCUS AREA: {next_category}
 
 TASK:

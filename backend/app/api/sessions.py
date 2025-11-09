@@ -33,6 +33,11 @@ class SubmitAnswerRequest(BaseModel):
     answer: str
 
 
+class ChatMessageRequest(BaseModel):
+    """Request model for sending a chat message in direct chat mode."""
+    message: str
+
+
 @router.post("")
 def start_session(
     request: StartSessionRequest,
@@ -278,7 +283,137 @@ def submit_answer(
             detail=result.get('error', 'Failed to extract specifications')
         )
 
+    # Track question effectiveness for user learning
+    try:
+        specs_extracted = result.get('specs_extracted', 0)
+        answer_length = len(request.answer)
+
+        # Calculate answer quality (0-1): based on specs extracted and answer length
+        # Quality = 1.0 if specs_extracted > 0, scaled by answer detail
+        answer_quality = min(1.0, (specs_extracted / 5) + (min(answer_length, 500) / 500) * 0.5) if specs_extracted > 0 else 0.3
+
+        learning_result = orchestrator.route_request(
+            'learning',
+            'track_question_effectiveness',
+            {
+                'user_id': str(current_user.id),
+                'question_template_id': str(request.question_id),
+                'role': 'user',  # Default role, can be enhanced later
+                'answer_length': answer_length,
+                'specs_extracted': specs_extracted,
+                'answer_quality': answer_quality
+            }
+        )
+
+        if learning_result.get('success'):
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.debug(f"Tracked question effectiveness for question {request.question_id}: score={learning_result.get('effectiveness_score', 0):.2f}")
+    except Exception as e:
+        # Log but don't fail the request if learning tracking fails
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to track question effectiveness: {e}")
+
     return result
+
+
+@router.post("/{session_id}/chat")
+def send_chat_message(
+    session_id: str,
+    request: ChatMessageRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Send a message in direct chat mode.
+
+    Switches session to direct_chat mode if needed and processes the message.
+
+    Args:
+        session_id: Session UUID
+        request: Chat message details (message)
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'response': str,
+            'specs_extracted': int,
+            'maturity_score': float
+        }
+
+    Example:
+        POST /api/v1/sessions/session-456/chat
+        Authorization: Bearer <token>
+        {
+            "message": "I need a user authentication system with email and password"
+        }
+
+        Response:
+        {
+            "success": true,
+            "response": "That sounds like a good requirement! Let me clarify...",
+            "specs_extracted": 2,
+            "maturity_score": 50
+        }
+    """
+    from ..models.session import Session as SessionModel
+    from ..models.project import Project
+
+    # Verify session exists and user has access
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    # If session is in socratic mode, switch to direct_chat
+    if session.mode != 'direct_chat':
+        from ..agents.orchestrator import get_orchestrator
+        orchestrator = get_orchestrator()
+        toggle_result = orchestrator.route_request(
+            'direct_chat',
+            'toggle_mode',
+            {
+                'session_id': session_id,
+                'mode': 'direct_chat'
+            }
+        )
+        if not toggle_result.get('success'):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Failed to switch to direct chat mode: {toggle_result.get('error')}"
+            )
+
+    # Process chat message through DirectChatAgent
+    orchestrator = get_orchestrator()
+    result = orchestrator.route_request(
+        'direct_chat',
+        'process_chat_message',
+        {
+            'session_id': session_id,
+            'user_id': str(current_user.id),
+            'message': request.message,
+            'project_id': str(session.project_id)
+        }
+    )
+
+    if not result.get('success'):
+        raise HTTPException(
+            status_code=400,
+            detail=result.get('error', 'Failed to process chat message')
+        )
+
+    return {
+        'success': True,
+        'response': result.get('response', ''),
+        'specs_extracted': result.get('specs_extracted', 0),
+        'maturity_score': result.get('maturity_score', 0)
+    }
 
 
 @router.get("/{session_id}")
