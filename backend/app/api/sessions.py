@@ -251,9 +251,9 @@ def submit_answer(
     # Save to conversation history
     conversation = ConversationHistory(
         session_id=session_id,
-        speaker='user',
-        message=request.answer,
-        question_id=request.question_id
+        role='user',
+        content=request.answer,
+        message_metadata={'question_id': str(request.question_id)}
     )
     db.add(conversation)
     db.commit()

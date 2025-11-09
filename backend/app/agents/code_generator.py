@@ -87,7 +87,7 @@ class CodeGeneratorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load project
-            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            project = db.query(Project).filter(Project.id == project_id).first()
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
                 return {
@@ -171,7 +171,7 @@ class CodeGeneratorAgent(BaseAgent):
                 }
 
             # Group specifications by category
-            grouped_specs = self._group_specs_by_category(specs)  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
+            grouped_specs = self._group_specs_by_category(specs)
 
             # Build comprehensive code generation prompt
             prompt = self._build_code_generation_prompt(project, grouped_specs)

@@ -122,7 +122,7 @@ class ContextAnalyzerAgent(BaseAgent):
             ).all()
 
             # Build extraction prompt
-            prompt = self._build_extraction_prompt(question, answer, existing_specs)  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
+            prompt = self._build_extraction_prompt(question, answer, existing_specs)
 
             # Call Claude API (separate from DB transaction)
             try:

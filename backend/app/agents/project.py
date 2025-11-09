@@ -81,7 +81,7 @@ class ProjectManagerAgent(BaseAgent):
         try:
             # Check user exists (in socrates_auth database)
             db_auth = self.services.get_database_auth()
-            user = db_auth.query(User).filter(User.id == user_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            user = db_auth.query(User).filter(User.id == user_id).first()
             if not user:
                 self.logger.warning(f"User not found: {user_id}")
                 return {
