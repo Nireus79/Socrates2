@@ -25,34 +25,34 @@ pip install socrates-ai==0.1.0
 
 ```bash
 # Run all tests
-python -m pytest tests_new/ -v
+python -m pytest tests/ -v
 
 # Run with coverage report
-python -m pytest tests_new/ -v --cov=app --cov-report=html
+python -m pytest tests/ -v --cov=app --cov-report=html
 
 # Run specific test category
-python -m pytest tests_new/ -v -m unit          # Unit tests only
-python -m pytest tests_new/ -v -m integration   # Integration tests only
-python -m pytest tests_new/ -v -m api           # API tests only
-python -m pytest tests_new/ -v -m agent         # Agent tests only
-python -m pytest tests_new/ -v -m security      # Security tests only
+python -m pytest tests/ -v -m unit          # Unit tests only
+python -m pytest tests/ -v -m integration   # Integration tests only
+python -m pytest tests/ -v -m api           # API tests only
+python -m pytest tests/ -v -m agent         # Agent tests only
+python -m pytest tests/ -v -m security      # Security tests only
 ```
 
 ### Run Specific Tests
 
 ```bash
 # Run single test file
-python -m pytest tests_new/test_models.py -v
+python -m pytest tests/test_models.py -v
 
 # Run single test class
-python -m pytest tests_new/test_models.py::TestUserModel -v
+python -m pytest tests/test_models.py::TestUserModel -v
 
 # Run single test function
-python -m pytest tests_new/test_models.py::TestUserModel::test_user_creation -v
+python -m pytest tests/test_models.py::TestUserModel::test_user_creation -v
 
 # Run tests matching pattern
-python -m pytest tests_new/ -v -k "user"
-python -m pytest tests_new/ -v -k "security"
+python -m pytest tests/ -v -k "user"
+python -m pytest tests/ -v -k "security"
 ```
 
 ## Test Organization
@@ -64,7 +64,7 @@ The test suite is organized into 7 main areas:
 #### 1. **Unit Tests** (`test_models.py`)
 Tests for data validation and model functionality.
 ```bash
-pytest tests_new/test_models.py -v
+pytest tests/test_models.py -v
 ```
 
 **Coverage:**
@@ -79,7 +79,7 @@ pytest tests_new/test_models.py -v
 #### 2. **Security Tests** (`test_security.py`)
 Tests for JWT tokens, passwords, and security mechanisms.
 ```bash
-pytest tests_new/test_security.py -v -m security
+pytest tests/test_security.py -v -m security
 ```
 
 **Coverage:**
@@ -95,7 +95,7 @@ pytest tests_new/test_security.py -v -m security
 #### 3. **API Endpoint Tests** (`test_api_endpoints.py`)
 Tests for all HTTP endpoints.
 ```bash
-pytest tests_new/test_api_endpoints.py -v -m api
+pytest tests/test_api_endpoints.py -v -m api
 ```
 
 **Coverage:**
@@ -109,7 +109,7 @@ pytest tests_new/test_api_endpoints.py -v -m api
 #### 4. **Agent Tests** (`test_agents_core.py`)
 Tests for agent registration and functionality.
 ```bash
-pytest tests_new/test_agents_core.py -v -m agent
+pytest tests/test_agents_core.py -v -m agent
 ```
 
 **Coverage:**
@@ -124,7 +124,7 @@ pytest tests_new/test_agents_core.py -v -m agent
 #### 5. **Library Integration Tests** (`test_library_integration.py`)
 Tests for Socrates library (socrates-ai) integration.
 ```bash
-pytest tests_new/test_library_integration.py -v
+pytest tests/test_library_integration.py -v
 ```
 
 **Coverage:**
@@ -138,7 +138,7 @@ pytest tests_new/test_library_integration.py -v
 #### 6. **Integration Workflow Tests** (`test_integration_workflows.py`)
 Tests for complete end-to-end workflows.
 ```bash
-pytest tests_new/test_integration_workflows.py -v -m integration
+pytest tests/test_integration_workflows.py -v -m integration
 ```
 
 **Coverage:**
@@ -242,25 +242,25 @@ Run tests by category using markers:
 
 ```bash
 # Unit tests only
-pytest tests_new/ -m unit
+pytest tests/ -m unit
 
 # Integration tests only
-pytest tests_new/ -m integration
+pytest tests/ -m integration
 
 # API tests only
-pytest tests_new/ -m api
+pytest tests/ -m api
 
 # Agent tests only
-pytest tests_new/ -m agent
+pytest tests/ -m agent
 
 # Security tests only
-pytest tests_new/ -m security
+pytest tests/ -m security
 
 # All tests except those requiring live DB
-pytest tests_new/ -m "not requires_live_db"
+pytest tests/ -m "not requires_live_db"
 
 # Combine markers
-pytest tests_new/ -m "unit or integration"
+pytest tests/ -m "unit or integration"
 ```
 
 ## Coverage Report
@@ -269,7 +269,7 @@ Generate HTML coverage report:
 
 ```bash
 # Generate coverage report
-pytest tests_new/ --cov=app --cov-report=html
+pytest tests/ --cov=app --cov-report=html
 
 # View report
 open htmlcov/index.html  # On macOS
@@ -375,7 +375,7 @@ jobs:
           python-version: '3.11'
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - run: pip install socrates-ai
-      - run: pytest tests_new/ -v --cov=app --cov-report=xml
+      - run: pytest tests/ -v --cov=app --cov-report=xml
 ```
 
 ## Test Statistics

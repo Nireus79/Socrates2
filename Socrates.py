@@ -394,10 +394,10 @@ class SocratesCLI:
     def print_banner(self):
         """Print welcome banner"""
         banner = """
-[bold cyan]╔═══════════════════════════════════════════════════════════════╗[/bold cyan]
-[bold cyan]║[/bold cyan]                    [bold white]SOCRATES CLI v1.0[/bold white]                      [bold cyan]║[/bold cyan]
-[bold cyan]║[/bold cyan]          [italic]AI-Powered Specification Gathering[/italic]             [bold cyan]║[/bold cyan]
-[bold cyan]╚═══════════════════════════════════════════════════════════════╝[/bold cyan]
+[bold cyan]╔═════════════════════════════════════════════════════════╗[/bold cyan]
+[bold cyan]║[/bold cyan]                    [bold white]SOCRATES CLI v1.0[/bold white]                    [bold cyan]║[/bold cyan]
+[bold cyan]║[/bold cyan]          [italic]AI-Powered Specification Gathering[/italic]         [bold cyan]    ║[/bold cyan]
+[bold cyan]╚═════════════════════════════════════════════════════════╝[/bold cyan]
 
 [dim]Type /help for available commands or just start chatting![/dim]
 """

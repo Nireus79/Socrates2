@@ -4,15 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="cli tests pass">
-      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="imp plan">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/agents/conflict_detector.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/conflict_detector.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/debug_create_project.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/debug_create_project.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/debug_route.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/debug_route.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/implementation_documents/TESTING_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/TESTING_GUIDE.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/implementation_documents/audit_migrations.py" beforeDir="false" afterPath="$PROJECT_DIR$/implementation_documents/audit_migrations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/agents/orchestrator.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/orchestrator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_security.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_security.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,6 +38,12 @@
     &quot;accountId&quot;: &quot;e6d6a39d-d3a3-406e-b2df-1a86f33a9093&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Socrates.py" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
@@ -50,25 +53,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python tests.Python tests in test_phase_2_core_agents.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Python tests in test_phase_2_core_agents.py.executor": "Run",
+    "Python tests.Python tests in tests_new.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\themi\PycharmProjects\Socrates2" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\foundation_docs" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\user_workflow_simulation\discovery_phase" />
-      <recent name="C:\Users\themi\PycharmProjects\Socrates2\user_workflow_simulation" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python tests.Python tests in tests_new">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="Socrates2" />
       <option name="ENV_FILES" value="" />
@@ -91,6 +95,26 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="Python tests in tests" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="Socrates2" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/backend/tests&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python tests.Python tests in tests_new" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -284,7 +308,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762612088569</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="imp plan">
+      <option name="closed" value="true" />
+      <created>1762693331172</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1762693331172</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -309,6 +341,7 @@
     <MESSAGE value="phase 9" />
     <MESSAGE value="phase 10" />
     <MESSAGE value="cli tests pass" />
-    <option name="LAST_COMMIT_MESSAGE" value="cli tests pass" />
+    <MESSAGE value="imp plan" />
+    <option name="LAST_COMMIT_MESSAGE" value="imp plan" />
   </component>
 </project>

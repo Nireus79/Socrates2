@@ -379,8 +379,10 @@ python conversational_cli.py
 ```
 
 Option 2: From Socrates.py main
+
 ```python
-from conversational_cli import ConversationalCLI
+from implementation_documents.conversational_cli import ConversationalCLI
+
 
 def main():
     # ... existing code ...
@@ -389,7 +391,7 @@ def main():
         cli = ConversationalCLI()
         cli.run()
     else:
-        # ... existing command-line interface ...
+# ... existing command-line interface ...
 ```
 
 Option 3: Menu option
