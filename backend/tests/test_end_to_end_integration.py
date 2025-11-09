@@ -96,8 +96,7 @@ class TestEndToEndUserWorkflow:
         print("\n=== STEP 1: Creating Project ===")
         project_agent = ProjectManagerAgent("project", "ProjectAgent", service_container)
 
-        create_result = project_agent.execute({
-            'action': 'create_project',
+        create_result = project_agent.process_request('create_project', {
             'user_id': str(test_user.id),
             'name': 'E2E Test Project',
             'description': 'A test project for end-to-end integration testing'
@@ -129,8 +128,7 @@ class TestEndToEndUserWorkflow:
         print("\n=== STEP 3: Generating Socratic Questions ===")
         socratic_agent = SocraticCounselorAgent("socratic", "SocraticCounselorAgent", service_container)
 
-        question_result = socratic_agent.execute({
-            'action': 'generate_question',
+        question_result = socratic_agent.process_request('generate_question', {
             'project_id': str(project_id),
             'session_id': str(session_id)
         })
@@ -162,8 +160,7 @@ class TestEndToEndUserWorkflow:
         - Support for 100 concurrent users
         """
 
-        extract_result = context_agent.execute({
-            'action': 'extract_specifications',
+        extract_result = context_agent.process_request('extract_specifications', {
             'session_id': str(session_id),
             'question_id': str(question_id),
             'answer': user_answer
@@ -197,8 +194,7 @@ class TestEndToEndUserWorkflow:
             }
         ]
 
-        conflict_result = conflict_agent.execute({
-            'action': 'detect_conflicts',
+        conflict_result = conflict_agent.process_request('detect_conflicts', {
             'project_id': str(project_id),
             'new_specs': conflicting_specs,
             'source_id': str(question_id)
@@ -213,8 +209,7 @@ class TestEndToEndUserWorkflow:
         quality_agent = QualityControllerAgent("quality", "QualityControllerAgent", service_container)
 
         # Test question bias detection
-        bias_result = quality_agent.execute({
-            'action': 'analyze_question',
+        bias_result = quality_agent.process_request('analyze_question', {
             'question_text': 'What features do you need?',
             'project_id': str(project_id)
         })
@@ -223,8 +218,7 @@ class TestEndToEndUserWorkflow:
         print(f"✓ Bias analysis: score={bias_result.get('bias_score', 0):.2f}")
 
         # Test coverage analysis
-        coverage_result = quality_agent.execute({
-            'action': 'analyze_coverage',
+        coverage_result = quality_agent.process_request('analyze_coverage', {
             'project_id': str(project_id)
         })
 
@@ -263,6 +257,9 @@ class TestAgentInterconnections:
 
         # Create test user
         user = User(
+            name="Test",
+            surname="User",
+            username=f"routing_test_{uuid4().hex[:8]}",
             email=f"routing_test_{uuid4().hex[:8]}@example.com",
             hashed_password=pwd_context.hash("testpass"),
             role="user",
@@ -298,6 +295,9 @@ class TestAgentInterconnections:
 
         # Create test data
         user = User(
+            name="Test",
+            surname="User",
+            username=f"agent_comm_test_{uuid4().hex[:8]}",
             email=f"agent_comm_test_{uuid4().hex[:8]}@example.com",
             hashed_password=pwd_context.hash("testpass"),
             role="user",
@@ -343,8 +343,7 @@ class TestAgentInterconnections:
         # Test this interconnection
         context_agent = ContextAnalyzerAgent("context", "ContextAnalyzerAgent", orchestrator.services)
 
-        result = context_agent.execute({
-            'action': 'extract_specifications',
+        result = context_agent.process_request('extract_specifications', {
             'session_id': str(session.id),
             'question_id': str(question.id),
             'answer': 'I need a web application with user authentication and a REST API.'
@@ -364,6 +363,9 @@ class TestDatabaseOperations:
 
         # Create user in auth database
         user = User(
+            name="Test",
+            surname="User",
+            username=f"twodb_test_{uuid4().hex[:8]}",
             email=f"twodb_test_{uuid4().hex[:8]}@example.com",
             hashed_password=pwd_context.hash("testpass"),
             role="user",
@@ -400,6 +402,9 @@ class TestDatabaseOperations:
 
         # Create user
         user = User(
+            name="Test",
+            surname="User",
+            username=f"isolation_test_{uuid4().hex[:8]}",
             email=f"isolation_test_{uuid4().hex[:8]}@example.com",
             hashed_password=pwd_context.hash("testpass"),
             role="user",
@@ -457,8 +462,7 @@ class TestErrorHandlingAndRecovery:
         project_agent = ProjectManagerAgent("project", "ProjectAgent", service_container)
 
         # Try to get non-existent project
-        result = project_agent.execute({
-            'action': 'get_project',
+        result = project_agent.process_request('get_project', {
             'project_id': str(uuid4())  # Random UUID that doesn't exist
         })
 
@@ -473,8 +477,7 @@ class TestErrorHandlingAndRecovery:
         project_agent = ProjectManagerAgent("project", "ProjectAgent", service_container)
 
         # Try to create project without required fields
-        result = project_agent.execute({
-            'action': 'create_project',
+        result = project_agent.process_request('create_project', {
             # Missing user_id and name
         })
 
@@ -489,8 +492,7 @@ class TestErrorHandlingAndRecovery:
         project_agent = ProjectManagerAgent("project", "ProjectAgent", service_container)
 
         # Cause an error by providing invalid data
-        result = project_agent.execute({
-            'action': 'create_project',
+        result = project_agent.process_request('create_project', {
             'user_id': str(uuid4()),  # Non-existent user
             'name': 'Test Project'
         })

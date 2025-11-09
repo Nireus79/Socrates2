@@ -106,3 +106,52 @@ DEBUG: _create_project called with user_id=6d3cf26b-ace8-4e1a-98ac-1fe3a6d6dbe5 
 DEBUG: _create_project called with user_id=123 (type=str), name=Test
 DEBUG: _create_project called with user_id=0a7e6889-7ccb-4602-937f-b4a54af84e50 (type=str), name=New Project
 DEBUG: _create_project called with user_id=59e46295-403b-4352-bf97-84f46130bd28 (type=str), name=Integration Test Project
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=7d855b72-9875-487c-b043-5d3d12e2243a (type=str), name=Test
+DEBUG: _create_project called with user_id=e8ea4b83-5eca-4e92-8fe3-9ba6fc65207e (type=str), name=Test Project
+DEBUG: _create_project called with user_id=00a7edd1-bcd2-4257-952d-71561a26dc87 (type=str), name=Orchestrated Project
+DEBUG: _create_project called with user_id=123 (type=str), name=Test
+DEBUG: _create_project called with user_id=4d96e9bd-d2b1-4c8a-85ad-2b0bf0d71eee (type=str), name=New Project
+DEBUG: _create_project called with user_id=5930a301-b997-4727-aead-d8f0e7adbcc3 (type=str), name=Integration Test Project
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=25f1af75-2279-4b62-b424-9ca59c016da1 (type=str), name=Test
+DEBUG: _create_project called with user_id=e37f5bba-8b9a-4279-b839-2b40dc73cced (type=str), name=Test Project
+DEBUG: _create_project called with user_id=e8a2f15f-eb8c-411f-a344-d60d4154235b (type=str), name=Orchestrated Project
+DEBUG: _create_project called with user_id=123 (type=str), name=Test
+DEBUG: _create_project called with user_id=f554f9b5-56d6-4237-8067-941b60ef98de (type=str), name=New Project
+DEBUG: _create_project called with user_id=6df13f0a-f517-455b-ab79-22254289867c (type=str), name=Integration Test Project
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=c665ae0d-92d6-460f-bb6b-4c5c53ff9020 (type=str), name=Test
+DEBUG: _create_project called with user_id=d1b10348-6e19-4e16-b6f0-484b12ea0a29 (type=str), name=Test Project
+DEBUG: _create_project called with user_id=c2fd2154-5c2e-44ce-9406-24f219bb4764 (type=str), name=Orchestrated Project
+DEBUG: _create_project called with user_id=123 (type=str), name=Test
+DEBUG: _create_project called with user_id=8e35000a-74b8-48d0-a800-29331fa25412 (type=str), name=New Project
+DEBUG: _create_project called with user_id=caf7bd27-5bb5-4cee-a3b7-5ef6fb3b2e69 (type=str), name=Integration Test Project
+DEBUG: _create_project called with user_id=39437c23-80f8-4272-b0d3-26b4e6790aba (type=str), name=E2E Test Project
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=cec60e58-432c-40e1-ae24-775ef6b80907 (type=str), name=Test Project
+DEBUG: _create_project called with user_id=d4cdac68-d189-4466-ab08-a7bc912c1611 (type=str), name=E2E Test Project
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=72157a05-0ab9-4cd3-9281-ac2bc0f703c1 (type=str), name=Test Project
+DEBUG: _create_project called with user_id=10c4918d-1059-4b71-b726-d906d231d23d (type=str), name=E2E Test Project
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=6e4f63aa-31ac-43e3-832e-3046da99fed7 (type=str), name=Test Project
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=None (type=NoneType), name=None
+DEBUG: _create_project called with user_id=99b4fb2c-38c6-4671-8028-32afaf296ac6 (type=str), name=Test
+DEBUG: _create_project called with user_id=5ec00ee2-5455-4636-a83c-a01e655990e2 (type=str), name=Test Project
+DEBUG: _create_project called with user_id=c618f5ef-533a-48c5-a17f-8fb9b033b866 (type=str), name=Orchestrated Project
+DEBUG: _create_project called with user_id=123 (type=str), name=Test
+DEBUG: _create_project called with user_id=1f47cbb6-94e0-44fb-85cc-683e7c70413a (type=str), name=New Project
+DEBUG: _create_project called with user_id=4e4031f8-c6a9-4dc6-97cd-0492a6fd081c (type=str), name=Integration Test Project

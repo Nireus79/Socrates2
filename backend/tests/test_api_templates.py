@@ -207,7 +207,7 @@ def test_get_template_nonexistent(test_user, client):
     assert response.status_code == 404
 
 
-def test_apply_template_requires_authentication(test_user, specs_db, client):
+def test_apply_template_requires_authentication(test_user, specs_session, client):
     """Test that applying template requires authentication"""
     # Create a project
     project = Project(
@@ -217,9 +217,9 @@ def test_apply_template_requires_authentication(test_user, specs_db, client):
         name="Test Project",
         description="For template test"
     )
-    specs_db.add(project)
-    specs_db.commit()
-    specs_db.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
 
     # Try to apply template without auth
     response = client.post(
@@ -284,6 +284,9 @@ def test_apply_template_requires_authorization(test_user, auth_session, specs_se
 
     # Create another user's project
     other_user = User(
+        name='Other',
+        surname='User',
+        username='othertemplate',
         email='othertemplate@example.com',
         hashed_password='fake_hash',
         status='active',

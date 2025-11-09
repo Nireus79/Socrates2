@@ -40,6 +40,9 @@ def test_insights_requires_authorization(test_user, auth_session, specs_session,
 
     # Create another user
     other_user = User(
+        name='Other',
+        surname='User',
+        username='otherinsights',
         email='otherinsights@example.com',
         hashed_password='fake_hash',
         status='active',
@@ -242,7 +245,7 @@ def test_insights_opportunity_detection(test_user, specs_session, client):
         assert 'recommendations' in opp
 
 
-def test_insights_filter_by_type_gaps(test_user, specs_db, client):
+def test_insights_filter_by_type_gaps(test_user, specs_session, client):
     """Test filtering insights by type=gaps"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -254,9 +257,9 @@ def test_insights_filter_by_type_gaps(test_user, specs_db, client):
         name="Gap Analysis Project",
         description="Testing"
     )
-    specs_db.add(project)
-    specs_db.commit()
-    specs_db.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
 
     # Add only one category
     spec = Specification(
@@ -267,8 +270,8 @@ def test_insights_filter_by_type_gaps(test_user, specs_db, client):
         confidence=0.9,
         is_current=True
     )
-    specs_db.add(spec)
-    specs_db.commit()
+    specs_session.add(spec)
+    specs_session.commit()
 
     # Get insights with filter
     response = client.get(

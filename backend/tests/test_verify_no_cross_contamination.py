@@ -61,6 +61,7 @@ class TestNoCrossContamination:
             "user_behavior_patterns", "question_effectiveness", "knowledge_base_documents",  # Phase 6
             "teams", "team_members", "project_shares",  # Phase 8
             "api_keys", "llm_usage_tracking",  # Phase 9
+            "project_collaborators", "project_ownership_history",  # Audit tracking
             "alembic_version"
         }
 

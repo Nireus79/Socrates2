@@ -213,9 +213,9 @@ class TestMigrationState:
     def test_auth_alembic_version(self):
         """Test that socrates_auth has Alembic version tracked
 
-        Note: Both databases will show version 004 if all migrations were run
-        via 'alembic upgrade head', even though migrations 003-004 didn't
-        create tables in socrates_auth. This is normal Alembic behavior.
+        Note: Both databases will show same version if all migrations were run
+        via 'alembic upgrade head', even though some migrations only affect
+        one database. This is normal Alembic behavior.
         """
         engine = create_engine(DATABASE_URL_AUTH)
 
@@ -223,9 +223,9 @@ class TestMigrationState:
             result = conn.execute(text("SELECT version_num FROM alembic_version"))
             version = result.scalar()
 
-            # Should be at migration 007 (Phase 1: 001-004, Phase 2: 005-007)
-            assert version == "007", \
-                f"Expected migration 007, got {version}"
+            # Should be at latest migration (020 adds user fields to auth DB)
+            assert version == "021", \
+                f"Expected migration 021, got {version}"
 
         engine.dispose()
 
@@ -237,8 +237,8 @@ class TestMigrationState:
             result = conn.execute(text("SELECT version_num FROM alembic_version"))
             version = result.scalar()
 
-            # Should be at migration 019 (Phase 1: 001-004, Phase 2: 005-007, Phase 3: 008, Phase 4: 009-010, Phase 5: 011, Phase 6: 012-014, Phase 8: 015-017, Phase 9: 018-019)
-            assert version == "019", f"Expected migration 019, got {version}"
+            # Should be at latest migration (021 adds project ownership fields)
+            assert version == "021", f"Expected migration 021, got {version}"
 
         engine.dispose()
 
@@ -263,14 +263,20 @@ class TestDatabaseOperations:
     def test_can_insert_user(self, auth_engine):
         """Test that we can insert a user into users table"""
         with auth_engine.connect() as conn:
-            # Insert test user
+            # Insert test user with required fields
             result = conn.execute(
                 text("""
-                    INSERT INTO users (email, hashed_password, is_active, is_verified, status, role)
-                    VALUES (:email, :password, true, false, 'active', 'user')
+                    INSERT INTO users (name, surname, username, email, hashed_password, is_active, is_verified, status, role)
+                    VALUES (:name, :surname, :username, :email, :password, true, false, 'active', 'user')
                     RETURNING id
                 """),
-                {"email": "test_infra@example.com", "password": "hashed_password_here"}
+                {
+                    "name": "Test",
+                    "surname": "User",
+                    "username": "test_infra_user",
+                    "email": "test_infra@example.com",
+                    "password": "hashed_password_here"
+                }
             )
             user_id = result.scalar()
             conn.commit()

@@ -349,7 +349,7 @@ class ProjectManagerAgent(BaseAgent):
             }
 
         Returns:
-            {'success': bool, 'projects': list, 'total': int}
+            {'success': bool, 'projects': list, 'count': int}
         """
         user_id = data.get('user_id')
         skip = data.get('skip', 0)
@@ -384,7 +384,7 @@ class ProjectManagerAgent(BaseAgent):
             return {
                 'success': True,
                 'projects': [p.to_dict() for p in projects],  # TODO Parameter 'self' unfilled
-                'total': total
+                'count': total
             }
 
         except Exception as e:

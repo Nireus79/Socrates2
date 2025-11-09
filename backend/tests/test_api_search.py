@@ -323,6 +323,9 @@ def test_search_other_user_data_not_included(test_user, auth_session, specs_sess
 
     # Create another user
     other_user = User(
+        name='Other',
+        surname='User',
+        username='othersearch',
         email='othersearch@example.com',
         hashed_password='fake_hash',
         status='active',

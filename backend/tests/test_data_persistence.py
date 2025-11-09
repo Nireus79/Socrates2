@@ -55,8 +55,11 @@ class TestDataPersistence:
                 db.delete(existing)
                 db.commit()
 
-            # Create new user
+            # Create new user with required fields
             user = User(
+                name="Test",
+                surname="User",
+                username="test_user_persistence",
                 email=user_email,
                 hashed_password=User.hash_password("test_password"),
                 is_active=True,
@@ -116,6 +119,9 @@ class TestDataPersistence:
         user_id: str = ""  # Initialize to ensure it's always defined
         for db in get_db_auth():
             user = User(
+                name="Test",
+                surname="User",
+                username="test_user_di",
                 email=user_email,
                 hashed_password=User.hash_password("secure_password"),
                 is_active=True,
@@ -160,9 +166,12 @@ class TestDataPersistence:
                     db.delete(existing)
 
         # Create multiple users
-        for email in test_emails:
+        for idx, email in enumerate(test_emails):
             for db in get_db_auth():
                 user = User(
+                    name="Test",
+                    surname=f"User{idx}",
+                    username=f"test_user_{idx}",
                     email=email,
                     hashed_password=User.hash_password("password123"),
                     is_active=True,
@@ -215,6 +224,9 @@ class TestDataPersistence:
         user_id: str = ""
         for db in get_db_auth():
             user = User(
+                name="Test",
+                surname="User",
+                username="test_user_raw_sql",
                 email=user_email,
                 hashed_password=User.hash_password("test123"),
                 is_active=True,
