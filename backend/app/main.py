@@ -7,6 +7,7 @@ Phase 1: Infrastructure Foundation
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from typing import Callable, Optional
 import logging
 
 from .core.config import settings
@@ -23,18 +24,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+def _register_default_agents():
     """
-    Application lifespan context manager.
-    Handles startup and shutdown events.
+    Register all agents with the orchestrator.
+    This is the default startup behavior.
     """
-    # Startup
-    logger.info("Starting Socrates2 API...")
-    logger.info(f"Environment: {settings.ENVIRONMENT}")
-    logger.info(f"Debug mode: {settings.DEBUG}")
-
-    # Initialize orchestrator and register agents
     from .agents.orchestrator import get_orchestrator
     from .agents.project import ProjectManagerAgent
     from .agents.socratic import SocraticCounselorAgent
@@ -83,47 +77,86 @@ async def lifespan(app: FastAPI):
     logger.info("AgentOrchestrator initialized")
     logger.info(f"Registered agents: {list(orchestrator.agents.keys())}")
 
-    yield
 
-    # Shutdown
-    logger.info("Shutting down Socrates2 API...")
-    close_db_connections()
-    logger.info("Database connections closed")
+def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
+    """
+    Create FastAPI application with configurable agent registration.
+
+    This allows tests to inject custom agent registration logic without
+    modifying the main app or using mocks/patches.
+
+    Args:
+        register_agents_fn: Optional custom function to register agents.
+                           If None, uses default agent registration.
+
+    Returns:
+        Configured FastAPI application
+    """
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        """
+        Application lifespan context manager.
+        Handles startup and shutdown events.
+        """
+        # Startup
+        logger.info("Starting Socrates2 API...")
+        logger.info(f"Environment: {settings.ENVIRONMENT}")
+        logger.info(f"Debug mode: {settings.DEBUG}")
+
+        # Initialize orchestrator and register agents
+        if register_agents_fn:
+            # Use injected agent registration function
+            register_agents_fn()
+        else:
+            # Use default agent registration
+            _register_default_agents()
+
+        yield
+
+        # Shutdown
+        logger.info("Shutting down Socrates2 API...")
+        close_db_connections()
+        logger.info("Database connections closed")
+
+    # Create FastAPI application
+    app = FastAPI(
+        title="Socrates2 API",
+        description="AI-Powered Specification Assistant",
+        version="0.1.0",
+        lifespan=lifespan,
+        debug=settings.DEBUG
+    )
+
+    # Configure CORS
+    app.add_middleware(
+        CORSMiddleware,  # type: ignore[arg-type]  # Standard FastAPI middleware pattern, type checker limitation
+        allow_origins=settings.cors_origins_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Include routers
+    app.include_router(auth.router)
+    app.include_router(admin.router)
+    app.include_router(projects.router)
+    app.include_router(sessions.router)
+    app.include_router(conflicts.router)
+    app.include_router(code_generation.router)
+    app.include_router(quality.router)
+    app.include_router(teams.router)
+    app.include_router(export_endpoints.router)
+    app.include_router(llm_endpoints.router)
+    app.include_router(github_endpoints.router)
+    app.include_router(search.router)
+    app.include_router(insights.router)
+    app.include_router(templates.router)
+
+    return app
 
 
-# Create FastAPI application
-app = FastAPI(
-    title="Socrates2 API",
-    description="AI-Powered Specification Assistant",
-    version="0.1.0",
-    lifespan=lifespan,
-    debug=settings.DEBUG
-)
-
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,  # type: ignore[arg-type]  # Standard FastAPI middleware pattern, type checker limitation
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Include routers
-app.include_router(auth.router)
-app.include_router(admin.router)
-app.include_router(projects.router)
-app.include_router(sessions.router)
-app.include_router(conflicts.router)
-app.include_router(code_generation.router)
-app.include_router(quality.router)
-app.include_router(teams.router)
-app.include_router(export_endpoints.router)
-app.include_router(llm_endpoints.router)
-app.include_router(github_endpoints.router)
-app.include_router(search.router)
-app.include_router(insights.router)
-app.include_router(templates.router)
+# Create default app instance (used by uvicorn in production)
+app = create_app()
 
 
 @app.get("/")

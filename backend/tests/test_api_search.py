@@ -8,16 +8,13 @@ Tests for HTTP endpoints in /api/v1/search:
 """
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
 from app.core.security import create_access_token
 from app.models.project import Project
 from app.models.specification import Specification
 from app.core.database import get_db_specs
 
-client = TestClient(app)
 
-
-def test_search_requires_authentication():
+def test_search_requires_authentication(client):
     """Test that search endpoint requires authentication"""
     response = client.get("/api/v1/search?query=test")
 
@@ -25,12 +22,14 @@ def test_search_requires_authentication():
     assert "detail" in response.json() or "not authenticated" in str(response.text).lower()
 
 
-def test_search_basic_query(test_user, specs_session):
+def test_search_basic_query(test_user, specs_session, client):
     """Test basic search with simple query"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create a test project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="FastAPI Application",
         description="A web application built with FastAPI"
@@ -69,12 +68,14 @@ def test_search_basic_query(test_user, specs_session):
     assert 'resource_counts' in data
 
 
-def test_search_with_resource_type_filter(test_user, specs_session):
+def test_search_with_resource_type_filter(test_user, specs_session, client):
     """Test search with resource_type filter (projects only)"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create test project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Search Project",
         description="Project for search testing"
@@ -99,12 +100,14 @@ def test_search_with_resource_type_filter(test_user, specs_session):
             assert result.get('resource_type') == 'project' or 'name' in result
 
 
-def test_search_with_category_filter(test_user, specs_session):
+def test_search_with_category_filter(test_user, specs_session, client):
     """Test search with category filter (specifications)"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project with categorized specs
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Categorized Project",
         description="Testing"
@@ -141,13 +144,15 @@ def test_search_with_category_filter(test_user, specs_session):
             assert result.get('category') == 'security' or 'encryption' in str(result).lower()
 
 
-def test_search_with_pagination(test_user, specs_session):
+def test_search_with_pagination(test_user, specs_session, client):
     """Test search pagination with skip and limit parameters"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create multiple test projects
     for i in range(5):
         project = Project(
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name=f"Pagination Test Project {i}",
             description=f"Test project for pagination {i}"
@@ -182,7 +187,7 @@ def test_search_with_pagination(test_user, specs_session):
     assert data['skip'] == 2
 
 
-def test_search_empty_query_returns_empty_results(test_user):
+def test_search_empty_query_returns_empty_results(test_user, client):
     """Test search with empty query returns empty results"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -198,7 +203,7 @@ def test_search_empty_query_returns_empty_results(test_user):
         assert isinstance(data['results'], list)
 
 
-def test_search_nonexistent_term_returns_empty(test_user):
+def test_search_nonexistent_term_returns_empty(test_user, client):
     """Test search for nonexistent term returns empty results"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -216,12 +221,14 @@ def test_search_nonexistent_term_returns_empty(test_user):
     assert data['total'] == 0
 
 
-def test_search_case_insensitive(test_user, specs_session):
+def test_search_case_insensitive(test_user, specs_session, client):
     """Test that search is case-insensitive"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="CaseSensitiveTest",
         description="Testing case insensitivity"
@@ -249,12 +256,14 @@ def test_search_case_insensitive(test_user, specs_session):
     assert len(response_upper.json()['results']) > 0
 
 
-def test_search_response_structure(test_user, specs_session):
+def test_search_response_structure(test_user, specs_session, client):
     """Test that search response has correct structure"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create test data
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Structure Test Project",
         description="Testing response structure"
@@ -308,12 +317,15 @@ def test_search_response_structure(test_user, specs_session):
         assert 'resource_type' in result
 
 
-def test_search_other_user_data_not_included(test_user, auth_session, specs_session):
+def test_search_other_user_data_not_included(test_user, auth_session, specs_session, client):
     """Test that search results don't include other user's data"""
     from app.models.user import User
 
     # Create another user
     other_user = User(
+        name='Other',
+        surname='User',
+        username='othersearch',
         email='othersearch@example.com',
         hashed_password='fake_hash',
         status='active',
@@ -325,6 +337,8 @@ def test_search_other_user_data_not_included(test_user, auth_session, specs_sess
 
     # Create project as other user
     other_project = Project(
+        creator_id=other_user.id,
+        owner_id=other_user.id,
         user_id=other_user.id,
         name="Secret Project",
         description="This should not be visible to test_user"

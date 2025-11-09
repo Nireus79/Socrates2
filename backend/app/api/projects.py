@@ -17,7 +17,6 @@ from sqlalchemy.orm import Session
 from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
-from ..agents.orchestrator import get_orchestrator
 
 router = APIRouter(prefix="/api/v1/projects", tags=["projects"])
 
@@ -34,6 +33,7 @@ class UpdateProjectRequest(BaseModel):
     description: Optional[str] = None
     status: Optional[str] = None
     current_phase: Optional[str] = None
+    maturity_score: Optional[int] = None
 
 
 @router.post("")
@@ -88,34 +88,54 @@ def create_project(
             }
         }
     """
-    # DEBUG
-    import os
+    # Create project directly in database
+    from app.models.project import Project
+    from sqlalchemy.exc import IntegrityError
+
     try:
-        debug_file = os.path.join(os.path.dirname(__file__), '..', '..', 'debug_endpoint.txt')
-        with open(debug_file, 'a') as f:
-            f.write(f"Endpoint: create_project called with user_id={current_user.id}, name={request.name}\n")
-    except:
-        pass
+        project = Project(
+            creator_id=current_user.id,
+            owner_id=current_user.id,
+            user_id=current_user.id,
+            name=request.name,
+            description=request.description,
+            current_phase='discovery',
+            maturity_score=0,
+            status='active'
+        )
+        db.add(project)
+        db.commit()
+        db.refresh(project)
 
-    orchestrator = get_orchestrator()
-
-    result = orchestrator.route_request(
-        agent_id='project',
-        action='create_project',
-        data={
-            'user_id': current_user.id,
-            'name': request.name,
-            'description': request.description
+        return {
+            'success': True,
+            'project_id': str(project.id),
+            'project': {
+                'id': str(project.id),
+                'name': project.name,
+                'description': project.description,
+                'current_phase': project.current_phase,
+                'maturity_score': project.maturity_score,
+                'status': project.status,
+                'creator_id': str(project.creator_id),
+                'owner_id': str(project.owner_id),
+                'user_id': str(project.user_id),
+                'created_at': project.created_at.isoformat() if project.created_at else None,
+                'updated_at': project.updated_at.isoformat() if project.updated_at else None
+            }
         }
-    )
-
-    if not result.get('success'):
+    except IntegrityError as e:
+        db.rollback()
         raise HTTPException(
             status_code=400,
-            detail=result.get('error', 'Failed to create project')
+            detail=f"Failed to create project: {str(e)}"
         )
-
-    return result
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
 
 
 @router.get("")
@@ -138,7 +158,9 @@ def list_projects(
         {
             'success': bool,
             'projects': List[dict],
-            'total': int
+            'total': int,
+            'skip': int,
+            'limit': int
         }
 
     Example:
@@ -157,28 +179,53 @@ def list_projects(
                 },
                 ...
             ],
-            "total": 5
+            "total": 5,
+            "skip": 0,
+            "limit": 10
         }
     """
-    orchestrator = get_orchestrator()
+    from app.models.project import Project
 
-    result = orchestrator.route_request(
-        agent_id='project',
-        action='list_projects',
-        data={
-            'user_id': current_user.id,
+    try:
+        # Query projects where user_id = current_user.id
+        query = db.query(Project).filter(Project.user_id == current_user.id)
+
+        # Get total count
+        total = query.count()
+
+        # Get paginated results
+        projects = query.offset(skip).limit(limit).all()
+
+        # Convert to dict list
+        projects_list = [
+            {
+                'id': str(project.id),
+                'name': project.name,
+                'description': project.description,
+                'current_phase': project.current_phase,
+                'maturity_score': project.maturity_score,
+                'status': project.status,
+                'creator_id': str(project.creator_id),
+                'owner_id': str(project.owner_id),
+                'user_id': str(project.user_id),
+                'created_at': project.created_at.isoformat() if project.created_at else None,
+                'updated_at': project.updated_at.isoformat() if project.updated_at else None
+            }
+            for project in projects
+        ]
+
+        return {
+            'success': True,
+            'projects': projects_list,
+            'total': total,
             'skip': skip,
             'limit': limit
         }
-    )
-
-    if not result.get('success'):
+    except Exception as e:
         raise HTTPException(
-            status_code=400,
-            detail=result.get('error', 'Failed to list projects')
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
         )
-
-    return result
 
 
 @router.get("/{project_id}")
@@ -220,27 +267,50 @@ def get_project(
             }
         }
     """
-    orchestrator = get_orchestrator()
+    from app.models.project import Project
 
-    result = orchestrator.route_request(
-        agent_id='project',
-        action='get_project',
-        data={
-            'project_id': project_id,
-            'user_id': current_user.id
+    try:
+        # First, check if project exists at all
+        project = db.query(Project).filter(Project.id == project_id).first()
+
+        # Return 404 if project doesn't exist
+        if not project:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Project not found: {project_id}"
+            )
+
+        # Then check if user has permission to view it
+        if str(project.user_id) != str(current_user.id):
+            raise HTTPException(
+                status_code=403,
+                detail="Permission denied: you don't have access to this project"
+            )
+
+        # Return project
+        return {
+            'success': True,
+            'project': {
+                'id': str(project.id),
+                'name': project.name,
+                'description': project.description,
+                'current_phase': project.current_phase,
+                'maturity_score': project.maturity_score,
+                'status': project.status,
+                'creator_id': str(project.creator_id),
+                'owner_id': str(project.owner_id),
+                'user_id': str(project.user_id),
+                'created_at': project.created_at.isoformat() if project.created_at else None,
+                'updated_at': project.updated_at.isoformat() if project.updated_at else None
+            }
         }
-    )
-
-    if not result.get('success'):
-        error = result.get('error', 'Failed to get project')
-        if 'not found' in error.lower():
-            raise HTTPException(status_code=404, detail=error)
-        elif 'permission denied' in error.lower():
-            raise HTTPException(status_code=403, detail=error)
-        else:
-            raise HTTPException(status_code=400, detail=error)
-
-    return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
 
 
 @router.put("/{project_id}")
@@ -279,39 +349,66 @@ def update_project(
             "project": {...}
         }
     """
-    orchestrator = get_orchestrator()
+    from app.models.project import Project
 
-    # Build updates dict (only include fields that were provided)
-    updates = {}
-    if request.name is not None:
-        updates['name'] = request.name
-    if request.description is not None:
-        updates['description'] = request.description
-    if request.status is not None:
-        updates['status'] = request.status
-    if request.current_phase is not None:
-        updates['current_phase'] = request.current_phase
+    try:
+        # Get project
+        project = db.query(Project).filter(Project.id == project_id).first()
 
-    result = orchestrator.route_request(
-        agent_id='project',
-        action='update_project',
-        data={
-            'project_id': project_id,
-            'user_id': current_user.id,
-            'updates': updates
+        # Return 404 if not found
+        if not project:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Project not found: {project_id}"
+            )
+
+        # Only allow updates if user is owner (owner_id = current_user.id)
+        if str(project.owner_id) != str(current_user.id):
+            raise HTTPException(
+                status_code=403,
+                detail="Permission denied: only project owner can update project"
+            )
+
+        # Update fields: name, description, current_phase, status, maturity_score
+        if request.name is not None:
+            project.name = request.name
+        if request.description is not None:
+            project.description = request.description
+        if request.current_phase is not None:
+            project.current_phase = request.current_phase
+        if request.status is not None:
+            project.status = request.status
+        if request.maturity_score is not None:
+            project.maturity_score = request.maturity_score
+
+        # Commit changes
+        db.commit()
+        db.refresh(project)
+
+        return {
+            'success': True,
+            'project': {
+                'id': str(project.id),
+                'name': project.name,
+                'description': project.description,
+                'current_phase': project.current_phase,
+                'maturity_score': project.maturity_score,
+                'status': project.status,
+                'creator_id': str(project.creator_id),
+                'owner_id': str(project.owner_id),
+                'user_id': str(project.user_id),
+                'created_at': project.created_at.isoformat() if project.created_at else None,
+                'updated_at': project.updated_at.isoformat() if project.updated_at else None
+            }
         }
-    )
-
-    if not result.get('success'):
-        error = result.get('error', 'Failed to update project')
-        if 'not found' in error.lower():
-            raise HTTPException(status_code=404, detail=error)
-        elif 'permission denied' in error.lower():
-            raise HTTPException(status_code=403, detail=error)
-        else:
-            raise HTTPException(status_code=400, detail=error)
-
-    return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
 
 
 @router.delete("/{project_id}")
@@ -331,7 +428,7 @@ def delete_project(
     Returns:
         {
             'success': bool,
-            'project_id': str
+            'message': str
         }
 
     Example:
@@ -341,30 +438,45 @@ def delete_project(
         Response:
         {
             "success": true,
-            "project_id": "abc-123"
+            "message": "Project deleted"
         }
     """
-    orchestrator = get_orchestrator()
+    from app.models.project import Project
 
-    result = orchestrator.route_request(
-        agent_id='project',
-        action='delete_project',
-        data={
-            'project_id': project_id,
-            'user_id': current_user.id
+    try:
+        # Get project
+        project = db.query(Project).filter(Project.id == project_id).first()
+
+        # Return 404 if not found
+        if not project:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Project not found: {project_id}"
+            )
+
+        # Only allow deletion if user is creator (creator_id = current_user.id)
+        if str(project.creator_id) != str(current_user.id):
+            raise HTTPException(
+                status_code=403,
+                detail="Permission denied: only project creator can delete project"
+            )
+
+        # Delete project
+        db.delete(project)
+        db.commit()
+
+        return {
+            'success': True,
+            'message': 'Project deleted'
         }
-    )
-
-    if not result.get('success'):
-        error = result.get('error', 'Failed to delete project')
-        if 'not found' in error.lower():
-            raise HTTPException(status_code=404, detail=error)
-        elif 'permission denied' in error.lower():
-            raise HTTPException(status_code=403, detail=error)
-        else:
-            raise HTTPException(status_code=400, detail=error)
-
-    return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
 
 
 @router.get("/{project_id}/status")
@@ -384,12 +496,9 @@ def get_project_status(
     Returns:
         {
             'success': bool,
-            'project_id': str,
-            'maturity_score': float,
-            'current_phase': str,
             'status': str,
-            'total_specs': int,
-            'specs_by_category': dict
+            'current_phase': str,
+            'maturity_score': float
         }
 
     Example:
@@ -399,43 +508,42 @@ def get_project_status(
         Response:
         {
             "success": true,
-            "project_id": "abc-123",
-            "maturity_score": 45.5,
-            "current_phase": "discovery",
             "status": "active",
-            "total_specs": 25,
-            "specs_by_category": {
-                "goals": 8,
-                "requirements": 12,
-                "tech_stack": 5
-            }
+            "current_phase": "discovery",
+            "maturity_score": 45.5
         }
     """
-    from ..models.project import Project
-    from ..models.specification import Specification
+    from app.models.project import Project
 
-    # Get project
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail=f"Project not found: {project_id}")
+    try:
+        # Get project
+        project = db.query(Project).filter(Project.id == project_id).first()
 
-    # Verify user has access
-    if str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        # Return 404 if not found
+        if not project:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Project not found: {project_id}"
+            )
 
-    # Count specifications by category
-    specs = db.query(Specification).filter(Specification.project_id == project_id).all()
-    specs_by_category = {}
-    for spec in specs:
-        category = spec.category
-        specs_by_category[category] = specs_by_category.get(category, 0) + 1
+        # Verify user has access
+        if str(project.user_id) != str(current_user.id):
+            raise HTTPException(
+                status_code=403,
+                detail="Permission denied"
+            )
 
-    return {
-        'success': True,
-        'project_id': str(project.id),
-        'maturity_score': float(project.maturity_score),
-        'current_phase': project.current_phase,
-        'status': project.status,
-        'total_specs': len(specs),
-        'specs_by_category': specs_by_category
-    }
+        return {
+            'success': True,
+            'project_id': str(project.id),
+            'status': project.status,
+            'current_phase': project.current_phase,
+            'maturity_score': project.maturity_score
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )

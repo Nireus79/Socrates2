@@ -5,6 +5,7 @@ Revises: 008
 Create Date: 2025-11-07
 
 """
+import os
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
@@ -16,7 +17,15 @@ branch_labels = None
 depends_on = None
 
 
+def _should_run():
+    """Only run this migration for socrates_specs database"""
+    db_url = os.getenv("DATABASE_URL", "")
+    return "socrates_specs" in db_url
+
+
 def upgrade() -> None:
+    if not _should_run():
+        return
     op.create_table(
         'generated_projects',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
@@ -44,6 +53,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    if not _should_run():
+        return
+
     op.drop_index('ix_generated_projects_started_at', table_name='generated_projects')
     op.drop_index('ix_generated_projects_status', table_name='generated_projects')
     op.drop_index('ix_generated_projects_project_id', table_name='generated_projects')

@@ -33,7 +33,12 @@ from app.core.dependencies import ServiceContainer
 @pytest.fixture
 def test_user(auth_session):
     """Create test user in auth database"""
+    import uuid
+
     user = User(
+        name="Test",
+        surname="User",
+        username=f"testuser{uuid.uuid4().hex[:8]}",
         email="testuser@example.com",
         hashed_password=User.hash_password("testpass123"),
         is_active=True,
@@ -51,6 +56,8 @@ def test_user(auth_session):
 def test_project(specs_session, test_user):
     """Create test project in specs database"""
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test project description",
@@ -113,6 +120,8 @@ def service_container(auth_session, specs_session):
 def test_project_model_creation(specs_session, test_user):
     """Test Project model can be created"""
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="My Project",
         description="A test project",

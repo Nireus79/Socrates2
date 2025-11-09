@@ -1,28 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(tee:*)",
-      "Bash(test:*)",
-      "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql\" -U postgres -d socrates_auth -c \"\\d users\")",
-      "Bash(paste:*)",
-      "Bash(timeout 60 python:*)",
-      "Bash(git checkout:*)",
-      "Bash(python test_cli_workflow.py:*)",
-      "Bash(taskkill:*)",
-      "Bash(powershell -Command \"Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host ''Processes killed''\")",
-      "Bash(timeout 15 python:*)",
-      "Bash(psql:*)",
-      "Bash(python:*)",
-      "Bash(timeout:*)",
-      "Bash(export DATABASE_URL=\"postgresql://postgres:password@localhost:5432/socrates_auth\")",
-      "Bash(alembic upgrade:*)",
-      "Bash(find:*)",
-      "Bash(nul)",
-      "Bash(done)",
-      "Bash(curl:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(for file in \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\socratic.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\context.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\code_generator.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\conflict_detector.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\direct_chat.py\")"
+      "Bash(dir \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\alembic\\versions\")",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

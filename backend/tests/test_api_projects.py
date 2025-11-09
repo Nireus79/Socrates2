@@ -11,13 +11,10 @@ Tests for HTTP endpoints in /api/v1/projects:
 """
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
 from app.core.security import create_access_token
 
-client = TestClient(app)
 
-
-def test_create_project(test_user):
+def test_create_project(test_user, client):
     """Test POST /api/v1/projects - Create a new project"""
     # Create access token
     token = create_access_token(data={"sub": str(test_user.id)})
@@ -42,7 +39,7 @@ def test_create_project(test_user):
     assert data['project']['maturity_score'] == 0
 
 
-def test_create_project_unauthorized():
+def test_create_project_unauthorized(client):
     """Test that creating project requires authentication"""
     response = client.post(
         "/api/v1/projects",
@@ -55,7 +52,7 @@ def test_create_project_unauthorized():
     assert response.status_code == 401
 
 
-def test_create_project_validation(test_user):
+def test_create_project_validation(test_user, client):
     """Test validation when creating project"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -71,7 +68,7 @@ def test_create_project_validation(test_user):
     assert response.status_code in [400, 422]  # Validation error
 
 
-def test_list_projects(test_user):
+def test_list_projects(test_user, client):
     """Test GET /api/v1/projects - List user's projects"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -101,7 +98,7 @@ def test_list_projects(test_user):
     assert "Project for Listing" in project_names
 
 
-def test_list_projects_pagination(test_user):
+def test_list_projects_pagination(test_user, client):
     """Test pagination in list projects"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -127,7 +124,7 @@ def test_list_projects_pagination(test_user):
     assert len(data['projects']) >= 2
 
 
-def test_get_project(test_user):
+def test_get_project(test_user, client):
     """Test GET /api/v1/projects/{id} - Get project details"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -154,7 +151,7 @@ def test_get_project(test_user):
     assert data['project']['name'] == "Get Project Test"
 
 
-def test_get_nonexistent_project(test_user):
+def test_get_nonexistent_project(test_user, client):
     """Test getting a project that doesn't exist"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -170,12 +167,18 @@ def test_get_nonexistent_project(test_user):
     assert response.status_code == 404
 
 
-def test_get_other_user_project(test_user, auth_session):
+def test_get_other_user_project(test_user, auth_session, client):
     """Test that users can't access other users' projects"""
     from app.models.user import User
+    import uuid
 
     # Create another user
+    other_user_id = uuid.uuid4()
     other_user = User(
+        id=other_user_id,
+        name='Other',
+        surname='User',
+        username=f'otheruser_{other_user_id.hex[:8]}',
         email='otheruser@example.com',
         hashed_password='fake_hash',
         status='active',
@@ -204,7 +207,7 @@ def test_get_other_user_project(test_user, auth_session):
     assert response.status_code == 403  # Forbidden
 
 
-def test_update_project(test_user):
+def test_update_project(test_user, client):
     """Test PUT /api/v1/projects/{id} - Update project"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -235,7 +238,7 @@ def test_update_project(test_user):
     assert data['project']['description'] == "Updated description"
 
 
-def test_update_nonexistent_project(test_user):
+def test_update_nonexistent_project(test_user, client):
     """Test updating a project that doesn't exist"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -251,7 +254,7 @@ def test_update_nonexistent_project(test_user):
     assert response.status_code == 404
 
 
-def test_delete_project(test_user):
+def test_delete_project(test_user, client):
     """Test DELETE /api/v1/projects/{id} - Delete project"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -284,7 +287,7 @@ def test_delete_project(test_user):
     assert get_response.status_code == 404 or get_response.json()['project']['status'] == 'archived'
 
 
-def test_get_project_status(test_user):
+def test_get_project_status(test_user, client):
     """Test GET /api/v1/projects/{id}/status - Get project status"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -317,7 +320,7 @@ def test_get_project_status(test_user):
     assert data['current_phase'] == 'discovery'
 
 
-def test_list_projects_filters(test_user):
+def test_list_projects_filters(test_user, client):
     """Test filtering in list projects endpoint"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -343,13 +346,19 @@ def test_list_projects_filters(test_user):
             assert project['status'] == 'active'
 
 
-def test_list_projects_empty(test_user):
+def test_list_projects_empty(test_user, client):
     """Test listing projects when user has none"""
     from app.models.user import User
+    import uuid
 
     # Create a new user with no projects
     auth_db = test_user.__dict__['_sa_instance_state'].session
+    new_user_id = uuid.uuid4()
     new_user = User(
+        id=new_user_id,
+        name='NoProject',
+        surname='User',
+        username=f'noproject_{new_user_id.hex[:8]}',
         email='noproject@example.com',
         hashed_password='fake_hash',
         status='active',
@@ -374,7 +383,7 @@ def test_list_projects_empty(test_user):
     assert len(data['projects']) == 0
 
 
-def test_create_project_with_optional_description(test_user):
+def test_create_project_with_optional_description(test_user, client):
     """Test creating project without description (optional)"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -393,7 +402,7 @@ def test_create_project_with_optional_description(test_user):
     assert 'description' in data['project']
 
 
-def test_update_project_partial(test_user):
+def test_update_project_partial(test_user, client):
     """Test updating only some fields of a project"""
     token = create_access_token(data={"sub": str(test_user.id)})
 

@@ -9,15 +9,12 @@ Tests for HTTP endpoints in /api/v1/templates:
 """
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
 from app.core.security import create_access_token
 from app.models.project import Project
 from app.models.specification import Specification
 
-client = TestClient(app)
 
-
-def test_list_templates_requires_authentication():
+def test_list_templates_requires_authentication(client):
     """Test that listing templates requires authentication"""
     response = client.get("/api/v1/templates")
 
@@ -25,10 +22,12 @@ def test_list_templates_requires_authentication():
     assert "detail" in response.json() or "not authenticated" in str(response.text).lower()
 
 
-def test_apply_template_requires_authentication(test_user, specs_session):
+def test_apply_template_requires_authentication(test_user, specs_session, client):
     """Test that applying template requires authentication"""
     # Create a project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="For template test"
@@ -45,7 +44,7 @@ def test_apply_template_requires_authentication(test_user, specs_session):
     assert response.status_code == 401
 
 
-def test_list_templates_basic(test_user):
+def test_list_templates_basic(test_user, client):
     """Test basic template listing"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -74,7 +73,7 @@ def test_list_templates_basic(test_user):
         assert 'tags' in template
 
 
-def test_list_templates_pagination(test_user):
+def test_list_templates_pagination(test_user, client):
     """Test template listing with pagination"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -106,7 +105,7 @@ def test_list_templates_pagination(test_user):
     assert len(data['templates']) <= 1
 
 
-def test_list_templates_filter_by_tags(test_user):
+def test_list_templates_filter_by_tags(test_user, client):
     """Test filtering templates by tags"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -128,7 +127,7 @@ def test_list_templates_filter_by_tags(test_user):
         assert isinstance(template['tags'], list)
 
 
-def test_list_templates_filter_by_industry(test_user):
+def test_list_templates_filter_by_industry(test_user, client):
     """Test filtering templates by industry"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -149,7 +148,7 @@ def test_list_templates_filter_by_industry(test_user):
         assert template.get('industry') in ['SaaS', 'Any']
 
 
-def test_get_template_details(test_user):
+def test_get_template_details(test_user, client):
     """Test getting template details with preview specifications"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -196,7 +195,7 @@ def test_get_template_details(test_user):
         assert 'content' in spec
 
 
-def test_get_template_nonexistent(test_user):
+def test_get_template_nonexistent(test_user, client):
     """Test getting nonexistent template returns 404"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -208,17 +207,19 @@ def test_get_template_nonexistent(test_user):
     assert response.status_code == 404
 
 
-def test_apply_template_requires_authentication(test_user, specs_db):
+def test_apply_template_requires_authentication(test_user, specs_session, client):
     """Test that applying template requires authentication"""
     # Create a project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="For template test"
     )
-    specs_db.add(project)
-    specs_db.commit()
-    specs_db.refresh(project)
+    specs_session.add(project)
+    specs_session.commit()
+    specs_session.refresh(project)
 
     # Try to apply template without auth
     response = client.post(
@@ -228,12 +229,14 @@ def test_apply_template_requires_authentication(test_user, specs_db):
     assert response.status_code == 401
 
 
-def test_apply_template_to_project(test_user, specs_session):
+def test_apply_template_to_project(test_user, specs_session, client):
     """Test applying a template to a project creates specifications"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create a project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Template Test Project",
         description="Testing template application"
@@ -275,12 +278,15 @@ def test_apply_template_to_project(test_user, specs_session):
         assert spec.source == "template"
 
 
-def test_apply_template_requires_authorization(test_user, auth_session, specs_session):
+def test_apply_template_requires_authorization(test_user, auth_session, specs_session, client):
     """Test that users can only apply templates to their own projects"""
     from app.models.user import User
 
     # Create another user's project
     other_user = User(
+        name='Other',
+        surname='User',
+        username='othertemplate',
         email='othertemplate@example.com',
         hashed_password='fake_hash',
         status='active',
@@ -291,6 +297,8 @@ def test_apply_template_requires_authorization(test_user, auth_session, specs_se
     auth_session.refresh(other_user)
 
     other_project = Project(
+        creator_id=other_user.id,
+        owner_id=other_user.id,
         user_id=other_user.id,
         name="Other User's Project",
         description="Should not allow template application"
@@ -309,7 +317,7 @@ def test_apply_template_requires_authorization(test_user, auth_session, specs_se
     assert response.status_code == 403
 
 
-def test_apply_template_to_nonexistent_project(test_user):
+def test_apply_template_to_nonexistent_project(test_user, client):
     """Test applying template to nonexistent project returns 404"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -324,12 +332,14 @@ def test_apply_template_to_nonexistent_project(test_user):
     assert response.status_code == 404
 
 
-def test_apply_nonexistent_template(test_user, specs_session):
+def test_apply_nonexistent_template(test_user, specs_session, client):
     """Test applying nonexistent template returns 404"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create a project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Valid Project",
         description="For testing"
@@ -347,7 +357,7 @@ def test_apply_nonexistent_template(test_user, specs_session):
     assert response.status_code == 404
 
 
-def test_list_templates_total_count(test_user):
+def test_list_templates_total_count(test_user, client):
     """Test that template list returns correct total count"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -365,7 +375,7 @@ def test_list_templates_total_count(test_user):
     assert data['total'] >= len(data['templates'])
 
 
-def test_template_categories_structure(test_user):
+def test_template_categories_structure(test_user, client):
     """Test that template categories have correct structure"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -390,12 +400,14 @@ def test_template_categories_structure(test_user):
             assert len(category['examples']) > 0
 
 
-def test_apply_template_specs_have_correct_properties(test_user, specs_session):
+def test_apply_template_specs_have_correct_properties(test_user, specs_session, client):
     """Test that template-created specs have expected properties"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Property Test Project",
         description="Testing"
@@ -429,7 +441,7 @@ def test_apply_template_specs_have_correct_properties(test_user, specs_session):
         assert spec.created_at is not None
 
 
-def test_template_filtering_combination(test_user):
+def test_template_filtering_combination(test_user, client):
     """Test combining multiple filters when listing templates"""
     token = create_access_token(data={"sub": str(test_user.id)})
 

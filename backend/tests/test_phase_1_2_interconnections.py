@@ -200,6 +200,8 @@ def test_project_references_user_across_databases(auth_session, specs_session, t
     """Verify Project (specs DB) can reference User (auth DB) via user_id"""
     # Create project referencing user from other database
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Cross-DB Project",
         description="Tests cross-database reference",
@@ -305,6 +307,8 @@ def test_cascade_delete_project_deletes_children(specs_session, test_user):
     """Verify deleting project cascades to sessions, questions, specs"""
     # Create project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Cascade Test",
         description="Test cascade delete",
@@ -364,6 +368,8 @@ def test_data_flows_from_user_to_project(auth_session, specs_session, test_user)
 
     # Phase 2: Project references user
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Flow Test",
         description="Testing data flow",
@@ -422,7 +428,12 @@ def test_data_flows_project_to_session_to_question(specs_session, test_project):
 @pytest.fixture
 def test_user(auth_session):
     """Create test user"""
+    import uuid
+    user_hex = uuid.uuid4().hex[:8]
     user = User(
+        name="Test",
+        surname="User",
+        username=f"testuser{user_hex}",
         email="interconnect@example.com",
         hashed_password=User.hash_password("test123"),
         is_active=True,
@@ -440,6 +451,8 @@ def test_user(auth_session):
 def test_project(specs_session, test_user):
     """Create test project"""
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Interconnection Test Project",
         description="For testing interconnections",
