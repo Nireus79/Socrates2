@@ -46,6 +46,9 @@ htmlcov/
 # Logs
 *.log
 
+# Process Files
+*.pid
+
 # Database
 *.db
 *.sqlite3
@@ -53,3 +56,13 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Runtime
+__pycache__/
+*.pyc
+
+# Archive - preserve documentation history but ignore coverage files
+archive/*.db
+archive/**/*.coverage
+archive/**/*.pyc
+archive/**/__pycache__/

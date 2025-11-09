@@ -395,8 +395,8 @@ class SocratesCLI:
         """Print welcome banner"""
         banner = """
 [bold cyan]╔═════════════════════════════════════════════════════════╗[/bold cyan]
-[bold cyan]║[/bold cyan]                    [bold white]SOCRATES CLI v1.0[/bold white]                    [bold cyan]║[/bold cyan]
-[bold cyan]║[/bold cyan]          [italic]AI-Powered Specification Gathering[/italic]         [bold cyan]    ║[/bold cyan]
+[bold cyan]║[/bold cyan]       [bold white]SOCRATES         [/bold white]                    [bold cyan]║[/bold cyan]
+[bold cyan]║[/bold cyan][italic]Ουδέν οίδα, ούτε διδάσκω τι, αλλά διαπορώ μόνον[/italic]         [bold cyan]    ║[/bold cyan]
 [bold cyan]╚═════════════════════════════════════════════════════════╝[/bold cyan]
 
 [dim]Type /help for available commands or just start chatting![/dim]
@@ -1853,7 +1853,7 @@ No session required.
                 if Confirm.ask("[yellow]You have an active session. End it before exiting?[/yellow]"):
                     self.cmd_session(["end"])
             self.running = False
-            self.console.print("\n[cyan]Goodbye! Keep building great things! 🚀[/cyan]\n")
+            self.console.print("\n[cyan]..τω Ασκληπιώ οφείλομεν αλετρυόνα, απόδοτε και μη αμελήσετε..[/cyan]\n")
 
         elif command == "/clear":
             self.console.clear()

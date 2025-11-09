@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="imp plan">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/agents/orchestrator.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/orchestrator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_security.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_security.py" afterDir="false" />
-    </list>
+    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="libra" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -65,8 +59,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\themi\PycharmProjects\Socrates2" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />
+      <recent name="C:\Users\themi\PycharmProjects\Socrates2" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\foundation_docs" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\user_workflow_simulation\discovery_phase" />
@@ -316,7 +310,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762693331172</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="libra">
+      <option name="closed" value="true" />
+      <created>1762722015089</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1762722015089</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -342,6 +344,7 @@
     <MESSAGE value="phase 10" />
     <MESSAGE value="cli tests pass" />
     <MESSAGE value="imp plan" />
-    <option name="LAST_COMMIT_MESSAGE" value="imp plan" />
+    <MESSAGE value="libra" />
+    <option name="LAST_COMMIT_MESSAGE" value="libra" />
   </component>
 </project>
