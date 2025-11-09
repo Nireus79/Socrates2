@@ -72,6 +72,8 @@ class TestEndToEndUserWorkflow:
             username=f"testuser{user_hex}",
             email=f"testuser_{user_hex}@example.com",
             hashed_password=User.hash_password("testpassword123"),
+            is_active=True,
+            is_verified=True,
             role="user",
             status="active"
         )
@@ -306,6 +308,8 @@ class TestAgentInterconnections:
 
         # Create project
         project = Project(
+            creator_id=user.id,
+            owner_id=user.id,
             user_id=user.id,
             name='Agent Communication Test',
             description='Test',
@@ -371,6 +375,8 @@ class TestDatabaseOperations:
 
         # Create project in specs database (references user from auth DB)
         project = Project(
+            creator_id=user.id,
+            owner_id=user.id,
             user_id=user.id,
             name='Two-Database Test Project',
             description='Testing cross-database references',
@@ -404,6 +410,8 @@ class TestDatabaseOperations:
 
         # Create project that references user
         project = Project(
+            creator_id=user.id,
+            owner_id=user.id,
             user_id=user.id,
             name='Isolation Test Project',
             description='Test',

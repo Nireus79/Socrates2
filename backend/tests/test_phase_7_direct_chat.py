@@ -68,6 +68,8 @@ class TestSessionModeToggling:
         # Create a project and session
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -103,6 +105,8 @@ class TestSessionModeToggling:
         """Test toggling from Direct Chat back to Socratic mode"""
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -133,6 +137,8 @@ class TestSessionModeToggling:
         """Test that invalid mode raises error"""
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -177,6 +183,8 @@ class TestGetSessionMode:
         """Test getting mode when in Socratic"""
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -207,6 +215,8 @@ class TestGetSessionMode:
         """Test getting mode when in Direct Chat"""
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -250,6 +260,8 @@ class TestProcessChatMessage:
         # Setup
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -287,6 +299,8 @@ class TestProcessChatMessage:
         """Test that processing message fails when in Socratic mode"""
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -339,6 +353,8 @@ class TestConversationHistory:
         """Test that conversation is saved to database"""
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -383,6 +399,8 @@ class TestConversationHistory:
         """Test that conversation context is loaded for subsequent messages"""
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -430,6 +448,8 @@ class TestConversationHistory:
         # Create project first
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",
@@ -497,6 +517,8 @@ class TestIntegrationWithOrchestrator:
 
         project = Project(
             id=uuid4(),
+            creator_id=test_user.id,
+            owner_id=test_user.id,
             user_id=test_user.id,
             name="Test Project",
             description="Test",

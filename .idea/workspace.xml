@@ -7,8 +7,22 @@
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="cli tests pass">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/agents/socratic.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/socratic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_cli_workflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_cli_workflow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/009_create_generated_projects_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/alembic/versions/009_create_generated_projects_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/agents/orchestrator.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/orchestrator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/api/projects.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/projects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/conftest.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/conftest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_api_insights.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_api_insights.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_api_projects.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_api_projects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_api_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_api_search.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_api_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_api_templates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_end_to_end_integration.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_end_to_end_integration.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_1_2_interconnections.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_1_2_interconnections.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_2_core_agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_2_core_agents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_3_conflict_detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_3_conflict_detection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_4_code_generation.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_4_code_generation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_5_quality_control.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_5_quality_control.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_phase_7_direct_chat.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_phase_7_direct_chat.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -272,7 +286,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762603646703</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="cli tests pass">
+      <option name="closed" value="true" />
+      <created>1762612088569</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1762612088569</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

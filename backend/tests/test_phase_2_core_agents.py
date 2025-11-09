@@ -56,6 +56,8 @@ def test_user(auth_session):
 def test_project(specs_session, test_user):
     """Create test project in specs database"""
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test project description",
@@ -118,6 +120,8 @@ def service_container(auth_session, specs_session):
 def test_project_model_creation(specs_session, test_user):
     """Test Project model can be created"""
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="My Project",
         description="A test project",

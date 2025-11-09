@@ -47,6 +47,8 @@ def test_analyze_coverage_detects_gaps(auth_session, phase5_specs_session, test_
     """Test that coverage gaps are detected"""
     # Create project with insufficient coverage
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test",
@@ -83,6 +85,8 @@ def test_analyze_coverage_passes_with_good_coverage(auth_session, phase5_specs_s
     """Test that good coverage passes quality check"""
     # Create project with good coverage
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test",
@@ -122,6 +126,8 @@ def test_compare_paths_recommends_thorough(auth_session, phase5_specs_session, t
     """Test that path optimizer recommends thorough over greedy when maturity is high"""
     # Create project with high maturity
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test",
@@ -147,6 +153,8 @@ def test_compare_paths_warns_about_greedy(auth_session, phase5_specs_session, te
     """Test that path optimizer warns about greedy path when maturity is low"""
     # Create project with low maturity
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test",
@@ -174,6 +182,8 @@ def test_get_quality_metrics(auth_session, phase5_specs_session, test_user, phas
     """Test getting quality metrics for a project"""
     # Create project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test",
@@ -221,6 +231,8 @@ def test_verify_operation_blocks_biased_question(auth_session, phase5_specs_sess
     """Test that verify_operation blocks biased questions"""
     # Create project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test",
@@ -248,6 +260,8 @@ def test_verify_operation_blocks_premature_code_gen(auth_session, phase5_specs_s
     """Test that verify_operation blocks code generation with insufficient coverage"""
     # Create project with low coverage
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test",
@@ -285,6 +299,8 @@ def test_verify_operation_allows_good_quality(auth_session, phase5_specs_session
     """Test that verify_operation allows operations with good quality"""
     # Create project with good coverage
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test",
@@ -324,6 +340,8 @@ def test_quality_metrics_stored_in_database(auth_session, phase5_specs_session, 
     """Test that quality metrics are persisted to database"""
     # Create project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="Test",

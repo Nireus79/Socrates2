@@ -45,6 +45,8 @@ def code_gen_agent(service_container):
 def incomplete_project(phase4_specs_session):
     """Create a project with < 100% maturity."""
     project = Project(
+        creator_id=uuid.uuid4(),
+        owner_id=uuid.uuid4(),
         user_id=uuid.uuid4(),
         name="Incomplete Project",
         description="Test project with low maturity",
@@ -61,6 +63,8 @@ def incomplete_project(phase4_specs_session):
 def complete_project(phase4_specs_session):
     """Create a project with 100% maturity."""
     project = Project(
+        creator_id=uuid.uuid4(),
+        owner_id=uuid.uuid4(),
         user_id=uuid.uuid4(),
         name="Complete Project",
         description="Test project with full maturity",
@@ -319,6 +323,8 @@ def test_generate_code_no_specifications(code_gen_agent, phase4_specs_session):
     """Test code generation fails when no specifications exist."""
     # Create project with 100% maturity but no specs
     project = Project(
+        creator_id=uuid.uuid4(),
+        owner_id=uuid.uuid4(),
         user_id=uuid.uuid4(),
         name="Empty Project",
         description="Project with no specs",

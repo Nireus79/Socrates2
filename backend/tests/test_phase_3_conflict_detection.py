@@ -46,8 +46,11 @@ def conflict_agent(service_container):
 @pytest.fixture
 def test_project(specs_session):
     """Create a test project."""
+    user_id = uuid.uuid4()
     project = Project(
-        user_id=uuid.uuid4(),
+        creator_id=user_id,
+        owner_id=user_id,
+        user_id=user_id,
         name="Test Project",
         description="Test description",
         maturity_score=0.0

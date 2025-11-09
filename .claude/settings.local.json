@@ -22,7 +22,8 @@
       "Bash(curl:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(for file in \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\socratic.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\context.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\code_generator.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\conflict_detector.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\direct_chat.py\")"
+      "Bash(for file in \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\socratic.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\context.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\code_generator.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\conflict_detector.py\" \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\app\\agents\\direct_chat.py\")",
+      "Bash(gh pr list:*)"
     ],
     "deny": [],
     "ask": []

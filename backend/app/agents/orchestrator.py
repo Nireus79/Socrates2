@@ -312,3 +312,15 @@ def reset_orchestrator():
     """
     global _orchestrator
     _orchestrator = None
+
+
+def set_orchestrator(orchestrator: "AgentOrchestrator") -> None:
+    """
+    Set the global orchestrator instance.
+    Useful for testing to inject a test orchestrator with test services.
+
+    Args:
+        orchestrator: The orchestrator instance to use globally
+    """
+    global _orchestrator
+    _orchestrator = orchestrator

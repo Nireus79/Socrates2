@@ -8,18 +8,17 @@ Tests for HTTP endpoints in /api/v1/insights:
 """
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
 from app.core.security import create_access_token
 from app.models.project import Project
 from app.models.specification import Specification
 
-client = TestClient(app)
 
-
-def test_insights_requires_authentication(test_user, specs_session):
+def test_insights_requires_authentication(test_user, specs_session, client):
     """Test that insights endpoint requires authentication"""
     # Create a project to get its ID
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Test Project",
         description="For testing"
@@ -35,7 +34,7 @@ def test_insights_requires_authentication(test_user, specs_session):
     assert "detail" in response.json() or "not authenticated" in str(response.text).lower()
 
 
-def test_insights_requires_authorization(test_user, auth_session, specs_session):
+def test_insights_requires_authorization(test_user, auth_session, specs_session, client):
     """Test that users can only access their own project insights"""
     from app.models.user import User
 
@@ -52,6 +51,8 @@ def test_insights_requires_authorization(test_user, auth_session, specs_session)
 
     # Create project as other user
     other_project = Project(
+        creator_id=other_user.id,
+        owner_id=other_user.id,
         user_id=other_user.id,
         name="Other User Project",
         description="Private"
@@ -69,7 +70,7 @@ def test_insights_requires_authorization(test_user, auth_session, specs_session)
     assert response.status_code == 403
 
 
-def test_insights_nonexistent_project(test_user):
+def test_insights_nonexistent_project(test_user, client):
     """Test insights on nonexistent project returns 404"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
@@ -84,12 +85,14 @@ def test_insights_nonexistent_project(test_user):
     assert response.status_code == 404
 
 
-def test_insights_gap_detection(test_user, specs_session):
+def test_insights_gap_detection(test_user, specs_session, client):
     """Test that insights correctly identify specification gaps"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project with minimal specs
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Incomplete Project",
         description="Missing many categories"
@@ -136,12 +139,14 @@ def test_insights_gap_detection(test_user, specs_session):
         assert isinstance(gap['recommendations'], list)
 
 
-def test_insights_risk_detection_low_confidence(test_user, specs_session):
+def test_insights_risk_detection_low_confidence(test_user, specs_session, client):
     """Test that insights detect low-confidence specs as risks"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project with low-confidence specs
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Risky Project",
         description="Has low confidence specs"
@@ -186,12 +191,14 @@ def test_insights_risk_detection_low_confidence(test_user, specs_session):
         assert 'recommendations' in risk
 
 
-def test_insights_opportunity_detection(test_user, specs_session):
+def test_insights_opportunity_detection(test_user, specs_session, client):
     """Test that insights detect well-specified areas as opportunities"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project with many specs in one category
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Well Specified Project",
         description="Has detailed specs"
@@ -235,12 +242,14 @@ def test_insights_opportunity_detection(test_user, specs_session):
         assert 'recommendations' in opp
 
 
-def test_insights_filter_by_type_gaps(test_user, specs_db):
+def test_insights_filter_by_type_gaps(test_user, specs_db, client):
     """Test filtering insights by type=gaps"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project with gaps
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Gap Analysis Project",
         description="Testing"
@@ -275,12 +284,14 @@ def test_insights_filter_by_type_gaps(test_user, specs_db):
         assert insight['type'] == 'gap'
 
 
-def test_insights_response_structure(test_user, specs_session):
+def test_insights_response_structure(test_user, specs_session, client):
     """Test that insights response has correct structure"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Structure Test Project",
         description="Testing response structure"
@@ -346,12 +357,14 @@ def test_insights_response_structure(test_user, specs_session):
     assert summary['opportunities_count'] == len([i for i in data['insights'] if i['type'] == 'opportunity'])
 
 
-def test_insights_coverage_percentage(test_user, specs_session):
+def test_insights_coverage_percentage(test_user, specs_session, client):
     """Test that coverage percentage is calculated correctly"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project with only goals specs
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Partial Coverage Project",
         description="Testing coverage calculation"
@@ -387,12 +400,14 @@ def test_insights_coverage_percentage(test_user, specs_session):
     assert summary['coverage_percentage'] > 0  # Should have some coverage
 
 
-def test_insights_empty_project(test_user, specs_session):
+def test_insights_empty_project(test_user, specs_session, client):
     """Test insights on project with no specifications"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create empty project
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Empty Project",
         description="No specifications yet"
@@ -418,12 +433,14 @@ def test_insights_empty_project(test_user, specs_session):
     assert data['summary']['coverage_percentage'] == 0.0
 
 
-def test_insights_recommendations_present(test_user, specs_session):
+def test_insights_recommendations_present(test_user, specs_session, client):
     """Test that all insights include actionable recommendations"""
     token = create_access_token(data={"sub": str(test_user.id)})
 
     # Create project with mixed specs
     project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
         user_id=test_user.id,
         name="Recommendations Test",
         description="Testing"
