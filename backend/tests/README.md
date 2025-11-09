@@ -1,292 +1,448 @@
-# Socrates2 - Infrastructure Tests
+# Socrates2 Comprehensive Testing Suite
 
-**Purpose:** Verify database setup, schema, migrations, and basic operations work correctly.
+**Self-contained, isolated testing framework for Socrates2**
 
----
+This testing suite is designed to be:
+- ✅ **Self-contained** - No external database required
+- ✅ **Fast** - Uses in-memory SQLite for database tests
+- ✅ **Isolated** - Each test runs independently
+- ✅ **Comprehensive** - Covers all major components
+- ✅ **CI/CD Ready** - Can run in any environment
 
-## What These Tests Verify
+## Quick Start
 
-### ✅ Database Connections
-- Both databases (socrates_auth, socrates_specs) are accessible
-- Connection strings from .env work correctly
+### Installation
 
-### ✅ Schema Validation
-- All required tables exist (users, refresh_tokens, projects, sessions)
-- All columns present with correct names
-- Indexes created properly
-- Foreign key constraints working
+```bash
+# Install test dependencies
+pip install pytest pytest-asyncio pytest-cov
 
-### ✅ Migration State
-- Alembic version tracking correct
-- socrates_auth at migration 002
-- socrates_specs at migration 004
-
-### ✅ Database Operations
-- Can insert records into tables
-- Foreign keys enforce referential integrity
-- CASCADE deletes work correctly
-- No cross-database foreign keys (correct behavior)
-
----
-
-## Running the Tests
-
-### Run All Infrastructure Tests
-
-```powershell
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
-pytest tests/test_infrastructure.py -v
+# Install socrates-ai (tested library)
+pip install socrates-ai==0.1.0
 ```
 
-### Run Specific Test Class
+### Run All Tests
 
-```powershell
-# Test database connections only
-pytest tests/test_infrastructure.py::TestDatabaseConnections -v
+```bash
+# Run all tests
+python -m pytest tests_new/ -v
 
-# Test auth database schema
-pytest tests/test_infrastructure.py::TestAuthDatabaseSchema -v
+# Run with coverage report
+python -m pytest tests_new/ -v --cov=app --cov-report=html
 
-# Test specs database schema
-pytest tests/test_infrastructure.py::TestSpecsDatabaseSchema -v
-
-# Test CRUD operations
-pytest tests/test_infrastructure.py::TestDatabaseOperations -v
+# Run specific test category
+python -m pytest tests_new/ -v -m unit          # Unit tests only
+python -m pytest tests_new/ -v -m integration   # Integration tests only
+python -m pytest tests_new/ -v -m api           # API tests only
+python -m pytest tests_new/ -v -m agent         # Agent tests only
+python -m pytest tests_new/ -v -m security      # Security tests only
 ```
 
-### Run Specific Test
+### Run Specific Tests
 
-```powershell
-pytest tests/test_infrastructure.py::TestDatabaseConnections::test_auth_database_connection -v
+```bash
+# Run single test file
+python -m pytest tests_new/test_models.py -v
+
+# Run single test class
+python -m pytest tests_new/test_models.py::TestUserModel -v
+
+# Run single test function
+python -m pytest tests_new/test_models.py::TestUserModel::test_user_creation -v
+
+# Run tests matching pattern
+python -m pytest tests_new/ -v -k "user"
+python -m pytest tests_new/ -v -k "security"
 ```
 
-### Run with Coverage
+## Test Organization
 
-```powershell
-pytest tests/test_infrastructure.py --cov=app --cov-report=html
+### Test Categories
+
+The test suite is organized into 7 main areas:
+
+#### 1. **Unit Tests** (`test_models.py`)
+Tests for data validation and model functionality.
+```bash
+pytest tests_new/test_models.py -v
 ```
 
----
+**Coverage:**
+- User model validation
+- Project model validation
+- Specification model validation
+- Question model validation
+- Session model validation
+- Data relationships
+- Data validation
 
-## Expected Output (Success)
-
-```
-tests/test_infrastructure.py::TestDatabaseConnections::test_auth_database_connection PASSED
-tests/test_infrastructure.py::TestDatabaseConnections::test_specs_database_connection PASSED
-tests/test_infrastructure.py::TestAuthDatabaseSchema::test_auth_tables_exist PASSED
-tests/test_infrastructure.py::TestAuthDatabaseSchema::test_users_table_columns PASSED
-tests/test_infrastructure.py::TestAuthDatabaseSchema::test_refresh_tokens_table_columns PASSED
-tests/test_infrastructure.py::TestAuthDatabaseSchema::test_refresh_tokens_foreign_key PASSED
-tests/test_infrastructure.py::TestAuthDatabaseSchema::test_users_indexes_exist PASSED
-tests/test_infrastructure.py::TestSpecsDatabaseSchema::test_specs_tables_exist PASSED
-tests/test_infrastructure.py::TestSpecsDatabaseSchema::test_projects_table_columns PASSED
-tests/test_infrastructure.py::TestSpecsDatabaseSchema::test_sessions_table_columns PASSED
-tests/test_infrastructure.py::TestSpecsDatabaseSchema::test_sessions_foreign_key PASSED
-tests/test_infrastructure.py::TestSpecsDatabaseSchema::test_projects_check_constraint PASSED
-tests/test_infrastructure.py::TestCrossDatabase::test_no_cross_database_foreign_keys PASSED
-tests/test_infrastructure.py::TestMigrationState::test_auth_alembic_version PASSED
-tests/test_infrastructure.py::TestMigrationState::test_specs_alembic_version PASSED
-tests/test_infrastructure.py::TestDatabaseOperations::test_can_insert_user PASSED
-tests/test_infrastructure.py::TestDatabaseOperations::test_can_insert_project PASSED
-tests/test_infrastructure.py::TestDatabaseOperations::test_cascade_delete_sessions PASSED
-
-==================== 18 passed in 2.34s ====================
+#### 2. **Security Tests** (`test_security.py`)
+Tests for JWT tokens, passwords, and security mechanisms.
+```bash
+pytest tests_new/test_security.py -v -m security
 ```
 
----
+**Coverage:**
+- JWT token creation and validation
+- Expired token handling
+- Tampered token detection
+- Password strength validation
+- API key management
+- Environment security
+- CORS configuration
+- Input validation
 
-## Test Categories
-
-### 1. Connection Tests
-**Purpose:** Verify databases are accessible
-**Fast:** < 1 second
-**Run:** Every time before development
-
-### 2. Schema Tests
-**Purpose:** Verify table structure matches migrations
-**Fast:** < 2 seconds
-**Run:** After migrations, before deployment
-
-### 3. Migration Tests
-**Purpose:** Verify Alembic version tracking
-**Fast:** < 1 second
-**Run:** After running migrations
-
-### 4. Operation Tests
-**Purpose:** Verify basic CRUD operations work
-**Slower:** 2-3 seconds (includes rollback)
-**Run:** Before deployment, after schema changes
-
----
-
-## When to Run These Tests
-
-### ✅ Always Run
-- **After pulling code** - Verify setup still works
-- **Before starting work** - Verify database is ready
-- **After running migrations** - Verify schema correct
-
-### ✅ Before Commits
-- **Before committing schema changes** - Verify nothing broke
-- **Before pushing to GitHub** - Verify tests pass
-
-### ✅ In CI/CD (Future)
-- **On every pull request** - Automated testing
-- **Before deployment** - Final verification
-
----
-
-## Test Files
-
-```
-backend/tests/
-├── __init__.py                   # Package marker
-├── conftest.py                   # Pytest fixtures & configuration
-├── test_infrastructure.py        # Infrastructure tests (18 tests)
-├── README.md                     # This file
-└── pytest.ini                    # Pytest configuration
+#### 3. **API Endpoint Tests** (`test_api_endpoints.py`)
+Tests for all HTTP endpoints.
+```bash
+pytest tests_new/test_api_endpoints.py -v -m api
 ```
 
----
+**Coverage:**
+- Health check endpoint
+- Authentication endpoints (register, login, logout)
+- Project management endpoints
+- Session management endpoints
+- Error handling
+- CORS headers
 
-## Common Issues & Solutions
-
-### Issue: "DATABASE_URL_AUTH not set"
-
-**Solution:**
-```powershell
-# Ensure .env file exists
-cd backend
-ls .env
-
-# If missing, run setup
-python scripts\setup_env.py
+#### 4. **Agent Tests** (`test_agents_core.py`)
+Tests for agent registration and functionality.
+```bash
+pytest tests_new/test_agents_core.py -v -m agent
 ```
 
-### Issue: "OperationalError: could not connect to server"
+**Coverage:**
+- Agent Orchestrator
+- Socratic Counselor Agent
+- Conflict Detector Agent
+- Quality Controller Agent
+- User Learning Agent
+- Agent coordination
+- ServiceContainer
 
-**Solution:**
-```powershell
-# Check PostgreSQL service running
-Get-Service postgresql*
-
-# Start if stopped
-Start-Service postgresql-x64-17
+#### 5. **Library Integration Tests** (`test_library_integration.py`)
+Tests for Socrates library (socrates-ai) integration.
+```bash
+pytest tests_new/test_library_integration.py -v
 ```
 
-### Issue: "Table 'users' not found"
+**Coverage:**
+- Socrates library imports
+- Core engines (QuestionGenerator, ConflictDetectionEngine, BiasDetectionEngine, LearningEngine)
+- Data models
+- Conversion functions
+- Library version
+- Engine capabilities
 
-**Solution:**
-```powershell
-# Run migrations
-.\scripts\run_migrations.ps1
+#### 6. **Integration Workflow Tests** (`test_integration_workflows.py`)
+Tests for complete end-to-end workflows.
+```bash
+pytest tests_new/test_integration_workflows.py -v -m integration
 ```
 
-### Issue: "Expected migration 002, got 001"
+**Coverage:**
+- User registration workflow
+- Project creation workflow
+- Specification gathering workflow
+- Conflict detection workflow
+- Session management
+- Question generation
+- User learning and personalization
+- Multi-agent coordination
+- Error recovery
+- Data consistency
 
-**Solution:**
-```powershell
-# Run remaining migrations
-.\scripts\run_migrations.ps1
-```
+## Test Configuration
 
----
+### Fixtures
 
-## Adding More Tests
+The `conftest.py` provides reusable fixtures:
 
-### For New Models
-When you create new SQLAlchemy models, add tests to verify:
-- Model can be instantiated
-- Model can be saved to database
-- Model relationships work
-- Model validation works
-
-### For New API Endpoints
-When you create new FastAPI endpoints, add integration tests:
-- Endpoint returns correct status codes
-- Endpoint validates input correctly
-- Endpoint interacts with database correctly
-- Endpoint requires authentication
-
-### For New Business Logic
-When you add business logic, add unit tests:
-- Logic produces correct results
-- Edge cases handled
-- Errors raised appropriately
-
----
-
-## Test-Driven Development (TDD)
-
-For Phase 1 implementation, consider writing tests FIRST:
-
-1. **Write test** for User model
-2. **Run test** - it fails (model doesn't exist yet)
-3. **Implement** User model
-4. **Run test** - it passes!
-5. **Refactor** if needed
-
-This ensures:
-- ✅ All code is tested
-- ✅ Tests are meaningful
-- ✅ Code meets requirements
-
----
-
-## Next Tests to Write
-
-Once you start Phase 1 implementation:
-
-### Model Tests (`test_models.py`)
 ```python
-def test_user_creation():
-    user = User(email="test@example.com", hashed_password="...")
-    assert user.email == "test@example.com"
+# Database fixtures
+@pytest.fixture
+def db_auth()              # Auth database session
+@pytest.fixture
+def db_specs()             # Specs database session
 
-def test_user_password_hashing():
-    user = User.create(email="test@example.com", password="plain")
-    assert user.verify_password("plain") == True
+# Client fixture
+@pytest.fixture
+def test_client()          # FastAPI test client
+
+# Mock fixture
+@pytest.fixture
+def mock_anthropic_client() # Mock LLM client
+
+# Data fixtures
+@pytest.fixture
+def test_user_data()       # Sample user data
+@pytest.fixture
+def test_project_data()    # Sample project data
+@pytest.fixture
+def test_specification_data() # Sample spec data
+@pytest.fixture
+def test_question_data()   # Sample question data
+@pytest.fixture
+def test_session_data()    # Sample session data
 ```
 
-### API Tests (`test_api_auth.py`)
+### Using Fixtures
+
 ```python
-def test_register_endpoint(client):
-    response = client.post("/api/v1/auth/register", json={
-        "email": "new@example.com",
-        "password": "password123"
-    })
-    assert response.status_code == 201
+def test_example(test_client, test_user_data, db_auth):
+    """Example test using fixtures."""
+    # test_client is FastAPI test client
+    # test_user_data is sample user
+    # db_auth is auth database session
+
+    response = test_client.get("/api/v1/admin/health")
+    assert response.status_code == 200
 ```
 
-### Integration Tests (`test_integration.py`)
+### Environment Setup
+
+Tests automatically configure environment variables:
+- `ENVIRONMENT=test`
+- `DATABASE_URL_AUTH=sqlite:///:memory:`
+- `DATABASE_URL_SPECS=sqlite:///:memory:`
+- `ANTHROPIC_API_KEY=test-key-sk-test`
+- `SECRET_KEY=test-secret-key-for-testing-only`
+
+## Running Tests with PyCharm
+
+### IDE Configuration
+
+1. **Set up test runner:**
+   - Go to Settings → Tools → Python Integrated Tools
+   - Set Default test runner to **pytest**
+
+2. **Run individual test:**
+   - Right-click on test file → "Run pytest in [file]"
+   - Right-click on test class → "Run pytest in [class]"
+   - Right-click on test method → "Run pytest in [method]"
+
+3. **Run with debugging:**
+   - Right-click on test → "Debug pytest in [file]"
+
+4. **Coverage:**
+   - Right-click on test file → "Run pytest in [file] with Coverage"
+
+### PyCharm Test View
+
+The Test Runner pane shows:
+- ✅ Passing tests (green)
+- ❌ Failing tests (red)
+- ⏭️ Skipped tests (yellow)
+- 🔴 Errors (red X)
+
+## Test Markers
+
+Run tests by category using markers:
+
+```bash
+# Unit tests only
+pytest tests_new/ -m unit
+
+# Integration tests only
+pytest tests_new/ -m integration
+
+# API tests only
+pytest tests_new/ -m api
+
+# Agent tests only
+pytest tests_new/ -m agent
+
+# Security tests only
+pytest tests_new/ -m security
+
+# All tests except those requiring live DB
+pytest tests_new/ -m "not requires_live_db"
+
+# Combine markers
+pytest tests_new/ -m "unit or integration"
+```
+
+## Coverage Report
+
+Generate HTML coverage report:
+
+```bash
+# Generate coverage report
+pytest tests_new/ --cov=app --cov-report=html
+
+# View report
+open htmlcov/index.html  # On macOS
+start htmlcov/index.html # On Windows
+xdg-open htmlcov/index.html # On Linux
+```
+
+## Common Test Patterns
+
+### Testing API Endpoints
+
 ```python
-def test_create_project_flow(client, auth_token):
-    # Login
-    # Create project
-    # Verify project in database
-    # Verify project returned in API
+def test_health_check(test_client):
+    """Test API endpoint."""
+    response = test_client.get("/api/v1/admin/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert "status" in data
 ```
 
----
+### Testing with Database
 
-## Summary
+```python
+def test_user_creation(db_auth, test_user_data):
+    """Test with database session."""
+    # db_auth is in-memory SQLite session
+    from app.models.user import User
 
-**Infrastructure tests are important because they:**
+    user = User(**test_user_data)
+    db_auth.add(user)
+    db_auth.commit()
 
-1. **Catch setup issues early** - Before you start coding
-2. **Verify migrations work** - Schema matches expectations
-3. **Document schema requirements** - Tests serve as documentation
-4. **Prevent regressions** - Schema changes don't break things
-5. **Build confidence** - Foundation is solid
-
-**Run these tests now:**
-```powershell
-cd backend
-pytest tests/test_infrastructure.py -v
+    assert user.id is not None
 ```
 
-**Expected:** All 18 tests pass ✅
+### Testing Agent Behavior
 
----
+```python
+def test_agent_registration():
+    """Test agent registration."""
+    from app.agents.orchestrator import AgentOrchestrator
 
-**Status:** Infrastructure tests ready to run!
+    orchestrator = AgentOrchestrator()
+    mock_agent = Mock()
+    mock_agent.agent_id = "test"
+
+    orchestrator.register_agent(mock_agent)
+    assert orchestrator.get_agent("test") == mock_agent
+```
+
+### Testing with Mocks
+
+```python
+def test_with_mock(mock_anthropic_client):
+    """Test using mock LLM client."""
+    mock_anthropic_client.messages.create.return_value = Mock(
+        content=[Mock(text="Mock response")]
+    )
+
+    response = mock_anthropic_client.messages.create(...)
+    assert response.content[0].text == "Mock response"
+```
+
+## Troubleshooting
+
+### Import Errors
+
+If you see `ModuleNotFoundError`:
+1. Ensure virtual environment is activated
+2. Install requirements: `pip install -r requirements.txt -r requirements-dev.txt`
+3. Install socrates library: `pip install socrates-ai`
+
+### Database Errors
+
+If you see SQLAlchemy errors:
+1. Tests use in-memory SQLite, not PostgreSQL
+2. No database setup needed
+3. If error persists, check conftest.py fixture configuration
+
+### Timeout Errors
+
+If tests timeout:
+1. Increase timeout in pytest.ini
+2. Check for blocking I/O in tests
+3. Ensure mocks are properly configured
+
+## CI/CD Integration
+
+### GitHub Actions Example
+
+```yaml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: pip install socrates-ai
+      - run: pytest tests_new/ -v --cov=app --cov-report=xml
+```
+
+## Test Statistics
+
+### Current Test Suite
+
+- **Total Test Files:** 6
+- **Total Tests:** 100+
+- **Test Categories:** 6
+- **Fixture Types:** 8
+- **Markers:** 6
+
+### Coverage Target
+
+- Models: 95%+
+- API endpoints: 90%+
+- Agents: 85%+
+- Security: 95%+
+- Libraries: 90%+
+
+## Contributing Tests
+
+When adding new tests:
+
+1. **Place tests in appropriate file:**
+   - Models → `test_models.py`
+   - API → `test_api_endpoints.py`
+   - Agents → `test_agents_core.py`
+   - Workflows → `test_integration_workflows.py`
+
+2. **Use descriptive names:**
+   ```python
+   def test_user_registration_with_valid_email(test_client):
+       """Clear description of what is being tested."""
+   ```
+
+3. **Add appropriate marker:**
+   ```python
+   @pytest.mark.unit
+   def test_example():
+       pass
+   ```
+
+4. **Use fixtures:**
+   ```python
+   def test_example(test_client, test_user_data, db_auth):
+       pass
+   ```
+
+5. **Write docstrings:**
+   ```python
+   def test_example(test_client):
+       """Clear description of test purpose and expectations."""
+       assert True
+   ```
+
+## Resources
+
+- **Pytest Documentation:** https://docs.pytest.org/
+- **FastAPI Testing:** https://fastapi.tiangolo.com/advanced/testing-dependencies/
+- **SQLAlchemy Testing:** https://docs.sqlalchemy.org/en/20/orm/persistence_techniques.html
+- **Socrates Library:** https://pypi.org/project/socrates-ai/
+
+## Questions?
+
+For issues or questions about the testing suite:
+1. Check test documentation above
+2. Review existing test examples
+3. Consult pytest documentation
+4. Ask in project discussions
