@@ -42,7 +42,7 @@ class DirectChatAgent(BaseAgent):
 
     def _process_chat_message(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Process a direct chat message with full context awareness.
+        Process a direct chat message with full context awareness using NLU.
 
         Args:
             data: {
@@ -83,37 +83,73 @@ class DirectChatAgent(BaseAgent):
                 'error': f'Session is in {session.mode} mode, not direct_chat mode'
             }
 
-        # Load conversation context (recent messages)
-        context = self._load_conversation_context(session_id)
+        # Get NLU service to interpret user message
+        nlu_service = self.services.get_nlu_service()
 
-        # Load project context (specs, maturity, etc.)
+        # Prepare context for NLU intent parsing
+        nlu_context = {
+            'current_user': str(user_id),
+            'current_project': str(project_id),
+            'current_session': str(session_id)
+        }
+
+        # Parse user intent using NLU
+        intent = nlu_service.parse_intent(message, nlu_context)
+
+        # Load conversation context for history
+        context = self._load_conversation_context(session_id)
         project_context = self._load_project_context(project_id)
 
-        # Build chat prompt with full context
-        prompt = self._build_chat_prompt(message, context, project_context)
+        # Determine response based on intent type
+        chat_response = ""
 
-        # Call Claude API for response
-        claude_client = self.services.get_claude_client()
-        try:
-            response = claude_client.messages.create(
-                model="claude-sonnet-4-5-20250929",
-                max_tokens=4000,
-                messages=[
-                    {"role": "user", "content": prompt}
-                ]
+        if intent.is_operation:
+            # Handle as operation request
+            self.logger.info(f"Direct chat detected operation request: {intent.operation}")
+
+            # Execute the operation through orchestrator
+            from ..agents.orchestrator import get_orchestrator
+            orchestrator = get_orchestrator()
+
+            # Route to appropriate agent based on operation
+            operation = intent.operation
+            result = orchestrator.route_request(
+                'orchestrator',
+                operation,
+                intent.params
             )
-            chat_response = response.content[0].text
-        except Exception as e:
-            self.logger.error(f"Claude API error: {str(e)}")
-            return {
-                'success': False,
-                'error': f'Failed to get response from Claude: {str(e)}'
-            }
+
+            if result.get('success'):
+                chat_response = f"✓ {result.get('message', 'Operation completed')}.\n"
+                if result.get('details'):
+                    chat_response += f"Details: {result['details']}"
+            else:
+                chat_response = f"Could not complete that operation: {result.get('error', 'Unknown error')}"
+        else:
+            # Handle as conversational chat using NLU chat method
+            # Build system prompt with project context
+            system_prompt = f"""You are Socrates, an AI assistant helping with specification gathering.
+
+Project context:
+- Project ID: {project_id}
+- Session ID: {session_id}
+- Current maturity: {project_context.get('maturity_score', 0)}%
+
+You help users refine their specifications through conversation. When you identify important requirements or design decisions, help extract them as specifications.
+
+Be conversational, helpful, and guide the user toward complete specifications."""
+
+            # Get conversational response using NLU chat method
+            chat_response = nlu_service.chat(
+                message,
+                system_prompt=system_prompt,
+                conversation_context=context
+            )
 
         # Save conversation history (both user message and assistant response)
         self._save_conversation_turn(session_id, message, chat_response)
 
-        # Extract specifications from conversation
+        # Extract specifications from conversation (regardless of operation or conversation)
         from ..agents.orchestrator import get_orchestrator
         orchestrator = get_orchestrator()
 

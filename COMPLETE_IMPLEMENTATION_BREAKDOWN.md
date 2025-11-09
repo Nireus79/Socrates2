@@ -448,5 +448,120 @@ GitHubIntegrationAgent:
 
 ---
 
-**Bottom Line:** The project is ~70% complete in structure. The remaining 42 failing tests represent ~45-58 hours of implementation work, organized across 9 phases. With systematic implementation using the provided templates, the project can be fully functional within 1-2 months.
+## Phase 10: Conversational CLI (8-10 hours) ✨ BONUS FEATURE
+
+**Status:** Not tested yet - Enhancement feature
+**Priority:** MEDIUM (nice-to-have but major UX improvement)
+
+### Overview
+Transform the CLI from command-based to **conversation-based** with natural language understanding. Users describe what they want instead of typing commands. Powered by Claude AI.
+
+### What's Missing
+
+**Core Components:**
+- ❌ ConversationalCLI class (main interface)
+- ❌ Intent parser (Claude-powered)
+- ❌ Command interpreter (converts intents to actions)
+- ❌ Model selector (Sonnet, Haiku, Opus)
+- ❌ Menu state management (graceful exits)
+- ❌ Context manager (tracks user state)
+
+**Effort:** 8-10 hours
+**Priority:** MEDIUM (enhancement, not blocking)
+
+### Key Methods Needed
+
+```python
+ConversationalCLI:
+  run()                           # Main conversation loop
+  interpret_natural_language()    # Process user input
+  get_intent_from_claude()        # Claude-powered intent parsing
+  execute_intent()                # Route intent to handler
+  select_model()                  # Choose AI model
+  push_menu()                     # Enter menu context
+  pop_menu()                      # Exit menu gracefully
+  handle_slash_command()          # Handle /logout, /help, etc
+```
+
+### Example Interactions
+
+**User Registration (Natural Language):**
+```
+You: register a user named John Doe with email john@example.com and password secure123
+Socrates: ✓ User registered successfully
+```
+
+**Project Creation with Model Selection:**
+```
+You: /model
+Socrates: Choose model: 1=Sonnet, 2=Haiku, 3=Opus
+You: 2
+Socrates: ✓ Using Haiku
+
+You: create a project called "Mobile App Redesign"
+Socrates: ✓ Project created. Ready to start session?
+```
+
+**Graceful Menu Exit:**
+```
+You: /back
+Socrates: ✓ Exited session context
+```
+
+### Implementation Steps
+
+1. **Create ConversationalCLI class** (2 hrs)
+   - Main conversation loop
+   - State management
+   - Session tracking
+
+2. **Implement intent parser** (2 hrs)
+   - Claude integration
+   - JSON response parsing
+   - Error handling
+
+3. **Build command interpreter** (1.5 hrs)
+   - Route intents to handlers
+   - Call existing API/agent methods
+   - Return results
+
+4. **Add model selection** (0.5 hrs)
+   - Interactive chooser
+   - Model switching mid-conversation
+
+5. **Menu stack management** (1 hr)
+   - Push/pop menus
+   - Graceful exits
+   - Context cleanup
+
+6. **Integration & testing** (1.5 hrs)
+   - Hook into Socrates.py
+   - Test workflows
+   - Polish responses
+
+### Integration with Existing System
+
+✅ **Can use existing:**
+- ServiceContainer for API access
+- Agent system for complex operations
+- Claude client for AI processing
+- All existing command handlers
+
+### Test Scenarios
+
+- Natural language registration
+- Model selection and switching
+- Create project via description
+- Start session via conversation
+- Resolve conflicts naturally
+- Generate specifications
+- Graceful menu exits (/back, /cancel)
+- Slash commands within chat (/logout, /help)
+- Mixed natural language + commands
+
+---
+
+**Bottom Line:** Phase 10 would make Socrates far more user-friendly and accessible to non-technical users. Perfect final touch after core functionality is complete.
+
+
 

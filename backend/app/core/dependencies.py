@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from .config import settings
 from .database import SessionLocalAuth, SessionLocalSpecs
+from .nlu_service import NLUService
 
 if TYPE_CHECKING:
     from ..agents.orchestrator import AgentOrchestrator
@@ -45,6 +46,7 @@ class ServiceContainer:
         self._claude_client: Optional[Anthropic] = None
         self._logger_cache: dict = {}
         self._orchestrator: Optional['AgentOrchestrator'] = None
+        self._nlu_service: Optional[NLUService] = None
         # For testing: allow injection of test database sessions
         self._db_session_auth: Optional[Session] = None
         self._db_session_specs: Optional[Session] = None
@@ -210,6 +212,30 @@ class ServiceContainer:
                 raise RuntimeError(f"Failed to create orchestrator: {e}")
 
         return self._orchestrator
+
+    def get_nlu_service(self) -> NLUService:
+        """
+        Get Natural Language Understanding service.
+
+        The NLU service is cached and shared across all agents and endpoints.
+        It uses Claude API to interpret user input as operations or conversation.
+
+        Returns:
+            NLUService instance
+
+        Raises:
+            ValueError: If ANTHROPIC_API_KEY not set
+            RuntimeError: If service creation fails
+        """
+        if self._nlu_service is None:
+            try:
+                claude_client = self.get_claude_client()
+                logger = self.get_logger('nlu')
+                self._nlu_service = NLUService(claude_client, logger)
+            except Exception as e:
+                raise RuntimeError(f"Failed to create NLU service: {e}")
+
+        return self._nlu_service
 
     def close(self):
         """
