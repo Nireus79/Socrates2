@@ -395,8 +395,8 @@ class SocratesCLI:
         """Print welcome banner"""
         banner = """
 [bold cyan]╔═════════════════════════════════════════════════════════╗[/bold cyan]
-[bold cyan]║[/bold cyan]       [bold white]SOCRATES         [/bold white]                    [bold cyan]║[/bold cyan]
-[bold cyan]║[/bold cyan][italic]Ουδέν οίδα, ούτε διδάσκω τι, αλλά διαπορώ μόνον[/italic]         [bold cyan]    ║[/bold cyan]
+[bold cyan]║[/bold cyan]       [bold white]                 SOCRATES           [/bold white]              [bold cyan]║[/bold cyan]
+[bold cyan]║[/bold cyan][italic]     Ουδέν οίδα, ούτε διδάσκω τι, αλλά διαπορώ μόνον[/italic]  [bold cyan]   ║[/bold cyan]
 [bold cyan]╚═════════════════════════════════════════════════════════╝[/bold cyan]
 
 [dim]Type /help for available commands or just start chatting![/dim]
