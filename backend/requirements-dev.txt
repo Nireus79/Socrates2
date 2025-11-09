@@ -1,11 +1,11 @@
 # Socrates2 - Development Dependencies
 # Python version: 3.12
-# Last updated: 2025-11-05
+# Last updated: 2025-11-09
 
 # Include production dependencies
 -r requirements.txt
 
-# ===== CODE QUALITY =====
+# ===== CODE QUALITY & LINTING =====
 black==24.10.0
 ruff==0.8.4
 mypy==1.13.0
@@ -16,6 +16,6 @@ pytest-asyncio==0.25.0
 pytest-cov==6.0.0
 pytest-mock==3.14.0
 
-# ===== TEST UTILITIES =====
+# ===== TEST DATA GENERATION =====
 faker==33.1.0
 factory-boy==3.3.1

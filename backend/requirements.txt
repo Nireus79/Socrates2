@@ -7,7 +7,7 @@
 # Published to PyPI: https://pypi.org/project/socrates-ai/
 socrates-ai==0.1.0
 
-# =====WEB FRAMEWORK & SERVER =====
+# ===== WEB FRAMEWORK & SERVER =====
 fastapi==0.121.0
 uvicorn[standard]==0.34.0
 python-multipart==0.0.20
@@ -15,24 +15,21 @@ python-multipart==0.0.20
 # ===== DATABASE & ORM =====
 sqlalchemy==2.0.44
 alembic==1.14.0
-psycopg2-binary==2.9.10  # For Alembic migrations (sync)
-asyncpg==0.30.0          # For FastAPI async operations
+psycopg2-binary==2.9.10
+asyncpg==0.30.0
 
 # ===== DATA VALIDATION =====
 pydantic[email]==2.12.3
-pydantic-settings==2.7.0  # Required for Settings class
+pydantic-settings==2.7.0
 email-validator==2.2.0
 
 # ===== AUTHENTICATION & SECURITY =====
 passlib[bcrypt]==1.7.4
 bcrypt==4.2.1
-python-jose[cryptography]==3.3.0  # JWT tokens
+python-jose[cryptography]==3.3.0
 cryptography==44.0.0
 python-dotenv==1.0.1
 
 # ===== LLM INTEGRATION =====
-anthropic==0.40.0
+anthropic==0.43.0
 httpx==0.28.1
-
-# ===== UTILITIES =====
-# typing-extensions - auto-installed by pydantic, no need to pin
