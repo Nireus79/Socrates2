@@ -370,6 +370,28 @@ _test_app = None
 
 
 @pytest.fixture
+def test_project(test_user, specs_session):
+    """
+    Create a test project for the test_user.
+    """
+    from app.models.project import Project
+
+    project = Project(
+        creator_id=test_user.id,
+        owner_id=test_user.id,
+        user_id=test_user.id,
+        name="Test Project",
+        description="A test project",
+        current_phase='discovery',
+        maturity_score=0,
+        status='active'
+    )
+    specs_session.add(project)
+    specs_session.flush()
+    return project
+
+
+@pytest.fixture
 def client():
     """
     Provide a TestClient that uses the app with overridden database dependencies.

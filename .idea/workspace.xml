@@ -5,15 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="cli tests pass">
-      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/agents/project.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/project.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/debug_create_project.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/debug_create_project.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/debug_route.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/debug_route.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_api_insights.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_api_insights.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_api_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_api_search.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_api_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_api_templates.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/test_infrastructure.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/test_infrastructure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/conftest.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/conftest.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
