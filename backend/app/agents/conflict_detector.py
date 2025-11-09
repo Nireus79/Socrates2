@@ -77,7 +77,7 @@ class ConflictDetectorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load existing specifications
-            existing_specs = db.query(Specification).where(
+            existing_specs = db.query(Specification).filter(
                 Specification.project_id == project_id
             ).all()
 
@@ -364,7 +364,7 @@ class ConflictDetectorAgent(BaseAgent):
             # Load related specifications
             specs = []
             if conflict.spec_ids:
-                specs = db.query(Specification).where(
+                specs = db.query(Specification).filter(
                     Specification.id.in_(conflict.spec_ids)
                 ).all()
 

@@ -91,7 +91,7 @@ class SocraticCounselorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load project context
-            project = db.query(Project).where(Project.id == project_id).first()
+            project = db.query(Project).filter(Project.id == project_id).first()
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
                 return {
@@ -101,7 +101,7 @@ class SocraticCounselorAgent(BaseAgent):
                 }
 
             # Load session
-            session = db.query(Session).where(Session.id == session_id).first()
+            session = db.query(Session).filter(Session.id == session_id).first()
             if not session:
                 self.logger.warning(f"Session not found: {session_id}")
                 return {
@@ -111,7 +111,7 @@ class SocraticCounselorAgent(BaseAgent):
                 }
 
             # Load existing specifications
-            existing_specs = db.query(Specification).where(
+            existing_specs = db.query(Specification).filter(
                 and_(
                     Specification.project_id == project_id,
                     Specification.is_current == True
@@ -119,7 +119,7 @@ class SocraticCounselorAgent(BaseAgent):
             ).all()
 
             # Load previous questions
-            previous_questions = db.query(Question).where(
+            previous_questions = db.query(Question).filter(
                 Question.project_id == project_id
             ).order_by(Question.created_at.desc()).limit(10).all()
 

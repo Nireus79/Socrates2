@@ -81,7 +81,7 @@ class ProjectManagerAgent(BaseAgent):
         try:
             # Check user exists (in socrates_auth database)
             db_auth = self.services.get_database_auth()
-            user = db_auth.query(User).where(User.id == user_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            user = db_auth.query(User).filter(User.id == user_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
             if not user:
                 self.logger.warning(f"User not found: {user_id}")
                 return {
@@ -172,7 +172,7 @@ class ProjectManagerAgent(BaseAgent):
         db = None
         try:
             db = self.services.get_database_specs()
-            project = db.query(Project).where(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
 
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
@@ -227,7 +227,7 @@ class ProjectManagerAgent(BaseAgent):
         db = None
         try:
             db = self.services.get_database_specs()
-            project = db.query(Project).where(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
 
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
@@ -300,7 +300,7 @@ class ProjectManagerAgent(BaseAgent):
         db = None
         try:
             db = self.services.get_database_specs()
-            project = db.query(Project).where(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
 
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
@@ -363,7 +363,7 @@ class ProjectManagerAgent(BaseAgent):
         db = None
         try:
             db = self.services.get_database_specs()
-            query = db.query(Project).where(
+            query = db.query(Project).filter(
                 and_(
                     Project.user_id == user_id,
                     Project.status != 'archived'
@@ -430,7 +430,7 @@ class ProjectManagerAgent(BaseAgent):
         db = None
         try:
             db = self.services.get_database_specs()
-            project = db.query(Project).where(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            project = db.query(Project).filter(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
 
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
