@@ -54,17 +54,7 @@ class ProjectManagerAgent(BaseAgent):
         name = data.get('name')
         description = data.get('description', '')
 
-        # DEBUG: Write to file to ensure we see it
-        try:
-            import os
-            debug_file = os.path.join(os.path.dirname(__file__), '..', '..', 'debug_create_project.txt')
-            with open(debug_file, 'a') as f:
-                f.write(f"DEBUG: _create_project called with user_id={user_id} (type={type(user_id).__name__}), name={name}\n")
-        except Exception as e:
-            pass  # Ignore file write errors
-
-        # DEBUG: Log incoming data with types
-        self.logger.info(f"DEBUG: _create_project called with user_id={user_id} (type={type(user_id).__name__}), name={name}")
+        self.logger.debug(f"Creating project: user_id={user_id}, name={name}")
 
         # Validate
         if not user_id or not name:

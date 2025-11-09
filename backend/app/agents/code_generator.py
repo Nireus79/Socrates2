@@ -182,13 +182,13 @@ class CodeGeneratorAgent(BaseAgent):
 
             self.logger.info(f"Started code generation for project {project_id}, version {next_version}")
 
-            # Load ALL specifications
+            # Load ALL specifications (with reasonable limit for memory safety)
             specs = db.query(Specification).filter(
                 and_(
                     Specification.project_id == project_id,
                     Specification.is_current == True
                 )
-            ).all()
+            ).limit(1000).all()
 
             if not specs:
                 self.logger.warning(f"No specifications found for project {project_id}")
@@ -428,10 +428,10 @@ class CodeGeneratorAgent(BaseAgent):
             QuestionCategory.DISASTER_RECOVERY: 4
         }
 
-        # Count specs per category
+        # Count specs per category (with limit for memory safety)
         specs = db.query(Specification).filter(
             Specification.project_id == project_id
-        ).all()
+        ).limit(1000).all()
 
         category_counts = {}
         for spec in specs:

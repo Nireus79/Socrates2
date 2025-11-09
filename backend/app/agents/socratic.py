@@ -110,13 +110,13 @@ class SocraticCounselorAgent(BaseAgent):
                     'error_code': 'SESSION_NOT_FOUND'
                 }
 
-            # Load existing specifications
+            # Load existing specifications (limit to recent for performance)
             existing_specs = db.query(Specification).filter(
                 and_(
                     Specification.project_id == project_id,
                     Specification.is_current == True
                 )
-            ).all()
+            ).order_by(Specification.created_at.desc()).limit(100).all()
 
             # Load previous questions
             previous_questions = db.query(Question).filter(
@@ -159,12 +159,6 @@ class SocraticCounselorAgent(BaseAgent):
             try:
                 self.logger.debug(f"Calling Claude API to generate question for project {project_id}, category: {next_category}")
                 model_name = "claude-sonnet-4-5-20250929"
-                self.logger.info(f"🎯 ABOUT TO CALL CLAUDE API WITH MODEL={model_name}")
-                import sys
-                print(f"\n=== SOCRATIC AGENT CALLING CLAUDE ===" , file=sys.stderr)
-                print(f"MODEL={model_name}", file=sys.stderr)
-                print(f"CATEGORY={next_category}", file=sys.stderr)
-                sys.stderr.flush()
                 response = self.services.get_claude_client().messages.create(
                     model=model_name,
                     max_tokens=500,

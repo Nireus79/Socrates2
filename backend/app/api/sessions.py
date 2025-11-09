@@ -473,21 +473,28 @@ def get_session(
 @router.get("/{session_id}/history")
 def get_session_history(
     session_id: str,
+    skip: int = 0,
+    limit: int = 100,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db_specs)
 ) -> Dict[str, Any]:
     """
-    Get conversation history for a session.
+    Get conversation history for a session (paginated).
 
     Args:
         session_id: Session UUID
+        skip: Number of messages to skip (default: 0)
+        limit: Maximum messages to return (default: 100)
         current_user: Authenticated user
         db: Database session
 
     Returns:
         {
             'success': bool,
-            'history': List[dict]
+            'history': List[dict],
+            'total': int,
+            'skip': int,
+            'limit': int
         }
 
     Example:
@@ -526,14 +533,20 @@ def get_session_history(
     if not project or str(project.user_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Permission denied")
 
-    # Get conversation history
-    history = db.query(ConversationHistory).filter(
+    # Get conversation history with pagination
+    query = db.query(ConversationHistory).filter(
         ConversationHistory.session_id == session_id
-    ).order_by(ConversationHistory.timestamp.asc()).all()
+    ).order_by(ConversationHistory.timestamp.asc())
+
+    total = query.count()
+    history = query.offset(skip).limit(limit).all()
 
     return {
         'success': True,
-        'history': [h.to_dict() for h in history]  # TODO Parameter 'self' unfilled
+        'history': [h.to_dict() for h in history],  # TODO Parameter 'self' unfilled
+        'total': total,
+        'skip': skip,
+        'limit': limit
     }
 
 

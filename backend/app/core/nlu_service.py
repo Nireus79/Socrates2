@@ -16,6 +16,7 @@ Features:
 
 import json
 import logging
+from collections import deque
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 
@@ -114,7 +115,7 @@ class NLUService:
         self.client = claude_client
         self.logger = logger or logging.getLogger(__name__)
         self.current_model = "claude-sonnet-4-5-20250929"  # Default model
-        self.conversation_history: List[Dict[str, str]] = []
+        self.conversation_history = deque(maxlen=20)  # Auto-maintains last 20 messages
 
     def set_model(self, model_name: str) -> None:
         """Set the Claude model to use"""
@@ -122,15 +123,12 @@ class NLUService:
         self.logger.debug(f"NLU model switched to: {model_name}")
 
     def add_to_history(self, role: str, content: str) -> None:
-        """Add message to conversation history for context"""
+        """Add message to conversation history for context (auto-maintains last 20 messages)"""
         self.conversation_history.append({"role": role, "content": content})
-        # Keep history to last 20 messages to avoid context explosion
-        if len(self.conversation_history) > 20:
-            self.conversation_history = self.conversation_history[-20:]
 
     def clear_history(self) -> None:
         """Clear conversation history"""
-        self.conversation_history = []
+        self.conversation_history = deque(maxlen=20)
 
     def parse_intent(
         self,
