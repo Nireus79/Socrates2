@@ -4,6 +4,7 @@ ConflictDetectorAgent - Detects and manages specification conflicts.
 from typing import Dict, Any, List
 from datetime import datetime, timezone
 import json
+from uuid import UUID
 
 from sqlalchemy import and_
 
@@ -166,10 +167,6 @@ class ConflictDetectorAgent(BaseAgent):
                 'error_code': 'DATABASE_ERROR'
             }
 
-        finally:
-            if db:
-                db.close()
-
     def _resolve_conflict(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Resolve a conflict based on user decision.
@@ -197,6 +194,17 @@ class ConflictDetectorAgent(BaseAgent):
                 'error_code': 'VALIDATION_ERROR'
             }
 
+        # Validate conflict_id is a valid UUID
+        try:
+            UUID(conflict_id)
+        except (ValueError, TypeError):
+            self.logger.warning(f"Invalid conflict_id format: {conflict_id}")
+            return {
+                'success': False,
+                'error': f'Invalid conflict ID format: {conflict_id}',
+                'error_code': 'CONFLICT_NOT_FOUND'
+            }
+
         valid_resolutions = ['keep_old', 'replace', 'merge', 'ignore']
         if resolution not in valid_resolutions:
             self.logger.warning(f"Invalid resolution: {resolution}")
@@ -213,7 +221,7 @@ class ConflictDetectorAgent(BaseAgent):
             db = self.services.get_database_specs()
 
             # Load conflict
-            conflict = db.query(Conflict).where(Conflict.id == conflict_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
+            conflict = db.query(Conflict).filter(Conflict.id == conflict_id).first()
             if not conflict:
                 self.logger.warning(f"Conflict not found: {conflict_id}")
                 return {
@@ -251,10 +259,6 @@ class ConflictDetectorAgent(BaseAgent):
                 'error': f'Failed to resolve conflict: {str(e)}',
                 'error_code': 'DATABASE_ERROR'
             }
-
-        finally:
-            if db:
-                db.close()
 
     def _list_conflicts(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -320,10 +324,6 @@ class ConflictDetectorAgent(BaseAgent):
                 'error_code': 'DATABASE_ERROR'
             }
 
-        finally:
-            if db:
-                db.close()
-
     def _get_conflict_details(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Get detailed information about a specific conflict.
@@ -383,10 +383,6 @@ class ConflictDetectorAgent(BaseAgent):
                 'error': f'Failed to get conflict details: {str(e)}',
                 'error_code': 'DATABASE_ERROR'
             }
-
-        finally:
-            if db:
-                db.close()
 
     def _build_conflict_detection_prompt(
         self,
