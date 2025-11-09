@@ -58,11 +58,12 @@ class AgentOrchestrator:
         Raises:
             ValueError: If agent_id already registered or agent lacks required attributes
         """
-        # Check agent has required attributes (agent_id, name)
-        if not hasattr(agent, 'agent_id') or not hasattr(agent, 'name'):
-            raise ValueError(
-                f"Agent must have 'agent_id' and 'name' attributes"
-            )
+        # Check agent has required attributes (agent_id and name or agent_name)
+        if not hasattr(agent, 'agent_id'):
+            raise ValueError(f"Agent must have 'agent_id' attribute")
+
+        if not (hasattr(agent, 'name') or hasattr(agent, 'agent_name')):
+            raise ValueError(f"Agent must have 'name' or 'agent_name' attribute")
 
         if agent.agent_id in self.agents:
             raise ValueError(
@@ -76,19 +77,22 @@ class AgentOrchestrator:
             self.quality_controller = agent
             self.logger.info("Quality Controller registered - quality gates enabled")
 
+        # Get agent name (try both name and agent_name for compatibility)
+        agent_name = getattr(agent, 'name', None) or getattr(agent, 'agent_name', 'Unknown')
+
         # Try to get capabilities if available (for logging)
         try:
             capabilities = agent.get_capabilities()
             self.logger.info(
-                f"Registered agent: {agent.agent_id} ({agent.name})"
+                f"Registered agent: {agent.agent_id} ({agent_name})"
             )
             self.logger.info(
                 f"  Capabilities: {', '.join(capabilities)}"
             )
-        except AttributeError:
-            # Mock agents may not have get_capabilities
+        except (AttributeError, TypeError):
+            # Mock agents may not have get_capabilities or it might not be callable
             self.logger.info(
-                f"Registered agent: {agent.agent_id} ({agent.name})"
+                f"Registered agent: {agent.agent_id} ({agent_name})"
             )
 
     def unregister_agent(self, agent_id: str):

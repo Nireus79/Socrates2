@@ -213,6 +213,8 @@ class TestInputValidation:
 
     def test_email_validation_rejects_invalid_format(self):
         """Test that invalid email formats are rejected."""
+        from app.core.validators import validate_email
+
         invalid_emails = [
             "notanemail",
             "@example.com",
@@ -221,8 +223,7 @@ class TestInputValidation:
         ]
 
         for email in invalid_emails:
-            # Basic validation: must have @ and .
-            is_valid = "@" in email and "." in email.split("@")[-1] if "@" in email else False
+            is_valid = validate_email(email)
             assert not is_valid
 
     def test_strong_password_validation(self):
