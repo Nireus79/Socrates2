@@ -95,7 +95,7 @@ class TestDataPersistence:
             assert found_user.email == user_email, \
                 f"Email mismatch: expected {user_email}, got {found_user.email}"
 
-            print(f"✅ SUCCESS: User persisted correctly (ID: {user_id})")
+            print(f"[PASS] SUCCESS: User persisted correctly (ID: {user_id})")
 
         finally:
             db2.close()
@@ -144,7 +144,7 @@ class TestDataPersistence:
                 "CRITICAL: Data not persisted using dependency injection pattern!"
             assert str(found.id) == user_id, \
                 f"CRITICAL: User ID mismatch - expected {user_id}, got {found.id}"
-            print(f"✅ DI pattern works correctly (ID: {user_id})")
+            print(f"[PASS] DI pattern works correctly (ID: {user_id})")
 
     def test_multiple_users_persist(self):
         """
@@ -206,7 +206,7 @@ class TestDataPersistence:
             assert count == len(test_emails), \
                 f"Expected {len(test_emails)} users, found {count}"
 
-        print(f"✅ All {len(test_emails)} users persisted correctly with matching IDs")
+        print(f"[PASS] All {len(test_emails)} users persisted correctly with matching IDs")
 
     def test_raw_sql_confirms_persistence(self):
         """
@@ -259,7 +259,7 @@ class TestDataPersistence:
             assert row[1] == user_email, \
                 f"Email mismatch in raw SQL: expected {user_email}, got {row[1]}"
 
-        print(f"✅ Raw SQL confirms data persisted correctly with matching ID {user_id}")
+        print(f"[PASS] Raw SQL confirms data persisted correctly with matching ID {user_id}")
 
 
 if __name__ == "__main__":
