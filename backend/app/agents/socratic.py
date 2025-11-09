@@ -1,7 +1,17 @@
 """
 SocraticCounselorAgent - Generates Socratic questions to gather requirements.
+
+This agent orchestrates the question generation process:
+1. Loads data from databases
+2. Converts to plain data models
+3. Uses QuestionGenerator core engine for business logic
+4. Saves results back to database
+
+The pure business logic (calculating coverage, building prompts, parsing responses)
+is handled by the QuestionGenerator in backend/app/core/question_engine.py.
+This separation enables testing without database and library extraction.
 """
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List
 from decimal import Decimal
 import json
 
@@ -13,35 +23,13 @@ from ..models.session import Session
 from ..models.question import Question
 from ..models.specification import Specification
 from ..core.dependencies import ServiceContainer
-
-
-# Question categories and their priorities
-QUESTION_CATEGORIES = [
-    'goals',
-    'requirements',
-    'tech_stack',
-    'scalability',
-    'security',
-    'performance',
-    'testing',
-    'monitoring',
-    'data_retention',
-    'disaster_recovery'
-]
-
-# Target spec count per category for 100% maturity
-CATEGORY_TARGETS = {
-    'goals': 10,
-    'requirements': 15,
-    'tech_stack': 12,
-    'scalability': 8,
-    'security': 10,
-    'performance': 8,
-    'testing': 8,
-    'monitoring': 6,
-    'data_retention': 5,
-    'disaster_recovery': 8
-}
+from ..core.question_engine import QuestionGenerator
+from ..core.models import (
+    project_db_to_data,
+    specs_db_to_data,
+    questions_db_to_data,
+    UserBehaviorData
+)
 
 
 class SocraticCounselorAgent(BaseAgent):
@@ -51,7 +39,17 @@ class SocraticCounselorAgent(BaseAgent):
     Capabilities:
     - generate_question: Generate next question based on project context
     - generate_questions_batch: Generate multiple questions at once
+
+    Architecture:
+    - This agent handles: Database I/O, API orchestration, validation, persistence
+    - QuestionGenerator handles: Coverage calculation, prompt building, response parsing
+    - Clear separation enables testing without database and library extraction
     """
+
+    def __init__(self, agent_id: str = 'socratic', name: str = 'Socratic Counselor', services: ServiceContainer = None):
+        """Initialize agent with question generator"""
+        super().__init__(agent_id, name, services)
+        self.question_generator = QuestionGenerator(self.logger)
 
     def get_capabilities(self) -> List[str]:
         """Return list of capabilities"""
@@ -123,14 +121,20 @@ class SocraticCounselorAgent(BaseAgent):
                 Question.project_id == project_id
             ).order_by(Question.created_at.desc()).limit(10).all()
 
+            # PHASE 1: Convert DB models to plain data models (for QuestionGenerator)
+            project_data = project_db_to_data(project)
+            specs_data = specs_db_to_data(existing_specs)
+            questions_data = questions_db_to_data(previous_questions)
+
+            # PHASE 2: Use QuestionGenerator for pure business logic
             # Calculate coverage per category
-            coverage = self._calculate_coverage(existing_specs)  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
+            coverage = self.question_generator.calculate_coverage(specs_data)
 
             # Identify next category to focus on (lowest coverage)
-            next_category = self._identify_next_category(coverage)
+            next_category = self.question_generator.identify_next_category(coverage)
 
             # Get user learning profile for personalization
-            user_behavior_patterns = {}
+            user_behavior = None
             try:
                 from .orchestrator import get_orchestrator
                 orchestrator = get_orchestrator()
@@ -140,22 +144,24 @@ class SocraticCounselorAgent(BaseAgent):
                     {'user_id': str(project.user_id)}
                 )
                 if learning_result.get('success'):
-                    user_behavior_patterns = {
-                        'patterns': learning_result.get('behavior_patterns', []),
-                        'total_questions_asked': learning_result.get('total_questions_asked', 0),
-                        'overall_response_quality': learning_result.get('overall_response_quality', 0.5)
-                    }
-                    self.logger.debug(f"Retrieved user learning profile: {len(user_behavior_patterns.get('patterns', []))} patterns, {user_behavior_patterns['total_questions_asked']} questions asked")
+                    user_behavior = UserBehaviorData(
+                        user_id=str(project.user_id),
+                        total_questions_asked=learning_result.get('total_questions_asked', 0),
+                        overall_response_quality=learning_result.get('overall_response_quality', 0.5),
+                        patterns=learning_result.get('behavior_patterns', {}),
+                        learned_from_projects=learning_result.get('learned_from_projects', 0)
+                    )
+                    self.logger.debug(f"Retrieved user learning profile: {user_behavior.total_questions_asked} questions asked")
             except Exception as e:
                 self.logger.warning(f"Could not retrieve user learning profile: {e}")
-                user_behavior_patterns = {}
+                user_behavior = None
 
-            # Build prompt for Claude with user learning context
-            prompt = self._build_question_generation_prompt(
-                project, existing_specs, previous_questions, next_category, user_behavior_patterns  # TODO Expected type 'list[Specification]', got 'list[Type[Specification]]' instead
+            # Build prompt for Claude using QuestionGenerator
+            prompt = self.question_generator.build_question_generation_prompt(
+                project_data, specs_data, questions_data, next_category, user_behavior
             )
 
-            # Call Claude API (separate from DB transaction)
+            # PHASE 3: Call Claude API (Agent responsibility - not in core engine)
             try:
                 self.logger.debug(f"Calling Claude API to generate question for project {project_id}, category: {next_category}")
                 model_name = "claude-sonnet-4-5-20250929"
@@ -165,31 +171,26 @@ class SocraticCounselorAgent(BaseAgent):
                     messages=[{"role": "user", "content": prompt}]
                 )
 
-                # Extract text from response
+                # Extract and parse response using QuestionGenerator
                 response_text = response.content[0].text
                 self.logger.debug(f"Claude API response received: {len(response_text)} chars")
                 self.logger.debug(f"Response text preview (first 200 chars): {response_text[:200]}")
 
-                # Strip markdown code fences if present (Claude sometimes wraps in ```json ... ```)
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:]  # Remove ```json
-                if response_text.startswith('```'):
-                    response_text = response_text[3:]  # Remove ```
-                if response_text.endswith('```'):
-                    response_text = response_text[:-3]  # Remove ```
-
-                response_text = response_text.strip()
-
-                self.logger.debug(f"Cleaned response text preview (first 100 chars): {response_text[:100]}")
-
-                # Parse JSON response
-                question_data = json.loads(response_text)
+                # Use QuestionGenerator to parse response (handles markdown stripping, JSON parsing)
+                question_data = self.question_generator.parse_question_response(response_text, next_category)
 
             except json.JSONDecodeError as e:
                 self.logger.error(f"Failed to parse Claude response as JSON: {e}", exc_info=True)
                 return {
                     'success': False,
                     'error': 'Failed to parse question from Claude API',
+                    'error_code': 'PARSE_ERROR'
+                }
+            except ValueError as e:
+                self.logger.error(f"Invalid question data from Claude: {e}", exc_info=True)
+                return {
+                    'success': False,
+                    'error': 'Invalid question data from Claude API',
                     'error_code': 'PARSE_ERROR'
                 }
             except Exception as e:
@@ -309,160 +310,3 @@ class SocraticCounselorAgent(BaseAgent):
             'count': len(questions)
         }
 
-    def _calculate_coverage(self, specs: List[Specification]) -> Dict[str, float]:
-        """
-        Calculate coverage percentage per category.
-
-        Args:
-            specs: List of current specifications
-
-        Returns:
-            Dictionary mapping category to coverage percentage (0-100)
-        """
-        # Count specs per category
-        spec_counts = {}
-        for spec in specs:
-            category = spec.category
-            spec_counts[category] = spec_counts.get(category, 0) + 1
-
-        # Calculate coverage percentage
-        coverage = {}
-        for category in QUESTION_CATEGORIES:
-            target = CATEGORY_TARGETS[category]
-            count = spec_counts.get(category, 0)
-            coverage[category] = min(count / target, 1.0) * 100
-
-        return coverage
-
-    def _identify_next_category(self, coverage: Dict[str, float]) -> str:
-        """
-        Identify category with lowest coverage.
-
-        Args:
-            coverage: Dictionary mapping category to coverage percentage
-
-        Returns:
-            Category name with lowest coverage
-        """
-        if not coverage:
-            return 'goals'  # Start with goals
-
-        # Find category with lowest coverage
-        return min(coverage, key=coverage.get)
-
-    def _build_question_generation_prompt(
-        self,
-        project: Project,
-        specs: List[Specification],
-        previous_questions: List[Question],
-        next_category: str,
-        user_behavior_patterns: Dict[str, Any] = None
-    ) -> str:
-        """
-        Build prompt for Claude to generate question.
-
-        Args:
-            project: Project instance
-            specs: List of existing specifications
-            previous_questions: List of previous questions
-            next_category: Category to focus on
-            user_behavior_patterns: Optional user learning profile
-
-        Returns:
-            Prompt string for Claude API
-        """
-        user_behavior_patterns = user_behavior_patterns or {}
-
-        # Format user learning context if available
-        user_learning_context = ""
-        if user_behavior_patterns:
-            total_q = user_behavior_patterns.get('total_questions_asked', 0)
-            quality = user_behavior_patterns.get('overall_response_quality', 0.5)
-            if total_q > 0:
-                user_learning_context = f"""
-USER LEARNING PROFILE:
-- Experience: {total_q} questions answered previously
-- Response quality: {quality:.0%}
-- Known patterns: {len(user_behavior_patterns.get('patterns', []))} learned behavior patterns
-
-Adapt your question style based on this user's experience level and communication style.
-"""
-
-        prompt = f"""You are a Socratic counselor helping gather requirements for a software project.
-
-PROJECT CONTEXT:
-- Name: {project.name}
-- Description: {project.description or 'None provided yet'}
-- Phase: {project.current_phase}
-- Maturity: {project.maturity_score}%
-
-EXISTING SPECIFICATIONS:
-{self._format_specs(specs)}
-
-PREVIOUS QUESTIONS ASKED:
-{self._format_questions(previous_questions)}
-{user_learning_context}
-NEXT FOCUS AREA: {next_category}
-
-TASK:
-Generate the next question focusing on: {next_category}
-
-REQUIREMENTS:
-1. Ask about ONE specific aspect of {next_category}
-2. Keep question concise and clear (max 2 sentences)
-3. Avoid assuming solutions (no "should we use X?" questions)
-4. Make it open-ended to encourage detailed answers
-5. Provide context about why this question matters
-6. Do NOT repeat or rephrase previous questions
-
-IMPORTANT:
-- If user hasn't described their project yet, ask about project goals/purpose
-- If basic goals are known, ask progressively deeper questions
-- Focus on understanding WHAT they want, not HOW to build it (yet)
-
-Return ONLY valid JSON in this EXACT format (no additional text):
-{{
-  "text": "the question text",
-  "category": "{next_category}",
-  "context": "brief explanation of why this question matters"
-}}"""
-
-        return prompt
-
-    def _format_specs(self, specs: List[Specification]) -> str:
-        """
-        Format specifications for prompt.
-
-        Args:
-            specs: List of specifications
-
-        Returns:
-            Formatted string of specifications
-        """
-        if not specs:
-            return "None yet - this is the first interaction"
-
-        lines = []
-        for spec in specs[:20]:  # Limit to prevent huge prompts
-            lines.append(f"- [{spec.category}] {spec.content}")
-
-        return "\n".join(lines)
-
-    def _format_questions(self, questions: List[Question]) -> str:
-        """
-        Format previous questions for prompt.
-
-        Args:
-            questions: List of previous questions
-
-        Returns:
-            Formatted string of questions
-        """
-        if not questions:
-            return "None yet - this is the first question"
-
-        lines = []
-        for q in questions[:10]:  # Limit to most recent 10
-            lines.append(f"- [{q.category}] {q.text}")
-
-        return "\n".join(lines)
