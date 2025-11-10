@@ -534,13 +534,13 @@ class SocratesCLI:
             pass
 
         # Start the server
-        self.console.print("[yellow]Starting backend server...[/yellow]")
+        print("Starting backend server...")
 
         # Find the backend directory
         backend_dir = Path(__file__).parent / "backend"
         if not backend_dir.exists():
-            self.console.print(f"[red]Error: Backend directory not found at {backend_dir}[/red]")
-            self.console.print("[yellow]Continuing without auto-started server...[/yellow]")
+            print(f"Error: Backend directory not found at {backend_dir}")
+            print("Continuing without auto-started server...")
             return
 
         try:
@@ -573,24 +573,24 @@ class SocratesCLI:
 
             # Wait for server to be ready
             if self._wait_for_server(log_path=server_log_path):
-                self.console.print(f"[green]✓ Backend server started on {self.server_url}[/green]\n")
+                print(f"[OK] Backend server started on {self.server_url}")
             else:
-                self.console.print(f"[red]✗ Server failed to start[/red]")
+                print("[ERROR] Server failed to start")
                 # Try to read the error from the log file
                 try:
                     with open(server_log_path, 'r') as log_file:
                         log_content = log_file.read()
                         if log_content.strip():
-                            self.console.print("[red]Server startup error:[/red]")
+                            print("Server startup error:")
                             for line in log_content.split('\n')[-20:]:  # Show last 20 lines
                                 if line.strip():
-                                    self.console.print(f"  {line}")
+                                    print(f"  {line}")
                 except Exception:
                     pass
-                self.console.print("[yellow]Continuing without server...[/yellow]\n")
+                print("Continuing without server...\n")
         except Exception as e:
-            self.console.print(f"[red]Failed to start server: {e}[/red]")
-            self.console.print("[yellow]Continuing without auto-started server...[/yellow]\n")
+            print(f"Failed to start server: {e}")
+            print("Continuing without auto-started server...\n")
 
     def _wait_for_server(self, timeout: int = 10, log_path: Optional[str] = None) -> bool:
         """Wait for server to be ready"""
@@ -608,7 +608,7 @@ class SocratesCLI:
                 # Log unexpected errors
                 if time.time() - last_check_time > 2:  # Don't log too frequently
                     if self.debug:
-                        self.console.print(f"[dim]Health check error: {type(e).__name__}[/dim]")
+                        print(f"Health check error: {type(e).__name__}")
                     last_check_time = time.time()
 
             time.sleep(0.5)
@@ -617,16 +617,16 @@ class SocratesCLI:
         if self.server_process:
             if self.server_process.poll() is not None:
                 # Process crashed
-                self.console.print("[red]Server process crashed[/red]")
+                print("Server process crashed")
                 if log_path:
                     try:
                         with open(log_path, 'r') as f:
                             content = f.read()
                             if content.strip():
-                                self.console.print("[dim]Last log output:[/dim]")
+                                print("Last log output:")
                                 for line in content.split('\n')[-10:]:
                                     if line.strip():
-                                        self.console.print(f"  [dim]{line}[/dim]")
+                                        print(f"  {line}")
                     except Exception:
                         pass
 
