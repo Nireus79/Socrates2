@@ -7,10 +7,12 @@ from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+import secrets
 
 from .config import settings
 from .database import get_db_auth
 from ..models.user import User
+from ..models.refresh_token import RefreshToken
 
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -179,3 +181,99 @@ def get_current_admin_user(
             detail="Admin access required"
         )
     return current_user
+
+
+def create_refresh_token(user_id: str, db: Session) -> str:
+    """
+    Create a refresh token for a user.
+
+    Args:
+        user_id: UUID of the user
+        db: Database session
+
+    Returns:
+        Refresh token string
+
+    Raises:
+        HTTPException: If there's an error creating the token
+    """
+    try:
+        # Generate a random token
+        token = secrets.token_urlsafe(32)
+
+        # Set expiration to 7 days
+        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+
+        # Create refresh token record in database
+        refresh_token = RefreshToken(
+            user_id=user_id,
+            token=token,
+            expires_at=expires_at
+        )
+
+        db.add(refresh_token)
+        db.commit()
+
+        return token
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create refresh token: {str(e)}"
+        )
+
+
+def validate_refresh_token(token: str, db: Session) -> Optional[User]:
+    """
+    Validate a refresh token and return the associated user.
+
+    Args:
+        token: Refresh token string
+        db: Database session
+
+    Returns:
+        User object if valid, None otherwise
+
+    Raises:
+        HTTPException: If token is invalid or expired
+    """
+    try:
+        # Look up the refresh token in the database
+        refresh_token_obj = db.query(RefreshToken).filter(
+            RefreshToken.token == token
+        ).first()
+
+        if not refresh_token_obj:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token"
+            )
+
+        # Check if token is expired
+        if not refresh_token_obj.is_valid():
+            # Delete expired token
+            db.delete(refresh_token_obj)
+            db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token has expired"
+            )
+
+        # Get the user
+        user = db.query(User).filter(User.id == refresh_token_obj.user_id).first()
+        if not user or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found or inactive"
+            )
+
+        return user
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error validating refresh token: {str(e)}"
+        )

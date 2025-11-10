@@ -93,10 +93,20 @@ class SocratesAPI:
         self.base_url = base_url.rstrip('/')
         self.console = console
         self.access_token: Optional[str] = None
+        self.refresh_token: Optional[str] = None
+        self.config: Optional[Config] = None
 
     def set_token(self, token: str):
         """Set authentication token"""
         self.access_token = token
+
+    def set_refresh_token(self, token: str):
+        """Set refresh token"""
+        self.refresh_token = token
+
+    def set_config(self, config: Config):
+        """Set config object for saving tokens"""
+        self.config = config
 
     def _headers(self) -> Dict[str, str]:
         """Get request headers with authentication"""
@@ -105,6 +115,39 @@ class SocratesAPI:
             headers["Authorization"] = f"Bearer {self.access_token}"
         return headers
 
+    def _refresh_access_token(self) -> bool:
+        """
+        Attempt to refresh the access token using the refresh token.
+
+        Returns:
+            True if refresh successful, False otherwise
+        """
+        if not self.refresh_token:
+            return False
+
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/v1/auth/refresh",
+                json={"refresh_token": self.refresh_token},
+                headers={"Content-Type": "application/json"}
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                self.access_token = data.get("access_token")
+                self.refresh_token = data.get("refresh_token")
+
+                # Save tokens to config
+                if self.config:
+                    self.config.set("access_token", self.access_token)
+                    self.config.set("refresh_token", self.refresh_token)
+
+                return True
+        except Exception:
+            pass
+
+        return False
+
     def _request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
         """Make HTTP request with error handling"""
         url = f"{self.base_url}{endpoint}"
@@ -112,6 +155,14 @@ class SocratesAPI:
 
         try:
             response = requests.request(method, url, **kwargs)
+
+            # If we get a 401, try to refresh the token and retry
+            if response.status_code == 401 and self.refresh_token:
+                if self._refresh_access_token():
+                    # Update headers with new token and retry
+                    kwargs['headers'] = self._headers()
+                    response = requests.request(method, url, **kwargs)
+
             return response
         except requests.exceptions.ConnectionError:
             # Re-raise connection errors for the caller to handle gracefully
@@ -394,6 +445,8 @@ class SocratesCLI:
         self.console = Console()
         self.api = SocratesAPI(api_url, self.console)
         self.config = SocratesConfig()
+        # Let API know about config so it can save tokens
+        self.api.set_config(self.config)
         self.debug = debug
         self.running = True
         self.current_project: Optional[Dict[str, Any]] = None
@@ -879,9 +932,12 @@ No session required.
 
                 if result.get("access_token"):
                     self.config.set("access_token", result["access_token"])
+                    self.config.set("refresh_token", result.get("refresh_token"))
                     self.config.set("user_email", result.get("username"))
                     self.config.set("user_name", result.get("name"))
                     self.api.set_token(result["access_token"])
+                    if result.get("refresh_token"):
+                        self.api.set_refresh_token(result["refresh_token"])
                     user_display = result.get("name", data['username'])
                     self.console.print(f"\n[green]✓ Logged in successfully as {user_display}[/green]")
                 else:
@@ -2612,6 +2668,10 @@ No session required.
             email = self.config.get("user_email", "User")
             self.console.print(f"[green]Welcome back, {email}![/green]\n")
             self.api.set_token(self.config.get("access_token"))
+            # Also set refresh token if available
+            refresh_token = self.config.get("refresh_token")
+            if refresh_token:
+                self.api.set_refresh_token(refresh_token)
         else:
             self.console.print("[yellow]Please /login or /register to get started[/yellow]\n")
 
