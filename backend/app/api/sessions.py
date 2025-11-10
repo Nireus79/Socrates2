@@ -108,7 +108,17 @@ def start_session(
         'success': True,
         'session_id': str(session.id),
         'project_id': str(session.project_id),
-        'status': session.status
+        'status': session.status,
+        'session': {
+            'id': str(session.id),
+            'project_id': str(session.project_id),
+            'mode': session.mode,
+            'status': session.status,
+            'started_at': session.started_at.isoformat() if session.started_at else None,
+            'ended_at': session.ended_at.isoformat() if session.ended_at else None,
+            'created_at': session.created_at.isoformat() if session.created_at else None,
+            'updated_at': session.updated_at.isoformat() if session.updated_at else None
+        }
     }
 
 
@@ -863,4 +873,74 @@ def resume_session(
         'success': True,
         'session_id': str(session.id),
         'status': session.status
+    }
+
+
+@router.get("")
+def list_user_sessions(
+    project_id: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    List sessions for the current user, optionally filtered by project.
+
+    Args:
+        project_id: Optional project ID to filter sessions
+        skip: Number of sessions to skip (default: 0)
+        limit: Maximum sessions to return (default: 100)
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'sessions': [
+                {
+                    'id': str,
+                    'project_id': str,
+                    'mode': str,
+                    'status': str,
+                    'started_at': str (ISO format),
+                    'ended_at': str or null,
+                    'created_at': str (ISO format),
+                    'updated_at': str (ISO format)
+                }
+            ],
+            'total': int
+        }
+    """
+    from ..models.session import Session as SessionModel
+    from ..models.project import Project
+
+    # Build query for sessions belonging to user's projects
+    query = db.query(SessionModel).join(
+        Project, SessionModel.project_id == Project.id
+    ).filter(Project.user_id == current_user.id)
+
+    # Filter by project_id if provided
+    if project_id:
+        query = query.filter(SessionModel.project_id == project_id)
+
+    total = query.count()
+    sessions = query.offset(skip).limit(limit).all()
+
+    return {
+        'success': True,
+        'sessions': [
+            {
+                'id': str(session.id),
+                'project_id': str(session.project_id),
+                'mode': session.mode,
+                'status': session.status,
+                'started_at': session.started_at.isoformat() if session.started_at else None,
+                'ended_at': session.ended_at.isoformat() if session.ended_at else None,
+                'created_at': session.created_at.isoformat() if session.created_at else None,
+                'updated_at': session.updated_at.isoformat() if session.updated_at else None
+            }
+            for session in sessions
+        ],
+        'total': total
     }

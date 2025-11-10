@@ -187,7 +187,7 @@ class SocratesAPI:
 
     def list_sessions(self, project_id: str) -> Dict[str, Any]:
         """List project sessions"""
-        response = self._request("GET", f"/api/v1/projects/{project_id}/sessions")
+        response = self._request("GET", "/api/v1/sessions", params={"project_id": project_id})
         return response.json()
 
     def get_next_question(self, session_id: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
@@ -581,6 +581,7 @@ class SocratesCLI:
 
 [bold yellow]Session Management:[/bold yellow]
   /session start         Start new Socratic questioning session
+  /session select        Select existing session to resume
   /session end           End current session
   /sessions              List all sessions for current project
   /history               Show conversation history
@@ -1047,21 +1048,76 @@ No session required.
                 self.console.print(f"[red]Error: {e}[/red]")
 
         elif subcommand == "select":
+            # If no project ID provided, show interactive list
             if len(args) < 2:
-                self.console.print("[yellow]Usage: /project select <project_id>[/yellow]")
-                return
+                try:
+                    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                                  console=self.console, transient=True) as progress:
+                        progress.add_task("Loading projects...", total=None)
+                        result = self.api.list_projects(skip=0, limit=100)
 
-            project_id = args[1]
-            try:
-                result = self.api.get_project(project_id)
-                if result.get("success"):
-                    self.current_project = result.get("project")
-                    self.current_session = None  # Clear session when switching projects
-                    self.console.print(f"[green]✓ Selected project: {self.current_project['name']}[/green]")
-                else:
-                    self.console.print(f"[red]✗ Project not found[/red]")
-            except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
+                    if result.get("success") and result.get("projects"):
+                        projects = result.get("projects", [])
+
+                        # Display projects in a table
+                        table = Table(show_header=True, header_style="bold cyan")
+                        table.add_column("#", style="dim")
+                        table.add_column("Name", style="bold")
+                        table.add_column("Project ID", style="cyan")
+                        table.add_column("Description", style="dim")
+
+                        for i, proj in enumerate(projects, 1):
+                            desc = proj.get("description", "")
+                            if len(desc) > 40:
+                                desc = desc[:37] + "..."
+                            table.add_row(str(i), proj.get("name", "Unnamed"), str(proj.get("id", ""))[:8], desc)
+
+                        self.console.print("\n[bold cyan]Your Projects:[/bold cyan]\n")
+                        self.console.print(table)
+                        self.console.print()
+
+                        # Prompt user to select
+                        choice = Prompt.ask(
+                            "Select project by number or enter project ID",
+                            default="1"
+                        )
+
+                        try:
+                            choice_num = int(choice)
+                            if 1 <= choice_num <= len(projects):
+                                project_id = str(projects[choice_num - 1].get("id"))
+                            else:
+                                self.console.print("[red]Invalid selection[/red]")
+                                return
+                        except ValueError:
+                            # Assume it's a project ID
+                            project_id = choice
+
+                        # Load and select the project
+                        proj_result = self.api.get_project(project_id)
+                        if proj_result.get("success"):
+                            self.current_project = proj_result.get("project")
+                            self.current_session = None
+                            self.console.print(f"\n[green]✓ Selected project: {self.current_project['name']}[/green]\n")
+                        else:
+                            self.console.print(f"[red]✗ Project not found[/red]")
+                    else:
+                        self.console.print("[yellow]No projects found. Create one first with /project create[/yellow]")
+                except Exception as e:
+                    self.console.print(f"[red]Error: {e}[/red]")
+            else:
+                # Direct selection by project ID
+                project_id = args[1]
+                try:
+                    result = self.api.get_project(project_id)
+                    if result.get("success"):
+                        self.current_project = result.get("project")
+                        self.current_session = None  # Clear session when switching projects
+                        self.console.print(f"[green]✓ Selected project: {self.current_project['name']}[/green]")
+                    else:
+                        self.console.print(f"[red]✗ Project not found[/red]")
+                except Exception as e:
+                    self.console.print(f"[red]Error: {e}[/red]")
 
         elif subcommand == "info":
             if not self.ensure_project_selected():
@@ -1109,7 +1165,7 @@ No session required.
             return
 
         if not args:
-            self.console.print("[yellow]Usage: /session <start|end>[/yellow]")
+            self.console.print("[yellow]Usage: /session <start|select|end|note|bookmark|branch>[/yellow]")
             return
 
         subcommand = args[0]
@@ -1125,7 +1181,22 @@ No session required.
                     result = self.api.start_session(self.current_project["id"])
 
                 if result.get("success"):
-                    self.current_session = result.get("session")
+                    # Handle both response formats: session object or session_id
+                    session_data = result.get("session")
+                    if not session_data:
+                        # Fallback: construct session object from response fields
+                        session_data = {
+                            "id": result.get("session_id"),
+                            "project_id": result.get("project_id"),
+                            "status": result.get("status"),
+                            "mode": "socratic"
+                        }
+
+                    if not session_data or not session_data.get("id"):
+                        self.console.print("[red]✗ Error: Invalid session data received[/red]")
+                        return
+
+                    self.current_session = session_data
                     session_id = self.current_session["id"]
                     self.console.print(f"[green]✓ Session started: {session_id}[/green]")
                     self.console.print("\n[cyan]Ready to begin Socratic questioning![/cyan]")
@@ -1135,9 +1206,99 @@ No session required.
                     # Get first question
                     self.get_next_question()
                 else:
-                    self.console.print(f"[red]✗ Failed: {result.get('message')}[/red]")
+                    self.console.print(f"[red]✗ Failed: {result.get('message', 'Unknown error')}[/red]")
             except Exception as e:
                 self.console.print(f"[red]Error: {e}[/red]")
+                if self.debug:
+                    import traceback
+                    self.console.print(traceback.format_exc())
+
+        elif subcommand == "select":
+            # If no session ID provided, show interactive list
+            if len(args) < 2:
+                if not self.ensure_project_selected():
+                    return
+
+                try:
+                    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                                  console=self.console, transient=True) as progress:
+                        progress.add_task("Loading sessions...", total=None)
+                        result = self.api.list_sessions(self.current_project["id"])
+
+                    sessions = result.get("sessions", [])
+                    if sessions:
+                        # Display sessions in a table
+                        table = Table(show_header=True, header_style="bold cyan")
+                        table.add_column("#", style="dim")
+                        table.add_column("Status", style="green")
+                        table.add_column("Mode", style="cyan")
+                        table.add_column("Questions", justify="right")
+                        table.add_column("Created", style="dim")
+
+                        for i, sess in enumerate(sessions, 1):
+                            status_color = "green" if sess.get("status") == "active" else "yellow"
+                            mode = sess.get("mode", "socratic").replace("_", " ").title()
+                            table.add_row(
+                                str(i),
+                                f"[{status_color}]{sess.get('status', 'unknown')}[/{status_color}]",
+                                mode,
+                                str(sess.get("question_count", 0)),
+                                sess.get("created_at", "")[:10]
+                            )
+
+                        self.console.print("\n[bold cyan]Sessions for project '{}':[/bold cyan]\n".format(
+                            self.current_project.get("name", "Unnamed")))
+                        self.console.print(table)
+                        self.console.print()
+
+                        # Prompt user to select
+                        choice = Prompt.ask(
+                            "Select session by number or enter session ID",
+                            default="1"
+                        )
+
+                        try:
+                            choice_num = int(choice)
+                            if 1 <= choice_num <= len(sessions):
+                                session_id = str(sessions[choice_num - 1].get("id"))
+                            else:
+                                self.console.print("[red]Invalid selection[/red]")
+                                return
+                        except ValueError:
+                            # Assume it's a session ID
+                            session_id = choice
+
+                        # Load and select the session
+                        sess_result = self.api.get_session(session_id)
+                        if sess_result.get("success"):
+                            self.current_session = sess_result.get("session")
+                            self.current_question = None
+                            mode = self.current_session.get("mode", "socratic").replace("_chat", "")
+                            self.chat_mode = mode
+                            self.console.print(f"\n[green]✓ Selected session[/green]")
+                            self.console.print(f"[dim]Status: {self.current_session.get('status')} | Mode: {mode}[/dim]\n")
+                        else:
+                            self.console.print(f"[red]✗ Session not found[/red]")
+                    else:
+                        self.console.print("[yellow]No sessions found. Start one with /session start[/yellow]")
+                except Exception as e:
+                    self.console.print(f"[red]Error: {e}[/red]")
+            else:
+                # Direct selection by session ID
+                session_id = args[1]
+                try:
+                    result = self.api.get_session(session_id)
+                    if result.get("success"):
+                        self.current_session = result.get("session")
+                        self.current_question = None
+                        mode = self.current_session.get("mode", "socratic").replace("_chat", "")
+                        self.chat_mode = mode
+                        self.console.print(f"[green]✓ Selected session[/green]")
+                        self.console.print(f"[dim]Status: {self.current_session.get('status')} | Mode: {mode}[/dim]")
+                    else:
+                        self.console.print(f"[red]✗ Session not found[/red]")
+                except Exception as e:
+                    self.console.print(f"[red]Error: {e}[/red]")
 
         elif subcommand == "end":
             if not self.ensure_session_active():
@@ -1254,9 +1415,27 @@ No session required.
                 result = self.api.get_next_question(self.current_session["id"])
 
             if result.get("success"):
-                self.current_question = result
-                question_text = result.get("question")
-                question_id = result.get("question_id")
+                # Handle both response formats
+                question_data = result.get("question")
+                if isinstance(question_data, dict):
+                    # If question is an object, extract fields
+                    question_text = question_data.get("text") or question_data.get("question")
+                    question_id = question_data.get("id") or question_data.get("question_id")
+                else:
+                    # If question is a string, assume it's the text
+                    question_text = result.get("text") or result.get("question") or question_data
+                    question_id = result.get("id") or result.get("question_id")
+
+                if not question_text:
+                    self.console.print("[red]Error: No question text received[/red]")
+                    return
+
+                # Store the full question object for later submission
+                self.current_question = {
+                    "question_id": question_id,
+                    "text": question_text,
+                    **result  # Include all other fields
+                }
 
                 self.console.print(f"[bold cyan]Socrates:[/bold cyan]")
                 self.console.print(Panel(question_text, border_style="cyan", padding=(1, 2)))
@@ -1271,6 +1450,9 @@ No session required.
                     self.console.print(f"[red]Failed to get question: {result.get('message')}[/red]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
+            if self.debug:
+                import traceback
+                self.console.print(traceback.format_exc())
 
     def handle_chat_message(self, message: str):
         """Handle chat message (answer to Socratic question or direct chat)"""
