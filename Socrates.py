@@ -270,7 +270,24 @@ class SocratesAPI:
         response = self._request("POST", f"/api/v1/sessions/{session_id}/chat", json={
             "message": message
         })
-        return response.json()
+
+        # Check for HTTP errors before parsing JSON
+        if response.status_code >= 400:
+            error_msg = response.text if response.text else f"HTTP {response.status_code}"
+            return {
+                "success": False,
+                "error": f"Server error: {error_msg}",
+                "status_code": response.status_code
+            }
+
+        try:
+            return response.json()
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to parse response: {str(e)}",
+                "response_text": response.text[:100] if response.text else "Empty response"
+            }
 
     def get_session_mode(self, session_id: str) -> Dict[str, Any]:
         """Get current session mode"""
@@ -1551,12 +1568,10 @@ No session required.
                 )
 
             if result.get("success"):
-                specs_extracted = result.get("specs_extracted", [])
+                specs_extracted = result.get("specs_extracted", 0)
 
-                if specs_extracted:
-                    self.console.print(f"[green]✓ Extracted {len(specs_extracted)} specification(s):[/green]")
-                    for spec in specs_extracted:
-                        self.console.print(f"  • [cyan]{spec}[/cyan]")
+                if specs_extracted > 0:
+                    self.console.print(f"[green]✓ Extracted {specs_extracted} specification(s)[/green]")
                     self.console.print()
 
                 # Get next question
@@ -1601,12 +1616,10 @@ No session required.
                 self.console.print(Panel(response_text, border_style="cyan", padding=(1, 2)))
                 self.console.print()
 
-                # Show any extracted specs
-                specs_extracted = result.get("specs_extracted", [])
-                if specs_extracted:
-                    self.console.print(f"[green]✓ Extracted {len(specs_extracted)} specification(s):[/green]")
-                    for spec in specs_extracted:
-                        self.console.print(f"  • [cyan]{spec}[/cyan]")
+                # Show any extracted specs (backend returns count as integer)
+                specs_extracted = result.get("specs_extracted", 0)
+                if specs_extracted > 0:
+                    self.console.print(f"[green]✓ Extracted {specs_extracted} specification(s)[/green]")
                     self.console.print()
             else:
                 self.console.print(f"[red]Failed: {result.get('error', 'Unknown error')}[/red]")
