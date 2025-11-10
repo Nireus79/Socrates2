@@ -94,7 +94,7 @@ class SocratesAPI:
         self.console = console
         self.access_token: Optional[str] = None
         self.refresh_token: Optional[str] = None
-        self.config: Optional[Config] = None
+        self.config: Optional["SocratesConfig"] = None
 
     def set_token(self, token: str):
         """Set authentication token"""
@@ -104,7 +104,7 @@ class SocratesAPI:
         """Set refresh token"""
         self.refresh_token = token
 
-    def set_config(self, config: Config):
+    def set_config(self, config: "SocratesConfig"):
         """Set config object for saving tokens"""
         self.config = config
 
