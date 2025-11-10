@@ -489,6 +489,7 @@ class SocratesCLI:
         self.completer = WordCompleter(self.commands, ignore_case=True)
 
         # Prompt session with history
+        self.use_simple_input = False
         try:
             self.prompt_session = PromptSession(
                 history=FileHistory(str(self.config.history_file)),
@@ -496,14 +497,13 @@ class SocratesCLI:
                 completer=self.completer
             )
         except Exception as e:
-            # Handle terminal compatibility issues (e.g., non-Windows console)
+            # Handle terminal compatibility issues by falling back to basic input()
             if "NoConsoleScreenBufferError" in str(type(e).__name__) or "xterm" in str(e):
-                self.console.print("[yellow]⚠ Terminal compatibility issue detected[/yellow]")
-                self.console.print("[dim]Using simple prompt mode (no auto-completion)[/dim]\n")
-                # Create a simple PromptSession without fancy features
-                self.prompt_session = PromptSession(
-                    history=FileHistory(str(self.config.history_file))
-                )
+                # Print without special characters to avoid encoding issues
+                print("[WARN] Terminal compatibility issue detected")
+                print("[INFO] Using basic input mode (no auto-completion)\n")
+                self.use_simple_input = True
+                self.prompt_session = None
             else:
                 raise
 
@@ -799,16 +799,31 @@ No session required.
 
         if password:
             # Use PromptSession for password input with explicit asterisk masking
-            try:
-                pwd_session = PromptSession()
-                user_input = pwd_session.prompt(
-                    f"{prompt_text}: ",
-                    is_password=True
-                )
-            except EOFError:
-                return None
+            if self.use_simple_input:
+                # Simple mode: use getpass for password input
+                from getpass import getpass
+                try:
+                    user_input = getpass(f"{prompt_text}: ")
+                except EOFError:
+                    return None
+            else:
+                try:
+                    pwd_session = PromptSession()
+                    user_input = pwd_session.prompt(
+                        f"{prompt_text}: ",
+                        is_password=True
+                    )
+                except EOFError:
+                    return None
         else:
-            user_input = Prompt.ask(prompt_text, default=default or "").strip()
+            if self.use_simple_input:
+                # Simple mode: use basic input()
+                default_text = f" ({default})" if default else ""
+                user_input = input(f"{prompt_text}{default_text}: ").strip()
+                if not user_input and default:
+                    user_input = default
+            else:
+                user_input = Prompt.ask(prompt_text, default=default or "").strip()
 
         if user_input and user_input.lower() == "back":
             return None
@@ -821,12 +836,32 @@ No session required.
         Returns True/False for yes/no, None for back.
         """
         try:
-            user_input = Prompt.ask(question + " (y/n/back)", choices=["y", "n", "back"]).lower()
+            if self.use_simple_input:
+                user_input = input(f"{question} (y/n/back): ").strip().lower()
+            else:
+                user_input = Prompt.ask(question + " (y/n/back)", choices=["y", "n", "back"]).lower()
             if user_input == "back":
                 return None
             return user_input == "y"
         except:
             return False
+
+    def get_prompt_input(self, prompt_text: str) -> str:
+        """
+        Get user input, handling both PromptSession and basic input() modes.
+        Falls back to basic input() if PromptSession is unavailable.
+        """
+        if self.use_simple_input:
+            return input(prompt_text).strip()
+        else:
+            try:
+                return self.prompt_session.prompt(
+                    prompt_text,
+                    completer=self.completer
+                ).strip()
+            except AttributeError:
+                # Fallback in case prompt_session is None
+                return input(prompt_text).strip()
 
     def cmd_register(self):
         """Handle /register command"""
@@ -2758,10 +2793,7 @@ No session required.
                     prompt_text = " ".join(prompt_parts) if prompt_parts else f"[dim]socrates {mode_emoji}[/dim]"
 
                     # Get user input
-                    user_input = self.prompt_session.prompt(
-                        f"{prompt_text} > ",
-                        completer=self.completer
-                    ).strip()
+                    user_input = self.get_prompt_input(f"{prompt_text} > ")
 
                     if not user_input:
                         continue
