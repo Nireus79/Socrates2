@@ -1132,7 +1132,7 @@ No session required.
                     # Check for authentication errors
                     if response.status_code == 401:
                         self.console.print("[red]✗ Your session has expired. Please log in again.[/red]")
-                        self._handle_command("login")
+                        self.handle_command("/login")
                         return
 
                     result = response.json()
