@@ -11,7 +11,13 @@
       "Bash(timeout 5 sleep:*)",
       "Bash(python test_e2e_flow.py:*)",
       "Bash(timeout:*)",
-      "Bash(python test_e2e_simple.py:*)"
+      "Bash(python test_e2e_simple.py:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "Bash(find:*)",
+      "Bash($env:DATABASE_URL_AUTH=\"postgresql://postgres@localhost:5432/socrates_auth\")"
     ],
     "deny": [],
     "ask": []

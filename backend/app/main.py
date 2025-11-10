@@ -29,53 +29,9 @@ def _register_default_agents():
     Register all agents with the orchestrator.
     This is the default startup behavior.
     """
-    from .agents.orchestrator import get_orchestrator
-    from .agents.project import ProjectManagerAgent
-    from .agents.socratic import SocraticCounselorAgent
-    from .agents.context import ContextAnalyzerAgent
-    from .agents.conflict_detector import ConflictDetectorAgent
-    from .agents.code_generator import CodeGeneratorAgent
-    from .agents.quality_controller import QualityControllerAgent
-    from .agents.user_learning import UserLearningAgent
-    from .agents.direct_chat import DirectChatAgent
-    from .agents.team_collaboration import TeamCollaborationAgent
-    from .agents.export import ExportAgent
-    from .agents.multi_llm import MultiLLMManager
-    from .agents.github_integration import GitHubIntegrationAgent
-    from .core.dependencies import get_service_container
-
-    orchestrator = get_orchestrator()
-    services = get_service_container()
-
-    # Register all agents
-    pm_agent = ProjectManagerAgent("project", "Project Manager", services)
-    socratic_agent = SocraticCounselorAgent("socratic", "Socratic Counselor", services)
-    context_agent = ContextAnalyzerAgent("context", "Context Analyzer", services)
-    conflict_agent = ConflictDetectorAgent("conflict", "Conflict Detector", services)
-    code_gen_agent = CodeGeneratorAgent("code_generator", "Code Generator", services)
-    quality_agent = QualityControllerAgent("quality", "Quality Controller", services)
-    learning_agent = UserLearningAgent("learning", "User Learning", services)
-    direct_chat_agent = DirectChatAgent("direct_chat", "Direct Chat", services)
-    team_agent = TeamCollaborationAgent("team", "Team Collaboration", services)
-    export_agent = ExportAgent("export", "Export Agent", services)
-    llm_agent = MultiLLMManager("llm", "Multi-LLM Manager", services)
-    github_agent = GitHubIntegrationAgent("github", "GitHub Integration", services)
-
-    orchestrator.register_agent(pm_agent)
-    orchestrator.register_agent(socratic_agent)
-    orchestrator.register_agent(context_agent)
-    orchestrator.register_agent(conflict_agent)
-    orchestrator.register_agent(code_gen_agent)
-    orchestrator.register_agent(quality_agent)  # Register quality agent before learning
-    orchestrator.register_agent(learning_agent)
-    orchestrator.register_agent(direct_chat_agent)
-    orchestrator.register_agent(team_agent)
-    orchestrator.register_agent(export_agent)
-    orchestrator.register_agent(llm_agent)
-    orchestrator.register_agent(github_agent)
-
-    logger.info("AgentOrchestrator initialized")
-    logger.info(f"Registered agents: {list(orchestrator.agents.keys())}")
+    from .agents.orchestrator import initialize_default_agents
+    initialize_default_agents()
+    logger.info("AgentOrchestrator initialized with default agents")
 
 
 def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:

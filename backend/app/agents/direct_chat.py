@@ -140,10 +140,12 @@ You help users refine their specifications through conversation. When you identi
 Be conversational, helpful, and guide the user toward complete specifications."""
 
             # Get conversational response using NLU chat method
+            # Extract the message list from context dict
+            conversation_messages = context.get('recent_messages', []) if isinstance(context, dict) else context
             chat_response = nlu_service.chat(
                 message,
                 system_prompt=system_prompt,
-                conversation_context=context
+                conversation_context=conversation_messages if conversation_messages else None
             )
 
         # Save conversation history (both user message and assistant response)

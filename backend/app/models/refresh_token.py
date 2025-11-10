@@ -54,4 +54,12 @@ class RefreshToken(BaseModel):
     def is_valid(self) -> bool:
         """Check if refresh token is still valid"""
         from datetime import datetime, timezone
-        return datetime.now(timezone.utc) < self.expires_at
+        # Ensure both datetimes have the same timezone awareness
+        now = datetime.now(timezone.utc)
+        expires = self.expires_at
+
+        # If expires_at is naive, make it aware using UTC
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+
+        return now < expires

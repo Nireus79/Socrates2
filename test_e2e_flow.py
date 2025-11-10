@@ -1,173 +1,142 @@
 #!/usr/bin/env python3
 """
-End-to-end test of the Socrates CLI functionality.
-Tests: project creation, session start, mode switching, question retrieval
+End-to-end test for debugging login and refresh token issues.
+Tests: registration, login, token refresh, project operations
 """
 
 import sys
 import json
 import requests
+import time
 from pathlib import Path
 
 # Add the project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from Socrates import SocratesAPI
 from rich.console import Console
 
 console = Console()
 
+BASE_URL = "http://localhost:8000"
+API_V1 = f"{BASE_URL}/api/v1"
+
+def log_test(name, status, details=""):
+    """Pretty print test results"""
+    symbol = "[PASS]" if status else "[FAIL]"
+    print(f"{symbol} {name}" + (f" - {details}" if details else ""))
+
 def test_flow():
     """Run the complete end-to-end flow"""
-    api = SocratesAPI("http://localhost:8000", console)
+    print("\n=== SOCRATES E2E TEST ===\n")
 
-    console.print("\n[bold cyan]=== E2E Test Flow ===[/bold cyan]\n")
-
-    # 1. Login
-    console.print("[yellow]1. Testing login...[/yellow]")
+    # Test 1: Check backend health
+    print("1. Checking backend health...")
     try:
-        login_result = api.login("Themis", "test1234")
-        if login_result.get("success"):
-            token = login_result.get("access_token")
-            api.set_token(token)
-            console.print("[green]✓ Login successful[/green]")
-        else:
-            console.print(f"[red]✗ Login failed: {login_result}[/red]")
-            return
+        r = requests.get(f"{API_V1}/admin/health", timeout=2)
+        status = r.status_code == 200
+        log_test("HEALTH", status, f"Status {r.status_code}")
     except Exception as e:
-        console.print(f"[red]✗ Login error: {e}[/red]")
+        print(f"[FAIL] Backend not running: {e}")
         return
 
-    # 2. Get projects
-    console.print("\n[yellow]2. Getting projects...[/yellow]")
-    try:
-        projects = api.list_projects()
-        if projects.get("success"):
-            proj_list = projects.get("projects", [])
-            console.print(f"[green]✓ Found {len(proj_list)} projects[/green]")
+    # Create test user
+    username = f"testuser_{int(time.time())}"
+    password = "Test@Password123"
+    email = f"test_{int(time.time())}@example.com"
 
-            if proj_list:
-                project_id = proj_list[0]["id"]
-                project_name = proj_list[0].get("name", "Unknown")
-                console.print(f"  Using project: {project_name} ({project_id})")
-            else:
-                console.print("[red]✗ No projects found[/red]")
-                return
-        else:
-            console.print(f"[red]✗ Failed to get projects: {projects}[/red]")
-            return
-    except Exception as e:
-        console.print(f"[red]✗ Error getting projects: {e}[/red]")
-        return
+    # Test 2: Register user
+    print("\n2. Registering test user...")
+    r = requests.post(f"{API_V1}/auth/register", json={
+        "username": username,
+        "password": password,
+        "email": email,
+        "name": "Test",
+        "surname": "User"
+    })
+    register_ok = r.status_code in [201, 409]  # 409 = already exists
+    log_test("REGISTER", register_ok, f"Status {r.status_code}")
 
-    # 3. Start a new session
-    console.print("\n[yellow]3. Starting new session...[/yellow]")
-    try:
-        session_result = api.start_session(project_id)
-        if session_result.get("success"):
-            session_id = session_result.get("session_id")
-            session_data = session_result.get("session", {})
-            console.print(f"[green]✓ Session started: {session_id}[/green]")
-            console.print(f"  Mode: {session_data.get('mode', 'unknown')}")
-            console.print(f"  Status: {session_data.get('status', 'unknown')}")
-        else:
-            console.print(f"[red]✗ Failed to start session: {session_result}[/red]")
-            return
-    except Exception as e:
-        console.print(f"[red]✗ Error starting session: {e}[/red]")
-        return
+    # Test 3: Login
+    print("\n3. Testing login...")
+    r = requests.post(f"{API_V1}/auth/login", data={
+        "username": username,
+        "password": password
+    })
+    login_ok = r.status_code == 200
+    tokens = r.json() if login_ok else {}
+    access_token = tokens.get("access_token")
+    refresh_token = tokens.get("refresh_token")
+    log_test("LOGIN", login_ok, f"Status {r.status_code}")
+    if not login_ok:
+        print(f"Response: {r.text}")
 
-    # 4. List sessions for the project
-    console.print("\n[yellow]4. Listing sessions for project...[/yellow]")
-    try:
-        sessions = api.list_sessions(project_id)
-        if sessions.get("success"):
-            sess_list = sessions.get("sessions", [])
-            console.print(f"[green]✓ Found {len(sess_list)} sessions[/green]")
-            for i, s in enumerate(sess_list, 1):
-                console.print(f"  {i}. {s.get('id', 'unknown')} - {s.get('status', 'unknown')} ({s.get('mode', 'unknown')})")
-        else:
-            console.print(f"[red]✗ Failed to list sessions: {sessions}[/red]")
-    except Exception as e:
-        console.print(f"[red]✗ Error listing sessions: {e}[/red]")
+    # Test 4: Get current user
+    print("\n4. Getting current user info...")
+    if access_token:
+        r = requests.get(f"{API_V1}/auth/me", headers={
+            "Authorization": f"Bearer {access_token}"
+        })
+        user_ok = r.status_code == 200
+        log_test("GET_USER", user_ok, f"Status {r.status_code}")
+    else:
+        log_test("GET_USER", False, "No access token")
 
-    # 5. Get next question
-    console.print("\n[yellow]5. Getting next question...[/yellow]")
-    try:
-        question_result = api.get_next_question(session_id)
-        if question_result.get("success"):
-            question = question_result.get("question")
-            if isinstance(question, dict):
-                q_text = question.get("text") or question.get("question", "No text")
-            else:
-                q_text = question or "No question"
-            console.print(f"[green]✓ Question received[/green]")
-            console.print(f"  {q_text}")
-        else:
-            console.print(f"[red]✗ Failed to get question: {question_result}[/red]")
-    except Exception as e:
-        console.print(f"[red]✗ Error getting question: {e}[/red]")
+    # Test 5: Refresh token
+    print("\n5. Testing token refresh...")
+    if refresh_token:
+        r = requests.post(f"{API_V1}/auth/refresh", json={
+            "refresh_token": refresh_token
+        })
+        refresh_ok = r.status_code == 200
+        new_tokens = r.json() if refresh_ok else {}
+        log_test("REFRESH", refresh_ok, f"Status {r.status_code}")
 
-    # 6. Get session mode
-    console.print("\n[yellow]6. Getting session mode...[/yellow]")
-    try:
-        mode_result = api.get_session_mode(session_id)
-        if mode_result.get("success"):
-            mode = mode_result.get("mode", "unknown")
-            console.print(f"[green]✓ Current mode: {mode}[/green]")
-        else:
-            console.print(f"[red]✗ Failed to get mode: {mode_result}[/red]")
-    except Exception as e:
-        console.print(f"[red]✗ Error getting mode: {e}[/red]")
+        # Update token for next requests
+        if refresh_ok:
+            access_token = new_tokens.get("access_token")
+            if access_token:
+                print("  New token received")
+    else:
+        log_test("REFRESH", False, "No refresh token")
 
-    # 7. Toggle mode
-    console.print("\n[yellow]7. Toggling to direct_chat mode...[/yellow]")
-    try:
-        toggle_result = api.set_session_mode(session_id, "direct_chat")
-        if toggle_result.get("success"):
-            new_mode = toggle_result.get("mode", "unknown")
-            console.print(f"[green]✓ Mode changed to: {new_mode}[/green]")
-        else:
-            console.print(f"[red]✗ Failed to toggle mode: {toggle_result}[/red]")
-    except Exception as e:
-        console.print(f"[red]✗ Error toggling mode: {e}[/red]")
+    # Test 6: Create project
+    print("\n6. Creating test project...")
+    if access_token:
+        r = requests.post(f"{API_V1}/projects", json={
+            "name": f"Test Project {int(time.time())}",
+            "description": "E2E test project",
+            "phase": "planning"
+        }, headers={"Authorization": f"Bearer {access_token}"})
+        project_ok = r.status_code == 201
+        project_id = r.json().get("id") if project_ok else None
+        log_test("CREATE_PROJECT", project_ok, f"Status {r.status_code}")
+    else:
+        log_test("CREATE_PROJECT", False, "No access token")
 
-    # 8. Send chat message
-    console.print("\n[yellow]8. Sending chat message...[/yellow]")
-    try:
-        chat_result = api.send_chat_message(session_id, "Hello, I'm testing the chat mode")
-        if chat_result.get("success"):
-            console.print("[green]✓ Message sent successfully[/green]")
-            if "response" in chat_result:
-                console.print(f"  Response: {chat_result['response'][:100]}...")
-        else:
-            console.print(f"[red]✗ Failed to send message: {chat_result}[/red]")
-    except Exception as e:
-        console.print(f"[red]✗ Error sending message: {e}[/red]")
+    # Test 7: List projects
+    print("\n7. Listing projects...")
+    if access_token:
+        r = requests.get(f"{API_V1}/projects", headers={
+            "Authorization": f"Bearer {access_token}"
+        })
+        list_ok = r.status_code == 200
+        projects = r.json() if list_ok else []
+        log_test("LIST_PROJECTS", list_ok, f"Status {r.status_code}, Found {len(projects)} project(s)")
+    else:
+        log_test("LIST_PROJECTS", False, "No access token")
 
-    # 9. Pause session
-    console.print("\n[yellow]9. Pausing session...[/yellow]")
-    try:
-        pause_result = api.pause_session(session_id)
-        if pause_result.get("success"):
-            console.print(f"[green]✓ Session paused[/green]")
-        else:
-            console.print(f"[red]✗ Failed to pause session: {pause_result}[/red]")
-    except Exception as e:
-        console.print(f"[red]✗ Error pausing session: {e}[/red]")
+    # Test 8: Logout
+    print("\n8. Testing logout...")
+    if access_token:
+        r = requests.post(f"{API_V1}/auth/logout", headers={
+            "Authorization": f"Bearer {access_token}"
+        })
+        logout_ok = r.status_code == 200
+        log_test("LOGOUT", logout_ok, f"Status {r.status_code}")
+    else:
+        log_test("LOGOUT", False, "No access token")
 
-    # 10. Resume session
-    console.print("\n[yellow]10. Resuming session...[/yellow]")
-    try:
-        resume_result = api.resume_session(session_id)
-        if resume_result.get("success"):
-            console.print(f"[green]✓ Session resumed[/green]")
-        else:
-            console.print(f"[red]✗ Failed to resume session: {resume_result}[/red]")
-    except Exception as e:
-        console.print(f"[red]✗ Error resuming session: {e}[/red]")
-
-    console.print("\n[bold green]=== E2E Test Complete ===[/bold green]\n")
+    print("\n=== E2E Test Complete ===\n")
 
 if __name__ == "__main__":
     test_flow()

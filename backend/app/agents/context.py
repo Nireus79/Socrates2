@@ -137,6 +137,23 @@ class ContextAnalyzerAgent(BaseAgent):
                 response_text = response.content[0].text
                 self.logger.debug(f"Claude API response received: {len(response_text)} chars")
 
+                # Handle markdown-wrapped JSON (Claude sometimes wraps JSON in ```json...``` blocks)
+                if response_text.startswith("```"):
+                    # Extract JSON from markdown code block
+                    lines = response_text.split("\n")
+                    json_lines = []
+                    in_json_block = False
+                    for line in lines:
+                        if line.startswith("```json"):
+                            in_json_block = True
+                            continue
+                        elif line.startswith("```"):
+                            in_json_block = False
+                            continue
+                        if in_json_block:
+                            json_lines.append(line)
+                    response_text = "\n".join(json_lines)
+
                 # Parse JSON response
                 extracted_specs = json.loads(response_text)
 

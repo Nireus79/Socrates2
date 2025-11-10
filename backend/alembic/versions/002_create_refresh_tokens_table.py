@@ -32,8 +32,8 @@ def upgrade():
         sa.Column('user_id', UUID(as_uuid=True), nullable=False),
         sa.Column('token', sa.String(500), nullable=False, unique=True),
         sa.Column('expires_at', sa.DateTime(), nullable=False),
-        sa.Column('is_revoked', sa.Boolean(), nullable=False, server_default=sa.text('false')),
-        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()'))
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('NOW()')),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('NOW()'))
     )
 
     # Foreign key to users in socrates_auth database

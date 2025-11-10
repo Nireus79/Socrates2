@@ -259,7 +259,11 @@ When appropriate, suggest using specific operations."""
 
         try:
             # Use provided history or fall back to internal history
-            messages = conversation_context or self.conversation_history[-10:]
+            if conversation_context:
+                messages = conversation_context
+            else:
+                # Convert deque to list and get last 10 messages
+                messages = list(self.conversation_history)[-10:]
             messages = list(messages)  # Make a copy
             messages.append({"role": "user", "content": user_input})
 
