@@ -1525,13 +1525,9 @@ No session required.
                 self.console.print(Panel(question_text, border_style="cyan", padding=(1, 2)))
                 self.console.print()
             else:
-                # Check if session is complete
-                if "complete" in result.get("message", "").lower():
-                    self.console.print("[green]✓ Specification gathering complete![/green]")
-                    self.console.print("[cyan]Use /session end to finish the session.[/cyan]")
-                    self.current_question = None
-                else:
-                    self.console.print(f"[red]Failed to get question: {result.get('message')}[/red]")
+                # Error getting question (result.get('success') is False)
+                error_msg = result.get("error", "Unknown error")
+                self.console.print(f"[red]Failed to get question: {error_msg}[/red]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
             if self.debug:
