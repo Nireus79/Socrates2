@@ -111,11 +111,10 @@ class SocratesAPI:
             response = requests.request(method, url, **kwargs)
             return response
         except requests.exceptions.ConnectionError:
-            self.console.print("[red]Error: Cannot connect to Socrates backend[/red]")
-            self.console.print(f"[yellow]Make sure the server is running at {self.base_url}[/yellow]")
+            # Re-raise connection errors for the caller to handle gracefully
             raise
         except Exception as e:
-            self.console.print(f"[red]Request error: {e}[/red]")
+            # Re-raise other exceptions for the caller to handle
             raise
 
     def register(self, username: str, name: str, surname: str, email: str, password: str) -> Dict[str, Any]:
@@ -651,20 +650,29 @@ No session required.
                 self.console.print("[yellow]Registration cancelled[/yellow]")
                 return
 
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
-                          console=self.console, transient=True) as progress:
-                progress.add_task("Creating account...", total=None)
-                result = self.api.register(data['username'], data['name'], data['surname'], data['email'], data['password'])
+            try:
+                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                              console=self.console, transient=True) as progress:
+                    progress.add_task("Creating account...", total=None)
+                    result = self.api.register(data['username'], data['name'], data['surname'], data['email'], data['password'])
 
-            # Backend returns user_id on success (no "success" field)
-            if result.get("user_id"):
-                self.console.print(f"\n[green]✓ Account created successfully![/green]")
-                self.console.print(f"[dim]User ID: {result.get('user_id')}[/dim]")
-                self.console.print(f"[dim]Username: {data['username']}[/dim]")
-                self.console.print(f"[dim]Email: {data['email']}[/dim]")
-                self.console.print("\n[yellow]Please login with /login[/yellow]")
-            else:
-                self.console.print(f"\n[red]✗ Registration failed: {result.get('message', 'Unknown error')}[/red]")
+                # Backend returns user_id on success (no "success" field)
+                if result.get("user_id"):
+                    self.console.print(f"\n[green]✓ Account created successfully![/green]")
+                    self.console.print(f"[dim]User ID: {result.get('user_id')}[/dim]")
+                    self.console.print(f"[dim]Username: {data['username']}[/dim]")
+                    self.console.print(f"[dim]Email: {data['email']}[/dim]")
+                    self.console.print("\n[yellow]Please login with /login[/yellow]")
+                else:
+                    self.console.print(f"\n[red]✗ Registration failed: {result.get('message', 'Unknown error')}[/red]")
+            except requests.exceptions.ConnectionError:
+                self.console.print(f"\n[red]✗ Cannot connect to Socrates backend[/red]")
+                self.console.print(f"[yellow]The server is not running at http://localhost:8000[/yellow]")
+                self.console.print(f"[yellow]Please start the backend server first:[/yellow]")
+                self.console.print(f"[dim]  cd backend[/dim]")
+                self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
+            except Exception as e:
+                self.console.print(f"[red]Error: {e}[/red]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
 
@@ -716,6 +724,12 @@ No session required.
                     self.console.print(f"\n[green]✓ Logged in successfully as {user_display}[/green]")
                 else:
                     self.console.print(f"\n[red]✗ Login failed: {result.get('message', 'Invalid credentials')}[/red]")
+            except requests.exceptions.ConnectionError:
+                self.console.print(f"\n[red]✗ Cannot connect to Socrates backend[/red]")
+                self.console.print(f"[yellow]The server is not running at http://localhost:8000[/yellow]")
+                self.console.print(f"[yellow]Please start the backend server first:[/yellow]")
+                self.console.print(f"[dim]  cd backend[/dim]")
+                self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
             except Exception as e:
                 self.console.print(f"[red]Error: {e}[/red]")
 
