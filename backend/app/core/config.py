@@ -30,8 +30,9 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "production"  # development | staging | production
     LOG_LEVEL: str = "INFO"  # DEBUG | INFO | WARNING | ERROR
 
-    # ===== CORS =====
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
+    # ===== ACTION LOGGING =====
+    ACTION_LOGGING_ENABLED: bool = True  # Enable/disable action logging for workflow monitoring
+    ACTION_LOG_LEVEL: str = "INFO"  # INFO | DEBUG | WARNING
 
     class Config:
         env_file = ".env"

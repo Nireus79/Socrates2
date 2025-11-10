@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="cli">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/api/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/core/action_logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/action_logger.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/config.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

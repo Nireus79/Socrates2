@@ -7,6 +7,7 @@ Provides:
 - Agent information
 """
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import Dict, Any
@@ -15,8 +16,14 @@ from ..core.database import get_db_auth, get_db_specs
 from ..core.security import get_current_admin_user
 from ..models.user import User
 from ..agents.orchestrator import get_orchestrator
+from ..core.action_logger import toggle_action_logging, is_action_logging_enabled
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
+
+
+class ActionLoggingToggleRequest(BaseModel):
+    """Request to toggle action logging."""
+    enabled: bool
 
 
 @router.get("/health")
@@ -178,4 +185,77 @@ def get_agents(
     return {
         "total_agents": len(all_agents),
         "agents": all_agents
+    }
+
+
+@router.post("/logging/action")
+def toggle_action_logging_endpoint(
+    request: ActionLoggingToggleRequest,
+    current_user: User = Depends(get_current_admin_user)
+) -> Dict[str, Any]:
+    """
+    Toggle action logging on/off at runtime.
+
+    This allows administrators to enable/disable comprehensive action logging
+    without restarting the server. Useful for reducing log volume in production
+    while keeping it available when debugging issues.
+
+    Args:
+        request: Toggle request with enabled flag
+        current_user: Must be admin user
+
+    Returns:
+        New logging state
+
+    Example:
+        POST /api/v1/admin/logging/action
+        Authorization: Bearer <admin_token>
+        {
+            "enabled": true
+        }
+
+        Response:
+        {
+            "success": true,
+            "enabled": true,
+            "message": "Action logging enabled"
+        }
+    """
+    new_state = toggle_action_logging(request.enabled)
+
+    return {
+        "success": True,
+        "enabled": new_state,
+        "message": f"Action logging {'enabled' if new_state else 'disabled'}"
+    }
+
+
+@router.get("/logging/action")
+def get_action_logging_status(
+    current_user: User = Depends(get_current_admin_user)
+) -> Dict[str, Any]:
+    """
+    Get current action logging status.
+
+    Args:
+        current_user: Must be admin user
+
+    Returns:
+        Current logging state
+
+    Example:
+        GET /api/v1/admin/logging/action
+        Authorization: Bearer <admin_token>
+
+        Response:
+        {
+            "enabled": true,
+            "message": "Action logging is currently enabled"
+        }
+    """
+    enabled = is_action_logging_enabled()
+
+    return {
+        "enabled": enabled,
+        "message": f"Action logging is currently {'enabled' if enabled else 'disabled'}"
     }

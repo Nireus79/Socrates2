@@ -12,6 +12,7 @@ import logging
 
 from .core.config import settings
 from .core.database import close_db_connections
+from .core.action_logger import initialize_action_logger
 from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
 from .api import export_endpoints, llm_endpoints, github_endpoints
 from .api import search, insights, templates
@@ -58,6 +59,13 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
         logger.info("Starting Socrates2 API...")
         logger.info(f"Environment: {settings.ENVIRONMENT}")
         logger.info(f"Debug mode: {settings.DEBUG}")
+
+        # Initialize action logging with configuration
+        initialize_action_logger(
+            enabled=settings.ACTION_LOGGING_ENABLED,
+            log_level=settings.ACTION_LOG_LEVEL
+        )
+        logger.info(f"Action logging: {'ENABLED' if settings.ACTION_LOGGING_ENABLED else 'DISABLED'}")
 
         # Initialize orchestrator and register agents
         if register_agents_fn:
