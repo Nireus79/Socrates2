@@ -1676,7 +1676,7 @@ No session required.
                 self.console.print()
             else:
                 # Error getting question (result.get('success') is False)
-                error_msg = result.get("error", "Unknown error")
+                error_msg = result.get("error") or result.get("detail", "Unknown error")
                 self.console.print(f"[red]Failed to get question: {error_msg}[/red]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
