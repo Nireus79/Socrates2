@@ -1054,7 +1054,18 @@ No session required.
                     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
                                   console=self.console, transient=True) as progress:
                         progress.add_task("Loading projects...", total=None)
-                        result = self.api.list_projects(skip=0, limit=100)
+                        response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
+
+                    # Check for authentication errors
+                    if response.status_code == 401:
+                        self.console.print("[red]✗ Your session has expired. Please log in again.[/red]")
+                        self._handle_command("login")
+                        return
+
+                    result = response.json()
+
+                    # DEBUG: Print API response
+                    self.console.print(f"[dim]DEBUG: API response = {result}[/dim]")
 
                     if result.get("success") and result.get("projects"):
                         projects = result.get("projects", [])

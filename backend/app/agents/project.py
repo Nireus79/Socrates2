@@ -342,6 +342,8 @@ class ProjectManagerAgent(BaseAgent):
         skip = data.get('skip', 0)
         limit = data.get('limit', 100)
 
+        self.logger.info(f"[_list_projects] Received request for user_id={user_id}, skip={skip}, limit={limit}")
+
         if not user_id:
             self.logger.warning("Validation error: missing user_id")
             return {
@@ -353,6 +355,11 @@ class ProjectManagerAgent(BaseAgent):
         db = None
         try:
             db = self.services.get_database_specs()
+
+            # Debug: Check if any projects exist for this user
+            all_user_projects = db.query(Project).filter(Project.user_id == user_id).all()
+            self.logger.info(f"[_list_projects] Found {len(all_user_projects)} total projects for user {user_id} (all statuses)")
+
             query = db.query(Project).filter(
                 and_(
                     Project.user_id == user_id,
@@ -366,11 +373,14 @@ class ProjectManagerAgent(BaseAgent):
             # Apply pagination
             projects = query.offset(skip).limit(limit).all()
 
-            self.logger.debug(f"Listed {len(projects)} projects for user {user_id}")
+            self.logger.info(f"[_list_projects] After filtering: {total} non-archived projects for user {user_id}, returning {len(projects)} with pagination")
+
+            project_dicts = [p.to_dict() for p in projects]
+            self.logger.debug(f"[_list_projects] Project dicts: {project_dicts}")
 
             return {
                 'success': True,
-                'projects': [p.to_dict() for p in projects],  # TODO Parameter 'self' unfilled
+                'projects': project_dicts,
                 'count': total
             }
 

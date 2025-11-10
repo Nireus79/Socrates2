@@ -7,7 +7,11 @@
       "Bash(alembic current:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(python -m uvicorn:*)"
+      "Bash(python -m uvicorn:*)",
+      "Bash(timeout 5 sleep:*)",
+      "Bash(python test_e2e_flow.py:*)",
+      "Bash(timeout:*)",
+      "Bash(python test_e2e_simple.py:*)"
     ],
     "deny": [],
     "ask": []
