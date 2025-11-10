@@ -289,7 +289,7 @@ Be conversational, helpful, and guide the user toward complete specifications.""
         """Load recent conversation history for context"""
         specs_session = self.services.get_database_specs()
 
-        # Get last 5 conversation turns
+        # Get last 10 conversation turns
         messages = specs_session.query(ConversationHistory).filter_by(
             session_id=session_id
         ).order_by(ConversationHistory.timestamp.desc()).limit(10).all()
@@ -297,11 +297,13 @@ Be conversational, helpful, and guide the user toward complete specifications.""
         # Reverse to chronological order
         messages = list(reversed(messages))
 
+        # Import conversion function to strip DB-specific fields (like timestamp)
+        from ..core.models import conversation_db_to_api_message
+
+        # CONVERT: Strip timestamp and any other DB-specific fields
+        # This ensures clean messages for API calls (NLU service)
         recent_messages = [
-            {
-                'role': msg.role,
-                'content': msg.content
-            }
+            conversation_db_to_api_message(msg)
             for msg in messages
         ]
 

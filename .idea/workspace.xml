@@ -7,6 +7,11 @@
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="cli">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ACTION_LOGGING_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/ACTION_LOGGING_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BUG_ANALYSIS_AND_FIXES.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/BUG_ANALYSIS_AND_FIXES.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/agents/direct_chat.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/agents/direct_chat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/models/specification.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/specification.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,8 +71,8 @@
       <recent name="C:\Users\themi\PycharmProjects\Socrates2" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\themi\PycharmProjects\Socrates2\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\archive" />
+      <recent name="C:\Users\themi\PycharmProjects\Socrates2\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\foundation_docs" />

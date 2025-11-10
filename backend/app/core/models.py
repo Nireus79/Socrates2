@@ -164,25 +164,34 @@ def spec_db_to_data(db_spec) -> SpecificationData:
     Returns:
         SpecificationData instance with same information
 
-    NOTE: Database stores specification in 'content' field, but socrates-ai library
-    expects 'key' and 'value' fields. This function maps:
-    - content[:50] → key (first 50 chars as identifier)
-    - content → value (full content as value)
+    MIGRATION COMPATIBILITY (as of Nov 10, 2025):
+    After the key/value migration, this function intelligently uses either:
+    - New columns (key, value) if they're populated - preferred, clean data
+    - Legacy content column if key/value are missing - for pre-migration specs
 
-    TODO: Consider database migration to add separate key/value columns for proper
-    structured specification storage.
+    After full migration, consider using socrates library's spec_db_to_data directly:
+        from socrates import spec_db_to_data  # More direct, no conversion needed
+
+    This function will be deprecated once migration is complete.
     """
-    # Extract key from first 50 chars of content, or use category if content is empty
-    content = db_spec.content or ""
-    key = content[:50] if content else db_spec.category
+    # Use new key/value columns if available, otherwise fall back to content
+    if hasattr(db_spec, 'key') and db_spec.key and hasattr(db_spec, 'value') and db_spec.value:
+        # Post-migration: Direct use of key/value columns
+        key = db_spec.key
+        value = db_spec.value
+    else:
+        # Pre-migration or fallback: Extract from content
+        content = db_spec.content or ""
+        key = content[:50] if content else db_spec.category
+        value = content
 
     return SpecificationData(
         id=str(db_spec.id),
         project_id=str(db_spec.project_id),
         category=db_spec.category,
         key=key,
-        value=content,
-        confidence=float(db_spec.confidence),
+        value=value,
+        confidence=float(db_spec.confidence) if db_spec.confidence else 0.5,
         source=db_spec.source,
         is_current=db_spec.is_current,
         created_at=db_spec.created_at.isoformat() if db_spec.created_at else None
@@ -268,3 +277,33 @@ def conflicts_db_to_data(db_conflicts: list) -> List[ConflictData]:
         List of ConflictData instances
     """
     return [conflict_db_to_data(c) for c in db_conflicts]
+
+
+# ============================================================================
+# API MESSAGE CONVERSION
+# ============================================================================
+
+def conversation_db_to_api_message(db_msg) -> Dict[str, str]:
+    """
+    Convert ConversationHistory DB object to API-safe message dict.
+
+    Why: ConversationHistory stores 'timestamp' and other DB-specific fields
+    for database ordering/audit, but Anthropic API only accepts 'role' and 'content'.
+
+    This conversion ensures:
+    - Timestamp stays in DB (used for conversation replay ordering)
+    - Timestamp never leaks to external APIs
+    - Applied only where needed (Direct Chat mode NLU context)
+
+    Similar to spec_db_to_data() pattern - separating DB concerns from API concerns.
+
+    Args:
+        db_msg: SQLAlchemy ConversationHistory model instance
+
+    Returns:
+        Dict with only 'role' and 'content' keys for API
+    """
+    return {
+        "role": db_msg.role,
+        "content": db_msg.content
+    }

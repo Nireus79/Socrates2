@@ -13,12 +13,19 @@ class Specification(BaseModel):
     Specification model - stores extracted specifications from conversations.
     Stored in socrates_specs database.
 
+    Structured as key-value pairs (compatible with socrates-ai library format):
+    - key: Identifier for the specification (e.g., "api_framework")
+    - value: The actual specification value (e.g., "FastAPI")
+    - content: Optional detailed notes or context (for complex specifications)
+
     Fields:
     - id: UUID (inherited from BaseModel)
     - project_id: Foreign key to projects table
     - session_id: Foreign key to sessions table (can be NULL)
     - category: Specification category (goals, requirements, tech_stack, etc.)
-    - content: The actual specification content
+    - key: Specification identifier (e.g., "api_framework") - REQUIRED
+    - value: Specification value (e.g., "FastAPI") - REQUIRED
+    - content: Full specification content or detailed notes (for complex specs)
     - source: Source of spec (user_input, extracted, inferred)
     - confidence: Confidence score (0.00-1.00)
     - is_current: Whether this is the current version (superseded specs have false)
@@ -27,6 +34,16 @@ class Specification(BaseModel):
     - superseded_by: ID of the specification that superseded this one
     - created_at: Timestamp (inherited from BaseModel)
     - updated_at: Timestamp (inherited from BaseModel)
+
+    Example:
+        Specification(
+            category='tech_stack',
+            key='api_framework',
+            value='FastAPI',
+            content='FastAPI web framework for async APIs',
+            confidence=0.95,
+            source='user_input'
+        )
     """
     __tablename__ = "specifications"
     __table_args__ = (
@@ -56,10 +73,22 @@ class Specification(BaseModel):
         comment="Specification category: goals, requirements, tech_stack, scalability, security, performance, testing, monitoring, data_retention, disaster_recovery"
     )
 
-    content = Column(
+    key = Column(
+        String(255),
+        nullable=False,
+        comment="Specification identifier/name (e.g., 'api_framework', 'database', 'authentication'). Part of key-value pair structure."
+    )
+
+    value = Column(
         Text,
         nullable=False,
-        comment="The actual specification content"
+        comment="Specification value (e.g., 'FastAPI', 'PostgreSQL', 'JWT'). Part of key-value pair structure."
+    )
+
+    content = Column(
+        Text,
+        nullable=True,
+        comment="Full specification content or detailed notes (optional, for complex specifications). Kept for backward compatibility."
     )
 
     source = Column(

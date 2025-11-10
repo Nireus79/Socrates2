@@ -21,7 +21,18 @@
       "Bash(printf:*)",
       "Bash(dir /B %UserProfile%.socrateslogs)",
       "Bash(git log:*)",
-      "Bash(/bashes)"
+      "Bash(/bashes)",
+      "Bash(tree:*)",
+      "Bash(python3:*)",
+      "Bash(psql:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(export DATABASE_URL=\"postgresql://postgres:password@localhost:5432/socrates_specs\")",
+      "Bash(export PATH=\"/c/Program Files/PostgreSQL/17/bin:$PATH\")",
+      "Bash(alembic history:*)",
+      "Bash(alembic upgrade:*)",
+      "Bash(export DATABASE_URL_SPECS:*)",
+      "Bash(PYTHONUTF8=1 python:*)"
     ],
     "deny": [],
     "ask": []
