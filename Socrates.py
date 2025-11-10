@@ -672,12 +672,17 @@ class SocratesCLI:
     def shutdown(self):
         """Gracefully shutdown the application"""
         if self.auto_start_server and self.server_process is not None:
-            self.console.print("[dim]Stopping backend server...[/dim]")
+            try:
+                self.console.print("[dim]Stopping backend server...[/dim]")
+            except Exception:
+                print("Stopping backend server...")
             self._stop_server()
 
     def print_banner(self):
         """Print welcome banner"""
-        banner = """
+        try:
+            # Try to print fancy banner with Rich
+            banner = """
 [bold cyan]╔═════════════════════════════════════════════════════════╗[/bold cyan]
 [bold cyan]║[/bold cyan]       [bold white]                 SOCRATES           [/bold white]              [bold cyan]║[/bold cyan]
 [bold cyan]║[/bold cyan][italic]     Ουδέν οίδα, ούτε διδάσκω τι, αλλά διαπορώ μόνον[/italic]  [bold cyan]   ║[/bold cyan]
@@ -685,7 +690,14 @@ class SocratesCLI:
 
 [dim]Type /help for available commands or just start chatting![/dim]
 """
-        self.console.print(banner)
+            self.console.print(banner)
+        except Exception:
+            # Fallback to plain text if encoding issues
+            print("=" * 55)
+            print("           SOCRATES")
+            print("     Ουδέν οίδα, ούτε διδάσκω τι, αλλά διαπορώ μόνον")
+            print("=" * 55)
+            print("\nType /help for available commands or just start chatting!\n")
 
     def print_help(self):
         """Print help message"""
