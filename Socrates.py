@@ -489,11 +489,23 @@ class SocratesCLI:
         self.completer = WordCompleter(self.commands, ignore_case=True)
 
         # Prompt session with history
-        self.prompt_session = PromptSession(
-            history=FileHistory(str(self.config.history_file)),
-            auto_suggest=AutoSuggestFromHistory(),
-            completer=self.completer
-        )
+        try:
+            self.prompt_session = PromptSession(
+                history=FileHistory(str(self.config.history_file)),
+                auto_suggest=AutoSuggestFromHistory(),
+                completer=self.completer
+            )
+        except Exception as e:
+            # Handle terminal compatibility issues (e.g., non-Windows console)
+            if "NoConsoleScreenBufferError" in str(type(e).__name__) or "xterm" in str(e):
+                self.console.print("[yellow]⚠ Terminal compatibility issue detected[/yellow]")
+                self.console.print("[dim]Using simple prompt mode (no auto-completion)[/dim]\n")
+                # Create a simple PromptSession without fancy features
+                self.prompt_session = PromptSession(
+                    history=FileHistory(str(self.config.history_file))
+                )
+            else:
+                raise
 
         # Register signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -532,9 +544,14 @@ class SocratesCLI:
             return
 
         try:
-            # Start uvicorn server in background
-            # Use pythonw on Windows to avoid console window, or python for visibility
+            # Create a temporary file for server logs (for debugging)
+            import tempfile
             import platform
+
+            server_log_file = tempfile.NamedTemporaryFile(mode='w+', suffix='.log', delete=False)
+            server_log_path = server_log_file.name
+            server_log_file.close()
+
             if platform.system() == "Windows":
                 # Hide the server process window on Windows
                 creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
@@ -544,28 +561,42 @@ class SocratesCLI:
                 # Use preexec_fn for graceful shutdown on Unix
                 preexec_fn = os.setsid
 
-            self.server_process = subprocess.Popen(
-                [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
-                cwd=str(backend_dir),
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                creationflags=creationflags if platform.system() == "Windows" else 0,
-                preexec_fn=preexec_fn if platform.system() != "Windows" else None
-            )
+            with open(server_log_path, 'w') as log_file:
+                self.server_process = subprocess.Popen(
+                    [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+                    cwd=str(backend_dir),
+                    stdout=log_file,
+                    stderr=subprocess.STDOUT,
+                    creationflags=creationflags if platform.system() == "Windows" else 0,
+                    preexec_fn=preexec_fn if platform.system() != "Windows" else None
+                )
 
             # Wait for server to be ready
-            if self._wait_for_server():
+            if self._wait_for_server(log_path=server_log_path):
                 self.console.print(f"[green]✓ Backend server started on {self.server_url}[/green]\n")
             else:
                 self.console.print(f"[red]✗ Server failed to start[/red]")
+                # Try to read the error from the log file
+                try:
+                    with open(server_log_path, 'r') as log_file:
+                        log_content = log_file.read()
+                        if log_content.strip():
+                            self.console.print("[red]Server startup error:[/red]")
+                            for line in log_content.split('\n')[-20:]:  # Show last 20 lines
+                                if line.strip():
+                                    self.console.print(f"  {line}")
+                except Exception:
+                    pass
                 self.console.print("[yellow]Continuing without server...[/yellow]\n")
         except Exception as e:
             self.console.print(f"[red]Failed to start server: {e}[/red]")
             self.console.print("[yellow]Continuing without auto-started server...[/yellow]\n")
 
-    def _wait_for_server(self, timeout: int = 10) -> bool:
+    def _wait_for_server(self, timeout: int = 10, log_path: Optional[str] = None) -> bool:
         """Wait for server to be ready"""
         start_time = time.time()
+        last_check_time = 0
+
         while time.time() - start_time < timeout:
             try:
                 response = requests.get(f"{self.server_url}/api/v1/admin/health", timeout=1)
@@ -573,7 +604,32 @@ class SocratesCLI:
                     return True
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
                 pass
+            except Exception as e:
+                # Log unexpected errors
+                if time.time() - last_check_time > 2:  # Don't log too frequently
+                    if self.debug:
+                        self.console.print(f"[dim]Health check error: {type(e).__name__}[/dim]")
+                    last_check_time = time.time()
+
             time.sleep(0.5)
+
+        # Check if process is still running
+        if self.server_process:
+            if self.server_process.poll() is not None:
+                # Process crashed
+                self.console.print("[red]Server process crashed[/red]")
+                if log_path:
+                    try:
+                        with open(log_path, 'r') as f:
+                            content = f.read()
+                            if content.strip():
+                                self.console.print("[dim]Last log output:[/dim]")
+                                for line in content.split('\n')[-10:]:
+                                    if line.strip():
+                                        self.console.print(f"  [dim]{line}[/dim]")
+                    except Exception:
+                        pass
+
         return False
 
     def _stop_server(self):
