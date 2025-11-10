@@ -9,8 +9,20 @@ Usage:
 
 from __future__ import annotations
 
-import os
+# Fix encoding for Windows console compatibility
 import sys
+import io
+import os
+
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+elif hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
 import json
 import argparse
 import subprocess
@@ -214,7 +226,7 @@ class SocratesAPI:
         response = self._request("GET", f"/api/v1/projects/{project_id}")
         return response.json()
 
-    def update_project(self, project_id: str, name: str = None, description: str = None) -> Dict[str, Any]:
+    def update_project(self, project_id: str, name: Optional[str] = None, description: Optional[str] = None) -> Dict[str, Any]:
         """Update project"""
         data = {}
         if name:
@@ -361,7 +373,7 @@ class SocratesAPI:
         except Exception as e:
             return {"success": False, "error": str(e), "error_code": "BOOKMARK_FAILED"}
 
-    def branch_session(self, session_id: str, branch_name: str = None) -> Dict[str, Any]:
+    def branch_session(self, session_id: str, branch_name: Optional[str] = None) -> Dict[str, Any]:
         """Create alternative branch from session"""
         try:
             data = {}
@@ -459,7 +471,7 @@ class SocratesCLI:
     """Main CLI application"""
 
     def __init__(self, api_url: str, debug: bool = False, auto_start_server: bool = True):
-        self.console = Console()
+        self.console = Console(legacy_windows=None, force_terminal=None, color_system='auto')
         self.api = SocratesAPI(api_url, self.console)
         self.config = SocratesConfig()
         # Let API know about config so it can save tokens
@@ -799,7 +811,7 @@ No session required.
             return False
         return True
 
-    def prompt_with_back(self, prompt_text: str, password: bool = False, default: str = None) -> Optional[str]:
+    def prompt_with_back(self, prompt_text: str, password: bool = False, default: Optional[str] = None) -> Optional[str]:
         """
         Prompt user for input with back navigation support.
         Returns None if user enters 'back' (to go back to previous step).
@@ -855,7 +867,7 @@ No session required.
             if user_input == "back":
                 return None
             return user_input == "y"
-        except:
+        except Exception:
             return False
 
     def get_prompt_input(self, prompt_text: str) -> str:
