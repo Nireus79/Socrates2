@@ -378,7 +378,7 @@ class SocratesCLI:
 
         # Command completer
         self.commands = [
-            "/help", "/exit", "/quit",
+            "/help", "/exit", "/quit", "/back",
             "/register", "/login", "/logout", "/whoami",
             "/projects", "/project", "/sessions", "/session",
             "/history", "/clear", "/debug", "/mode", "/chat",
@@ -459,6 +459,7 @@ class SocratesCLI:
 
 [bold yellow]System:[/bold yellow]
   /help                  Show this help message
+  /back                  Go back (clear project/session selection)
   /clear                 Clear screen
   /debug                 Toggle debug mode
   /exit, /quit           Exit Socrates CLI
@@ -749,6 +750,28 @@ No session required.
 
         if self.current_session:
             self.console.print(f"[cyan]Active session:[/cyan] [bold]{self.current_session['id']}[/bold]")
+
+    def cmd_back(self):
+        """Handle /back command - go back by clearing selections"""
+        had_selection = False
+
+        if self.current_session:
+            self.current_session = None
+            self.current_question = None
+            self.console.print("[yellow]✓ Session cleared[/yellow]")
+            had_selection = True
+
+        if self.current_project:
+            self.current_project = None
+            self.console.print("[yellow]✓ Project cleared[/yellow]")
+            had_selection = True
+
+        if not had_selection:
+            self.console.print("[dim]No project or session selected to clear[/dim]")
+            self.console.print("[cyan]Available commands:[/cyan]")
+            self.console.print("  /project create  - Create a new project")
+            self.console.print("  /projects        - List your projects")
+            self.console.print("  /help            - Show all available commands")
 
     def cmd_projects(self):
         """Handle /projects command"""
@@ -2062,6 +2085,9 @@ No session required.
         elif command == "/clear":
             self.console.clear()
             self.print_banner()
+
+        elif command == "/back":
+            self.cmd_back()
 
         elif command == "/debug":
             self.debug = not self.debug
