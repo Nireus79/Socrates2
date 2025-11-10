@@ -13,6 +13,9 @@ import os
 import sys
 import json
 import argparse
+import subprocess
+import signal
+import time
 from typing import Optional, Dict, Any, List, TYPE_CHECKING
 from datetime import datetime
 from pathlib import Path
@@ -177,7 +180,9 @@ class SocratesAPI:
 
     def start_session(self, project_id: str) -> Dict[str, Any]:
         """Start new session for project"""
-        response = self._request("POST", f"/api/v1/projects/{project_id}/sessions")
+        response = self._request("POST", "/api/v1/sessions", json={
+            "project_id": project_id
+        })
         return response.json()
 
     def list_sessions(self, project_id: str) -> Dict[str, Any]:
@@ -209,12 +214,33 @@ class SocratesAPI:
         response = self._request("GET", f"/api/v1/sessions/{session_id}/history")
         return response.json()
 
-    def direct_chat(self, project_id: str, message: str) -> Dict[str, Any]:
-        """Send direct chat message (non-Socratic)"""
-        response = self._request("POST", f"/api/v1/chat/direct", json={
-            "project_id": project_id,
+    def send_chat_message(self, session_id: str, message: str) -> Dict[str, Any]:
+        """Send chat message to a session (in direct chat mode)"""
+        response = self._request("POST", f"/api/v1/sessions/{session_id}/chat", json={
             "message": message
         })
+        return response.json()
+
+    def get_session_mode(self, session_id: str) -> Dict[str, Any]:
+        """Get current session mode"""
+        response = self._request("GET", f"/api/v1/sessions/{session_id}/mode")
+        return response.json()
+
+    def set_session_mode(self, session_id: str, mode: str) -> Dict[str, Any]:
+        """Set session mode (socratic or direct_chat)"""
+        response = self._request("POST", f"/api/v1/sessions/{session_id}/mode", json={
+            "mode": mode
+        })
+        return response.json()
+
+    def pause_session(self, session_id: str) -> Dict[str, Any]:
+        """Pause a session"""
+        response = self._request("POST", f"/api/v1/sessions/{session_id}/pause")
+        return response.json()
+
+    def resume_session(self, session_id: str) -> Dict[str, Any]:
+        """Resume a paused session"""
+        response = self._request("POST", f"/api/v1/sessions/{session_id}/resume")
         return response.json()
 
     # Priority 2: Export endpoints
@@ -364,7 +390,7 @@ class SocratesAPI:
 class SocratesCLI:
     """Main CLI application"""
 
-    def __init__(self, api_url: str, debug: bool = False):
+    def __init__(self, api_url: str, debug: bool = False, auto_start_server: bool = True):
         self.console = Console()
         self.api = SocratesAPI(api_url, self.console)
         self.config = SocratesConfig()
@@ -374,6 +400,11 @@ class SocratesCLI:
         self.current_session: Optional[Dict[str, Any]] = None
         self.current_question: Optional[Dict[str, Any]] = None
         self.chat_mode: str = "socratic"  # "socratic" or "direct"
+
+        # Server management
+        self.server_process: Optional[subprocess.Popen] = None
+        self.auto_start_server = auto_start_server
+        self.server_url = api_url
 
         # Command completer
         self.commands = [
@@ -393,6 +424,130 @@ class SocratesCLI:
             auto_suggest=AutoSuggestFromHistory(),
             completer=self.completer
         )
+
+        # Register signal handlers for graceful shutdown
+        signal.signal(signal.SIGINT, self._signal_handler)
+        if hasattr(signal, 'SIGTERM'):
+            signal.signal(signal.SIGTERM, self._signal_handler)
+
+    def _signal_handler(self, signum, frame):
+        """Handle shutdown signals (Ctrl+C, SIGTERM)"""
+        self.console.print("\n[yellow]Shutting down gracefully...[/yellow]")
+        self.running = False
+        self.shutdown()
+        sys.exit(0)
+
+    def _start_server(self):
+        """Start the backend server"""
+        if not self.auto_start_server:
+            return
+
+        # Check if server is already running
+        try:
+            response = requests.get(f"{self.server_url}/api/v1/health", timeout=1)
+            if response.status_code == 200:
+                self.console.print(f"[dim]✓ Backend server already running at {self.server_url}[/dim]")
+                return
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            pass
+
+        # Start the server
+        self.console.print("[yellow]Starting backend server...[/yellow]")
+
+        # Find the backend directory
+        backend_dir = Path(__file__).parent / "backend"
+        if not backend_dir.exists():
+            self.console.print(f"[red]Error: Backend directory not found at {backend_dir}[/red]")
+            self.console.print("[yellow]Continuing without auto-started server...[/yellow]")
+            return
+
+        try:
+            # Start uvicorn server in background
+            # Use pythonw on Windows to avoid console window, or python for visibility
+            import platform
+            if platform.system() == "Windows":
+                # Hide the server process window on Windows
+                creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+                preexec_fn = None
+            else:
+                creationflags = 0
+                # Use preexec_fn for graceful shutdown on Unix
+                preexec_fn = os.setsid
+
+            self.server_process = subprocess.Popen(
+                [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+                cwd=str(backend_dir),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=creationflags if platform.system() == "Windows" else 0,
+                preexec_fn=preexec_fn if platform.system() != "Windows" else None
+            )
+
+            # Wait for server to be ready
+            if self._wait_for_server():
+                self.console.print(f"[green]✓ Backend server started on {self.server_url}[/green]\n")
+            else:
+                self.console.print(f"[red]✗ Server failed to start[/red]")
+                self.console.print("[yellow]Continuing without server...[/yellow]\n")
+        except Exception as e:
+            self.console.print(f"[red]Failed to start server: {e}[/red]")
+            self.console.print("[yellow]Continuing without auto-started server...[/yellow]\n")
+
+    def _wait_for_server(self, timeout: int = 10) -> bool:
+        """Wait for server to be ready"""
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                response = requests.get(f"{self.server_url}/api/v1/health", timeout=1)
+                if response.status_code == 200:
+                    return True
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+                pass
+            time.sleep(0.5)
+        return False
+
+    def _stop_server(self):
+        """Stop the backend server"""
+        if self.server_process is None:
+            return
+
+        if self.server_process.poll() is None:  # Process is still running
+            try:
+                import platform
+                if platform.system() == "Windows":
+                    # On Windows, use taskkill to terminate the process group
+                    try:
+                        subprocess.run(
+                            ["taskkill", "/PID", str(self.server_process.pid), "/T", "/F"],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            timeout=5
+                        )
+                    except Exception:
+                        # Fallback: just terminate the process
+                        self.server_process.terminate()
+                        try:
+                            self.server_process.wait(timeout=3)
+                        except subprocess.TimeoutExpired:
+                            self.server_process.kill()
+                else:
+                    # On Unix, terminate the process group
+                    try:
+                        os.killpg(os.getpgid(self.server_process.pid), signal.SIGTERM)
+                        self.server_process.wait(timeout=5)
+                    except (ProcessLookupError, subprocess.TimeoutExpired):
+                        # Force kill if graceful shutdown fails
+                        self.server_process.kill()
+                        self.server_process.wait(timeout=2)
+            except Exception as e:
+                if self.debug:
+                    self.console.print(f"[dim]Note: {e}[/dim]")
+
+    def shutdown(self):
+        """Gracefully shutdown the application"""
+        if self.auto_start_server and self.server_process is not None:
+            self.console.print("[dim]Stopping backend server...[/dim]")
+            self._stop_server()
 
     def print_banner(self):
         """Print welcome banner"""
@@ -1164,16 +1319,32 @@ No session required.
 
     def handle_direct_message(self, message: str):
         """Handle direct chat message (non-Socratic)"""
-        if not self.ensure_project_selected():
-            self.console.print("[yellow]Select a project first with /project select or /project create[/yellow]")
+        if not self.ensure_session_active():
+            self.console.print("[yellow]Start a session with /session start to use direct chat[/yellow]")
             return
 
         try:
+            # First, ensure session is in direct_chat mode
+            if self.chat_mode != "direct_chat":
+                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                              console=self.console, transient=True) as progress:
+                    progress.add_task("Switching to direct chat mode...", total=None)
+                    mode_result = self.api.set_session_mode(
+                        self.current_session["id"],
+                        "direct_chat"
+                    )
+
+                if not mode_result.get("success"):
+                    self.console.print(f"[red]Failed to switch modes: {mode_result.get('error', 'Unknown error')}[/red]")
+                    return
+
+                self.chat_mode = "direct_chat"
+
             # Send direct chat message
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Thinking...", total=None)
-                result = self.api.direct_chat(self.current_project["id"], message)
+                result = self.api.send_chat_message(self.current_session["id"], message)
 
             if result.get("success"):
                 response_text = result.get("response", "")
@@ -1189,7 +1360,7 @@ No session required.
                         self.console.print(f"  • [cyan]{spec}[/cyan]")
                     self.console.print()
             else:
-                self.console.print(f"[red]Failed: {result.get('message', 'Unknown error')}[/red]")
+                self.console.print(f"[red]Failed: {result.get('error', 'Unknown error')}[/red]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
 
@@ -2107,6 +2278,7 @@ No session required.
                     self.cmd_session(["end"])
             self.running = False
             self.console.print("\n[cyan]..τω Ασκληπιώ οφείλομεν αλετρυόνα, απόδοτε και μη αμελήσετε..[/cyan]\n")
+            # Shutdown is called in run()'s finally block, but set running=False to exit the loop
 
         elif command == "/clear":
             self.console.clear()
@@ -2147,24 +2319,50 @@ No session required.
             self.cmd_history()
 
         elif command == "/mode":
-            if args:
-                mode = args[0].lower()
-                if mode in ["socratic", "direct"]:
+            if not self.ensure_session_active():
+                self.console.print("[yellow]Start a session first with /session start[/yellow]")
+                return
+
+            try:
+                # Map CLI mode names to backend mode names
+                cli_mode_map = {"socratic": "socratic", "direct": "direct_chat"}
+                backend_mode_map = {"socratic": "socratic", "direct_chat": "direct"}
+
+                if args:
+                    mode = args[0].lower()
+                    if mode not in cli_mode_map:
+                        self.console.print("[red]Invalid mode. Use: socratic or direct[/red]")
+                        return
+
+                    backend_mode = cli_mode_map[mode]
+                else:
+                    # Toggle mode
+                    new_backend_mode = "direct_chat" if self.chat_mode == "socratic" else "socratic"
+                    mode = backend_mode_map[new_backend_mode]
+                    backend_mode = new_backend_mode
+
+                # Switch mode on backend
+                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                              console=self.console, transient=True) as progress:
+                    progress.add_task("Switching mode...", total=None)
+                    result = self.api.set_session_mode(
+                        self.current_session["id"],
+                        backend_mode
+                    )
+
+                if result.get("success"):
                     self.chat_mode = mode
                     mode_emoji = "🤔" if mode == "socratic" else "💬"
                     self.console.print(f"[green]✓ Switched to {mode} mode {mode_emoji}[/green]")
-                else:
-                    self.console.print("[red]Invalid mode. Use: socratic or direct[/red]")
-            else:
-                # Toggle mode
-                self.chat_mode = "direct" if self.chat_mode == "socratic" else "socratic"
-                mode_emoji = "🤔" if self.chat_mode == "socratic" else "💬"
-                self.console.print(f"[green]✓ Switched to {self.chat_mode} mode {mode_emoji}[/green]")
 
-                if self.chat_mode == "socratic":
-                    self.console.print("[dim]Socratic mode: Thoughtful questioning to extract specifications[/dim]")
+                    if mode == "socratic":
+                        self.console.print("[dim]Socratic mode: Thoughtful questioning to extract specifications[/dim]")
+                    else:
+                        self.console.print("[dim]Direct mode: Direct conversation with AI assistant[/dim]")
                 else:
-                    self.console.print("[dim]Direct mode: Direct conversation with AI assistant[/dim]")
+                    self.console.print(f"[red]Failed to switch modes: {result.get('error', 'Unknown error')}[/red]")
+            except Exception as e:
+                self.console.print(f"[red]Error: {e}[/red]")
 
         elif command == "/config":
             self.cmd_config(args)
@@ -2211,6 +2409,9 @@ No session required.
 
     def run(self):
         """Main CLI loop"""
+        # Start backend server
+        self._start_server()
+
         self.print_banner()
 
         # Check if user is logged in
@@ -2222,48 +2423,52 @@ No session required.
             self.console.print("[yellow]Please /login or /register to get started[/yellow]\n")
 
         # Main loop
-        while self.running:
-            try:
-                # Build prompt
-                prompt_parts = []
-                if self.current_project:
-                    prompt_parts.append(f"[cyan]{self.current_project['name'][:20]}[/cyan]")
-                if self.current_session:
-                    prompt_parts.append(f"[green]session[/green]")
+        try:
+            while self.running:
+                try:
+                    # Build prompt
+                    prompt_parts = []
+                    if self.current_project:
+                        prompt_parts.append(f"[cyan]{self.current_project['name'][:20]}[/cyan]")
+                    if self.current_session:
+                        prompt_parts.append(f"[green]session[/green]")
 
-                # Add mode indicator
-                mode_emoji = "🤔" if self.chat_mode == "socratic" else "💬"
-                prompt_parts.append(f"[dim]{mode_emoji}[/dim]")
+                    # Add mode indicator
+                    mode_emoji = "🤔" if self.chat_mode == "socratic" else "💬"
+                    prompt_parts.append(f"[dim]{mode_emoji}[/dim]")
 
-                prompt_text = " ".join(prompt_parts) if prompt_parts else f"[dim]socrates {mode_emoji}[/dim]"
+                    prompt_text = " ".join(prompt_parts) if prompt_parts else f"[dim]socrates {mode_emoji}[/dim]"
 
-                # Get user input
-                user_input = self.prompt_session.prompt(
-                    f"{prompt_text} > ",
-                    completer=self.completer
-                ).strip()
+                    # Get user input
+                    user_input = self.prompt_session.prompt(
+                        f"{prompt_text} > ",
+                        completer=self.completer
+                    ).strip()
 
-                if not user_input:
+                    if not user_input:
+                        continue
+
+                    # Handle command or chat message
+                    if user_input.startswith('/'):
+                        self.handle_command(user_input)
+                    else:
+                        self.handle_chat_message(user_input)
+
+                except KeyboardInterrupt:
+                    self.console.print("\n[yellow]Use /exit to quit[/yellow]")
                     continue
 
-                # Handle command or chat message
-                if user_input.startswith('/'):
-                    self.handle_command(user_input)
-                else:
-                    self.handle_chat_message(user_input)
+                except EOFError:
+                    break
 
-            except KeyboardInterrupt:
-                self.console.print("\n[yellow]Use /exit to quit[/yellow]")
-                continue
-
-            except EOFError:
-                break
-
-            except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
-                if self.debug:
-                    import traceback
-                    self.console.print(traceback.format_exc())
+                except Exception as e:
+                    self.console.print(f"[red]Error: {e}[/red]")
+                    if self.debug:
+                        import traceback
+                        self.console.print(traceback.format_exc())
+        finally:
+            # Ensure server shuts down even if there's an unhandled exception
+            self.shutdown()
 
 
 def main():
@@ -2286,18 +2491,33 @@ def main():
         action="store_true",
         help="Enable debug mode"
     )
+    parser.add_argument(
+        "--no-auto-start",
+        action="store_true",
+        help="Don't automatically start the backend server"
+    )
 
     args = parser.parse_args()
 
-    cli = SocratesCLI(api_url=args.api_url, debug=args.debug)
+    cli = SocratesCLI(
+        api_url=args.api_url,
+        debug=args.debug,
+        auto_start_server=not args.no_auto_start
+    )
 
     try:
         cli.run()
+    except KeyboardInterrupt:
+        # Handle Ctrl+C gracefully
+        print("\n")
+        cli.shutdown()
+        sys.exit(0)
     except Exception as e:
         print(f"Fatal error: {e}")
         if args.debug:
             import traceback
             traceback.print_exc()
+        cli.shutdown()
         sys.exit(1)
 
 

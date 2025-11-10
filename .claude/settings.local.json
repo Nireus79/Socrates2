@@ -5,7 +5,9 @@
       "Bash(ls:*)",
       "Bash(set DATABASE_URL=postgresql://postgres@localhost:5432/socrates_auth:*)",
       "Bash(alembic current:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python -m uvicorn:*)"
     ],
     "deny": [],
     "ask": []

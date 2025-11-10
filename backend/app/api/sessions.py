@@ -38,6 +38,11 @@ class ChatMessageRequest(BaseModel):
     message: str
 
 
+class SetModeRequest(BaseModel):
+    """Request model for setting session mode."""
+    mode: str  # 'socratic' or 'direct_chat'
+
+
 @router.post("")
 def start_session(
     request: StartSessionRequest,
@@ -596,6 +601,262 @@ def end_session(
 
     # Update session status
     session.status = 'completed'
+    db.commit()
+
+    return {
+        'success': True,
+        'session_id': str(session.id),
+        'status': session.status
+    }
+
+
+@router.get("/{session_id}/mode")
+def get_session_mode(
+    session_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Get the current mode of a session.
+
+    Args:
+        session_id: Session UUID
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'session_id': str,
+            'mode': str,
+            'status': str
+        }
+
+    Example:
+        GET /api/v1/sessions/session-456/mode
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "session_id": "session-456",
+            "mode": "socratic",
+            "status": "active"
+        }
+    """
+    from ..models.session import Session as SessionModel
+    from ..models.project import Project
+
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    return {
+        'success': True,
+        'session_id': str(session.id),
+        'mode': session.mode,
+        'status': session.status
+    }
+
+
+@router.post("/{session_id}/mode")
+def set_session_mode(
+    session_id: str,
+    request: SetModeRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Toggle or set the session mode (socratic or direct_chat).
+
+    Args:
+        session_id: Session UUID
+        request: Mode setting (mode: 'socratic' or 'direct_chat')
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'session_id': str,
+            'old_mode': str,
+            'new_mode': str,
+            'status': str
+        }
+
+    Example:
+        POST /api/v1/sessions/session-456/mode
+        Authorization: Bearer <token>
+        {
+            "mode": "direct_chat"
+        }
+
+        Response:
+        {
+            "success": true,
+            "session_id": "session-456",
+            "old_mode": "socratic",
+            "new_mode": "direct_chat",
+            "status": "active"
+        }
+    """
+    from ..models.session import Session as SessionModel
+    from ..models.project import Project
+
+    # Validate mode
+    if request.mode not in ['socratic', 'direct_chat']:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid mode: {request.mode}. Must be 'socratic' or 'direct_chat'"
+        )
+
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    # Check session is active
+    if session.status != 'active':
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot change mode on inactive session (status: {session.status})"
+        )
+
+    old_mode = session.mode
+    session.mode = request.mode
+    db.commit()
+
+    return {
+        'success': True,
+        'session_id': str(session.id),
+        'old_mode': old_mode,
+        'new_mode': session.mode,
+        'status': session.status
+    }
+
+
+@router.post("/{session_id}/pause")
+def pause_session(
+    session_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Pause an active session.
+
+    Args:
+        session_id: Session UUID
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'session_id': str,
+            'status': str
+        }
+
+    Example:
+        POST /api/v1/sessions/session-456/pause
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "session_id": "session-456",
+            "status": "paused"
+        }
+    """
+    from ..models.session import Session as SessionModel
+    from ..models.project import Project
+
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    # Check session is active
+    if session.status != 'active':
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot pause inactive session (status: {session.status})"
+        )
+
+    session.status = 'paused'
+    db.commit()
+
+    return {
+        'success': True,
+        'session_id': str(session.id),
+        'status': session.status
+    }
+
+
+@router.post("/{session_id}/resume")
+def resume_session(
+    session_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Resume a paused session.
+
+    Args:
+        session_id: Session UUID
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'session_id': str,
+            'status': str
+        }
+
+    Example:
+        POST /api/v1/sessions/session-456/resume
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "session_id": "session-456",
+            "status": "active"
+        }
+    """
+    from ..models.session import Session as SessionModel
+    from ..models.project import Project
+
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    # Check session is paused
+    if session.status != 'paused':
+        raise HTTPException(
+            status_code=400,
+            detail=f"Can only resume paused sessions (current status: {session.status})"
+        )
+
+    session.status = 'active'
     db.commit()
 
     return {
