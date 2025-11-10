@@ -388,7 +388,6 @@ def send_chat_message(
 
     # If session is in socratic mode, switch to direct_chat
     if session.mode != 'direct_chat':
-        from ..agents.orchestrator import get_orchestrator
         orchestrator = get_orchestrator()
         toggle_result = orchestrator.route_request(
             'direct_chat',
