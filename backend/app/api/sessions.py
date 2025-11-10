@@ -18,6 +18,7 @@ from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
 from ..agents.orchestrator import get_orchestrator
+from ..core.action_logger import log_session, log_question, log_specs, log_error, ActionLogger
 
 router = APIRouter(prefix="/api/v1/sessions", tags=["sessions"])
 
@@ -103,6 +104,15 @@ def start_session(
     db.add(session)
     db.commit()
     db.refresh(session)
+
+    # Log session start
+    log_session(
+        "Session started",
+        session_id=str(session.id),
+        mode="socratic",
+        success=True,
+        project_name=project.name if hasattr(project, 'name') else None
+    )
 
     return {
         'success': True,

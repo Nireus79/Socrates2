@@ -23,6 +23,7 @@ from ..core.security import (
 )
 from ..models.user import User
 from ..core.config import settings
+from ..core.action_logger import log_auth
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 
@@ -189,6 +190,9 @@ def register(
     db.commit()  # Commit to ensure UUID is assigned from database
     db.refresh(user)  # Refresh to get the ID from database
 
+    # Log the successful registration
+    log_auth("User registered", user_id=str(user.id), username=user.username, success=True)
+
     return RegisterResponse(
         message="User registered successfully",
         user_id=str(user.id),
@@ -263,6 +267,9 @@ def login(
     # Create refresh token
     refresh_token = create_refresh_token(str(user.id), db)
 
+    # Log successful login
+    log_auth("User logged in", user_id=str(user.id), username=user.username, success=True)
+
     return LoginResponse(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -299,6 +306,9 @@ def logout(
             "message": "Logged out successfully"
         }
     """
+    # Log logout
+    log_auth("User logged out", user_id=str(current_user.id), username=current_user.username, success=True)
+
     # With JWT, client should delete the token
     # Future: Implement token revocation/blacklist
     return {
@@ -403,6 +413,9 @@ def refresh_access_token(
 
     # Create new refresh token
     new_refresh_token = create_refresh_token(str(user.id), db)
+
+    # Log token refresh
+    log_auth("Token refreshed", user_id=str(user.id), username=user.username, success=True)
 
     return LoginResponse(
         access_token=new_access_token,

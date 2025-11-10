@@ -13,6 +13,7 @@ from ..models.session import Session
 from ..models.question import Question
 from ..models.specification import Specification
 from ..core.dependencies import ServiceContainer
+from ..core.action_logger import log_specs, log_error, ActionLogger
 
 
 # Target spec count per category for 100% maturity
@@ -243,6 +244,14 @@ class ContextAnalyzerAgent(BaseAgent):
             db.commit()
             self.logger.info(f"Saved {len(saved_specs)} specifications to database")
 
+            # Log specs extraction
+            log_specs(
+                "Specifications extracted and saved",
+                count=len(saved_specs),
+                success=True,
+                question_category=question.category if hasattr(question, 'category') else None
+            )
+
             # Refresh to get IDs
             for spec in saved_specs:
                 db.refresh(spec)
@@ -256,6 +265,13 @@ class ContextAnalyzerAgent(BaseAgent):
             self.logger.info(
                 f"Extracted {len(saved_specs)} specs from answer to question {question_id}. "
                 f"Maturity: {old_maturity}% -> {new_maturity}%"
+            )
+
+            # Log maturity update
+            ActionLogger.progress(
+                100, 100,
+                f"Project maturity updated: {old_maturity}% → {new_maturity}%",
+                specs=len(saved_specs)
             )
 
             return {

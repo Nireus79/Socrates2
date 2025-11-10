@@ -24,6 +24,7 @@ from ..models.conflict import Conflict, ConflictType, ConflictSeverity, Conflict
 # Import from Socrates library instead of local core
 from socrates import ConflictDetectionEngine
 from socrates import specs_db_to_data, SpecificationData
+from ..core.action_logger import log_conflict, log_error
 
 
 class ConflictDetectorAgent(BaseAgent):
@@ -205,6 +206,21 @@ class ConflictDetectorAgent(BaseAgent):
                 f"Conflict detection for project {project_id}: "
                 f"{len(conflicts_found)} conflicts found"
             )
+
+            # Log conflict detection
+            if len(conflicts_found) > 0:
+                log_conflict(
+                    "Conflicts detected",
+                    count=len(conflicts_found),
+                    success=True,
+                    severity=[c.severity for c in conflicts_found] if conflicts_found else []
+                )
+            else:
+                log_conflict(
+                    "No conflicts detected",
+                    count=0,
+                    success=True
+                )
 
             return {
                 'success': True,

@@ -5,13 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="cli">
-      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/002_create_refresh_tokens_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/alembic/versions/002_create_refresh_tokens_table.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/core/nlu_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/nlu_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/models/refresh_token.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/refresh_token.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_e2e_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_e2e_flow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_e2e_simple.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_e2e_simple.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/api/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/auth.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,22 +50,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python tests.Python tests in test_phase_2_core_agents.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in tests_new.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Python tests in test_phase_2_core_agents.py.executor": "Run",
+    "Python tests.Python tests in tests_new.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/themi/PycharmProjects/Socrates2"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\themi\PycharmProjects\Socrates2" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\themi\PycharmProjects\Socrates2\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\archive" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />
-      <recent name="C:\Users\themi\PycharmProjects\Socrates2\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\foundation_docs" />
     </key>
   </component>
@@ -353,7 +352,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762758602569</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="cli">
+      <option name="closed" value="true" />
+      <created>1762766425736</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1762766425736</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

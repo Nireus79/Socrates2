@@ -31,6 +31,7 @@ from socrates import (
     questions_db_to_data,
     UserBehaviorData
 )
+from ..core.action_logger import log_question, ActionLogger
 
 
 class SocraticCounselorAgent(BaseAgent):
@@ -251,6 +252,14 @@ class SocraticCounselorAgent(BaseAgent):
             db.refresh(question)
 
             self.logger.info(f"Generated question {question.id} for project {project_id}, category: {question.category}, quality_score: {quality_score}")
+
+            # Log question generation
+            log_question(
+                "Question generated",
+                category=question.category,
+                success=True,
+                quality_score=float(quality_score)
+            )
 
             return {
                 'success': True,
