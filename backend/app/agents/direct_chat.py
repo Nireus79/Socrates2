@@ -300,8 +300,7 @@ Be conversational, helpful, and guide the user toward complete specifications.""
         recent_messages = [
             {
                 'role': msg.role,
-                'content': msg.content,
-                'timestamp': msg.timestamp.isoformat()
+                'content': msg.content
             }
             for msg in messages
         ]
