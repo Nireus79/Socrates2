@@ -671,37 +671,24 @@ No session required.
         try:
             data = {}
 
-            # Step 1: Name
+            # Step 1: Username
             while True:
-                name = self.prompt_with_back("Name")
-                if name is None:
+                username = self.prompt_with_back("Username")
+                if username is None:
                     self.console.print("[yellow]Login cancelled[/yellow]")
                     return
-                if name:
-                    data['name'] = name
+                if username:
+                    data['username'] = username
                     break
-                self.console.print("[yellow]Name is required[/yellow]")
+                self.console.print("[yellow]Username is required[/yellow]")
 
-            # Step 2: Email (optional)
-            while True:
-                email = self.prompt_with_back("Email (optional)", default="")
-                if email is None:
-                    # Go back to name
-                    self.console.print("[yellow]Going back...[/yellow]")
-                    data.pop('name', None)
-                    self.cmd_login()
-                    return
-                # Email is optional, so we can proceed with empty string
-                data['email'] = email if email else ""
-                break
-
-            # Step 3: Password
+            # Step 2: Password
             while True:
                 password = self.prompt_with_back("Password", password=True)
                 if password is None:
-                    # Go back to email
+                    # Go back to username
                     self.console.print("[yellow]Going back...[/yellow]")
-                    data.pop('email', None)
+                    data.pop('username', None)
                     self.cmd_login()
                     return
                 if password:
@@ -709,21 +696,19 @@ No session required.
                     break
                 self.console.print("[yellow]Password is required[/yellow]")
 
-            # Determine login identifier (prefer email if provided, otherwise use name)
-            login_identifier = data['email'] if data['email'] else data['name']
-
             try:
                 with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Logging in...", total=None)
-                    result = self.api.login(login_identifier, data['password'])
+                    result = self.api.login(data['username'], data['password'])
 
                 if result.get("access_token"):
                     self.config.set("access_token", result["access_token"])
-                    self.config.set("user_email", login_identifier)
-                    self.config.set("user_name", data['name'])
+                    self.config.set("user_email", result.get("username"))
+                    self.config.set("user_name", result.get("name"))
                     self.api.set_token(result["access_token"])
-                    self.console.print(f"\n[green]✓ Logged in successfully as {data['name']}[/green]")
+                    user_display = result.get("name", data['username'])
+                    self.console.print(f"\n[green]✓ Logged in successfully as {user_display}[/green]")
                 else:
                     self.console.print(f"\n[red]✗ Login failed: {result.get('message', 'Invalid credentials')}[/red]")
             except Exception as e:
