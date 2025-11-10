@@ -672,9 +672,15 @@ No session required.
                 self.console.print(f"[dim]  cd backend[/dim]")
                 self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
             except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
+                self.console.print(f"[red]✗ Registration error: {str(e)[:100]}[/red]")
+        except requests.exceptions.ConnectionError:
+            self.console.print(f"\n[red]✗ Cannot connect to Socrates backend[/red]")
+            self.console.print(f"[yellow]The server is not running at http://localhost:8000[/yellow]")
+            self.console.print(f"[yellow]Please start the backend server first:[/yellow]")
+            self.console.print(f"[dim]  cd backend[/dim]")
+            self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"[red]✗ Error: {str(e)[:100]}[/red]")
 
     def cmd_login(self):
         """Handle /login command"""
@@ -731,10 +737,16 @@ No session required.
                 self.console.print(f"[dim]  cd backend[/dim]")
                 self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
             except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
+                self.console.print(f"[red]✗ Login error: {str(e)[:100]}[/red]")
 
+        except requests.exceptions.ConnectionError:
+            self.console.print(f"\n[red]✗ Cannot connect to Socrates backend[/red]")
+            self.console.print(f"[yellow]The server is not running at http://localhost:8000[/yellow]")
+            self.console.print(f"[yellow]Please start the backend server first:[/yellow]")
+            self.console.print(f"[dim]  cd backend[/dim]")
+            self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"[red]✗ Error: {str(e)[:100]}[/red]")
 
     def cmd_logout(self):
         """Handle /logout command"""
