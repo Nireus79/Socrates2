@@ -444,7 +444,7 @@ class SocratesCLI:
 
         # Check if server is already running
         try:
-            response = requests.get(f"{self.server_url}/api/v1/health", timeout=1)
+            response = requests.get(f"{self.server_url}/api/v1/admin/health", timeout=1)
             if response.status_code == 200:
                 self.console.print(f"[dim]✓ Backend server already running at {self.server_url}[/dim]")
                 return
@@ -498,7 +498,7 @@ class SocratesCLI:
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
-                response = requests.get(f"{self.server_url}/api/v1/health", timeout=1)
+                response = requests.get(f"{self.server_url}/api/v1/admin/health", timeout=1)
                 if response.status_code == 200:
                     return True
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
