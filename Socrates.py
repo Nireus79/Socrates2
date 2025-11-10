@@ -510,15 +510,19 @@ No session required.
         Prompt user for input with back navigation support.
         Returns None if user enters 'back' (to go back to previous step).
         Returns the input string if valid.
-        Password inputs show asterisks for each character.
+        Password inputs show asterisks (*) for each character typed.
         """
         if default and not password:
             prompt_text += f" ({default})"
 
         if password:
-            # Use prompt_toolkit's prompt for better password masking
+            # Use PromptSession for password input with explicit asterisk masking
             try:
-                user_input = prompt(f"{prompt_text}: ", is_password=True)
+                pwd_session = PromptSession()
+                user_input = pwd_session.prompt(
+                    f"{prompt_text}: ",
+                    is_password=True
+                )
             except EOFError:
                 return None
         else:
