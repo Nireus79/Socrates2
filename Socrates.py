@@ -35,6 +35,9 @@ from pathlib import Path
 if TYPE_CHECKING:
     from rich.console import Console
 
+# Import CLI logger
+from cli_logger import get_cli_logger
+
 # Try to import CLI dependencies - defer error to runtime
 _cli_imports_available = True
 _cli_import_error = None
@@ -96,6 +99,14 @@ class SocratesConfig:
         """Clear all configuration"""
         self.data = {}
         self.save()
+
+    def get_logging_enabled(self) -> bool:
+        """Get CLI logging enabled state"""
+        return self.data.get("cli_logging_enabled", False)
+
+    def set_logging_enabled(self, enabled: bool):
+        """Set CLI logging enabled state"""
+        self.set("cli_logging_enabled", enabled)
 
 
 class SocratesAPI:
@@ -476,6 +487,11 @@ class SocratesCLI:
         self.config = SocratesConfig()
         # Let API know about config so it can save tokens
         self.api.set_config(self.config)
+
+        # Initialize CLI logger
+        self.cli_logger = get_cli_logger()
+        self.cli_logger.set_enabled(self.config.get_logging_enabled())
+
         self.debug = debug
         self.running = True
         self.current_project: Optional[Dict[str, Any]] = None
@@ -496,7 +512,8 @@ class SocratesCLI:
             "/history", "/clear", "/debug", "/mode", "/chat",
             "/config", "/theme", "/format", "/save",
             "/export", "/stats", "/template",
-            "/search", "/insights", "/filter", "/resume", "/wizard", "/status"
+            "/search", "/insights", "/filter", "/resume", "/wizard", "/status",
+            "/logging"
         ]
         self.completer = WordCompleter(self.commands, ignore_case=True)
 
@@ -999,6 +1016,8 @@ No session required.
 
                 # Backend returns user_id on success (no "success" field)
                 if result.get("user_id"):
+                    # Log the registration action
+                    self.cli_logger.log_register(data['username'], data['email'])
                     self.console.print(f"\n[green]✓ Account created successfully![/green]")
                     self.console.print(f"[dim]User ID: {result.get('user_id')}[/dim]")
                     self.console.print(f"[dim]Username: {data['username']}[/dim]")
@@ -1071,6 +1090,8 @@ No session required.
                     if result.get("refresh_token"):
                         self.api.set_refresh_token(result["refresh_token"])
                     user_display = result.get("name", data['username'])
+                    # Log the login action
+                    self.cli_logger.log_login(data['username'], result.get("username", ""))
                     self.console.print(f"\n[green]✓ Logged in successfully as {user_display}[/green]")
                 else:
                     self.console.print(f"\n[red]✗ Login failed: {result.get('message', 'Invalid credentials')}[/red]")
@@ -1098,7 +1119,10 @@ No session required.
             return
 
         try:
+            email = self.config.get("user_email", "Unknown")
             self.api.logout()
+            # Log the logout action
+            self.cli_logger.log_logout(email)
             self.config.clear()
             self.current_project = None
             self.current_session = None
@@ -1223,6 +1247,8 @@ No session required.
 
                 if result.get("success"):
                     project_id = result.get("project_id")
+                    # Log the project creation
+                    self.cli_logger.log_project_create(name, project_id)
                     self.console.print(f"\n[green]✓ Project created: {project_id}[/green]")
 
                     # Auto-select the new project
@@ -1296,6 +1322,8 @@ No session required.
                         proj_result = self.api.get_project(project_id)
                         if proj_result.get("success"):
                             self.current_project = proj_result.get("project")
+                            # Log the project selection
+                            self.cli_logger.log_project_select(self.current_project['name'], project_id)
                             self.current_session = None
                             self.console.print(f"\n[green]✓ Selected project: {self.current_project['name']}[/green]\n")
                         else:
@@ -1311,6 +1339,8 @@ No session required.
                     result = self.api.get_project(project_id)
                     if result.get("success"):
                         self.current_project = result.get("project")
+                        # Log the project selection
+                        self.cli_logger.log_project_select(self.current_project['name'], project_id)
                         self.current_session = None  # Clear session when switching projects
                         self.console.print(f"[green]✓ Selected project: {self.current_project['name']}[/green]")
                     else:
@@ -1397,6 +1427,8 @@ No session required.
 
                     self.current_session = session_data
                     session_id = self.current_session["id"]
+                    # Log the session start
+                    self.cli_logger.log_session_start(session_id, "socratic", self.current_project["id"])
                     self.console.print(f"[green]✓ Session started: {session_id}[/green]")
                     self.console.print("\n[cyan]Ready to begin Socratic questioning![/cyan]")
                     self.console.print(
@@ -1505,8 +1537,11 @@ No session required.
 
             if Confirm.ask("[yellow]End current session?[/yellow]"):
                 try:
-                    result = self.api.end_session(self.current_session["id"])
+                    session_id = self.current_session["id"]
+                    result = self.api.end_session(session_id)
                     if result.get("success"):
+                        # Log the session end
+                        self.cli_logger.log_session_end(session_id)
                         self.console.print(f"[green]✓ Session ended[/green]")
                         self.console.print(f"[cyan]Specifications extracted: {result.get('specs_count', 0)}[/cyan]")
                         self.current_session = None
@@ -1668,6 +1703,9 @@ No session required.
             return
 
         try:
+            # Log the chat message
+            self.cli_logger.log_chat_message(self.current_session["id"], message, "socratic")
+
             # Submit answer
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
                           console=self.console, transient=True) as progress:
@@ -1699,6 +1737,9 @@ No session required.
             return
 
         try:
+            # Log the chat message
+            self.cli_logger.log_chat_message(self.current_session["id"], message, "direct")
+
             # First, ensure session is in direct_chat mode
             if self.chat_mode != "direct_chat":
                 with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
@@ -1811,6 +1852,102 @@ No session required.
         else:
             self.console.print(f"[yellow]Unknown subcommand: {subcommand}[/yellow]")
             self.console.print("[dim]Use: /config [list|set|get|reset][/dim]")
+
+    def cmd_logging(self, args: List[str]):
+        """Manage centralized logging for CLI and backend"""
+        if not args:
+            args = ["status"]
+
+        subcommand = args[0].lower()
+
+        if subcommand == "on":
+            # Enable both CLI and backend logging
+            try:
+                # Enable CLI logging
+                self.cli_logger.set_enabled(True)
+                self.config.set_logging_enabled(True)
+
+                # Enable backend logging
+                response = self.api._request(
+                    "POST",
+                    "/api/v1/admin/logging/action",
+                    json={"enabled": True}
+                )
+
+                if response.status_code == 200:
+                    self.console.print("[green][OK] CLI logging enabled[/green]")
+                    self.console.print("[green][OK] Backend logging enabled[/green]")
+                else:
+                    self.console.print("[yellow][WARN] Backend logging might not be enabled[/yellow]")
+            except Exception as e:
+                self.console.print(f"[red]Error enabling logging: {str(e)}[/red]")
+
+        elif subcommand == "off":
+            # Disable both CLI and backend logging
+            try:
+                # Disable CLI logging
+                self.cli_logger.set_enabled(False)
+                self.config.set_logging_enabled(False)
+
+                # Disable backend logging
+                response = self.api._request(
+                    "POST",
+                    "/api/v1/admin/logging/action",
+                    json={"enabled": False}
+                )
+
+                if response.status_code == 200:
+                    self.console.print("[green][OK] CLI logging disabled[/green]")
+                    self.console.print("[green][OK] Backend logging disabled[/green]")
+                else:
+                    self.console.print("[yellow][WARN] Backend logging might not be disabled[/yellow]")
+            except Exception as e:
+                self.console.print(f"[red]Error disabling logging: {str(e)}[/red]")
+
+        elif subcommand == "status":
+            # Show logging status
+            try:
+                cli_enabled = self.cli_logger.is_enabled()
+                cli_status = "[green]ENABLED[/green]" if cli_enabled else "[dim]DISABLED[/dim]"
+
+                # Get backend status
+                response = self.api._request("GET", "/api/v1/admin/logging/action")
+                if response.status_code == 200:
+                    backend_data = response.json()
+                    backend_enabled = backend_data.get("enabled", False)
+                    backend_status = "[green]ENABLED[/green]" if backend_enabled else "[dim]DISABLED[/dim]"
+                else:
+                    backend_status = "[yellow]UNKNOWN[/yellow]"
+
+                self.console.print("\n[cyan]Logging Status:[/cyan]")
+                self.console.print(f"  CLI Logging:     {cli_status}")
+                self.console.print(f"  Backend Logging: {backend_status}")
+                self.console.print(f"  Log File:        {self.cli_logger.get_log_file_path()}")
+
+                # Show recent logs if enabled
+                if cli_enabled:
+                    recent = self.cli_logger.get_recent_logs(3)
+                    if recent:
+                        self.console.print("\n[cyan]Recent logs:[/cyan]")
+                        for line in recent:
+                            self.console.print(f"  {line}")
+                self.console.print()
+
+            except Exception as e:
+                self.console.print(f"[red]Error getting logging status: {str(e)}[/red]")
+
+        elif subcommand == "clear":
+            # Clear log file
+            try:
+                if self.cli_logger.clear_logs():
+                    self.console.print("[green][OK] Log file cleared[/green]")
+                else:
+                    self.console.print("[red]Failed to clear log file[/red]")
+            except Exception as e:
+                self.console.print(f"[red]Error clearing logs: {str(e)}[/red]")
+
+        else:
+            self.console.print("[yellow]Usage: /logging [on|off|status|clear][/yellow]")
 
     def cmd_theme(self, args: List[str]):
         """Change CLI color theme"""
@@ -2775,6 +2912,9 @@ No session required.
 
         elif command == "/wizard":
             self.cmd_wizard(args)
+
+        elif command == "/logging":
+            self.cmd_logging(args)
 
         else:
             self.console.print(f"[red]Unknown command: {command}[/red]")

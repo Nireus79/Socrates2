@@ -17,7 +17,9 @@
       "Bash(curl:*)",
       "Bash(python:*)",
       "Bash(find:*)",
-      "Bash($env:DATABASE_URL_AUTH=\"postgresql://postgres@localhost:5432/socrates_auth\")"
+      "Bash($env:DATABASE_URL_AUTH=\"postgresql://postgres@localhost:5432/socrates_auth\")",
+      "Bash(printf:*)",
+      "Bash(dir /B %UserProfile%.socrateslogs)"
     ],
     "deny": [],
     "ask": []
