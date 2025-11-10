@@ -15,7 +15,7 @@ from .core.database import close_db_connections
 from .core.action_logger import initialize_action_logger
 from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
 from .api import export_endpoints, llm_endpoints, github_endpoints
-from .api import search, insights, templates
+from .api import search, insights, templates, resources
 
 # Configure logging
 logging.basicConfig(
@@ -115,6 +115,7 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(search.router)
     app.include_router(insights.router)
     app.include_router(templates.router)
+    app.include_router(resources.router)
 
     return app
 

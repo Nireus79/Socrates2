@@ -183,10 +183,20 @@ class ContextAnalyzerAgent(BaseAgent):
             # Convert extracted specs to format expected by conflict detector
             specs_for_conflict_check = []
             for spec_data in extracted_specs:
+                # Use key/value if provided, otherwise fallback to content
+                conflict_key = spec_data.get('key')
+                conflict_value = spec_data.get('value')
+
+                if not conflict_key or not conflict_value:
+                    # Fallback for backward compatibility
+                    content = spec_data.get('content', '')
+                    conflict_key = conflict_key or content[:50]
+                    conflict_value = conflict_value or content
+
                 specs_for_conflict_check.append({
                     'category': spec_data.get('category', question.category),
-                    'key': spec_data['content'][:100],  # Use first 100 chars as key
-                    'value': spec_data['content'],
+                    'key': conflict_key,
+                    'value': conflict_value,
                     'confidence': spec_data.get('confidence', 0.9)
                 })
 
@@ -224,11 +234,26 @@ class ContextAnalyzerAgent(BaseAgent):
 
             # No conflicts, proceed with saving specifications
             for spec_data in extracted_specs:
+                # Extract key and value with fallback for backward compatibility
+                spec_key = spec_data.get('key')
+                spec_value = spec_data.get('value')
+
+                # Fallback: if Claude didn't provide key/value, generate from content
+                if not spec_key or not spec_value:
+                    content = spec_data.get('content', '')
+                    # Generate key from first few words
+                    key_words = content[:50].lower().replace(' ', '_')
+                    key_words = ''.join(c for c in key_words if c.isalnum() or c == '_')
+                    spec_key = spec_key or key_words or f"spec_{question.category}"
+                    spec_value = spec_value or content or spec_key
+
                 spec = Specification(
                     project_id=project.id,
                     session_id=session_id,
                     category=spec_data.get('category', question.category),
-                    content=spec_data['content'],
+                    key=spec_key,
+                    value=spec_value,
+                    content=spec_data.get('content'),  # Make optional
                     source='extracted',
                     confidence=Decimal(str(spec_data.get('confidence', 0.9))),
                     is_current=True,
@@ -365,11 +390,18 @@ Return ONLY valid JSON array (no additional text):
 [
   {{
     "category": "appropriate_category",
-    "content": "clear, specific specification statement",
+    "key": "short_identifier_snake_case",
+    "value": "the_specification_value",
+    "content": "clear, specific specification statement (optional detailed notes)",
     "confidence": 0.X,
     "reasoning": "why this was extracted and how confident we are"
   }}
 ]
+
+KEY/VALUE FORMAT:
+- key: Short identifier (3-5 words, snake_case, e.g., "concurrent_users_target")
+- value: The actual specification value (e.g., "2 concurrent users", "PostgreSQL 17", "JWT tokens")
+- content: Optional detailed notes or context (can be same as value if no additional details)
 
 CATEGORIES:
 - goals: Project purpose, objectives, success criteria
