@@ -666,26 +666,69 @@ No session required.
     def cmd_login(self):
         """Handle /login command"""
         self.console.print("\n[bold cyan]Login[/bold cyan]\n")
-
-        email = Prompt.ask("Email")
-        password = self.prompt_with_back("Password", password=True)
-        if password is None:
-            self.console.print("[yellow]Login cancelled[/yellow]")
-            return
+        self.console.print("[dim]Tip: Type 'back' at any step to go back[/dim]\n")
 
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
-                          console=self.console, transient=True) as progress:
-                progress.add_task("Logging in...", total=None)
-                result = self.api.login(email, password)
+            data = {}
 
-            if result.get("access_token"):
-                self.config.set("access_token", result["access_token"])
-                self.config.set("user_email", email)
-                self.api.set_token(result["access_token"])
-                self.console.print(f"[green]✓ Logged in successfully as {email}[/green]")
-            else:
-                self.console.print(f"[red]✗ Login failed: {result.get('message', 'Invalid credentials')}[/red]")
+            # Step 1: Name
+            while True:
+                name = self.prompt_with_back("Name")
+                if name is None:
+                    self.console.print("[yellow]Login cancelled[/yellow]")
+                    return
+                if name:
+                    data['name'] = name
+                    break
+                self.console.print("[yellow]Name is required[/yellow]")
+
+            # Step 2: Email (optional)
+            while True:
+                email = self.prompt_with_back("Email (optional)", default="")
+                if email is None:
+                    # Go back to name
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    data.pop('name', None)
+                    self.cmd_login()
+                    return
+                # Email is optional, so we can proceed with empty string
+                data['email'] = email if email else ""
+                break
+
+            # Step 3: Password
+            while True:
+                password = self.prompt_with_back("Password", password=True)
+                if password is None:
+                    # Go back to email
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    data.pop('email', None)
+                    self.cmd_login()
+                    return
+                if password:
+                    data['password'] = password
+                    break
+                self.console.print("[yellow]Password is required[/yellow]")
+
+            # Determine login identifier (prefer email if provided, otherwise use name)
+            login_identifier = data['email'] if data['email'] else data['name']
+
+            try:
+                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                              console=self.console, transient=True) as progress:
+                    progress.add_task("Logging in...", total=None)
+                    result = self.api.login(login_identifier, data['password'])
+
+                if result.get("access_token"):
+                    self.config.set("access_token", result["access_token"])
+                    self.config.set("user_email", login_identifier)
+                    self.config.set("user_name", data['name'])
+                    self.api.set_token(result["access_token"])
+                    self.console.print(f"\n[green]✓ Logged in successfully as {data['name']}[/green]")
+                else:
+                    self.console.print(f"\n[red]✗ Login failed: {result.get('message', 'Invalid credentials')}[/red]")
+            except Exception as e:
+                self.console.print(f"[red]Error: {e}[/red]")
+
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
 
