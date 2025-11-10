@@ -163,13 +163,25 @@ def spec_db_to_data(db_spec) -> SpecificationData:
 
     Returns:
         SpecificationData instance with same information
+
+    NOTE: Database stores specification in 'content' field, but socrates-ai library
+    expects 'key' and 'value' fields. This function maps:
+    - content[:50] → key (first 50 chars as identifier)
+    - content → value (full content as value)
+
+    TODO: Consider database migration to add separate key/value columns for proper
+    structured specification storage.
     """
+    # Extract key from first 50 chars of content, or use category if content is empty
+    content = db_spec.content or ""
+    key = content[:50] if content else db_spec.category
+
     return SpecificationData(
         id=str(db_spec.id),
         project_id=str(db_spec.project_id),
         category=db_spec.category,
-        key=db_spec.key,
-        value=db_spec.value,
+        key=key,
+        value=content,
         confidence=float(db_spec.confidence),
         source=db_spec.source,
         is_current=db_spec.is_current,
