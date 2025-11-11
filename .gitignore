@@ -36,7 +36,17 @@ env/
 .idea/
 *.swp
 *.swo
+*.swn
 *~
+.DS_Store
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.iml
+*.iws
 
 # Testing
 .coverage
@@ -60,6 +70,67 @@ Thumbs.db
 # Runtime
 __pycache__/
 *.pyc
+
+# Build outputs
+build/
+dist/
+out/
+target/
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+.gradle/wrapper/
+
+# Node/npm
+node_modules/
+npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+
+# TypeScript
+*.js.map
+*.d.ts
+
+# Kotlin/Gradle
+.kotlin/
+*.kexe
+*.klib
+
+# Plugin builds
+plugins/jetbrains/**/build/
+plugins/jetbrains/**/.gradle/
+extensions/vs-code/out/
+extensions/vs-code/dist/
+
+# LSP/Language server
+socrates2-lsp.log
+
+# CI/CD
+.github/workflows/.secrets/
+
+# Security keys
+*.pem
+*.key
+*.crt
+*.p12
+certificate.pem
+private.key
+
+# Cache
+.cache/
+.eslintcache
+.vuerc
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# VS Code extensions
+*.vsix
 
 # Archive - preserve documentation history but ignore coverage files
 archive/*.db

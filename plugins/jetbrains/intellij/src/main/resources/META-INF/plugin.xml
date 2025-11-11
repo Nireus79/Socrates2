@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<idea-plugin>
+    <id>com.socrates2.intellij</id>
+    <name>Socrates2</name>
+    <vendor email="dev@socrates2.io" url="https://socrates2.io">Socrates2</vendor>
+
+    <description><![CDATA[
+        <p>Socrates2 - Specification-aware IDE integration for IntelliJ IDEA</p>
+        <p>Features:</p>
+        <ul>
+            <li>Project and specification management</li>
+            <li>Real-time conflict detection</li>
+            <li>Multi-language code generation</li>
+            <li>IDE-aware inspections and intentions</li>
+            <li>Code completion and navigation</li>
+        </ul>
+        <p><a href="https://github.com/Nireus79/Socrates2">Learn more on GitHub</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+        <h2>1.0.0 - November 15, 2025</h2>
+        <ul>
+            <li>Initial release</li>
+            <li>Project browser and specification viewer</li>
+            <li>Conflict detection inspection</li>
+            <li>Code generation intention action</li>
+            <li>Support for 8+ programming languages</li>
+        </ul>
+    ]]></change-notes>
+
+    <idea-version since-build="231.0" until-build="241.*"/>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Tool Windows -->
+        <toolWindow id="Socrates2" secondary="false" anchor="right" factoryClass="com.socrates2.jetbrains.intellij.toolwindow.Socrates2ToolWindowFactory"/>
+
+        <!-- Inspections -->
+        <localInspection language="ANY"
+                         shortName="SocratesConflictInspection"
+                         displayName="Socrates2 Conflict Detection"
+                         groupName="Socrates2"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="com.socrates2.jetbrains.intellij.inspections.ConflictInspection"/>
+
+        <!-- Intentions -->
+        <intentionAction>
+            <className>com.socrates2.jetbrains.intellij.intentions.GenerateCodeIntention</className>
+            <category>Socrates2</category>
+        </intentionAction>
+
+        <!-- Services -->
+        <projectService serviceInterface="com.socrates2.jetbrains.common.api.client.SocratesApiClient"
+                        serviceImplementation="com.socrates2.jetbrains.common.api.client.SocratesApiClient"/>
+
+        <!-- Settings -->
+        <projectConfigurable parentId="tools" id="com.socrates2.settings"
+                            displayName="Socrates2"
+                            implementation="com.socrates2.jetbrains.intellij.settings.Socrates2SettingsConfigurable"/>
+    </extensions>
+
+    <actions>
+        <group id="Socrates2.MainMenu" text="Socrates2" popup="true">
+            <action id="Socrates2.RefreshProjects"
+                    class="com.socrates2.jetbrains.intellij.actions.RefreshProjectsAction"
+                    text="Refresh Projects"
+                    description="Refresh projects from server"/>
+
+            <action id="Socrates2.CreateProject"
+                    class="com.socrates2.jetbrains.intellij.actions.CreateProjectAction"
+                    text="Create Project"
+                    description="Create new project"/>
+
+            <separator/>
+
+            <action id="Socrates2.GenerateCode"
+                    class="com.socrates2.jetbrains.intellij.actions.GenerateCodeAction"
+                    text="Generate Code"
+                    description="Generate code from specification"/>
+
+            <separator/>
+
+            <action id="Socrates2.OpenSettings"
+                    class="com.socrates2.jetbrains.intellij.actions.OpenSettingsAction"
+                    text="Settings"
+                    description="Open Socrates2 settings"/>
+
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </group>
+    </actions>
+</idea-plugin>
