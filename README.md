@@ -51,6 +51,14 @@ Socrates2 is a sophisticated multi-agent system that guides users through projec
 - Local models via Ollama
 - Usage tracking and cost monitoring
 
+### 🚀 IDE Integration (Phase 6)
+- **VS Code Extension** - Project browser, specification viewer, code generation
+- **IntelliJ IDEA Plugin** - Full IDE integration with inspections and intentions
+- **PyCharm Plugin** - Python-specific code generation and testing
+- **WebStorm Plugin** - JavaScript/TypeScript and React/Vue component generation
+- **Language Server Protocol (LSP)** - Multi-IDE support with hover, completion, diagnostics
+- **Multi-Language Code Generation** - Python, JavaScript, TypeScript, Go, Java, Rust, C#, Kotlin
+
 ---
 
 ## Quick Start
@@ -369,7 +377,7 @@ See [DEPLOYMENT.md](archive/implementation_documents/DEPLOYMENT.md) for comprehe
 
 ## Implementation Phases
 
-Socrates2 was developed in 10 phases:
+Socrates2 was developed in 10+ phases:
 
 - **Phase 0:** Project setup and foundation
 - **Phase 1:** Core infrastructure (auth, database, agents)
@@ -377,13 +385,17 @@ Socrates2 was developed in 10 phases:
 - **Phase 3:** Specification extraction and storage
 - **Phase 4:** Context analysis and conflict detection
 - **Phase 5:** Code generation capabilities
-- **Phase 6:** Maturity tracking and quality metrics
+- **Phase 6:** IDE Integration (VS Code, JetBrains, LSP, multi-language generation)
+  - **Phase 6.1:** VS Code Extension (TypeScript, 300+ tests, 91%+ coverage)
+  - **Phase 6.2:** JetBrains Plugins (Kotlin, IntelliJ/PyCharm/WebStorm)
+  - **Phase 6.3:** Language Server Protocol (Python, async handlers)
+  - **Phase 6.4:** Code Generation Engine (8+ languages, Jinja2 templates)
 - **Phase 7:** Testing and refinement
 - **Phase 8:** Team collaboration features
 - **Phase 9:** Multi-LLM support, GitHub integration, export
-- **Phase 10:** Production polish and deployment (current)
+- **Phase 10:** Production polish and deployment
 
-See `implementation_documents/` for detailed phase documentation.
+See `implementation_documents/` and `PHASE_6_COMPLETION_SUMMARY.md` for detailed phase documentation.
 
 ---
 
