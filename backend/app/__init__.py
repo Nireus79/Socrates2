@@ -1,5 +1,5 @@
 """
-Socrates2 Application Package
+Socrates Application Package
 Phase 1: Infrastructure Foundation
 """
 

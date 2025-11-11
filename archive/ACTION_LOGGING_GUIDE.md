@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Socrates2 application now has comprehensive action logging that tracks all major workflow operations. You can monitor your background server processes in real-time by observing the action logs.
+The Socrates application now has comprehensive action logging that tracks all major workflow operations. You can monitor your background server processes in real-time by observing the action logs.
 
 ## Quick Start
 

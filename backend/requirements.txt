@@ -1,4 +1,4 @@
-# Socrates2 - Production Dependencies
+# Socrates - Production Dependencies
 # Python version: 3.12+
 # Last updated: 2025-11-11
 # Source: backend/pyproject.toml

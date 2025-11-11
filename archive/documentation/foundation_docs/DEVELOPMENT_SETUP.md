@@ -24,7 +24,7 @@
 
 ## OVERVIEW
 
-This guide walks you through setting up a local development environment for Socrates2.
+This guide walks you through setting up a local development environment for Socrates.
 
 **Estimated Time:** 15-30 minutes (first time)
 
@@ -101,8 +101,8 @@ For experienced developers who want to get running immediately:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Nireus79/Socrates2.git
-cd Socrates2
+git clone https://github.com/Nireus79/Socrates.git
+cd Socrates
 
 # 2. Create virtual environment
 python3.12 -m venv .venv
@@ -146,10 +146,10 @@ If you encounter issues, follow the [Detailed Setup](#detailed-setup) below.
 
 ```bash
 # Clone from GitHub
-git clone https://github.com/Nireus79/Socrates2.git
+git clone https://github.com/Nireus79/Socrates.git
 
 # Navigate to project directory
-cd Socrates2
+cd Socrates
 
 # Verify files
 ls -la
@@ -193,7 +193,7 @@ which python
 Your terminal prompt should now show `(.venv)` prefix:
 
 ```bash
-(.venv) user@machine:~/Socrates2$
+(.venv) user@machine:~/Socrates$
 ```
 
 ### Step 3: Install Dependencies
@@ -1011,7 +1011,7 @@ Before starting development, verify:
 - [ ] Python 3.12 installed (`python --version`)
 - [ ] PostgreSQL 15 installed (`psql --version`)
 - [ ] Git installed (`git --version`)
-- [ ] Repository cloned (`cd Socrates2 && git status`)
+- [ ] Repository cloned (`cd Socrates && git status`)
 - [ ] Virtual environment created (`.venv/` directory exists)
 - [ ] Virtual environment activated (`(.venv)` in prompt)
 - [ ] Dependencies installed (`pip list` shows fastapi, sqlalchemy, etc.)
@@ -1046,4 +1046,4 @@ After completing setup:
 
 ---
 
-*This guide ensures any developer can set up Socrates2 locally in under 30 minutes.*
+*This guide ensures any developer can set up Socrates locally in under 30 minutes.*

@@ -154,5 +154,5 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             release_id: context.payload.release.id,
-            body: `## Release ${version}\n\n${versionChanges}\n\n### Download\n- VS Code: Search "Socrates2" in Extensions or install from VSIX\n- IntelliJ: Search "Socrates2" in Plugins Marketplace\n- PyCharm: Search "Socrates2" in Plugins Marketplace\n- WebStorm: Search "Socrates2" in Plugins Marketplace\n- LSP: \`pip install socrates2-lsp\``
+            body: `## Release ${version}\n\n${versionChanges}\n\n### Download\n- VS Code: Search "Socrates" in Extensions or install from VSIX\n- IntelliJ: Search "Socrates" in Plugins Marketplace\n- PyCharm: Search "Socrates" in Plugins Marketplace\n- WebStorm: Search "Socrates" in Plugins Marketplace\n- LSP: \`pip install socrates2-lsp\``
           });

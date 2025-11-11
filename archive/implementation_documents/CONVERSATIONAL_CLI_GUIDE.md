@@ -597,7 +597,7 @@ For issues or suggestions:
 
 ## License & Attribution
 
-Part of Socrates2 project.
+Part of Socrates project.
 Uses Claude API for natural language processing.
 Built with FastAPI, Rich TUI, and Anthropic Python SDK.
 

@@ -263,7 +263,7 @@ recent_messages = [
 ## Files to Modify
 
 ```
-/home/user/Socrates2/backend/
+/home/user/Socrates/backend/
 ├── app/core/models.py           [BUG #1: Fix spec_db_to_data]
 └── app/agents/direct_chat.py    [BUG #2: Remove timestamp]
 ```

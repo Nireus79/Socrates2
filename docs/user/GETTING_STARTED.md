@@ -1,14 +1,14 @@
-# Getting Started with Socrates2
+# Getting Started with Socrates
 
 **Time to read:** 15 minutes
 **Level:** Beginner
-**Goal:** Get Socrates2 running and create your first project
+**Goal:** Get Socrates running and create your first project
 
 ---
 
-## What is Socrates2?
+## What is Socrates?
 
-Socrates2 is an **AI-powered specification and requirements gathering system** that helps you:
+Socrates is an **AI-powered specification and requirements gathering system** that helps you:
 - 📋 Gather requirements systematically using Socratic questioning
 - 🏗️ Build comprehensive specifications across multiple knowledge domains
 - 🤖 Get AI-powered analysis and recommendations
@@ -23,7 +23,7 @@ Think of it as a **smart assistant that guides you through building perfect spec
 
 ### 1. Create Account
 ```bash
-# Visit the Socrates2 interface or API
+# Visit the Socrates interface or API
 POST /api/v1/auth/register
 {
   "email": "you@example.com",
@@ -100,7 +100,7 @@ A **session** is a conversation with the AI. Each session:
 
 ### Task 1: Create a New Project
 
-1. **Log in** to Socrates2
+1. **Log in** to Socrates
 2. **Click "New Project"**
 3. **Fill in:**
    - Project name
@@ -138,7 +138,7 @@ A **session** is a conversation with the AI. Each session:
 
 ## Understanding Domains
 
-Socrates2 has 7 knowledge domains:
+Socrates has 7 knowledge domains:
 
 ### 1. 🏗️ Architecture
 System design, patterns, scalability

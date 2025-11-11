@@ -303,7 +303,7 @@ question = engine.generate(
 - ✅ Core logic doesn't depend on SQLAlchemy
 - ✅ Easy to extract (just copy models.py and core/)
 - ✅ Works with any data source
-- ✅ Better decoupling in Socrates2
+- ✅ Better decoupling in Socrates
 - ✅ Easier to test
 
 ---
@@ -372,7 +372,7 @@ class INLUService(ABC):
         """Parse user intent from text"""
         pass
 
-# ===== IMPLEMENTATION (In Socrates2) =====
+# ===== IMPLEMENTATION (In Socrates) =====
 
 from .orchestrator import get_orchestrator
 
@@ -551,7 +551,7 @@ After optimization WITH library-readiness preparation:
 
 ```
 ┌─────────────────────────────────────────┐
-│   Socrates2 Application Layer (FastAPI) │
+│   Socrates Application Layer (FastAPI) │
 │  ┌──────────────────────────────────┐  │
 │  │  API Endpoints (sessions, etc.)  │  │
 │  └────────────────┬─────────────────┘  │
@@ -598,7 +598,7 @@ After optimization WITH library-readiness preparation:
 - Data Models (100%)
 - Service Interfaces (100%)
 
-**What Stays in Socrates2:**
+**What Stays in Socrates:**
 - API endpoints
 - Agent orchestration
 - Database layer

@@ -1,4 +1,4 @@
-# SQLAlchemy Best Practices for Socrates2
+# SQLAlchemy Best Practices for Socrates
 
 **Critical:** This document addresses SQLAlchemy problems that killed previous attempts. READ BEFORE implementing Phase 1.
 
@@ -51,7 +51,7 @@ def create_message(data: MessageCreate, db: Session = Depends(get_db_session)):
 3. Session closes, buffer discarded, data lost
 4. API returns 201 Created (data was in memory), but database has 0 rows
 
-**✅ SOLUTION for Socrates2:**
+**✅ SOLUTION for Socrates:**
 
 ```python
 # Option A: Use scoped_session (RECOMMENDED)
@@ -128,7 +128,7 @@ def get_projects(current_user: User = Depends(get_current_user)):
     # ERROR: DetachedInstanceError
 ```
 
-**✅ SOLUTION for Socrates2:**
+**✅ SOLUTION for Socrates:**
 
 ```python
 # Extract scalar values WITHIN session
@@ -269,7 +269,7 @@ def test_dto_completeness():
 
 ---
 
-## SQLAlchemy Configuration for Socrates2
+## SQLAlchemy Configuration for Socrates
 
 ### Engine Setup
 
@@ -386,7 +386,7 @@ test_exceptions_propagate()  # MUST PASS
 3. **3%:** Silent failures - exceptions caught but not re-raised
 4. **2%:** Model/DTO mismatches - data loss on serialization
 
-### Success Factors for Socrates2:
+### Success Factors for Socrates:
 
 1. ✅ Explicit commit BEFORE closing session
 2. ✅ Scalar value extraction within session
@@ -439,4 +439,4 @@ SessionLocal = sessionmaker(
 **Last Updated:** 2025-11-05
 **Archive Study:** Complete (124 files analyzed)
 **Critical Issues Found:** 5 (all documented above)
-**Success Rate:** Archive 0% → Socrates2 Target 85%
+**Success Rate:** Archive 0% → Socrates Target 85%

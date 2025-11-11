@@ -1,6 +1,6 @@
 """CLI commands for project management.
 
-Commands for creating, listing, updating, and managing Socrates2 projects.
+Commands for creating, listing, updating, and managing Socrates projects.
 """
 
 import json
@@ -12,7 +12,7 @@ import click
 
 @click.group(name="project")
 def project():
-    """Manage Socrates2 projects.
+    """Manage Socrates projects.
 
     Examples:
         socrates project create --name "My Project" --description "Project description"

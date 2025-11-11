@@ -31,7 +31,7 @@
 - Integration between components wasn't tested (agents couldn't communicate)
 - Edge cases weren't tested (system broke on unexpected inputs)
 
-**Socrates2 will succeed because:**
+**Socrates will succeed because:**
 - ✅ Comprehensive test coverage (70%+ target)
 - ✅ Critical paths tested first (database persistence, auth, QC system)
 - ✅ Automated testing (CI/CD catches regressions)
@@ -336,7 +336,7 @@ pytest --cov=src --cov-fail-under=75
 
 ## CRITICAL TESTS (ARCHIVE KILLERS)
 
-These tests MUST pass or Socrates2 will fail like Archive did.
+These tests MUST pass or Socrates will fail like Archive did.
 
 ### Test 1: Database Persistence (ARCHIVE KILLER #1)
 
@@ -884,4 +884,4 @@ Before Phase 0 implementation:
 
 ---
 
-*This testing strategy ensures Socrates2 doesn't repeat the failures of previous versions.*
+*This testing strategy ensures Socrates doesn't repeat the failures of previous versions.*

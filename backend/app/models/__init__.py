@@ -1,5 +1,5 @@
 """
-SQLAlchemy Models for Socrates2
+SQLAlchemy Models for Socrates
 """
 from .api_key import APIKey
 from .base import BaseModel

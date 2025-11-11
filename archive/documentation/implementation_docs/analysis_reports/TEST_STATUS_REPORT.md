@@ -131,7 +131,7 @@ The failing tests tell you exactly what code needs to be implemented.
 ### When PostgreSQL is Running:
 
 ```bash
-cd /home/user/Socrates2/backend
+cd /home/user/Socrates/backend
 
 # Run all tests
 pytest tests/ -v

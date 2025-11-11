@@ -1,6 +1,6 @@
 # Plugin Distribution Guide
 
-Complete guide for publishing and distributing Socrates2 IDE plugins across all platforms.
+Complete guide for publishing and distributing Socrates IDE plugins across all platforms.
 
 ## Visual Assets Requirements
 
@@ -10,7 +10,7 @@ Complete guide for publishing and distributing Socrates2 IDE plugins across all 
 - **Filename:** `icon.png`
 - **Location:** Root of extension directory
 - **Format:** PNG, square, transparent background
-- **Content:** Socrates2 logo or symbol
+- **Content:** Socrates logo or symbol
 
 #### Screenshots (1280x720 PNG)
 Required screenshots:
@@ -21,14 +21,14 @@ Required screenshots:
 
 #### Marketplace Banner (1280x340 PNG)
 - **Filename:** `banner.png`
-- **Content:** Marketing banner with Socrates2 branding
+- **Content:** Marketing banner with Socrates branding
 
 ### JetBrains Plugins
 
 #### Plugin Icon (80x80 SVG)
 - **Filename:** `plugin-icon.svg`
 - **Viewbox:** 0 0 80 80
-- **Content:** Socrates2 symbol in SVG format
+- **Content:** Socrates symbol in SVG format
 
 #### Screenshots (800x600 PNG)
 Required screenshots:
@@ -96,7 +96,7 @@ vsce publish 1.0.0
 ### Step 4: Marketplace Configuration
 - **Publisher ID:** socrates2
 - **Extension Name:** socrates2
-- **Display Name:** Socrates2
+- **Display Name:** Socrates
 - **Repository:** GitHub URL
 - **License:** MIT
 - **Home Page:** https://socrates2.io
@@ -131,9 +131,9 @@ gradle publishPlugin \
 ### Step 4: Marketplace Information
 
 **Plugin Details:**
-- **Name:** Socrates2
+- **Name:** Socrates
 - **Category:** IDE Integration
-- **Vendor:** Socrates2
+- **Vendor:** Socrates
 - **License:** MIT
 - **Plugin ID:** com.socrates2.jetbrains
 
@@ -184,8 +184,8 @@ twine upload dist/*
 setup(
     name='socrates2-lsp',
     version='1.0.0',
-    description='Socrates2 Language Server Protocol implementation',
-    author='Socrates2',
+    description='Socrates Language Server Protocol implementation',
+    author='Socrates',
     author_email='dev@socrates2.io',
     license='MIT',
     packages=['socrates2_lsp'],
@@ -208,7 +208,7 @@ setup(
 
 #### VS Code: README.md
 ```markdown
-# Socrates2 for VS Code
+# Socrates for VS Code
 
 Intelligent specification management and code generation.
 
@@ -229,7 +229,7 @@ See [full documentation](./docs/README.md)
 
 #### JetBrains: plugin-description.md
 ```markdown
-# Socrates2 for JetBrains IDEs
+# Socrates for JetBrains IDEs
 
 Specification-aware development for IntelliJ IDEA, PyCharm, WebStorm, and more.
 
@@ -244,7 +244,7 @@ Specification-aware development for IntelliJ IDEA, PyCharm, WebStorm, and more.
 
 #### LSP: README.md
 ```markdown
-# Socrates2 Language Server
+# Socrates Language Server
 
 LSP implementation for specification-aware development in any LSP-compatible editor.
 

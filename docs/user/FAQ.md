@@ -6,20 +6,20 @@
 
 ## General Questions
 
-### What is Socrates2?
+### What is Socrates?
 
-Socrates2 is an AI-powered platform that guides teams through systematic requirements gathering using the Socratic method (question-based discovery). It helps create complete, high-quality specifications across seven knowledge domains.
+Socrates is an AI-powered platform that guides teams through systematic requirements gathering using the Socratic method (question-based discovery). It helps create complete, high-quality specifications across seven knowledge domains.
 
-### Who should use Socrates2?
+### Who should use Socrates?
 
-Socrates2 is ideal for:
+Socrates is ideal for:
 - **Software teams** building products
 - **Enterprises** creating system specifications
 - **Startups** defining MVPs
 - **Consultants** gathering client requirements
 - **Educators** teaching requirements engineering
 
-### What makes Socrates2 different from other tools?
+### What makes Socrates different from other tools?
 
 1. **Systematic approach** - Seven-domain coverage ensures nothing is missed
 2. **AI-powered** - Claude AI asks intelligent questions, not templates
@@ -30,7 +30,7 @@ Socrates2 is ideal for:
 
 ### How much does it cost?
 
-Socrates2 uses a SaaS subscription model:
+Socrates uses a SaaS subscription model:
 - **Starter:** $99/month (5 projects, 3 members)
 - **Professional:** $499/month (unlimited, all features)
 - **Enterprise:** Custom pricing
@@ -43,7 +43,7 @@ Free trial available. See pricing page for details.
 
 ### How do I get started?
 
-1. **Sign up** at socrates2.app
+1. **Sign up** at socrates.app
 2. **Create a project** with your project name
 3. **Start a session** and choose a domain
 4. **Answer questions** from the AI
@@ -54,7 +54,7 @@ See [Getting Started Guide](GETTING_STARTED.md) for detailed instructions.
 
 ### Do I need technical knowledge?
 
-No! Socrates2 is designed for anyone. You just need to:
+No! Socrates is designed for anyone. You just need to:
 - Understand your project
 - Think through answers clearly
 - Be honest about unknowns
@@ -129,7 +129,7 @@ Low confidence items should be discussed with team.
 
 ### How does conflict detection work?
 
-Socrates2 automatically detects when:
+Socrates automatically detects when:
 - Two specifications contradict each other
 - A specification conflicts with assumptions
 - Missing information creates gaps
@@ -143,7 +143,7 @@ When conflicts are found, you're notified and guided to resolution.
 
 ### Can I work with a team?
 
-Yes! Socrates2 is designed for teams:
+Yes! Socrates is designed for teams:
 - Invite team members to projects
 - Assign roles (owner, editor, viewer)
 - Collaborate on sessions
@@ -208,11 +208,11 @@ The Socratic method is a teaching technique using questions to:
 4. Build clarity gradually
 5. Encourage critical thinking
 
-Socrates2 applies this to requirements gathering.
+Socrates applies this to requirements gathering.
 
 ### How does AI analyze my answers?
 
-Socrates2 uses Claude AI to:
+Socrates uses Claude AI to:
 - Understand your answers in context
 - Generate follow-up questions
 - Identify assumptions
@@ -224,7 +224,7 @@ The AI never stores personal data beyond your project.
 
 ### Can I access via API?
 
-Yes! Socrates2 provides:
+Yes! Socrates provides:
 - Full REST API (40+ endpoints)
 - JWT authentication
 - Complete API documentation
@@ -245,14 +245,14 @@ Enterprise tier offers additional security features.
 
 ### What about data privacy?
 
-Socrates2 is SOC 2 compliant (planned):
+Socrates is SOC 2 compliant (planned):
 - End-to-end encryption available
 - GDPR compliant
 - Data residency options (Enterprise)
 - Regular security audits
 - No third-party data sharing
 
-See [Privacy Policy](https://socrates2.app/privacy).
+See [Privacy Policy](https://socrates.app/privacy).
 
 ---
 
@@ -420,13 +420,13 @@ API integrations available now.
 
 ### Can I use different LLMs?
 
-Currently Socrates2 uses Claude (Anthropic). Multi-LLM support is planned for future versions.
+Currently Socrates uses Claude (Anthropic). Multi-LLM support is planned for future versions.
 
 ### Is there an on-premise option?
 
 Enterprise tier supports on-premise deployment. Contact sales for details.
 
-### Can I white-label Socrates2?
+### Can I white-label Socrates?
 
 Yes! Enterprise customers can white-label:
 - Custom branding
@@ -434,7 +434,7 @@ Yes! Enterprise customers can white-label:
 - Custom themes
 - Embedded experience
 
-Contact sales@socrates2.app.
+Contact sales@socrates.app.
 
 ---
 
@@ -449,7 +449,7 @@ Contact sales@socrates2.app.
 
 ### How do I report a bug?
 
-1. Email: support@socrates2.app
+1. Email: support@socrates.app
 2. GitHub: Create issue on repository
 3. In-app: Use "Report Issue" button
 
@@ -461,7 +461,7 @@ Include:
 
 ### How do I request a feature?
 
-1. Email: feedback@socrates2.app
+1. Email: feedback@socrates.app
 2. GitHub: Create feature request
 3. In-app: Use "Suggest Feature" button
 
@@ -469,16 +469,16 @@ We read all feedback and prioritize based on demand.
 
 ### Can I schedule a demo?
 
-Yes! Book a demo at: https://socrates2.app/demo
+Yes! Book a demo at: https://socrates.app/demo
 
-Or email: demo@socrates2.app
+Or email: demo@socrates.app
 
 ---
 
 ## Still Have Questions?
 
-- **Email:** support@socrates2.app
-- **Live Chat:** Available on socrates2.app
+- **Email:** support@socrates.app
+- **Live Chat:** Available on socrates.app
 - **Community:** Discussion forum (coming soon)
 - **Docs:** [Complete Documentation](../INDEX.md)
 

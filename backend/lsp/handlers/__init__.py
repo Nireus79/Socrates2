@@ -247,7 +247,7 @@ class DiagnosticsHandler:
                         "end": {"line": 1, "character": 0}
                     },
                     "severity": severity,
-                    "source": "Socrates2",
+                    "source": "Socrates",
                     "message": conflict.message,
                     "code": conflict.id,
                     "tags": [1] if conflict.type == "deprecated" else []  # DiagnosticTag.Unnecessary
@@ -420,7 +420,7 @@ class CodeActionHandler:
 
         try:
             for diagnostic in diagnostics:
-                if diagnostic.get("source") != "Socrates2":
+                if diagnostic.get("source") != "Socrates":
                     continue
 
                 conflict_id = diagnostic.get("code")

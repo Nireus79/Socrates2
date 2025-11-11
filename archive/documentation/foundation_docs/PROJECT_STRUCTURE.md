@@ -1,4 +1,4 @@
-# Socrates2 - Project Structure
+# Socrates - Project Structure
 
 **Last Updated:** 2025-11-05
 **Status:** Foundation - To be implemented in Phase 1

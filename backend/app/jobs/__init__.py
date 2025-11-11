@@ -1,5 +1,5 @@
 """
-Background jobs module for Socrates2.
+Background jobs module for Socrates.
 
 Contains scheduled tasks and job definitions.
 """

@@ -9,7 +9,7 @@
 
 ## Overview
 
-Extract core algorithms from Socrates2 into a standalone Python library:
+Extract core algorithms from Socrates into a standalone Python library:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -26,7 +26,7 @@ Extract core algorithms from Socrates2 into a standalone Python library:
    Used by...
          ↓
 ┌─────────────────────────────────────────┐
-│  Socrates2 (FastAPI Application)        │
+│  Socrates (FastAPI Application)        │
 ├─────────────────────────────────────────┤
 │ - Web server (FastAPI)                  │
 │ - Authentication & billing              │
@@ -402,7 +402,7 @@ socrates_ai/
     └── test_utils.py
 ```
 
-### Socrates2 Usage
+### Socrates Usage
 ```python
 from socrates_ai import (
     SpecificationValidator,
@@ -556,7 +556,7 @@ examples/
 ## Community & Adoption
 
 ### Expected Adoption
-1. **Socrates2 internal use** - All agents use library
+1. **Socrates internal use** - All agents use library
 2. **Open-source users** - CLI tools, research projects
 3. **Enterprise customers** - Custom implementations
 4. **Competitors** - Better than reimplementing
@@ -571,7 +571,7 @@ examples/
 
 ## Benefits of Library Extraction
 
-### For Socrates2
+### For Socrates
 - ✅ Cleaner codebase (separation of concerns)
 - ✅ Faster testing (test algorithms independently)
 - ✅ Easier maintenance (bug fixes in one place)
@@ -579,7 +579,7 @@ examples/
 
 ### For Users
 - ✅ Reusable in their own projects
-- ✅ No dependency on Socrates2 web app
+- ✅ No dependency on Socrates web app
 - ✅ Community contributions
 - ✅ Competitive advantage for AI projects
 

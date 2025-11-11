@@ -1,4 +1,4 @@
-"""Programming domain for Socrates2."""
+"""Programming domain for Socrates."""
 
 from .domain import ProgrammingDomain
 

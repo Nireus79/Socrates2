@@ -397,7 +397,7 @@ class MyPlugin(PluginBase):
     """
     My custom plugin.
 
-    Extends Socrates2 with custom functionality.
+    Extends Socrates with custom functionality.
     """
 
     name = "my_plugin"
@@ -538,4 +538,4 @@ Before implementing extensions:
 
 ---
 
-*This guide ensures Socrates2 remains extensible through Phase 0-6 without refactoring.*
+*This guide ensures Socrates remains extensible through Phase 0-6 without refactoring.*

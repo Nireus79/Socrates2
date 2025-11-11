@@ -29,7 +29,7 @@
 
 ## OVERVIEW
 
-**Security is non-negotiable.** Socrates2 handles sensitive data:
+**Security is non-negotiable.** Socrates handles sensitive data:
 - User credentials and authentication tokens
 - Project specifications and proprietary business logic
 - LLM API keys (expensive if compromised)
@@ -1127,4 +1127,4 @@ audit_service.log_event(
 
 ---
 
-*This document ensures Socrates2 follows security best practices from day 1.*
+*This document ensures Socrates follows security best practices from day 1.*

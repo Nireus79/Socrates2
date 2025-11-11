@@ -1,5 +1,5 @@
 """
-Domain API endpoints for Socrates2.
+Domain API endpoints for Socrates.
 
 Provides REST API access to all available knowledge domains and their specifications.
 """
@@ -43,7 +43,7 @@ async def startup_event():
 @router.get("", summary="List all available domains")
 async def list_domains() -> Dict[str, Any]:
     """
-    List all available Socrates2 knowledge domains.
+    List all available Socrates knowledge domains.
 
     Returns:
         Dictionary with domain count and list of all domains with metadata

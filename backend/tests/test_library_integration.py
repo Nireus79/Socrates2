@@ -1,5 +1,5 @@
 """
-Tests for Socrates library integration with Socrates2.
+Tests for Socrates library integration with Socrates.
 
 Tests that the Socrates library (socrates-ai) is properly integrated
 and can be imported and used in the application.
@@ -231,7 +231,7 @@ class TestSocratesLibraryIntegration:
     def test_library_in_requirements(self):
         """Test that socrates-ai is in requirements.txt."""
         try:
-            with open("/home/user/Socrates2/backend/requirements.txt", "r") as f:
+            with open("/home/user/Socrates/backend/requirements.txt", "r") as f:
                 content = f.read()
                 assert "socrates" in content.lower()
         except FileNotFoundError:

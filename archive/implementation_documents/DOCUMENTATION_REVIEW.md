@@ -389,7 +389,7 @@ venv/
 # Documentation Index
 
 ## Start Here
-1. VISION.md - What is Socrates2?
+1. VISION.md - What is Socrates?
 2. ARCHITECTURE.md - How does it work?
 3. DEVELOPMENT_SETUP.md - How do I set it up?
 

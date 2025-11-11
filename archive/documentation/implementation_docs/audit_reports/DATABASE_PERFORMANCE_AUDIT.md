@@ -1,4 +1,4 @@
-# Socrates2 Backend - Database Performance Optimization Report
+# Socrates Backend - Database Performance Optimization Report
 
 **Analysis Date:** November 9, 2025
 **Codebase Size:** 3,504 lines in models, 26 relationships defined
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The Socrates2 backend has **significant N+1 query problems** and **missing eager loading** that will severely impact performance as the database grows. Current implementation can easily generate **5-20x more queries than necessary** for common operations.
+The Socrates backend has **significant N+1 query problems** and **missing eager loading** that will severely impact performance as the database grows. Current implementation can easily generate **5-20x more queries than necessary** for common operations.
 
 **High-Impact Issues Found:** 4 critical, 8 major, 5 moderate
 
@@ -24,7 +24,7 @@ The Socrates2 backend has **significant N+1 query problems** and **missing eager
 **Severity:** CRITICAL | **Impact:** 50-100x query multiplication | **ROI:** Very High
 
 ### Location
-`/home/user/Socrates2/backend/app/agents/team_collaboration.py` - Lines 589-611
+`/home/user/Socrates/backend/app/agents/team_collaboration.py` - Lines 589-611
 
 ### Problem
 ```python
@@ -91,7 +91,7 @@ shares = db_specs.query(ProjectShare).filter_by(team_id=team_id)\
 **Severity:** CRITICAL | **Impact:** 40-50x multiplication | **ROI:** Very High
 
 ### Location
-`/home/user/Socrates2/backend/app/agents/team_collaboration.py` - Lines 350-362
+`/home/user/Socrates/backend/app/agents/team_collaboration.py` - Lines 350-362
 
 ### Problem
 ```python
@@ -131,7 +131,7 @@ for member in members:
 **Severity:** MAJOR | **Impact:** 3-5x slower pagination | **ROI:** High
 
 ### Location
-`/home/user/Socrates2/backend/app/api/search.py` - Lines 93, 122, 151
+`/home/user/Socrates/backend/app/api/search.py` - Lines 93, 122, 151
 
 ### Problem
 ```python
@@ -270,7 +270,7 @@ CREATE INDEX idx_quality_metrics_project_id ON quality_metrics(project_id);
 **Severity:** MAJOR | **Impact:** 5-10x slower aggregation | **ROI:** High
 
 ### Location
-`/home/user/Socrates2/backend/app/api/insights.py` - Lines 95-104
+`/home/user/Socrates/backend/app/api/insights.py` - Lines 95-104
 
 ### Problem
 ```python
@@ -376,7 +376,7 @@ __table_args__ = (
 **Severity:** MODERATE | **Impact:** 2-3x slower question generation | **ROI:** Medium
 
 ### Location
-`/home/user/Socrates2/backend/app/agents/socratic.py` - Lines 112-117
+`/home/user/Socrates/backend/app/agents/socratic.py` - Lines 112-117
 
 ### Problem
 ```python
@@ -407,7 +407,7 @@ existing_specs = db.query(Specification).filter(
 **Severity:** MODERATE | **Impact:** Memory waste for large result sets | **ROI:** Medium
 
 ### Location
-`/home/user/Socrates2/backend/app/api/search.py` - Lines 164-168
+`/home/user/Socrates/backend/app/api/search.py` - Lines 164-168
 
 ### Problem
 ```python
@@ -444,7 +444,7 @@ questions_query.limit(limit).offset(skip)
 **Severity:** MODERATE | **Impact:** 2x slower user learning operations | **ROI:** Medium
 
 ### Location
-`/home/user/Socrates2/backend/app/agents/user_learning.py` - Lines 81-84
+`/home/user/Socrates/backend/app/agents/user_learning.py` - Lines 81-84
 
 ### Problem
 ```python

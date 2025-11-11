@@ -1,4 +1,4 @@
-"""Business domain for Socrates2.
+"""Business domain for Socrates.
 
 Covers business strategy, market analysis, financial planning,
 go-to-market strategy, and organizational structure.

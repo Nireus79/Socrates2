@@ -1,4 +1,4 @@
-# IDE Integration Roadmap for Socrates2
+# IDE Integration Roadmap for Socrates
 
 **Date:** November 10, 2025
 **Status:** Planning Phase - Not Yet Implemented
@@ -46,7 +46,7 @@ IDE (VS Code/PyCharm)
     ↕ (WebSocket)
 IDE Integration Service
     ↕ (HTTP/gRPC)
-Socrates2 Backend
+Socrates Backend
     ↓
 Code Generator → Database
     ↓
@@ -66,12 +66,12 @@ Automatically syncs files to IDE workspace
 
 ### 🎯 Features
 1. **Authentication**
-   - Sign in to Socrates2 backend
+   - Sign in to Socrates backend
    - Store bearer token in VS Code secrets API
    - Auto-refresh JWT tokens
 
 2. **Project Management**
-   - Connect IDE workspace to Socrates2 project
+   - Connect IDE workspace to Socrates project
    - Sync project ID and metadata
    - Display project status in sidebar
 

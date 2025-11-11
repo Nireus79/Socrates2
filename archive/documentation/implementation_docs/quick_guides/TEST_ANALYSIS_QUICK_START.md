@@ -167,7 +167,7 @@ Total: 22 tests, 1,400 lines, 6-8 hours to implement
 All analysis documents are in the project root:
 
 ```
-/home/user/Socrates2/
+/home/user/Socrates/
 ├── TEST_COVERAGE_ANALYSIS.md        ← Comprehensive report (19 KB)
 ├── TEST_GAPS_SUMMARY.txt             ← Executive summary (3.1 KB)
 └── TEST_ANALYSIS_QUICK_START.md      ← This file
@@ -176,7 +176,7 @@ All analysis documents are in the project root:
 New test files to create:
 
 ```
-/home/user/Socrates2/backend/tests/
+/home/user/Socrates/backend/tests/
 ├── test_api_search.py                (NEW)
 ├── test_api_insights.py              (NEW)
 ├── test_api_templates.py             (NEW)

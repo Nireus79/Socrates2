@@ -1,5 +1,5 @@
 """
-Agent integration tests for Socrates2.
+Agent integration tests for Socrates.
 
 Tests core agent functionality and integration with the orchestrator.
 """

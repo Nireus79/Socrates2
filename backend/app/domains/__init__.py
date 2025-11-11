@@ -1,7 +1,7 @@
 """
-Multi-domain system for Socrates2.
+Multi-domain system for Socrates.
 
-Enables Socrates2 to work with any knowledge domain:
+Enables Socrates to work with any knowledge domain:
 - Programming (current)
 - Technical Documentation
 - Book Writing

@@ -119,7 +119,7 @@ Role: {role}
 
 {f'Message from inviter: {message}' if message else ''}
 
-Accept this invitation by logging into Socrates2 and visiting your invitations.
+Accept this invitation by logging into Socrates and visiting your invitations.
 
 Invitation expires on {invitation.expires_at}
                 """.strip()

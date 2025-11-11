@@ -1,5 +1,5 @@
 """
-Security tests for Socrates2.
+Security tests for Socrates.
 
 Tests JWT token generation, validation, password hashing, and auth mechanisms.
 """

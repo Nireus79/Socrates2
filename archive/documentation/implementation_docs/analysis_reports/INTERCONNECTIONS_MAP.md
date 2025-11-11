@@ -663,7 +663,7 @@ services.get_database() → None  # None, no error
 # Code appears to work but silently fails!
 ```
 
-**Solution for Socrates2:**
+**Solution for Socrates:**
 ```python
 # STRICT IMPORTS - No fallbacks!
 from app.core import ServiceContainer  # If this fails, LET IT FAIL LOUD

@@ -1,7 +1,7 @@
-# Socrates2 API Reference
+# Socrates API Reference
 
 **API Version:** 1.0
-**Base URL:** `https://api.socrates2.app/api/v1`
+**Base URL:** `https://api.socrates.app/api/v1`
 **Format:** JSON
 **Authentication:** Bearer JWT Token
 

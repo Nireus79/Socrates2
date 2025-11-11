@@ -1,4 +1,4 @@
-# Socrates2 - Claude AI Session Summary
+# Socrates - Claude AI Session Summary
 
 **Date:** November 5-6, 2025
 **Session Focus:** Phase 1 Database Setup and Migration Configuration
@@ -251,7 +251,7 @@ psycopg2.OperationalError: password authentication failed for user "postgres"
 
 3. **Run Migrations**
    ```powershell
-   cd C:\Users\themi\PycharmProjects\Socrates2\backend
+   cd C:\Users\themi\PycharmProjects\Socrates\backend
    .\scripts\run_migrations.ps1
    ```
 
@@ -428,7 +428,7 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 ## Repository Structure (Current)
 
 ```
-Socrates2/
+Socrates/
 ├── .git/
 ├── .idea/
 ├── backend/
@@ -535,7 +535,7 @@ CREATE DATABASE socrates_specs;
 
 ### Run Migrations
 ```powershell
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 .\scripts\run_migrations.ps1
 ```
 

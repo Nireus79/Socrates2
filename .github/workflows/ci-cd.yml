@@ -1,4 +1,4 @@
-name: Socrates2 CI/CD Pipeline
+name: Socrates CI/CD Pipeline
 
 on:
   push:

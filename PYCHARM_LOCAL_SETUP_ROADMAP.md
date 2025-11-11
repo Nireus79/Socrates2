@@ -1,4 +1,4 @@
-# PyCharm Local Setup Roadmap for Socrates2
+# PyCharm Local Setup Roadmap for Socrates
 
 **Version:** 1.0
 **Date:** November 11, 2025
@@ -9,7 +9,7 @@
 
 ## Overview
 
-This document provides step-by-step instructions to get Socrates2 running locally in PyCharm on your machine. The project is now production-ready with comprehensive testing, documentation, and PyPI publication.
+This document provides step-by-step instructions to get Socrates running locally in PyCharm on your machine. The project is now production-ready with comprehensive testing, documentation, and PyPI publication.
 
 ---
 
@@ -32,15 +32,15 @@ This document provides step-by-step instructions to get Socrates2 running locall
 
 ### 1.1 Clone Repository
 ```bash
-git clone https://github.com/Nireus79/Socrates2.git
-cd Socrates2
+git clone https://github.com/Nireus79/Socrates.git
+cd Socrates
 git checkout main  # or your working branch
 ```
 
 ### 1.2 Open in PyCharm
-1. **File → Open** → Select `Socrates2` directory
+1. **File → Open** → Select `Socrates` directory
 2. **Configure Python Interpreter:**
-   - File → Settings → Project: Socrates2 → Python Interpreter
+   - File → Settings → Project: Socrates → Python Interpreter
    - Click gear icon → Add Interpreter → Add Local Interpreter
    - Select Python 3.12+ or install it
 
@@ -96,7 +96,7 @@ CREATE DATABASE socrates_specs;
 
 ### 3.2 Configure Environment
 ```bash
-cd /home/user/Socrates2/backend
+cd /home/user/Socrates/backend
 
 # Copy environment template
 cp .env.example .env
@@ -122,18 +122,18 @@ alembic history
 ## Step 4: PyCharm Configuration (5 minutes)
 
 ### 4.1 Configure Interpreter in PyCharm
-1. **File → Settings → Project: Socrates2 → Python Interpreter**
+1. **File → Settings → Project: Socrates → Python Interpreter**
 2. Click **⚙️ (gear icon) → Add**
 3. Select **Existing Environment**
-4. Navigate to: `Socrates2/backend/.venv/bin/python` (or `.venv/Scripts/python.exe` on Windows)
+4. Navigate to: `Socrates/backend/.venv/bin/python` (or `.venv/Scripts/python.exe` on Windows)
 5. Click **OK**
 
 ### 4.2 Configure Run Configuration
 1. **Run → Edit Configurations**
 2. Click **+ → Python**
-3. **Script path:** `/home/user/Socrates2/backend/app/main.py`
+3. **Script path:** `/home/user/Socrates/backend/app/main.py`
 4. **Module name:** `uvicorn app.main:app --reload`
-5. **Working directory:** `/home/user/Socrates2/backend`
+5. **Working directory:** `/home/user/Socrates/backend`
 6. **Environment variables:** (auto-loaded from `.env`)
 7. Click **OK**
 
@@ -242,7 +242,7 @@ git push origin your-branch-name
 ## Project Structure
 
 ```
-Socrates2/
+Socrates/
 ├── backend/                      # Main Python backend
 │   ├── .venv/                   # Virtual environment (created locally)
 │   ├── app/                     # FastAPI application
@@ -278,7 +278,7 @@ Socrates2/
 cd backend
 pip install -e .
 # Or manually set PYTHONPATH
-export PYTHONPATH=/path/to/Socrates2/backend
+export PYTHONPATH=/path/to/Socrates/backend
 ```
 
 ### Issue: PostgreSQL Connection Refused
@@ -492,9 +492,9 @@ DATABASE_URL_SPECS=postgresql://user:pass@db-host:5432/socrates_specs
 - **Architecture:** `/foundation_docs/ARCHITECTURE.md`
 
 ### GitHub Resources
-- **Issues:** https://github.com/Nireus79/Socrates2/issues
-- **Discussions:** https://github.com/Nireus79/Socrates2/discussions
-- **Pull Requests:** https://github.com/Nireus79/Socrates2/pulls
+- **Issues:** https://github.com/Nireus79/Socrates/issues
+- **Discussions:** https://github.com/Nireus79/Socrates/discussions
+- **Pull Requests:** https://github.com/Nireus79/Socrates/pulls
 
 ### PyPI Package
 - **Package:** https://pypi.org/project/socrates-ai/0.2.0/

@@ -1,5 +1,5 @@
 """
-API endpoint tests for Socrates2.
+API endpoint tests for Socrates.
 
 Tests HTTP endpoints for auth, projects, and admin functionality.
 """

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Automatic .env file generator for Socrates2
+Automatic .env file generator for Socrates
 Generates secure SECRET_KEY and creates .env file with user input
 """
 
@@ -30,7 +30,7 @@ def get_user_input(prompt, default=None):
 def main():
     """Main setup function"""
     print("=" * 70)
-    print("Socrates2 - Environment Setup")
+    print("Socrates - Environment Setup")
     print("=" * 70)
     print()
 
@@ -89,7 +89,7 @@ def main():
     db_url_specs = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/socrates_specs"
 
     # Create .env content
-    env_content = f"""# Socrates2 - Environment Variables
+    env_content = f"""# Socrates - Environment Variables
 # Generated automatically by setup_env.py
 
 # ===== DATABASE =====

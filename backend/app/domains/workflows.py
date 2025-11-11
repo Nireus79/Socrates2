@@ -1,5 +1,5 @@
 """
-Multi-domain workflow system for Socrates2.
+Multi-domain workflow system for Socrates.
 
 Enables combining specifications from multiple domains with unified validation,
 cross-domain conflict detection, and composite specification generation.

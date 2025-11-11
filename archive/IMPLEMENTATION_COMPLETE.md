@@ -251,7 +251,7 @@ See `SPECIFICATION_KEY_VALUE_MIGRATION.md` for complete extraction rules.
 
 ## Library Compatibility
 
-After migration, Socrates2 will:
+After migration, Socrates will:
 
 ✅ Use proper key-value structure (socrates-ai library standard)
 ✅ Enable specification queries: "SELECT * WHERE key='database'"

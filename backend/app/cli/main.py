@@ -1,5 +1,5 @@
 """
-Socrates2 CLI - Command line interface for managing domains and specifications.
+Socrates CLI - Command line interface for managing domains and specifications.
 
 Provides commands for:
 - Listing and exploring domains
@@ -31,12 +31,12 @@ except ValueError:
 @click.pass_context
 def cli(ctx):
     """
-    Socrates2 - AI-Powered Specification Assistant CLI.
+    Socrates - AI-Powered Specification Assistant CLI.
 
     Commands for working with knowledge domains and specifications.
     """
     if ctx.invoked_subcommand is None:
-        click.echo("Socrates2 CLI v0.1.0")
+        click.echo("Socrates CLI v0.1.0")
         click.echo("Use 'socrates2 --help' to see available commands")
 
 
@@ -362,7 +362,7 @@ def export(format: str):
 @cli.command()
 def version():
     """Show version information."""
-    click.echo("Socrates2 CLI v0.1.0")
+    click.echo("Socrates CLI v0.1.0")
     click.echo("Phase 7.4 - Advanced Analytics System")
 
 

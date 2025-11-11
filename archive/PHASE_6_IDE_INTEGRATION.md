@@ -8,7 +8,7 @@
 
 ## Overview
 
-Enable developers to use Socrates2 directly in their IDEs:
+Enable developers to use Socrates directly in their IDEs:
 
 1. **VS Code Extension** - Sidebar with projects/specs, sync to workspace
 2. **PyCharm Plugin** - Same features via JetBrains platform
@@ -31,7 +31,7 @@ Enable developers to use Socrates2 directly in their IDEs:
 ```
 VS Code Extension (TypeScript)
     ↕ HTTP/WebSocket
-Socrates2 Backend (FastAPI)
+Socrates Backend (FastAPI)
     ↓
 Database (PostgreSQL)
 ```
@@ -89,7 +89,7 @@ export class AuthenticationProvider {
         if (!this.apiKey) {
             // Prompt user for API key
             this.apiKey = await vscode.window.showInputBox({
-                prompt: 'Enter your Socrates2 API Key',
+                prompt: 'Enter your Socrates API Key',
                 password: true
             });
 
@@ -180,7 +180,7 @@ export class FileSyncService {
         }
 
         vscode.window.showInformationMessage(
-            `Synced ${files.length} files from Socrates2`
+            `Synced ${files.length} files from Socrates`
         );
     }
 
@@ -188,7 +188,7 @@ export class FileSyncService {
         const watcher = vscode.workspace.createFileSystemWatcher(workspacePath);
 
         watcher.onDidChange(async (uri) => {
-            // Upload changed file back to Socrates2
+            // Upload changed file back to Socrates
             const content = await fs.readFile(uri.fsPath, 'utf-8');
             await this.apiClient.uploadFile(uri.fsPath, content);
         });
@@ -288,7 +288,7 @@ async def log_extension_event(
 # Click "Sync Project" → should create files in workspace
 
 # 4. Test file watching
-# Edit file → should sync back to Socrates2
+# Edit file → should sync back to Socrates
 
 # Publish to VS Code Marketplace
 vsce package

@@ -319,7 +319,7 @@ def test_nlu_detects_conversation():
 
 ## Conclusion
 
-The NLU Service creates a unified natural language understanding layer for all Socrates2 user interactions. This ensures:
+The NLU Service creates a unified natural language understanding layer for all Socrates user interactions. This ensures:
 
 1. ✅ **Consistent Understanding** - Same intent parsing everywhere
 2. ✅ **Better Context** - User, project, session context considered

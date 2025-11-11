@@ -1,5 +1,5 @@
 """
-Test configuration and fixtures for Socrates2 testing suite.
+Test configuration and fixtures for Socrates testing suite.
 
 Provides:
 - In-memory SQLite databases for testing
@@ -129,7 +129,7 @@ def test_project_data():
     """Provide test project data."""
     return {
         "name": "Test Project",
-        "description": "A test project for Socrates2",
+        "description": "A test project for Socrates",
         "maturity_score": 0.5,
     }
 

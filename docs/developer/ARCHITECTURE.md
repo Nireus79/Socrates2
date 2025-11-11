@@ -1,4 +1,4 @@
-# Socrates2 Architecture Guide
+# Socrates Architecture Guide
 
 **Level:** Intermediate to Advanced
 **Time to read:** 45 minutes

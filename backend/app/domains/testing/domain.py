@@ -1,5 +1,5 @@
 """
-Testing domain implementation for Socrates2.
+Testing domain implementation for Socrates.
 
 Defines specifications, questions, exports, and rules for testing strategies.
 Questions are loaded from questions.json configuration file.
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class TestingDomain(BaseDomain):
     """
-    Testing and Quality Assurance domain for Socrates2.
+    Testing and Quality Assurance domain for Socrates.
 
     Handles specification for comprehensive testing strategies, test automation,
     and quality assurance processes.

@@ -108,7 +108,7 @@ See IMPLEMENTATION_PLAN.md section "2.2: test_resolve_conflict_keep_old"
 
 ### Step 3: Run Tests and Fix One by One
 ```bash
-cd /home/user/Socrates2/backend
+cd /home/user/Socrates/backend
 pytest tests/ -v --tb=short  # See what fails
 ```
 

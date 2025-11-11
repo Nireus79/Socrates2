@@ -1,5 +1,5 @@
 """
-Programming domain implementation for Socrates2.
+Programming domain implementation for Socrates.
 
 Defines specifications, questions, exports, and rules for software development projects.
 Questions are loaded from questions.json configuration file.
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class ProgrammingDomain(BaseDomain):
     """
-    Software Programming domain for Socrates2.
+    Software Programming domain for Socrates.
 
     Handles specification and code generation for software projects.
     Supports 8+ programming languages with specialized patterns.

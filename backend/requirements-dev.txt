@@ -1,4 +1,4 @@
-# Socrates2 - Development Dependencies
+# Socrates - Development Dependencies
 # Python version: 3.12
 # Last updated: 2025-11-09
 

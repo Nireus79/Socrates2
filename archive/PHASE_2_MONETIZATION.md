@@ -8,7 +8,7 @@
 
 ## Overview
 
-Transform Socrates2 from free service to sustainable SaaS business model:
+Transform Socrates from free service to sustainable SaaS business model:
 1. Stripe payment integration (checkout, invoices, customer portal)
 2. Tiered subscription plans (Free, Pro, Team, Enterprise)
 3. Usage limits and enforcement (projects, specifications, API calls)
@@ -589,7 +589,7 @@ GRACE_PERIOD_DAYS=3
 
 1. **Stripe SDK Installation** ✅
    - Added `stripe==8.10.0` to requirements.txt
-   - All 30+ dependencies for full Socrates2 stack
+   - All 30+ dependencies for full Socrates stack
 
 2. **Billing Models** ✅
    - `backend/app/models/subscription.py` (57 lines)

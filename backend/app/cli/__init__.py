@@ -1,6 +1,6 @@
-"""Socrates2 CLI module.
+"""Socrates CLI module.
 
-Command-line interface for managing Socrates2 projects, specifications, and configurations.
+Command-line interface for managing Socrates projects, specifications, and configurations.
 """
 
 try:

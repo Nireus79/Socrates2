@@ -1,7 +1,7 @@
 """
 LSP Server Configuration
 
-Configuration for Socrates2 Language Server Protocol server.
+Configuration for Socrates Language Server Protocol server.
 """
 
 import os

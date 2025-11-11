@@ -1,6 +1,6 @@
-# Socrates2 - Production Deployment Guide
+# Socrates - Production Deployment Guide
 
-This guide provides step-by-step instructions for deploying Socrates2 to production.
+This guide provides step-by-step instructions for deploying Socrates to production.
 
 ## Prerequisites
 
@@ -22,8 +22,8 @@ This guide provides step-by-step instructions for deploying Socrates2 to product
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-org/Socrates2.git
-cd Socrates2
+git clone https://github.com/your-org/Socrates.git
+cd Socrates
 ```
 
 ### 2. Create Environment File
@@ -56,7 +56,7 @@ This will:
 - Start PostgreSQL databases (auth and specs)
 - Start Redis cache
 - Run database migrations automatically
-- Start the Socrates2 API on port 8000
+- Start the Socrates API on port 8000
 
 ### 4. Verify Deployment
 
@@ -130,7 +130,7 @@ GRANT ALL PRIVILEGES ON DATABASE socrates_specs TO socrates_user;
 ### 3. Configure Environment
 
 ```bash
-cd Socrates2/backend
+cd Socrates/backend
 cp .env.example .env
 
 # Edit .env with your configuration
@@ -242,7 +242,7 @@ alembic revision --autogenerate -m "description"
 alembic revision -m "description"
 ```
 
-**Important:** Socrates2 uses two databases. When creating migrations:
+**Important:** Socrates uses two databases. When creating migrations:
 1. Determine which database the migration targets (auth or specs)
 2. Add `_should_run()` function to check database URL
 3. Test migration on both databases
@@ -415,7 +415,7 @@ alembic upgrade head
 
 ## CI/CD Pipeline
 
-Socrates2 includes a GitHub Actions CI/CD pipeline (`.github/workflows/ci-cd.yml`).
+Socrates includes a GitHub Actions CI/CD pipeline (`.github/workflows/ci-cd.yml`).
 
 ### Automated Checks
 - **Lint:** flake8, black, isort
@@ -487,7 +487,7 @@ Certbot automatically configures HTTPS and renewal.
 ## Support
 
 For issues or questions:
-- **GitHub Issues:** https://github.com/your-org/Socrates2/issues
+- **GitHub Issues:** https://github.com/your-org/Socrates/issues
 - **Documentation:** https://docs.socrates2.com
 - **Email:** support@socrates2.com
 

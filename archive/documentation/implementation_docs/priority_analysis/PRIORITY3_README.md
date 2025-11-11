@@ -220,18 +220,18 @@ VERIFICATION:
 
 ## File Locations
 
-**Analysis Documents:** `/home/user/Socrates2/PRIORITY3_*.md`
+**Analysis Documents:** `/home/user/Socrates/PRIORITY3_*.md`
 - PRIORITY3_ANALYSIS.md (2000 lines)
 - PRIORITY3_BACKEND_REQUIREMENTS.md (280 lines)
 - PRIORITY3_IMPLEMENTATION_SUMMARY.md (300 lines)
 - PRIORITY3_QUICK_REFERENCE.md (250 lines)
 - PRIORITY3_README.md (this file)
 
-**Implementation Files:** `/home/user/Socrates2/Socrates.py`
+**Implementation Files:** `/home/user/Socrates/Socrates.py`
 - Add API methods to SocratesAPI class
 - Add commands to SocratesCLI class
 
-**Testing File:** `/home/user/Socrates2/test_cli_priority3_commands.py` (to create)
+**Testing File:** `/home/user/Socrates/test_cli_priority3_commands.py` (to create)
 
 ---
 

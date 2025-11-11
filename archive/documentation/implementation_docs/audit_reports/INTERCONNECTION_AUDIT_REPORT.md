@@ -1,14 +1,14 @@
-# Socrates2 - Comprehensive Interconnection Audit Report
+# Socrates - Comprehensive Interconnection Audit Report
 
 **Date:** 2025-11-09  
-**Codebase:** `/home/user/Socrates2/backend`  
+**Codebase:** `/home/user/Socrates/backend`  
 **Scope:** Complete analysis of agent registry, API endpoints, data flows, and interconnections
 
 ---
 
 ## Executive Summary
 
-The Socrates2 system has **12 registered agents** connected to **13 API route modules**. The architecture uses a centralized orchestrator pattern with dual-database support (auth & specs). However, there are **critical gaps in integration**:
+The Socrates system has **12 registered agents** connected to **13 API route modules**. The architecture uses a centralized orchestrator pattern with dual-database support (auth & specs). However, there are **critical gaps in integration**:
 
 - **3 agents** are registered but NOT wired to any API endpoints (quality, learning, direct_chat)
 - **NLUService** is implemented but only partially used

@@ -38,8 +38,8 @@ sudo apt-get install git python3.12 python3.12-venv postgresql postgresql-contri
 
 ```bash
 # Clone the repository
-git clone https://github.com/Nireus79/Socrates2.git
-cd Socrates2
+git clone https://github.com/Nireus79/Socrates.git
+cd Socrates
 
 # Verify you're on main development branch
 git branch -a
@@ -144,7 +144,7 @@ docker exec -it socrates-postgres psql -U postgres -c "CREATE DATABASE socrates_
 
 ```bash
 # Create .env file in backend directory
-cd /path/to/Socrates2/backend
+cd /path/to/Socrates/backend
 touch .env
 
 # Add environment variables (copy from .env.example if available)
@@ -183,7 +183,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 ```bash
 # Navigate to backend directory
-cd /path/to/Socrates2/backend
+cd /path/to/Socrates/backend
 
 # Verify alembic configuration
 cat alembic.ini | grep -A 5 "sqlalchemy.url"
@@ -279,7 +279,7 @@ start htmlcov/index.html  # Windows
 See [PyCharm Setup Guide](../../PYCHARM_LOCAL_SETUP_ROADMAP.md)
 
 Quick setup:
-1. File → Open → Select Socrates2 folder
+1. File → Open → Select Socrates folder
 2. Python interpreter: .venv
 3. Mark backend/ as Sources Root
 4. Run configurations: uvicorn app.main:app --reload
@@ -458,8 +458,8 @@ docker-compose -f docker-compose.dev.yml up
 ## Getting Help
 
 - **Documentation:** [View Docs](../INDEX.md)
-- **Issues:** [GitHub Issues](https://github.com/Nireus79/Socrates2/issues)
-- **Email:** support@socrates2.app
+- **Issues:** [GitHub Issues](https://github.com/Nireus79/Socrates/issues)
+- **Email:** support@socrates.app
 
 ---
 

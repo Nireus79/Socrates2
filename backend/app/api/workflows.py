@@ -1,5 +1,5 @@
 """
-Multi-domain workflow API endpoints for Socrates2.
+Multi-domain workflow API endpoints for Socrates.
 
 Provides REST API for creating and managing multi-domain specifications
 with unified validation and cross-domain conflict detection.

@@ -17,7 +17,7 @@ Flags:
     --dry-run   Show what would be migrated without making changes
     --sample    Only process first 50 specs (for testing)
 
-Author: Socrates2 Migration System
+Author: Socrates Migration System
 Date: November 10, 2025
 """
 

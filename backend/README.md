@@ -1,4 +1,4 @@
-# Socrates2 Backend
+# Socrates Backend
 
 AI-Powered Specification Assistant using Socratic Method
 
@@ -8,7 +8,7 @@ AI-Powered Specification Assistant using Socratic Method
 
 ## Overview
 
-Socrates2 is a comprehensive AI system for building and validating specifications across multiple knowledge domains using the Socratic method. It provides:
+Socrates is a comprehensive AI system for building and validating specifications across multiple knowledge domains using the Socratic method. It provides:
 
 - **Multi-Domain System:** 7 pre-configured domains (Programming, Data Engineering, Architecture, Testing, Business, Security, DevOps)
 - **Workflow Management:** Orchestrate specifications across multiple domains with unified validation
@@ -551,4 +551,4 @@ For issues, questions, or contributions:
 ---
 
 **Last Updated:** November 11, 2025
-**Maintained by:** Socrates2 Team
+**Maintained by:** Socrates Team

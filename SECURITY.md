@@ -2,7 +2,7 @@
 
 ## Reporting Security Vulnerabilities
 
-If you discover a security vulnerability in Socrates2, please **do not** open a public GitHub issue. Instead, please report it responsibly.
+If you discover a security vulnerability in Socrates, please **do not** open a public GitHub issue. Instead, please report it responsibly.
 
 ### Reporting Process
 

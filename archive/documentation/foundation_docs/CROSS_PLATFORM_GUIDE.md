@@ -25,7 +25,7 @@
 
 ## OVERVIEW
 
-**Socrates2 MUST work seamlessly on Windows, Linux, and macOS without code changes.**
+**Socrates MUST work seamlessly on Windows, Linux, and macOS without code changes.**
 
 ### Why Cross-Platform Matters
 
@@ -430,7 +430,7 @@ for project_file in projects_dir.glob("*.json"):
 config_path_str = str(config_file)
 ```
 
-### Real Examples from Socrates2
+### Real Examples from Socrates
 
 ```python
 # settings.py
@@ -1227,4 +1227,4 @@ After completing this guide:
 
 ---
 
-*This document ensures Socrates2 works seamlessly on Windows, Linux, and macOS without code changes.*
+*This document ensures Socrates works seamlessly on Windows, Linux, and macOS without code changes.*

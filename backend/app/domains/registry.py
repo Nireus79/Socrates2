@@ -1,5 +1,5 @@
 """
-Domain registry system for Socrates2.
+Domain registry system for Socrates.
 
 Central registry that manages all available knowledge domains.
 Supports registration, discovery, and lifecycle management of domains.
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class DomainRegistry:
     """
-    Central registry for all Socrates2 knowledge domains.
+    Central registry for all Socrates knowledge domains.
 
     Singleton that manages domain registration, lookup, and metadata.
 
@@ -198,7 +198,7 @@ def register_domain(domain_id: str, domain_class: Type[BaseDomain]) -> None:
 
 def register_all_domains() -> None:
     """
-    Register all available Socrates2 domains.
+    Register all available Socrates domains.
 
     Should be called during application initialization to ensure all domains are available.
     """

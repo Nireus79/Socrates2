@@ -23,7 +23,7 @@
 
 ## OVERVIEW
 
-**Goal:** Deploy Socrates2 to production reliably and securely.
+**Goal:** Deploy Socrates to production reliably and securely.
 
 ### Recommended Platform
 
@@ -98,7 +98,7 @@ name: socrates2
 services:
   - name: web
     github:
-      repo: Nireus79/Socrates2
+      repo: Nireus79/Socrates
       branch: master
       deploy_on_push: true
     build_command: pip install -r requirements.txt

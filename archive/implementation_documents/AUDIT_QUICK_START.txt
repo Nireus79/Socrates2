@@ -234,7 +234,7 @@ NEXT STEPS
 FILES LOCATION
 ================================================================================
 
-All reports saved in: /home/user/Socrates2/
+All reports saved in: /home/user/Socrates/
 
   INTERCONNECTION_AUDIT_REPORT.md (full technical report)
   AUDIT_FINDINGS_SUMMARY.md (executive summary)

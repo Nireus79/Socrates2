@@ -181,7 +181,7 @@ class TestVersionAndHelp:
         result = cli_runner.invoke(cli, ["--help"])
 
         assert result.exit_code == 0
-        assert "Socrates2" in result.output
+        assert "Socrates" in result.output
 
     def test_domain_help(self, cli_runner):
         """Test domain subcommand help."""

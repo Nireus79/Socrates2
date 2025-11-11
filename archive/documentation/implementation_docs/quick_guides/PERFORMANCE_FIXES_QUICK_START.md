@@ -4,7 +4,7 @@ This guide provides immediate, copy-paste fixes for the highest-impact performan
 
 ## Fix #1: Team Activity N+1 (50-100x improvement)
 
-**File:** `/home/user/Socrates2/backend/app/agents/team_collaboration.py`
+**File:** `/home/user/Socrates/backend/app/agents/team_collaboration.py`
 **Lines:** 589-611
 **Time:** 10 minutes
 
@@ -65,7 +65,7 @@ for share in shares:
 
 ## Fix #2: Team Details N+1 (40-50x improvement)
 
-**File:** `/home/user/Socrates2/backend/app/agents/team_collaboration.py`
+**File:** `/home/user/Socrates/backend/app/agents/team_collaboration.py`
 **Lines:** 350-362
 **Time:** 5 minutes
 
@@ -94,7 +94,7 @@ for member in members:
 
 ## Fix #3: Search Pagination (50-100x improvement)
 
-**File:** `/home/user/Socrates2/backend/app/api/search.py`
+**File:** `/home/user/Socrates/backend/app/api/search.py`
 **Lines:** 82-178
 **Time:** 15 minutes
 
@@ -148,12 +148,12 @@ paginated_results = results  # Already paginated
 
 ## Fix #4: Add Missing Indexes (10-100x improvement)
 
-**File:** `/home/user/Socrates2/backend/alembic/versions/022_add_missing_indexes.py`
+**File:** `/home/user/Socrates/backend/alembic/versions/022_add_missing_indexes.py`
 **Time:** 5 minutes (create migration)
 
 ### Create Migration File
 ```bash
-cd /home/user/Socrates2/backend
+cd /home/user/Socrates/backend
 alembic revision --autogenerate -m "Add missing database indexes for performance"
 ```
 
@@ -212,7 +212,7 @@ def downgrade():
 
 ### Run Migration
 ```bash
-cd /home/user/Socrates2/backend
+cd /home/user/Socrates/backend
 alembic upgrade head
 ```
 
@@ -220,7 +220,7 @@ alembic upgrade head
 
 ## Fix #5: Use Database Aggregation (50x improvement)
 
-**File:** `/home/user/Socrates2/backend/app/api/insights.py`
+**File:** `/home/user/Socrates/backend/app/api/insights.py`
 **Lines:** 95-104
 **Time:** 5 minutes
 
@@ -263,7 +263,7 @@ After applying fixes, verify they work:
 
 ```bash
 # 1. Run tests
-cd /home/user/Socrates2/backend
+cd /home/user/Socrates/backend
 pytest tests/test_api_projects.py -v
 
 # 2. Check for SQL errors

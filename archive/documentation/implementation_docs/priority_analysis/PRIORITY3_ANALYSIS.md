@@ -1667,25 +1667,25 @@ def test_status_panel_display()
 ## Appendix: File Locations Reference
 
 **CLI Implementation:**
-- `/home/user/Socrates2/Socrates.py` (lines 1-1528)
+- `/home/user/Socrates/Socrates.py` (lines 1-1528)
 
 **API Endpoints:**
-- `/home/user/Socrates2/backend/app/api/search.py`
-- `/home/user/Socrates2/backend/app/api/insights.py`
-- `/home/user/Socrates2/backend/app/api/templates.py`
+- `/home/user/Socrates/backend/app/api/search.py`
+- `/home/user/Socrates/backend/app/api/insights.py`
+- `/home/user/Socrates/backend/app/api/templates.py`
 
 **Database Models:**
-- `/home/user/Socrates2/backend/app/models/project.py`
-- `/home/user/Socrates2/backend/app/models/session.py`
-- `/home/user/Socrates2/backend/app/models/specification.py`
-- `/home/user/Socrates2/backend/app/models/question.py`
+- `/home/user/Socrates/backend/app/models/project.py`
+- `/home/user/Socrates/backend/app/models/session.py`
+- `/home/user/Socrates/backend/app/models/specification.py`
+- `/home/user/Socrates/backend/app/models/question.py`
 
 **Main Application:**
-- `/home/user/Socrates2/backend/app/main.py` (includes all routers)
+- `/home/user/Socrates/backend/app/main.py` (includes all routers)
 
 **Configuration:**
-- `/home/user/Socrates2/cli-requirements.txt` (CLI dependencies)
-- `/home/user/Socrates2/backend/requirements.txt` (Backend dependencies)
+- `/home/user/Socrates/cli-requirements.txt` (CLI dependencies)
+- `/home/user/Socrates/backend/requirements.txt` (Backend dependencies)
 
 ---
 

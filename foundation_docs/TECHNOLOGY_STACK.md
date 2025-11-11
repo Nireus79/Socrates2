@@ -1,4 +1,4 @@
-# Socrates2 - Technology Stack
+# Socrates - Technology Stack
 
 **Last Updated:** 2025-11-05
 **Source:** [ARCHITECTURE.md](ARCHITECTURE.md) and [VISION.md](VISION.md)

@@ -1,4 +1,4 @@
-"""Security domain for Socrates2.
+"""Security domain for Socrates.
 
 Covers security architecture, compliance, data protection,
 access control, and incident response.

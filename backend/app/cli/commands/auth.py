@@ -61,7 +61,7 @@ def save_credentials(credentials):
     "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
 )
 def login(email: str, password: str, api_url: str):
-    """Authenticate with Socrates2 and save credentials.
+    """Authenticate with Socrates and save credentials.
 
     Examples:
         socrates auth login

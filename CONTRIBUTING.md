@@ -1,6 +1,6 @@
-# Contributing to Socrates2
+# Contributing to Socrates
 
-Thank you for your interest in contributing to Socrates2! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Socrates! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
@@ -52,8 +52,8 @@ Have an idea? Please create an issue with:
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/yourusername/Socrates2.git
-   cd Socrates2
+   git clone https://github.com/yourusername/Socrates.git
+   cd Socrates
    ```
 
 2. **Create a feature branch**
@@ -419,4 +419,4 @@ Contributors will be recognized in:
 
 ---
 
-Thank you for contributing to Socrates2! Your efforts help make IDE integration better for everyone.
+Thank you for contributing to Socrates! Your efforts help make IDE integration better for everyone.

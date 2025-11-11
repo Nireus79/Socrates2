@@ -271,12 +271,12 @@ Question
 
 ```bash
 # Check if endpoints are registered in main.py
-grep -n "search\|insights\|templates" /home/user/Socrates2/backend/app/main.py
+grep -n "search\|insights\|templates" /home/user/Socrates/backend/app/main.py
 
 # Verify models have required fields
 python -c "from backend.app.models import Project, Session, Specification, Question; print('OK')"
 
 # List all session endpoints
-grep "@router" /home/user/Socrates2/backend/app/api/sessions.py
+grep "@router" /home/user/Socrates/backend/app/api/sessions.py
 ```
 
