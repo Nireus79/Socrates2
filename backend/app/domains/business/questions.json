@@ -1,0 +1,142 @@
+[
+  {
+    "question_id": "biz_1",
+    "text": "What is your target market segment and customer profile?",
+    "category": "Market Analysis",
+    "difficulty": "medium",
+    "help_text": "e.g., B2B enterprise, B2C consumers, SMB startups",
+    "example_answer": "SMB software companies with 10-1000 employees",
+    "dependencies": [],
+    "follow_up_questions": ["biz_2", "biz_3"]
+  },
+  {
+    "question_id": "biz_2",
+    "text": "What is your estimated market size and growth rate?",
+    "category": "Market Analysis",
+    "difficulty": "hard",
+    "help_text": "e.g., $10B TAM, 25% CAGR, addressable market",
+    "example_answer": "$5B TAM with 30% annual growth",
+    "dependencies": ["biz_1"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "biz_3",
+    "text": "Who are your main competitors and what is your differentiation?",
+    "category": "Competitive Analysis",
+    "difficulty": "hard",
+    "help_text": "e.g., cost leadership, feature parity, unique IP",
+    "example_answer": "Competitors: Salesforce, HubSpot; Differentiation: AI-powered insights",
+    "dependencies": ["biz_1"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "biz_4",
+    "text": "What is your pricing model and revenue strategy?",
+    "category": "Monetization",
+    "difficulty": "medium",
+    "help_text": "e.g., subscription, usage-based, freemium, enterprise",
+    "example_answer": "Tiered SaaS: Starter ($99/mo), Pro ($499/mo), Enterprise (custom)",
+    "dependencies": [],
+    "follow_up_questions": ["biz_5"]
+  },
+  {
+    "question_id": "biz_5",
+    "text": "What is your projected revenue and profitability timeline?",
+    "category": "Financial Planning",
+    "difficulty": "hard",
+    "help_text": "e.g., $1M ARR by year 2, breakeven in 18 months",
+    "example_answer": "$500K ARR Year 1, $5M Year 3, profitability Year 2",
+    "dependencies": ["biz_4"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "biz_6",
+    "text": "What funding strategy will you pursue?",
+    "category": "Capital Strategy",
+    "difficulty": "medium",
+    "help_text": "e.g., bootstrapped, seed funding, Series A, corporate",
+    "example_answer": "Seed round $2M, then Series A $10M in year 2",
+    "dependencies": [],
+    "follow_up_questions": ["biz_7"]
+  },
+  {
+    "question_id": "biz_7",
+    "text": "What are your key KPIs and success metrics?",
+    "category": "Performance Metrics",
+    "difficulty": "medium",
+    "help_text": "e.g., CAC, LTV, retention rate, NPS, churn",
+    "example_answer": "CAC $500, LTV $5000, 90% retention, NPS 50+",
+    "dependencies": ["biz_6"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "biz_8",
+    "text": "What is your go-to-market strategy?",
+    "category": "Sales & Marketing",
+    "difficulty": "hard",
+    "help_text": "e.g., direct sales, channel partners, self-serve, community",
+    "example_answer": "Self-serve freemium + direct sales for enterprise",
+    "dependencies": [],
+    "follow_up_questions": ["biz_9"]
+  },
+  {
+    "question_id": "biz_9",
+    "text": "What is your customer acquisition and retention plan?",
+    "category": "Sales & Marketing",
+    "difficulty": "medium",
+    "help_text": "e.g., content marketing, partnerships, referral programs",
+    "example_answer": "Content marketing (SEO), partner integrations, referral rewards",
+    "dependencies": ["biz_8"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "biz_10",
+    "text": "What is your organizational structure and team plan?",
+    "category": "Organizational Structure",
+    "difficulty": "medium",
+    "help_text": "e.g., founding team, hiring plan, board composition",
+    "example_answer": "3 co-founders, 5 engineers Year 1, 20 by Year 3",
+    "dependencies": [],
+    "follow_up_questions": ["biz_11"]
+  },
+  {
+    "question_id": "biz_11",
+    "text": "What is your key talent and expertise gap?",
+    "category": "Organizational Structure",
+    "difficulty": "easy",
+    "help_text": "e.g., sales expertise, ML/AI engineers, operations",
+    "example_answer": "Need experienced VP Sales, data science talent",
+    "dependencies": ["biz_10"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "biz_12",
+    "text": "What are your key business risks and mitigation strategies?",
+    "category": "Risk Management",
+    "difficulty": "hard",
+    "help_text": "e.g., market risk, execution risk, competitive risk",
+    "example_answer": "Market risk: validate with 100 customers before launch",
+    "dependencies": [],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "biz_13",
+    "text": "What are your regulatory and compliance requirements?",
+    "category": "Compliance",
+    "difficulty": "hard",
+    "help_text": "e.g., SOC 2, GDPR, HIPAA, export controls",
+    "example_answer": "GDPR compliant, planning SOC 2 Type II in Year 2",
+    "dependencies": [],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "biz_14",
+    "text": "What is your long-term vision and exit strategy?",
+    "category": "Strategic Vision",
+    "difficulty": "medium",
+    "help_text": "e.g., IPO, acquisition target, sustainable business, category leader",
+    "example_answer": "Build category leader, likely acquisition target for enterprise platform",
+    "dependencies": [],
+    "follow_up_questions": []
+  }
+]

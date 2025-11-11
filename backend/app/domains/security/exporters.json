@@ -1,0 +1,66 @@
+[
+  {
+    "format_id": "security_policy",
+    "name": "Security Policy",
+    "description": "Comprehensive security policy document",
+    "file_extension": ".docx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "template_id": "security_policy_template"
+  },
+  {
+    "format_id": "threat_model",
+    "name": "Threat Model",
+    "description": "STRIDE threat modeling analysis",
+    "file_extension": ".pdf",
+    "mime_type": "application/pdf",
+    "template_id": "threat_model_template"
+  },
+  {
+    "format_id": "security_checklist",
+    "name": "Security Checklist",
+    "description": "Security implementation checklist",
+    "file_extension": ".xlsx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "template_id": "security_checklist_template"
+  },
+  {
+    "format_id": "compliance_roadmap",
+    "name": "Compliance Roadmap",
+    "description": "Compliance achievement timeline and roadmap",
+    "file_extension": ".pptx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "template_id": "compliance_roadmap_template"
+  },
+  {
+    "format_id": "incident_response_plan",
+    "name": "Incident Response Plan",
+    "description": "Incident response and breach procedures",
+    "file_extension": ".docx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "template_id": "incident_response_template"
+  },
+  {
+    "format_id": "risk_assessment",
+    "name": "Risk Assessment Report",
+    "description": "Security risk assessment and mitigation",
+    "file_extension": ".pdf",
+    "mime_type": "application/pdf",
+    "template_id": "risk_assessment_template"
+  },
+  {
+    "format_id": "security_architecture",
+    "name": "Security Architecture Diagram",
+    "description": "Security architecture and controls diagram",
+    "file_extension": ".png",
+    "mime_type": "image/png",
+    "template_id": "security_architecture_template"
+  },
+  {
+    "format_id": "compliance_matrix",
+    "name": "Compliance Matrix",
+    "description": "Requirements to controls mapping matrix",
+    "file_extension": ".xlsx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "template_id": "compliance_matrix_template"
+  }
+]

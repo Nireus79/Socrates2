@@ -25,6 +25,9 @@ from .programming import ProgrammingDomain
 from .data_engineering import DataEngineeringDomain
 from .architecture import ArchitectureDomain
 from .testing import TestingDomain
+from .business import BusinessDomain
+from .security import SecurityDomain
+from .devops import DevOpsDomain
 
 __all__ = [
     "BaseDomain",
@@ -34,4 +37,7 @@ __all__ = [
     "DataEngineeringDomain",
     "ArchitectureDomain",
     "TestingDomain",
+    "BusinessDomain",
+    "SecurityDomain",
+    "DevOpsDomain",
 ]

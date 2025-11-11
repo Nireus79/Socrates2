@@ -1,0 +1,66 @@
+[
+  {
+    "format_id": "business_plan",
+    "name": "Business Plan",
+    "description": "Comprehensive business plan document",
+    "file_extension": ".docx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "template_id": "business_plan_template"
+  },
+  {
+    "format_id": "pitch_deck",
+    "name": "Pitch Deck",
+    "description": "Investor pitch deck presentation",
+    "file_extension": ".pptx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "template_id": "pitch_deck_template"
+  },
+  {
+    "format_id": "financial_model",
+    "name": "Financial Model",
+    "description": "Excel financial projections and models",
+    "file_extension": ".xlsx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "template_id": "financial_model_template"
+  },
+  {
+    "format_id": "one_pager",
+    "name": "One Pager",
+    "description": "Executive summary one-page document",
+    "file_extension": ".pdf",
+    "mime_type": "application/pdf",
+    "template_id": "one_pager_template"
+  },
+  {
+    "format_id": "competitive_analysis",
+    "name": "Competitive Analysis",
+    "description": "Market and competitive analysis report",
+    "file_extension": ".pdf",
+    "mime_type": "application/pdf",
+    "template_id": "competitive_analysis_template"
+  },
+  {
+    "format_id": "go_to_market",
+    "name": "Go-to-Market Plan",
+    "description": "GTM strategy and execution plan",
+    "file_extension": ".docx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "template_id": "go_to_market_template"
+  },
+  {
+    "format_id": "org_chart",
+    "name": "Organization Chart",
+    "description": "Team structure and org chart",
+    "file_extension": ".png",
+    "mime_type": "image/png",
+    "template_id": "org_chart_template"
+  },
+  {
+    "format_id": "roadmap",
+    "name": "Product Roadmap",
+    "description": "Product development and milestone roadmap",
+    "file_extension": ".pdf",
+    "mime_type": "application/pdf",
+    "template_id": "roadmap_template"
+  }
+]

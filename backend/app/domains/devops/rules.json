@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "dev_rule_1",
+    "name": "Infrastructure as Code Mandatory",
+    "description": "All infrastructure must be defined as code",
+    "condition": "manual_infrastructure_setup",
+    "severity": "error",
+    "message": "Use infrastructure as code tools like Terraform for all infrastructure"
+  },
+  {
+    "rule_id": "dev_rule_2",
+    "name": "CI/CD Pipeline Required",
+    "description": "Automated CI/CD pipeline must be in place",
+    "condition": "manual_deployment",
+    "severity": "error",
+    "message": "Implement automated CI/CD pipeline for safe, repeatable deployments"
+  },
+  {
+    "rule_id": "dev_rule_3",
+    "name": "Monitoring and Alerting",
+    "description": "Comprehensive monitoring and alerting must be configured",
+    "condition": "no_monitoring",
+    "severity": "warning",
+    "message": "Implement comprehensive monitoring and alerting for operational visibility"
+  },
+  {
+    "rule_id": "dev_rule_4",
+    "name": "Database Backup Strategy",
+    "description": "Backup and recovery procedures must be documented",
+    "condition": "no_backup_strategy",
+    "severity": "error",
+    "message": "Define and test backup and disaster recovery procedures"
+  },
+  {
+    "rule_id": "dev_rule_5",
+    "name": "Auto-Scaling Configuration",
+    "description": "Auto-scaling should be configured for production",
+    "condition": "manual_scaling_only",
+    "severity": "warning",
+    "message": "Configure auto-scaling to handle variable load"
+  },
+  {
+    "rule_id": "dev_rule_6",
+    "name": "Cost Optimization Review",
+    "description": "Regular cost optimization reviews recommended",
+    "condition": "no_cost_monitoring",
+    "severity": "warning",
+    "message": "Implement cost monitoring and regular optimization reviews"
+  }
+]

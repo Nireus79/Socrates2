@@ -205,6 +205,9 @@ def register_all_domains() -> None:
     from .data_engineering import DataEngineeringDomain
     from .architecture import ArchitectureDomain
     from .testing import TestingDomain
+    from .business import BusinessDomain
+    from .security import SecurityDomain
+    from .devops import DevOpsDomain
 
     registry = get_domain_registry()
 
@@ -213,5 +216,8 @@ def register_all_domains() -> None:
     registry.register("data_engineering", DataEngineeringDomain)
     registry.register("architecture", ArchitectureDomain)
     registry.register("testing", TestingDomain)
+    registry.register("business", BusinessDomain)
+    registry.register("security", SecurityDomain)
+    registry.register("devops", DevOpsDomain)
 
     logger.info(f"Registered {registry.get_domain_count()} domains")
