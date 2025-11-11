@@ -184,3 +184,157 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "requires_live_db" in item.keywords:
             item.add_marker(skip_marker)
+
+
+# ============================================================================
+# ADDITIONAL FIXTURES FOR COMPREHENSIVE TESTING
+# ============================================================================
+
+
+@pytest.fixture
+def test_user_data_alt():
+    """Alternative test user data for multi-user scenarios."""
+    return {
+        "email": "user2@example.com",
+        "password": "AnotherSecurePassword456!",
+        "full_name": "Another User",
+    }
+
+
+@pytest.fixture
+def authenticated_user(test_client, test_user_data):
+    """Create authenticated user and return token."""
+    # Register user
+    test_client.post("/api/v1/auth/register", json=test_user_data)
+
+    # Login and get token
+    response = test_client.post(
+        "/api/v1/auth/login",
+        json={"email": test_user_data["email"], "password": test_user_data["password"]}
+    )
+
+    if response.status_code == 200:
+        data = response.json()
+        return {
+            "email": test_user_data["email"],
+            "token": data.get("access_token"),
+            "user_id": data.get("user_id"),
+            "full_name": test_user_data["full_name"],
+        }
+    return None
+
+
+@pytest.fixture
+def auth_headers(authenticated_user):
+    """Return authorization headers with Bearer token."""
+    if authenticated_user and authenticated_user.get("token"):
+        return {"Authorization": f"Bearer {authenticated_user['token']}"}
+    return {}
+
+
+@pytest.fixture
+def test_project_data_alt():
+    """Alternative project data for multi-project scenarios."""
+    return {
+        "name": "Alternative Project",
+        "description": "Another test project",
+        "maturity_score": 0.7,
+    }
+
+
+@pytest.fixture
+def test_team_data():
+    """Test team data."""
+    return {
+        "name": "Engineering Team",
+        "description": "Core engineering team",
+        "role": "owner",
+    }
+
+
+@pytest.fixture
+def test_workflow_data():
+    """Test workflow data."""
+    return {
+        "name": "Architecture Review Workflow",
+        "description": "Comprehensive architecture specifications",
+        "domains": ["architecture", "testing"],
+        "status": "active",
+    }
+
+
+@pytest.fixture
+def test_question_data_alt():
+    """Alternative question data."""
+    return {
+        "category": "Architecture",
+        "text": "What is your system architecture pattern?",
+        "template_id": "arch_pattern",
+        "confidence": 0.9,
+    }
+
+
+@pytest.fixture
+def test_specification_data_alt():
+    """Alternative specification data."""
+    return {
+        "category": "Architecture",
+        "key": "architecture_pattern",
+        "value": "Microservices",
+        "confidence": 0.95,
+    }
+
+
+@pytest.fixture
+def test_analytics_data():
+    """Test analytics query data."""
+    return {
+        "start_date": "2025-01-01",
+        "end_date": "2025-12-31",
+        "metric_type": "domain_usage",
+        "groupBy": "domain",
+    }
+
+
+@pytest.fixture
+def test_export_data():
+    """Test export configuration."""
+    return {
+        "format": "markdown",
+        "include_analytics": True,
+        "include_recommendations": True,
+    }
+
+
+@pytest.fixture
+def mock_github_client():
+    """Mock GitHub API client."""
+    mock_client = MagicMock()
+    mock_client.repos.get_readme.return_value = "# Test Repository"
+    mock_client.repos.get_contents.return_value = [
+        MagicMock(name="file.py", path="file.py", type="file")
+    ]
+    return mock_client
+
+
+@pytest.fixture
+def mock_claude_response():
+    """Mock Claude API response."""
+    mock_response = MagicMock()
+    mock_response.content = [
+        MagicMock(text="This is a comprehensive analysis of your specification.")
+    ]
+    mock_response.usage = MagicMock(input_tokens=100, output_tokens=150)
+    return mock_response
+
+
+# Add markers for new test types
+def pytest_configure(config):
+    """Register additional pytest markers."""
+    config.addinivalue_line("markers", "api: mark test as API endpoint test")
+    config.addinivalue_line("markers", "e2e: mark test as end-to-end test")
+    config.addinivalue_line("markers", "cli: mark test as CLI test")
+    config.addinivalue_line("markers", "service: mark test as service layer test")
+    config.addinivalue_line("markers", "feature: mark test as feature test")
+    config.addinivalue_line("markers", "workflow: mark test as workflow test")
+    config.addinivalue_line("markers", "error: mark test as error handling test")
