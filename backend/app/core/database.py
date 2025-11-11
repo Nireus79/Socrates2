@@ -7,11 +7,12 @@ data loss bug that killed the previous attempt.
 Previous bug: Session closed before commit synced to disk → Zero data persistence
 Solution: Explicit commit BEFORE closing + proper session lifecycle management
 """
-from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker, scoped_session, Session
-from sqlalchemy.ext.declarative import declarative_base
-from typing import Generator
 import logging
+from typing import Generator
+
+from sqlalchemy import create_engine, event
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from .config import settings
 

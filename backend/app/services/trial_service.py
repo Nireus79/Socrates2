@@ -7,10 +7,9 @@ Handles free trial logic:
 - Grace period handling
 - Trial warnings
 """
-from datetime import datetime, timedelta, timezone
-from sqlalchemy.orm import Session
-from typing import Optional, Dict, Any
 import logging
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict
 
 from ..models.user import User
 

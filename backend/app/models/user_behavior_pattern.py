@@ -1,10 +1,12 @@
 """
 UserBehaviorPattern model for learned user behavior patterns.
 """
-from sqlalchemy import Column, String, Numeric, DateTime, Index, CheckConstraint
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB, ARRAY
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
+
+from sqlalchemy import CheckConstraint, Column, DateTime, Index, Numeric, String
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from ..core.database import Base
 

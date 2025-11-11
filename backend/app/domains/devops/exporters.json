@@ -1,0 +1,66 @@
+[
+  {
+    "format_id": "deployment_plan",
+    "name": "Deployment Plan",
+    "description": "Infrastructure deployment and CI/CD plan",
+    "file_extension": ".docx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "template_id": "deployment_plan_template"
+  },
+  {
+    "format_id": "infrastructure_diagram",
+    "name": "Infrastructure Diagram",
+    "description": "System architecture and infrastructure diagram",
+    "file_extension": ".png",
+    "mime_type": "image/png",
+    "template_id": "infrastructure_diagram_template"
+  },
+  {
+    "format_id": "monitoring_dashboard",
+    "name": "Monitoring Dashboard",
+    "description": "Grafana dashboard configuration",
+    "file_extension": ".json",
+    "mime_type": "application/json",
+    "template_id": "monitoring_dashboard_template"
+  },
+  {
+    "format_id": "runbook_templates",
+    "name": "Runbook Templates",
+    "description": "Operations runbooks for common scenarios",
+    "file_extension": ".pdf",
+    "mime_type": "application/pdf",
+    "template_id": "runbook_templates"
+  },
+  {
+    "format_id": "terraform_modules",
+    "name": "Terraform Modules",
+    "description": "Infrastructure as code Terraform modules",
+    "file_extension": ".zip",
+    "mime_type": "application/zip",
+    "template_id": "terraform_modules_template"
+  },
+  {
+    "format_id": "disaster_recovery",
+    "name": "Disaster Recovery Plan",
+    "description": "DR and business continuity procedures",
+    "file_extension": ".docx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "template_id": "disaster_recovery_template"
+  },
+  {
+    "format_id": "capacity_plan",
+    "name": "Capacity Planning",
+    "description": "Capacity planning and scaling strategy",
+    "file_extension": ".xlsx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "template_id": "capacity_plan_template"
+  },
+  {
+    "format_id": "cost_analysis",
+    "name": "Cost Analysis",
+    "description": "Infrastructure cost analysis and optimization",
+    "file_extension": ".xlsx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "template_id": "cost_analysis_template"
+  }
+]

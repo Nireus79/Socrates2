@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "test_coverage_critical",
+    "name": "Critical Code Coverage",
+    "description": "Critical code paths must have high coverage",
+    "condition": "coverage_critical < 90%",
+    "severity": "error",
+    "message": "Critical code paths must have at least 90% coverage"
+  },
+  {
+    "rule_id": "test_pyramid_inversion",
+    "name": "Test Pyramid Inversion",
+    "description": "Avoid inverted test pyramid (too many e2e tests)",
+    "condition": "e2e_tests > unit_tests",
+    "severity": "warning",
+    "message": "Consider reducing e2e tests and increasing unit tests for better coverage"
+  },
+  {
+    "rule_id": "test_execution_time",
+    "name": "Test Execution Time",
+    "description": "Test suite should execute quickly for developer feedback",
+    "condition": "test_execution_time > 600 AND is_local_test",
+    "severity": "warning",
+    "message": "Consider parallelizing tests or splitting into fast and slow test suites"
+  },
+  {
+    "rule_id": "test_flakiness",
+    "name": "Test Flakiness",
+    "description": "Tests must be deterministic and not flaky",
+    "condition": "flaky_test_rate > 5%",
+    "severity": "error",
+    "message": "Flaky tests undermine confidence. Investigate and fix root causes"
+  },
+  {
+    "rule_id": "security_testing",
+    "name": "Security Testing Requirements",
+    "description": "Security-critical applications require security testing",
+    "condition": "handles_sensitive_data AND not_performing_security_testing",
+    "severity": "error",
+    "message": "Implement security testing (OWASP, penetration testing)"
+  },
+  {
+    "rule_id": "performance_testing",
+    "name": "Performance Testing Requirements",
+    "description": "Applications with SLAs must have performance tests",
+    "condition": "has_performance_sla AND not_performing_perf_testing",
+    "severity": "warning",
+    "message": "Implement performance testing to validate SLAs"
+  }
+]

@@ -1,10 +1,20 @@
 """
 QuestionEffectiveness model for tracking question effectiveness per user.
 """
-from sqlalchemy import Column, String, Integer, Numeric, DateTime, Index, CheckConstraint, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
+
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    DateTime,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    UniqueConstraint,
+)
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from ..core.database import Base
 

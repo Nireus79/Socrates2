@@ -1,5 +1,5 @@
 """Project collaborator model for tracking project access and roles."""
-from sqlalchemy import Column, String, Index
+from sqlalchemy import Column, Index, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from .base import BaseModel

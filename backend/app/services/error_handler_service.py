@@ -8,8 +8,9 @@ Provides:
 - Error categorization
 """
 import logging
-from typing import Optional, Dict, Any
 from enum import Enum
+from typing import Any, Dict, Optional
+
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -311,15 +312,15 @@ class ErrorHandler:
                 return error_response
         """
         class DatabaseOperationContext:
-            def __enter__(ctx_self):
+            def __enter__(self):
                 return db_session
 
-            def __exit__(ctx_self, exc_type, exc_val, exc_tb):
+            def __exit__(self, exc_type, exc_val, exc_tb):
                 if exc_type:
                     if safe_on_error:
                         try:
                             db_session.rollback()
-                        except:
+                        except Exception:
                             pass
                     logger.error(
                         f"Database operation '{operation_name}' failed: {exc_val}",

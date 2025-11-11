@@ -2,29 +2,53 @@
 Main FastAPI application.
 
 Socrates2 - AI-Powered Specification Assistant
-Phase 1: Infrastructure Foundation
+Phase 7.0+: Pluggifiable Domain Architecture (COMPLETE)
+Phase 7.2: Domain API Integration (IN PROGRESS)
 """
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import logging
 from contextlib import asynccontextmanager
 from typing import Callable, Optional
-import logging
 
-from .core.config import settings
-from .core.database import close_db_connections
-from .core.action_logger import initialize_action_logger
-from .core.sentry_config import init_sentry
-from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
-from .api import export_endpoints, llm_endpoints, github_endpoints
-from .api import search, insights, templates, resources, jobs, billing, documents
-from .api import notifications, export, collaboration
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.exceptions import HTTPException
+
+from .api import (
+    admin,
+    analytics,
+    auth,
+    billing,
+    code_generation,
+    collaboration,
+    conflicts,
+    documents,
+    domains,
+    export,
+    export_endpoints,
+    github_endpoints,
+    insights,
+    jobs,
+    llm_endpoints,
+    notifications,
+    projects,
+    quality,
+    resources,
+    search,
+    sessions,
+    teams,
+    templates,
+    workflows,
+)
 from .api.error_handlers import (
     general_exception_handler,
+    http_exception_handler,
     validation_error_handler,
-    http_exception_handler
 )
-from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException
+from .core.action_logger import initialize_action_logger
+from .core.config import settings
+from .core.database import close_db_connections
+from .core.sentry_config import init_sentry
 
 # Configure logging
 logging.basicConfig(
@@ -49,8 +73,8 @@ def _initialize_job_scheduler():
     Initialize the background job scheduler.
     Registers all scheduled tasks.
     """
-    from .services.job_scheduler import get_scheduler
     from .jobs import aggregate_daily_analytics, cleanup_old_sessions
+    from .services.job_scheduler import get_scheduler
 
     scheduler = get_scheduler()
     scheduler.start()
@@ -182,6 +206,9 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(notifications.router)
     app.include_router(export.router)
     app.include_router(collaboration.router)
+    app.include_router(domains.router)
+    app.include_router(workflows.router)
+    app.include_router(analytics.router)
 
     # Register exception handlers for error tracking and proper response formatting
     app.add_exception_handler(HTTPException, http_exception_handler)
@@ -206,8 +233,15 @@ def root():
     return {
         "message": "Socrates2 API",
         "version": "0.1.0",
-        "phase": "Phase 1 - Infrastructure Foundation",
+        "phase": "Phase 7.4 - Advanced Analytics System",
+        "domains_infrastructure": "Phase 7.0 (Complete - 197 tests passing)",
+        "domains_api": "Phase 7.2 (Complete)",
+        "workflows": "Phase 7.3 (Complete - 29 tests passing)",
+        "analytics": "Phase 7.4 (In Development)",
         "docs": "/docs",
+        "domains_endpoint": "/api/v1/domains",
+        "workflows_endpoint": "/api/v1/workflows",
+        "analytics_endpoint": "/api/v1/analytics",
         "health": "/api/v1/admin/health"
     }
 
@@ -230,7 +264,14 @@ def api_info():
             "title": "Socrates2 API",
             "version": "0.1.0",
             "environment": settings.ENVIRONMENT,
-            "phase": "Phase 1"
+            "phase": "Phase 7.4 - Advanced Analytics System",
+            "domains": {
+                "infrastructure": "Phase 7.0 (COMPLETE - 197 tests)",
+                "api_integration": "Phase 7.2 (COMPLETE)",
+                "workflows": "Phase 7.3 (COMPLETE - 29 tests)",
+                "analytics": "Phase 7.4 (IN PROGRESS)",
+                "total_tests": "226 passing"
+            }
         },
         "agents": {
             "total": len(agent_info),

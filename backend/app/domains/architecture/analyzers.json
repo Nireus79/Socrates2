@@ -1,0 +1,56 @@
+[
+  {
+    "analyzer_id": "scalability_analyzer",
+    "name": "Scalability Analyzer",
+    "description": "Analyzes scalability requirements and architectural decisions",
+    "analyzer_type": "scalability",
+    "enabled": true,
+    "required": true,
+    "tags": ["universal", "architecture", "scalability"]
+  },
+  {
+    "analyzer_id": "reliability_analyzer",
+    "name": "Reliability Analyzer",
+    "description": "Analyzes availability, redundancy, and failure recovery",
+    "analyzer_type": "reliability",
+    "enabled": true,
+    "required": true,
+    "tags": ["architecture", "reliability"]
+  },
+  {
+    "analyzer_id": "security_analyzer",
+    "name": "Security Analyzer",
+    "description": "Analyzes security architecture and threat mitigation",
+    "analyzer_type": "security",
+    "enabled": true,
+    "required": true,
+    "tags": ["architecture", "security"]
+  },
+  {
+    "analyzer_id": "complexity_analyzer",
+    "name": "Complexity Analyzer",
+    "description": "Analyzes operational and architectural complexity",
+    "analyzer_type": "complexity",
+    "enabled": true,
+    "required": false,
+    "tags": ["architecture", "complexity"]
+  },
+  {
+    "analyzer_id": "consistency_analyzer",
+    "name": "Consistency Analyzer",
+    "description": "Analyzes data consistency requirements and strategies",
+    "analyzer_type": "consistency",
+    "enabled": true,
+    "required": false,
+    "tags": ["architecture", "data", "consistency"]
+  },
+  {
+    "analyzer_id": "deployment_analyzer",
+    "name": "Deployment Analyzer",
+    "description": "Analyzes deployment strategies and operational impact",
+    "analyzer_type": "deployment",
+    "enabled": true,
+    "required": false,
+    "tags": ["architecture", "deployment", "operations"]
+  }
+]

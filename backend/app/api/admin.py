@@ -6,25 +6,24 @@ Provides:
 - System statistics
 - Agent information
 """
+import logging
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 from sqlalchemy import text
-from typing import Dict, Any, Optional, List
-from datetime import datetime
+from sqlalchemy.orm import Session
 
-from ..core.database import get_db_auth, get_db_specs
-from ..core.security import get_current_admin_user, get_current_active_user
-from ..models.user import User
 from ..agents.orchestrator import get_orchestrator
-from ..core.action_logger import toggle_action_logging, is_action_logging_enabled
-from ..services.rbac_service import RBACService, PERMISSIONS
-from ..services.analytics_service import AnalyticsService
-from ..models.admin_user import AdminUser
+from ..core.action_logger import is_action_logging_enabled, toggle_action_logging
+from ..core.database import get_db_auth, get_db_specs
+from ..core.security import get_current_admin_user
 from ..models.admin_role import AdminRole
-from ..models.admin_audit_log import AdminAuditLog
-from datetime import timezone
-import logging
+from ..models.admin_user import AdminUser
+from ..models.user import User
+from ..services.analytics_service import AnalyticsService
+from ..services.rbac_service import RBACService
 
 logger = logging.getLogger(__name__)
 
@@ -365,9 +364,9 @@ def list_admin_roles(
     Returns:
         List of admin roles with user counts
     """
-    from ..models.admin_role import AdminRole
-    from ..models.admin_user import AdminUser
     from sqlalchemy import func
+
+    from ..models.admin_user import AdminUser
 
     # Get all roles
     roles = db.query(AdminRole).all()
@@ -415,7 +414,6 @@ def get_admin_role(
     Returns:
         Admin role details
     """
-    from ..models.admin_role import AdminRole
     from ..models.admin_user import AdminUser
 
     role = db.query(AdminRole).filter(AdminRole.id == role_id).first()
@@ -455,9 +453,9 @@ def list_admin_users(
     Returns:
         List of admin users
     """
-    from ..models.admin_user import AdminUser
-    from ..models.admin_role import AdminRole
     from sqlalchemy.orm import joinedload
+
+    from ..models.admin_user import AdminUser
 
     query = db.query(AdminUser).filter(
         AdminUser.revoked_at.is_(None)
@@ -787,7 +785,6 @@ async def export_metrics(
     Returns:
         Metrics data
     """
-    from datetime import timezone
 
     metrics = AnalyticsService.get_current_metrics(db_auth, db_specs)
 

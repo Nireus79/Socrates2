@@ -1,25 +1,25 @@
 """
 SQLAlchemy Models for Socrates2
 """
+from .api_key import APIKey
 from .base import BaseModel
-from .user import User
-from .project import Project
-from .session import Session
-from .question import Question
-from .specification import Specification
-from .conversation_history import ConversationHistory
 from .conflict import Conflict
-from .generated_project import GeneratedProject
+from .conversation_history import ConversationHistory
 from .generated_file import GeneratedFile
-from .quality_metric import QualityMetric
-from .user_behavior_pattern import UserBehaviorPattern
-from .question_effectiveness import QuestionEffectiveness
+from .generated_project import GeneratedProject
 from .knowledge_base_document import KnowledgeBaseDocument
+from .llm_usage_tracking import LLMUsageTracking
+from .project import Project
+from .project_share import ProjectShare
+from .quality_metric import QualityMetric
+from .question import Question
+from .question_effectiveness import QuestionEffectiveness
+from .session import Session
+from .specification import Specification
 from .team import Team
 from .team_member import TeamMember
-from .project_share import ProjectShare
-from .api_key import APIKey
-from .llm_usage_tracking import LLMUsageTracking
+from .user import User
+from .user_behavior_pattern import UserBehaviorPattern
 
 __all__ = [
     'BaseModel',

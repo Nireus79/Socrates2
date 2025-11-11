@@ -3,22 +3,23 @@
 Handles document upload, listing, deletion, and semantic search
 for knowledge base and RAG integration.
 """
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Query
-from sqlalchemy.orm import Session
-from typing import List, Dict, Optional
 import logging
 import uuid
+from typing import Dict, List
 
-from ..core.security import get_current_active_user
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from sqlalchemy.orm import Session
+
 from ..core.database import get_db_auth, get_db_specs
-from ..models.user import User
-from ..models.project import Project
-from ..models.knowledge_base_document import KnowledgeBaseDocument
+from ..core.security import get_current_active_user
 from ..models.document_chunk import DocumentChunk
+from ..models.knowledge_base_document import KnowledgeBaseDocument
+from ..models.project import Project
+from ..models.user import User
 from ..services.document_parser import DocumentParser
 from ..services.embedding_service import EmbeddingService
-from ..services.semantic_search_service import SemanticSearchService
 from ..services.rag_service import RAGService
+from ..services.semantic_search_service import SemanticSearchService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/documents", tags=["documents"])

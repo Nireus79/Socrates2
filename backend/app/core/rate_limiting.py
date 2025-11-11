@@ -3,10 +3,10 @@ Rate limiting middleware.
 
 Tracks and enforces API rate limits per user.
 """
-from typing import Optional, Dict
-from datetime import datetime, timedelta, timezone
-from collections import defaultdict
 import logging
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 

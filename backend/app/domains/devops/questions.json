@@ -1,0 +1,142 @@
+[
+  {
+    "question_id": "dev_1",
+    "text": "What is your infrastructure as code strategy?",
+    "category": "Infrastructure",
+    "difficulty": "medium",
+    "help_text": "e.g., Terraform, CloudFormation, Ansible",
+    "example_answer": "Terraform for cloud infrastructure, Ansible for configuration",
+    "dependencies": [],
+    "follow_up_questions": ["dev_2"]
+  },
+  {
+    "question_id": "dev_2",
+    "text": "What cloud platforms will you use?",
+    "category": "Infrastructure",
+    "difficulty": "easy",
+    "help_text": "e.g., AWS, Azure, GCP, multi-cloud, on-premise",
+    "example_answer": "AWS primary, GCP for ML workloads, managed services",
+    "dependencies": ["dev_1"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "dev_3",
+    "text": "What is your containerization and orchestration strategy?",
+    "category": "Containerization",
+    "difficulty": "hard",
+    "help_text": "e.g., Docker, Kubernetes, ECS, managed container services",
+    "example_answer": "Docker containers, EKS for Kubernetes orchestration",
+    "dependencies": [],
+    "follow_up_questions": ["dev_4"]
+  },
+  {
+    "question_id": "dev_4",
+    "text": "What is your deployment pipeline and CI/CD strategy?",
+    "category": "Deployment",
+    "difficulty": "hard",
+    "help_text": "e.g., GitLab CI, GitHub Actions, Jenkins, ArgoCD",
+    "example_answer": "GitHub Actions for CI, ArgoCD for continuous deployment",
+    "dependencies": ["dev_3"],
+    "follow_up_questions": ["dev_5"]
+  },
+  {
+    "question_id": "dev_5",
+    "text": "What is your release strategy and rollback plan?",
+    "category": "Deployment",
+    "difficulty": "medium",
+    "help_text": "e.g., blue-green, canary, rolling, feature flags",
+    "example_answer": "Canary deployments with feature flags, instant rollback",
+    "dependencies": ["dev_4"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "dev_6",
+    "text": "What monitoring and observability tools will you use?",
+    "category": "Monitoring",
+    "difficulty": "medium",
+    "help_text": "e.g., Prometheus, Grafana, DataDog, New Relic, ELK",
+    "example_answer": "Prometheus for metrics, ELK for logs, Grafana for dashboards",
+    "dependencies": [],
+    "follow_up_questions": ["dev_7"]
+  },
+  {
+    "question_id": "dev_7",
+    "text": "What is your alerting and incident response strategy?",
+    "category": "Monitoring",
+    "difficulty": "medium",
+    "help_text": "e.g., alert thresholds, escalation policies, on-call rotation",
+    "example_answer": "PagerDuty for on-call, 1-hour response SLA",
+    "dependencies": ["dev_6"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "dev_8",
+    "text": "What is your database strategy and backup plan?",
+    "category": "Data Management",
+    "difficulty": "hard",
+    "help_text": "e.g., managed databases, replication, backup frequency, RTO/RPO",
+    "example_answer": "RDS with multi-AZ, daily backups, RTO < 1h",
+    "dependencies": [],
+    "follow_up_questions": ["dev_9"]
+  },
+  {
+    "question_id": "dev_9",
+    "text": "What is your disaster recovery and business continuity plan?",
+    "category": "Data Management",
+    "difficulty": "hard",
+    "help_text": "e.g., multi-region, hot standby, disaster recovery testing",
+    "example_answer": "Multi-region active-passive, quarterly DR drills",
+    "dependencies": ["dev_8"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "dev_10",
+    "text": "What is your logging and log management strategy?",
+    "category": "Observability",
+    "difficulty": "medium",
+    "help_text": "e.g., centralized logging, retention policy, structured logging",
+    "example_answer": "CloudWatch logs, 30-day retention, structured JSON",
+    "dependencies": [],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "dev_11",
+    "text": "What is your infrastructure scaling and auto-scaling strategy?",
+    "category": "Scaling",
+    "difficulty": "hard",
+    "help_text": "e.g., auto-scaling groups, load balancing, scaling policies",
+    "example_answer": "Auto-scaling groups with target tracking, 20% headroom",
+    "dependencies": [],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "dev_12",
+    "text": "What is your DevOps team structure and responsibilities?",
+    "category": "Organization",
+    "difficulty": "medium",
+    "help_text": "e.g., platform team, SRE team, embedded ops engineers",
+    "example_answer": "3-person platform team, 1 SRE per service team",
+    "dependencies": [],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "dev_13",
+    "text": "What is your cost optimization and FinOps strategy?",
+    "category": "Cost Management",
+    "difficulty": "medium",
+    "help_text": "e.g., reserved instances, spot instances, cost monitoring",
+    "example_answer": "50% reserved instances, spot for dev/test, monthly review",
+    "dependencies": [],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "dev_14",
+    "text": "What is your knowledge management and documentation strategy?",
+    "category": "Documentation",
+    "difficulty": "easy",
+    "help_text": "e.g., wiki, runbooks, architecture diagrams, decision logs",
+    "example_answer": "GitHub wiki, runbooks for common operations, ADRs",
+    "dependencies": [],
+    "follow_up_questions": []
+  }
+]

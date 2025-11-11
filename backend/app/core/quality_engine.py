@@ -18,8 +18,7 @@ This logic is extracted from QualityControllerAgent for:
 """
 
 import logging
-import re
-from typing import Dict, List, Any, Optional, Tuple
+from typing import List, Optional
 
 from .models import BiasAnalysisResult, CoverageAnalysisResult, SpecificationData
 

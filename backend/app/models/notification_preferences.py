@@ -3,9 +3,10 @@
 Stores user notification preferences for different event types
 and delivery methods.
 """
-from sqlalchemy import Column, String, Boolean, DateTime
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from datetime import datetime, timezone
+
+from sqlalchemy import Boolean, Column, DateTime, String
+
 from .base import BaseModel
 
 

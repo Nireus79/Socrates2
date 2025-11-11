@@ -2,12 +2,22 @@
 LLMUsageTracking model for specifications database (socrates_specs).
 Tracks LLM API usage for cost monitoring and analytics.
 """
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Index, BigInteger, Numeric, func
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import relationship
+import uuid as uuid_module
 from datetime import datetime
 from decimal import Decimal
-import uuid as uuid_module
+
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    func,
+)
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from ..core.database import Base
 

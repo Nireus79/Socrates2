@@ -1,0 +1,66 @@
+[
+  {
+    "format_id": "c4_architecture",
+    "name": "C4 Architecture Diagram",
+    "description": "C4 model diagrams for architecture visualization",
+    "file_extension": ".puml",
+    "mime_type": "text/plain",
+    "template_id": "c4_diagram"
+  },
+  {
+    "format_id": "architecture_doc",
+    "name": "Architecture Decision Document",
+    "description": "Markdown documentation of architecture decisions",
+    "file_extension": ".md",
+    "mime_type": "text/markdown",
+    "template_id": "arch_doc"
+  },
+  {
+    "format_id": "api_spec",
+    "name": "OpenAPI Specification",
+    "description": "OpenAPI 3.0 specification for service APIs",
+    "file_extension": ".yaml",
+    "mime_type": "text/yaml",
+    "template_id": "openapi_spec"
+  },
+  {
+    "format_id": "deployment_diagram",
+    "name": "Deployment Diagram",
+    "description": "Infrastructure and deployment topology",
+    "file_extension": ".puml",
+    "mime_type": "text/plain",
+    "template_id": "deployment_diagram"
+  },
+  {
+    "format_id": "sequence_diagram",
+    "name": "Sequence Diagrams",
+    "description": "Service interaction sequences",
+    "file_extension": ".puml",
+    "mime_type": "text/plain",
+    "template_id": "sequence_diagram"
+  },
+  {
+    "format_id": "infrastructure_as_code",
+    "name": "Infrastructure as Code",
+    "description": "Terraform or CloudFormation for infrastructure",
+    "file_extension": ".tf",
+    "mime_type": "text/x-terraform",
+    "template_id": "iac_templates"
+  },
+  {
+    "format_id": "kubernetes_manifests",
+    "name": "Kubernetes Manifests",
+    "description": "Kubernetes deployment specifications",
+    "file_extension": ".yaml",
+    "mime_type": "text/yaml",
+    "template_id": "k8s_specs"
+  },
+  {
+    "format_id": "service_mesh_config",
+    "name": "Service Mesh Configuration",
+    "description": "Istio or other service mesh configuration",
+    "file_extension": ".yaml",
+    "mime_type": "text/yaml",
+    "template_id": "mesh_config"
+  }
+]

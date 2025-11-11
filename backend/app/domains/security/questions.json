@@ -1,0 +1,142 @@
+[
+  {
+    "question_id": "sec_1",
+    "text": "What is your data classification and sensitivity level?",
+    "category": "Data Security",
+    "difficulty": "medium",
+    "help_text": "e.g., public, internal, confidential, restricted/top secret",
+    "example_answer": "PII, payment data classified as restricted",
+    "dependencies": [],
+    "follow_up_questions": ["sec_2"]
+  },
+  {
+    "question_id": "sec_2",
+    "text": "What encryption standards will you use for data at rest?",
+    "category": "Data Security",
+    "difficulty": "hard",
+    "help_text": "e.g., AES-256, TDE, homomorphic encryption",
+    "example_answer": "AES-256 encryption for all data at rest",
+    "dependencies": ["sec_1"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "sec_3",
+    "text": "What encryption standards will you use for data in transit?",
+    "category": "Data Security",
+    "difficulty": "medium",
+    "help_text": "e.g., TLS 1.2+, HTTPS, mTLS",
+    "example_answer": "TLS 1.3 for all external and internal communications",
+    "dependencies": ["sec_1"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "sec_4",
+    "text": "What authentication mechanism will you implement?",
+    "category": "Authentication",
+    "difficulty": "hard",
+    "help_text": "e.g., OAuth 2.0, SAML, JWT, MFA, passwordless",
+    "example_answer": "OAuth 2.0 with optional MFA, SAML for enterprise",
+    "dependencies": [],
+    "follow_up_questions": ["sec_5"]
+  },
+  {
+    "question_id": "sec_5",
+    "text": "What is your password policy and management strategy?",
+    "category": "Authentication",
+    "difficulty": "medium",
+    "help_text": "e.g., minimum length, complexity, expiration, salted hashing",
+    "example_answer": "bcrypt for hashing, 12+ char, 90-day rotation for admin",
+    "dependencies": ["sec_4"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "sec_6",
+    "text": "What access control model will you use?",
+    "category": "Access Control",
+    "difficulty": "hard",
+    "help_text": "e.g., RBAC, ABAC, ACL, PBAC, principle of least privilege",
+    "example_answer": "RBAC with principle of least privilege",
+    "dependencies": [],
+    "follow_up_questions": ["sec_7"]
+  },
+  {
+    "question_id": "sec_7",
+    "text": "What is your audit logging and monitoring strategy?",
+    "category": "Monitoring",
+    "difficulty": "medium",
+    "help_text": "e.g., immutable logs, SIEM, anomaly detection, alerting",
+    "example_answer": "Immutable audit logs in separate system, real-time SIEM analysis",
+    "dependencies": ["sec_6"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "sec_8",
+    "text": "What vulnerability management and patching strategy will you use?",
+    "category": "Vulnerability Management",
+    "difficulty": "hard",
+    "help_text": "e.g., automated scanning, penetration testing, SLA for patching",
+    "example_answer": "Monthly pen tests, critical patches within 24h",
+    "dependencies": [],
+    "follow_up_questions": ["sec_9"]
+  },
+  {
+    "question_id": "sec_9",
+    "text": "What is your incident response and breach notification plan?",
+    "category": "Incident Response",
+    "difficulty": "hard",
+    "help_text": "e.g., response team, procedures, notification timelines",
+    "example_answer": "24/7 incident team, notification within 72 hours",
+    "dependencies": ["sec_8"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "sec_10",
+    "text": "What compliance frameworks do you need to meet?",
+    "category": "Compliance",
+    "difficulty": "medium",
+    "help_text": "e.g., GDPR, HIPAA, PCI-DSS, SOC 2, ISO 27001",
+    "example_answer": "GDPR, SOC 2 Type II, PCI-DSS for payments",
+    "dependencies": [],
+    "follow_up_questions": ["sec_11"]
+  },
+  {
+    "question_id": "sec_11",
+    "text": "What is your data residency and privacy requirement?",
+    "category": "Compliance",
+    "difficulty": "medium",
+    "help_text": "e.g., GDPR region restrictions, data sovereignty, regional storage",
+    "example_answer": "EU data must stay in EU, GDPR compliant",
+    "dependencies": ["sec_10"],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "sec_12",
+    "text": "What is your supply chain security and third-party risk management?",
+    "category": "Supply Chain",
+    "difficulty": "hard",
+    "help_text": "e.g., vendor assessment, security standards, SLAs",
+    "example_answer": "All vendors must maintain SOC 2 certification",
+    "dependencies": [],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "sec_13",
+    "text": "What is your security testing and code review process?",
+    "category": "Secure Development",
+    "difficulty": "medium",
+    "help_text": "e.g., SAST, DAST, code review, security champions",
+    "example_answer": "Mandatory code review, SAST in pipeline, quarterly DAST",
+    "dependencies": [],
+    "follow_up_questions": []
+  },
+  {
+    "question_id": "sec_14",
+    "text": "What is your security training and awareness program?",
+    "category": "Security Culture",
+    "difficulty": "easy",
+    "help_text": "e.g., annual training, phishing simulations, security champions",
+    "example_answer": "Monthly security training, quarterly phishing tests",
+    "dependencies": [],
+    "follow_up_questions": []
+  }
+]

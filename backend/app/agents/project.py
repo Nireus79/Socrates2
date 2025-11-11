@@ -1,15 +1,13 @@
 """
 ProjectManagerAgent - Manages project lifecycle (CRUD operations).
 """
-from typing import Dict, Any, List
-from datetime import datetime
+from typing import Any, Dict, List
 
 from sqlalchemy import and_
 
-from .base import BaseAgent
 from ..models.project import Project
 from ..models.user import User
-from ..core.dependencies import ServiceContainer
+from .base import BaseAgent
 
 
 class ProjectManagerAgent(BaseAgent):
@@ -58,7 +56,7 @@ class ProjectManagerAgent(BaseAgent):
 
         # Validate
         if not user_id or not name:
-            self.logger.warning(f"Validation error: missing user_id or name")
+            self.logger.warning("Validation error: missing user_id or name")
             return {
                 'success': False,
                 'error': 'user_id and name are required',

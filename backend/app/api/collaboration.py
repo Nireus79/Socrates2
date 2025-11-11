@@ -2,19 +2,20 @@
 
 Handles project invitations, access control, and team collaboration features.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from typing import Dict, List, Optional
-from datetime import datetime, timezone, timedelta
 import logging
 import uuid
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Optional
 
-from ..core.security import get_current_active_user
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
 from ..core.database import get_db_specs
-from ..models.user import User
+from ..core.security import get_current_active_user
 from ..models.project import Project
-from ..models.project_invitation import ProjectInvitation, InvitationStatus
 from ..models.project_collaborator import ProjectCollaborator
+from ..models.project_invitation import InvitationStatus, ProjectInvitation
+from ..models.user import User
 from ..services.email_service import EmailService
 
 logger = logging.getLogger(__name__)

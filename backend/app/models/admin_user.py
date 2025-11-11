@@ -3,9 +3,9 @@ Admin user model.
 
 Tracks which users have admin privileges and their assigned role.
 """
-from sqlalchemy import Column, String, DateTime, ForeignKey, Index
+
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from datetime import datetime, timezone
 
 from .base import BaseModel
 

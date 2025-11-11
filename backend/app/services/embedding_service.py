@@ -3,10 +3,9 @@
 Generates vector embeddings for text chunks using OpenAI's
 text-embedding-3-small model (1536 dimensions).
 """
-from typing import List, Optional
-import logging
 import asyncio
-from anthropic import Anthropic
+import logging
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ class EmbeddingService:
         """
         try:
             import openai
-            from ..core.config import settings
+
 
             # Ensure text is not too long
             if len(text) > 8000:
@@ -82,7 +81,7 @@ class EmbeddingService:
 
         try:
             import openai
-            from ..core.config import settings
+
 
             # Truncate long texts
             texts = [t[:8000] if len(t) > 8000 else t for t in texts]

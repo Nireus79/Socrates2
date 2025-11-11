@@ -7,15 +7,16 @@ Provides:
 - Resolve conflicts
 - Get resolution options
 """
+from typing import Any, Dict, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel
-from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
+from ..agents.orchestrator import get_orchestrator
 from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
-from ..agents.orchestrator import get_orchestrator
 
 router = APIRouter(prefix="/api/v1/conflicts", tags=["conflicts"])
 

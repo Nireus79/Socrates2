@@ -1,5 +1,5 @@
 """CLI command modules."""
 
-from . import projects, specifications, config, auth
+from . import auth, config, projects, specifications
 
 __all__ = ["projects", "specifications", "config", "auth"]

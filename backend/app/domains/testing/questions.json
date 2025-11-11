@@ -1,0 +1,142 @@
+[
+  {
+    "question_id": "test_strategy_001",
+    "text": "What is your overall testing strategy (unit, integration, end-to-end, performance, security)?",
+    "category": "Testing Strategy",
+    "difficulty": "intermediate",
+    "help_text": "A comprehensive testing strategy ensures quality across all levels",
+    "example_answer": "We will use a testing pyramid: 70% unit tests, 20% integration tests, 10% end-to-end tests",
+    "follow_up_questions": ["test_strategy_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "test_strategy_002",
+    "text": "What are your target code coverage metrics?",
+    "category": "Testing Strategy",
+    "difficulty": "intermediate",
+    "help_text": "Code coverage targets should be realistic but rigorous",
+    "example_answer": "We target 80% overall coverage with 100% coverage for critical paths",
+    "follow_up_questions": [],
+    "dependencies": ["test_strategy_001"]
+  },
+  {
+    "question_id": "test_unit_001",
+    "text": "What unit testing frameworks and libraries will you use?",
+    "category": "Unit Testing",
+    "difficulty": "beginner",
+    "help_text": "Unit testing frameworks should be appropriate for your technology stack",
+    "example_answer": "We will use pytest for Python with fixtures for test setup",
+    "follow_up_questions": ["test_unit_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "test_unit_002",
+    "text": "How will you handle test dependencies and mocking?",
+    "category": "Unit Testing",
+    "difficulty": "intermediate",
+    "help_text": "Proper mocking isolates units under test for reliable results",
+    "example_answer": "We will use unittest.mock and dependency injection for clean test isolation",
+    "follow_up_questions": [],
+    "dependencies": ["test_unit_001"]
+  },
+  {
+    "question_id": "test_integration_001",
+    "text": "What integration testing approach will you use (APIs, databases, services)?",
+    "category": "Integration Testing",
+    "difficulty": "intermediate",
+    "help_text": "Integration tests verify components work correctly together",
+    "example_answer": "We will test API endpoints with real databases and message queues",
+    "follow_up_questions": ["test_integration_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "test_integration_002",
+    "text": "How will you manage test data and test databases?",
+    "category": "Integration Testing",
+    "difficulty": "intermediate",
+    "help_text": "Test data management impacts test reliability and execution time",
+    "example_answer": "We will use Docker containers for databases and factories for test data generation",
+    "follow_up_questions": [],
+    "dependencies": ["test_integration_001"]
+  },
+  {
+    "question_id": "test_e2e_001",
+    "text": "What end-to-end testing approach will you use?",
+    "category": "End-to-End Testing",
+    "difficulty": "intermediate",
+    "help_text": "End-to-end tests verify complete user workflows",
+    "example_answer": "We will use Selenium for UI testing and Cypress for modern web applications",
+    "follow_up_questions": ["test_e2e_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "test_e2e_002",
+    "text": "Which critical user journeys will you test end-to-end?",
+    "category": "End-to-End Testing",
+    "difficulty": "intermediate",
+    "help_text": "Prioritize e2e tests for high-value user workflows",
+    "example_answer": "We will test user registration, login, purchase flow, and payment processing",
+    "follow_up_questions": [],
+    "dependencies": ["test_e2e_001"]
+  },
+  {
+    "question_id": "test_performance_001",
+    "text": "What performance testing will you implement?",
+    "category": "Performance Testing",
+    "difficulty": "advanced",
+    "help_text": "Performance testing identifies bottlenecks and ensures SLA compliance",
+    "example_answer": "We will use load testing (1000 concurrent users) and stress testing (gradual load increase)",
+    "follow_up_questions": ["test_performance_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "test_performance_002",
+    "text": "What are your performance SLAs (response time, throughput)?",
+    "category": "Performance Testing",
+    "difficulty": "intermediate",
+    "help_text": "Performance SLAs drive acceptance criteria for tests",
+    "example_answer": "We require <200ms response time and 10k requests per second throughput",
+    "follow_up_questions": [],
+    "dependencies": ["test_performance_001"]
+  },
+  {
+    "question_id": "test_security_001",
+    "text": "What security testing will you perform (OWASP, penetration testing)?",
+    "category": "Security Testing",
+    "difficulty": "advanced",
+    "help_text": "Security testing identifies vulnerabilities before production",
+    "example_answer": "We will perform OWASP Top 10 testing, penetration testing, and dependency scanning",
+    "follow_up_questions": ["test_security_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "test_security_002",
+    "text": "How will you automate security testing in the CI/CD pipeline?",
+    "category": "Security Testing",
+    "difficulty": "advanced",
+    "help_text": "Automated security testing catches vulnerabilities early",
+    "example_answer": "We will use SAST tools, dependency scanning, and container image scanning",
+    "follow_up_questions": [],
+    "dependencies": ["test_security_001"]
+  },
+  {
+    "question_id": "test_ci_cd_001",
+    "text": "How will you implement testing in your CI/CD pipeline?",
+    "category": "CI/CD",
+    "difficulty": "intermediate",
+    "help_text": "CI/CD integration ensures tests run automatically on every commit",
+    "example_answer": "We will run unit tests, integration tests, and security scans on every push",
+    "follow_up_questions": ["test_ci_cd_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "test_ci_cd_002",
+    "text": "What is your acceptable build time and test execution time?",
+    "category": "CI/CD",
+    "difficulty": "intermediate",
+    "help_text": "Build time impacts development velocity and feedback speed",
+    "example_answer": "We target <10 minutes for full test suite to keep developer feedback fast",
+    "follow_up_questions": [],
+    "dependencies": ["test_ci_cd_001"]
+  }
+]

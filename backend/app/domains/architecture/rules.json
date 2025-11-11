@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "arch_monolithic_scale",
+    "name": "Monolithic Architecture Scalability Limits",
+    "description": "Monolithic architectures cannot scale beyond certain thresholds",
+    "condition": "architecture == monolithic AND required_users > 1000000",
+    "severity": "error",
+    "message": "Monolithic architecture cannot support millions of users. Consider microservices or serverless"
+  },
+  {
+    "rule_id": "arch_eventual_consistency",
+    "name": "Eventual Consistency Trade-offs",
+    "description": "Eventual consistency must be acceptable for the business domain",
+    "condition": "uses_eventual_consistency AND domain_requires_strong_consistency",
+    "severity": "error",
+    "message": "Your domain requires strong consistency but you specified eventual consistency"
+  },
+  {
+    "rule_id": "arch_distributed_transactions",
+    "name": "Distributed Transaction Complexity",
+    "description": "Distributed transactions require explicit handling patterns",
+    "condition": "multi_service AND uses_distributed_transactions AND not_using_saga",
+    "severity": "warning",
+    "message": "Use saga pattern or event sourcing for distributed transactions to avoid complexity"
+  },
+  {
+    "rule_id": "arch_single_point_failure",
+    "name": "Single Points of Failure",
+    "description": "System must not have single points of failure when high availability required",
+    "condition": "required_availability > 99.9 AND has_single_point_of_failure",
+    "severity": "error",
+    "message": "You require high availability but architecture has single points of failure"
+  },
+  {
+    "rule_id": "arch_secrets_management",
+    "name": "Secrets Management Requirements",
+    "description": "Sensitive data must be managed through proper secrets management",
+    "condition": "has_sensitive_data AND not_using_secrets_manager",
+    "severity": "error",
+    "message": "Use a dedicated secrets management service for sensitive data"
+  },
+  {
+    "rule_id": "arch_async_communication",
+    "name": "Asynchronous Communication Choice",
+    "description": "High-latency synchronous calls should use asynchronous patterns",
+    "condition": "high_volume AND uses_sync_communication AND latency_sensitive",
+    "severity": "warning",
+    "message": "Consider asynchronous communication patterns for improved resilience and throughput"
+  }
+]

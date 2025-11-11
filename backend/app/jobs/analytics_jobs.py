@@ -7,8 +7,6 @@ Jobs:
 """
 import logging
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import func
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

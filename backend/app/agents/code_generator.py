@@ -1,21 +1,19 @@
 """
 CodeGeneratorAgent - Generates complete codebase from specifications.
 """
-from typing import Dict, Any, List
-from datetime import datetime, timezone
-from decimal import Decimal
-import json
 import re
+from datetime import datetime, timezone
+from typing import Any, Dict, List
 
 from sqlalchemy import and_
 
-from .base import BaseAgent
-from ..models.project import Project
-from ..models.specification import Specification
 from ..models.conflict import Conflict, ConflictStatus
-from ..models.generated_project import GeneratedProject, GenerationStatus
 from ..models.generated_file import GeneratedFile
+from ..models.generated_project import GeneratedProject, GenerationStatus
+from ..models.project import Project
 from ..models.question import QuestionCategory
+from ..models.specification import Specification
+from .base import BaseAgent
 
 
 class CodeGeneratorAgent(BaseAgent):

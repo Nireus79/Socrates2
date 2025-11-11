@@ -2,9 +2,8 @@
 Team model for authentication database (socrates_auth).
 Represents a team that can have multiple members and can be shared projects.
 """
-from sqlalchemy import Column, String, Text, ForeignKey, Index
+from sqlalchemy import Column, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import relationship
 
 from .base import BaseModel
 

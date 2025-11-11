@@ -14,13 +14,13 @@ This separation enables testing without database and library extraction.
 import logging
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
-from ..models import Project, Specification, QualityMetric
-from .base import BaseAgent
 # Import from Socrates library instead of local core
-from socrates import BiasDetectionEngine
-from socrates import specs_db_to_data
+from socrates import BiasDetectionEngine, specs_db_to_data
+
+from ..models import Project, QualityMetric, Specification
+from .base import BaseAgent
 
 
 class QualityControllerAgent(BaseAgent):

@@ -2,9 +2,18 @@
 APIKey model for authentication database (socrates_auth).
 Stores encrypted API keys for various LLM providers per user.
 """
-from sqlalchemy import Column, String, Boolean, DateTime, Text, ForeignKey, Index, UniqueConstraint, CheckConstraint
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import relationship
 
 from .base import BaseModel
 

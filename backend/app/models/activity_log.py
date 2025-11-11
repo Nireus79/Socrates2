@@ -3,10 +3,10 @@ Activity log model for tracking user actions on projects.
 
 Records all significant user activities for audit trails, activity feeds, and analytics.
 """
-from sqlalchemy import Column, String, Text, ForeignKey, Index, DateTime
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
+from sqlalchemy import Column, ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
 
 from .base import BaseModel
 

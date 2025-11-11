@@ -8,17 +8,18 @@ Provides:
 - Get session history
 - End session
 """
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
-from datetime import datetime, timezone
 
+from ..agents.orchestrator import get_orchestrator
+from ..core.action_logger import log_session
 from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
-from ..agents.orchestrator import get_orchestrator
-from ..core.action_logger import log_session, log_question, log_specs, log_error, ActionLogger
 
 router = APIRouter(prefix="/api/v1/sessions", tags=["sessions"])
 
@@ -169,8 +170,8 @@ def get_next_question(
             }
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     # Verify session exists and user has access
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
@@ -254,10 +255,10 @@ def submit_answer(
             "maturity_score": 12.5
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.conversation_history import ConversationHistory
-    from ..models.question import Question
     from ..models.project import Project
+    from ..models.question import Question
+    from ..models.session import Session as SessionModel
 
     # Verify session exists and user has access
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
@@ -384,8 +385,8 @@ def send_chat_message(
             "maturity_score": 50
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     # Verify session exists and user has access
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
@@ -476,8 +477,8 @@ def get_session(
             }
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
@@ -543,9 +544,9 @@ def get_session_history(
             ]
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.conversation_history import ConversationHistory
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     # Verify session exists and user has access
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
@@ -606,8 +607,8 @@ def end_session(
             "status": "completed"
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
@@ -663,8 +664,8 @@ def get_session_mode(
             "status": "active"
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
@@ -724,8 +725,8 @@ def set_session_mode(
             "status": "active"
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     # Validate mode
     if request.mode not in ['socratic', 'direct_chat']:
@@ -795,8 +796,8 @@ def pause_session(
             "status": "paused"
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
@@ -856,8 +857,8 @@ def resume_session(
             "status": "active"
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     if not session:
@@ -921,8 +922,8 @@ def list_user_sessions(
             'total': int
         }
     """
-    from ..models.session import Session as SessionModel
     from ..models.project import Project
+    from ..models.session import Session as SessionModel
 
     # Build query for sessions belonging to user's projects
     query = db.query(SessionModel).join(

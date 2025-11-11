@@ -1,0 +1,66 @@
+[
+  {
+    "format_id": "python",
+    "name": "Python",
+    "description": "Python class/function generation with type hints and docstrings",
+    "file_extension": ".py",
+    "mime_type": "text/x-python",
+    "template_id": "python_class"
+  },
+  {
+    "format_id": "javascript",
+    "name": "JavaScript",
+    "description": "JavaScript class/function generation with JSDoc comments",
+    "file_extension": ".js",
+    "mime_type": "text/javascript",
+    "template_id": "js_class"
+  },
+  {
+    "format_id": "typescript",
+    "name": "TypeScript",
+    "description": "TypeScript class/interface generation with strict type safety",
+    "file_extension": ".ts",
+    "mime_type": "text/typescript",
+    "template_id": "ts_class"
+  },
+  {
+    "format_id": "go",
+    "name": "Go",
+    "description": "Go struct/interface generation with proper error handling",
+    "file_extension": ".go",
+    "mime_type": "text/x-go",
+    "template_id": "go_struct"
+  },
+  {
+    "format_id": "java",
+    "name": "Java",
+    "description": "Java class generation with annotations and Javadoc",
+    "file_extension": ".java",
+    "mime_type": "text/x-java-source",
+    "template_id": "java_class"
+  },
+  {
+    "format_id": "rust",
+    "name": "Rust",
+    "description": "Rust struct generation with derive macros and documentation",
+    "file_extension": ".rs",
+    "mime_type": "text/x-rust",
+    "template_id": "rust_struct"
+  },
+  {
+    "format_id": "csharp",
+    "name": "C#",
+    "description": "C# class generation with properties and XML documentation",
+    "file_extension": ".cs",
+    "mime_type": "text/x-csharp",
+    "template_id": "csharp_class"
+  },
+  {
+    "format_id": "kotlin",
+    "name": "Kotlin",
+    "description": "Kotlin data class generation with coroutine support",
+    "file_extension": ".kt",
+    "mime_type": "text/x-kotlin",
+    "template_id": "kotlin_dataclass"
+  }
+]

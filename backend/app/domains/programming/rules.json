@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "perf_conflict",
+    "name": "Performance Consistency",
+    "description": "Response time requirements must be consistent across all specifications",
+    "condition": "response_time specifications must not contradict each other",
+    "severity": "error",
+    "message": "Conflicting response time specifications detected"
+  },
+  {
+    "rule_id": "sec_conflict",
+    "name": "Security Consistency",
+    "description": "Security standards and encryption requirements must align",
+    "condition": "encryption_standard specifications must be compatible across all components",
+    "severity": "error",
+    "message": "Conflicting security specifications detected"
+  },
+  {
+    "rule_id": "scale_conflict",
+    "name": "Scalability Planning",
+    "description": "Scalability approach must be feasible given resource constraints",
+    "condition": "throughput requirements and resource constraints must align",
+    "severity": "warning",
+    "message": "Scalability specifications may be unrealistic given constraints"
+  },
+  {
+    "rule_id": "arch_consistency",
+    "name": "Architectural Alignment",
+    "description": "Proposed architecture must support all performance and reliability requirements",
+    "condition": "performance targets must be achievable with proposed architecture",
+    "severity": "error",
+    "message": "Specified requirements conflict with proposed architecture"
+  },
+  {
+    "rule_id": "data_consistency",
+    "name": "Data Handling Consistency",
+    "description": "Data storage and retrieval patterns must be consistent across specifications",
+    "condition": "database and caching strategies must align",
+    "severity": "warning",
+    "message": "Data handling specifications may be inconsistent"
+  },
+  {
+    "rule_id": "comply_standards",
+    "name": "Compliance Standards",
+    "description": "All specifications must meet required compliance standards",
+    "condition": "GDPR, HIPAA, SOC2 and other standards must be respected",
+    "severity": "error",
+    "message": "Specifications do not meet required compliance standards"
+  }
+]

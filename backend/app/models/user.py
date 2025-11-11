@@ -1,8 +1,8 @@
 """
 User model for authentication database (socrates_auth).
 """
-from sqlalchemy import Column, String, Boolean, Index
 from passlib.context import CryptContext
+from sqlalchemy import Boolean, Column, Index, String
 
 from .base import BaseModel
 

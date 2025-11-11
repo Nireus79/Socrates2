@@ -1,67 +1,35 @@
 # Socrates2 - Production Dependencies
-# Python version: 3.12
-# Last updated: 2025-11-09
+# Python version: 3.12+
+# Last updated: 2025-11-11
+# Source: backend/pyproject.toml
 
 # ===== SOCRATES LIBRARY =====
-# Extracted pure logic library for Socratic questioning and specification analysis
-# Published to PyPI: https://pypi.org/project/socrates-ai/
-socrates-ai==0.1.0
+socrates-ai==0.2.0
 
 # ===== WEB FRAMEWORK & SERVER =====
 fastapi==0.121.0
 uvicorn[standard]==0.34.0
 python-multipart==0.0.20
 
+# ===== CLI & COMMAND LINE =====
+click==8.1.7
+
 # ===== DATABASE & ORM =====
 sqlalchemy==2.0.44
 alembic==1.14.0
 psycopg2-binary==2.9.10
-asyncpg==0.30.0
 
 # ===== DATA VALIDATION =====
-pydantic[email]==2.12.3
+pydantic==2.12.3
 pydantic-settings==2.7.0
-email-validator==2.2.0
 
 # ===== AUTHENTICATION & SECURITY =====
 passlib[bcrypt]==1.7.4
-bcrypt==4.2.1
 python-jose[cryptography]==3.3.0
-cryptography==44.0.0
+
+# ===== ENVIRONMENT VARIABLES =====
 python-dotenv==1.0.1
 
 # ===== LLM INTEGRATION =====
 anthropic==0.43.0
 httpx==0.28.1
-
-# ===== ERROR TRACKING & MONITORING =====
-sentry-sdk==1.40.0
-
-# ===== BACKGROUND JOBS & SCHEDULING =====
-APScheduler==3.10.4
-
-# ===== FILE PROCESSING =====
-pypdf2==4.0.1
-pdfplumber==0.11.0
-python-docx==0.8.11
-markdown==3.5.2
-chardet==5.2.0
-
-# ===== VECTOR DATABASE =====
-pgvector==0.3.0
-
-# ===== OPENAI EMBEDDINGS =====
-openai>=1.0.0
-
-# ===== LOGGING & UTILITIES =====
-rich==13.7.0
-python-dateutil==2.8.2
-
-# ===== STRIPE PAYMENT INTEGRATION =====
-stripe==8.10.0
-
-# ===== EMAIL SENDING =====
-sendgrid==6.11.0
-
-# ===== RATE LIMITING & CACHING =====
-redis==5.0.0

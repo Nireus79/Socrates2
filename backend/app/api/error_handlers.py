@@ -6,13 +6,14 @@ This module provides:
 - Validation error handling with detailed error info
 - Structured error responses
 """
-from fastapi import Request, status
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException
 import logging
+from typing import Any, Dict
+
 import sentry_sdk
-from typing import Dict, Any, Optional
+from fastapi import Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException
 
 logger = logging.getLogger(__name__)
 

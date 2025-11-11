@@ -7,17 +7,18 @@ Enforces subscription tier limits:
 - API rate limiting
 - Storage limits
 """
-from typing import Optional, Tuple
-from sqlalchemy.orm import Session
 import logging
+from typing import Optional, Tuple
 
-from ..models.user import User
+from sqlalchemy.orm import Session
+
 from ..core.subscription_tiers import (
     SubscriptionTier,
-    can_create_project,
     can_add_team_member,
+    can_create_project,
     get_api_rate_limit,
 )
+from ..models.user import User
 
 logger = logging.getLogger(__name__)
 

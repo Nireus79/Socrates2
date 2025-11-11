@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "sec_rule_1",
+    "name": "Encryption Standard Mismatch",
+    "description": "Data in transit and at rest must use strong encryption",
+    "condition": "weak_encryption_used",
+    "severity": "error",
+    "message": "Must use AES-256 or stronger encryption standards"
+  },
+  {
+    "rule_id": "sec_rule_2",
+    "name": "MFA Not Enforced",
+    "description": "MFA should be enforced for sensitive operations",
+    "condition": "mfa_optional",
+    "severity": "warning",
+    "message": "Consider making MFA mandatory for admin and sensitive operations"
+  },
+  {
+    "rule_id": "sec_rule_3",
+    "name": "Audit Logging Required",
+    "description": "Immutable audit logging must be implemented",
+    "condition": "audit_logging_disabled",
+    "severity": "error",
+    "message": "Immutable audit logging is required for compliance and incident response"
+  },
+  {
+    "rule_id": "sec_rule_4",
+    "name": "Incident Response Plan Missing",
+    "description": "Incident response plan must be documented",
+    "condition": "incident_plan_missing",
+    "severity": "error",
+    "message": "Documented incident response plan is critical for breach management"
+  },
+  {
+    "rule_id": "sec_rule_5",
+    "name": "Compliance Gap",
+    "description": "Required compliance frameworks must be identified",
+    "condition": "compliance_undefined",
+    "severity": "warning",
+    "message": "Identify all applicable compliance requirements early"
+  },
+  {
+    "rule_id": "sec_rule_6",
+    "name": "Penetration Testing Scheduled",
+    "description": "Regular penetration testing must be performed",
+    "condition": "no_pen_testing_scheduled",
+    "severity": "warning",
+    "message": "Schedule regular penetration testing and vulnerability assessments"
+  }
+]

@@ -1,11 +1,12 @@
 """
 KnowledgeBaseDocument model for uploaded knowledge base documents.
 """
-from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Index
+import uuid
+from datetime import datetime, timezone
+
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
-import uuid
 
 from ..core.database import Base
 

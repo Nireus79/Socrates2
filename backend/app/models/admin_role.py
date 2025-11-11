@@ -3,8 +3,7 @@ Admin role definition model.
 
 Defines admin roles and their associated permissions.
 """
-from sqlalchemy import Column, String, Text, Boolean, Index, ARRAY
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy import ARRAY, Boolean, Column, Index, String, Text
 
 from .base import BaseModel
 

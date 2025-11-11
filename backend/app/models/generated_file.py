@@ -1,8 +1,9 @@
 """
 GeneratedFile model for storing individual generated files.
 """
-from sqlalchemy import Column, String, Integer, Text, ARRAY, ForeignKey
+from sqlalchemy import ARRAY, Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from ..models.base import BaseModel
 
 

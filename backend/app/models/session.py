@@ -1,7 +1,7 @@
 """
 Session model for chat sessions within projects.
 """
-from sqlalchemy import Column, String, DateTime, ForeignKey, Index
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 

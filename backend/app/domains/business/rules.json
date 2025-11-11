@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "biz_rule_1",
+    "name": "Market Size Validation",
+    "description": "TAM should be at least $1B for venture funding",
+    "condition": "tam_size < 1000000000",
+    "severity": "warning",
+    "message": "Target addressable market appears small. Consider if venture funding is appropriate."
+  },
+  {
+    "rule_id": "biz_rule_2",
+    "name": "Growth Rate Threshold",
+    "description": "Expected growth rate should exceed market growth",
+    "condition": "growth_rate < market_growth",
+    "severity": "warning",
+    "message": "Growth rate lower than market growth. Review competitive positioning."
+  },
+  {
+    "rule_id": "biz_rule_3",
+    "name": "Unit Economics Validation",
+    "description": "LTV should be at least 3x CAC for healthy unit economics",
+    "condition": "ltv < 3 * cac",
+    "severity": "error",
+    "message": "Unit economics are unsustainable. LTV must be at least 3x CAC."
+  },
+  {
+    "rule_id": "biz_rule_4",
+    "name": "Funding Adequacy",
+    "description": "Runway should be at least 18 months with current burn",
+    "condition": "runway_months < 18",
+    "severity": "warning",
+    "message": "Runway is short. Consider funding strategy revision."
+  },
+  {
+    "rule_id": "biz_rule_5",
+    "name": "Team Depth",
+    "description": "Founding team should have complementary skills",
+    "condition": "team_skill_diversity < 3",
+    "severity": "warning",
+    "message": "Consider diversifying founding team expertise (technical, commercial, product)."
+  },
+  {
+    "rule_id": "biz_rule_6",
+    "name": "Market Validation",
+    "description": "Should validate market with customer interviews before launch",
+    "condition": "customer_interviews < 50",
+    "severity": "error",
+    "message": "Insufficient customer validation. Conduct at least 50 customer interviews."
+  }
+]

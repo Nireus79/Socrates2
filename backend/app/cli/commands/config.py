@@ -2,9 +2,11 @@
 
 Commands for managing CLI configuration and settings.
 """
-import click
+
 import json
 from pathlib import Path
+
+import click
 
 
 @click.group(name="config")
@@ -46,10 +48,12 @@ def save_config(config):
 
 
 @config.command(name="init")
-@click.option("--api-url", prompt="API URL", default="http://localhost:8000",
-              help="Socrates API URL")
-@click.option("--editor", prompt="Preferred editor", default="nano",
-              help="Text editor for opening files")
+@click.option(
+    "--api-url", prompt="API URL", default="http://localhost:8000", help="Socrates API URL"
+)
+@click.option(
+    "--editor", prompt="Preferred editor", default="nano", help="Text editor for opening files"
+)
 def init_config(api_url: str, editor: str):
     """Initialize configuration.
 
@@ -58,12 +62,7 @@ def init_config(api_url: str, editor: str):
     """
     click.echo("⚙️  Initializing configuration...")
 
-    config = {
-        "api_url": api_url,
-        "editor": editor,
-        "output_format": "table",
-        "verbose": False
-    }
+    config = {"api_url": api_url, "editor": editor, "output_format": "table", "verbose": False}
 
     save_config(config)
     click.echo("✅ Configuration saved!")
@@ -115,8 +114,9 @@ def get_config(key: str):
 
 
 @config.command(name="list")
-@click.option("--format", type=click.Choice(["table", "json"]), default="table",
-              help="Output format")
+@click.option(
+    "--format", type=click.Choice(["table", "json"]), default="table", help="Output format"
+)
 def list_config(format: str):
     """List all configuration values.
 
@@ -162,7 +162,7 @@ def reset_config(force: bool):
         "api_url": "http://localhost:8000",
         "editor": "nano",
         "output_format": "table",
-        "verbose": False
+        "verbose": False,
     }
 
     save_config(config)

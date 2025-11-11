@@ -2,20 +2,20 @@
 API endpoints and routes
 """
 from . import (
-    auth,
     admin,
-    projects,
-    sessions,
-    conflicts,
+    auth,
     code_generation,
-    quality,
-    teams,
+    conflicts,
     export_endpoints,
-    llm_endpoints,
     github_endpoints,
-    search,
     insights,
-    templates
+    llm_endpoints,
+    projects,
+    quality,
+    search,
+    sessions,
+    teams,
+    templates,
 )
 
 __all__ = [

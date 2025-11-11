@@ -1,11 +1,12 @@
 """
 Conflict model for detecting and resolving specification conflicts.
 """
-from sqlalchemy import Column, String, Text, Boolean, DateTime, Enum, ARRAY
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import relationship
-from ..models.base import BaseModel
 import enum
+
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, Enum, String, Text
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+
+from ..models.base import BaseModel
 
 
 class ConflictType(enum.Enum):

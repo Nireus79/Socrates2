@@ -1,0 +1,8 @@
+[
+  "infrastructure_maturity_analyzer",
+  "deployment_pipeline_analyzer",
+  "monitoring_readiness_analyzer",
+  "disaster_recovery_analyzer",
+  "cost_optimization_analyzer",
+  "operational_excellence_analyzer"
+]

@@ -5,11 +5,10 @@ Supports both in-memory caching (default) and Redis caching (optional).
 Implements TTL (Time-To-Live) for automatic expiration.
 """
 import json
-import time
-from typing import Any, Optional, Callable
-from functools import wraps
 import logging
-from datetime import datetime, timedelta
+import time
+from functools import wraps
+from typing import Any, Callable, Optional
 
 logger = logging.getLogger(__name__)
 

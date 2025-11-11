@@ -5,19 +5,16 @@ Optimizations (Week 3):
 - Uses selectinload() for eager loading to prevent N+1 query patterns
 - Eliminates unnecessary database round-trips when accessing relationships
 """
-from typing import Dict, Any, List
-from datetime import datetime, timezone
-from uuid import UUID
+from typing import Any, Dict, List
 
 from sqlalchemy.orm import selectinload
 
-from .base import BaseAgent
+from ..core.dependencies import ServiceContainer
+from ..models.project import Project
+from ..models.project_share import ProjectShare
 from ..models.team import Team
 from ..models.team_member import TeamMember
-from ..models.project_share import ProjectShare
-from ..models.project import Project
-from ..models.user import User
-from ..core.dependencies import ServiceContainer
+from .base import BaseAgent
 
 
 class TeamCollaborationAgent(BaseAgent):

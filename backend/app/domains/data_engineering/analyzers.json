@@ -1,0 +1,56 @@
+[
+  {
+    "analyzer_id": "data_quality_analyzer",
+    "name": "Data Quality Analyzer",
+    "description": "Analyzes data quality requirements and SLAs",
+    "analyzer_type": "data_quality",
+    "enabled": true,
+    "required": true,
+    "tags": ["universal", "data_engineering", "quality"]
+  },
+  {
+    "analyzer_id": "performance_analyzer",
+    "name": "Performance Analyzer",
+    "description": "Analyzes query performance, latency, and throughput specifications",
+    "analyzer_type": "performance",
+    "enabled": true,
+    "required": true,
+    "tags": ["data_engineering", "performance"]
+  },
+  {
+    "analyzer_id": "scalability_analyzer",
+    "name": "Scalability Analyzer",
+    "description": "Analyzes scalability requirements and growth projections",
+    "analyzer_type": "scalability",
+    "enabled": true,
+    "required": false,
+    "tags": ["data_engineering", "scalability"]
+  },
+  {
+    "analyzer_id": "compliance_analyzer",
+    "name": "Compliance Analyzer",
+    "description": "Analyzes data governance, privacy, and compliance requirements",
+    "analyzer_type": "compliance",
+    "enabled": true,
+    "required": true,
+    "tags": ["data_engineering", "compliance", "governance"]
+  },
+  {
+    "analyzer_id": "cost_analyzer",
+    "name": "Cost Analyzer",
+    "description": "Analyzes cost implications of architecture choices",
+    "analyzer_type": "cost",
+    "enabled": true,
+    "required": false,
+    "tags": ["data_engineering", "cost"]
+  },
+  {
+    "analyzer_id": "integration_analyzer",
+    "name": "Integration Analyzer",
+    "description": "Analyzes data integration patterns and complexity",
+    "analyzer_type": "integration",
+    "enabled": true,
+    "required": false,
+    "tags": ["data_engineering", "integration"]
+  }
+]

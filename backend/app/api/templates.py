@@ -1,16 +1,17 @@
 """
 Templates endpoint - Project templates for quick project setup.
 """
+from typing import Dict, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
 from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
-from ..models.user import User
 from ..models.project import Project
 from ..models.specification import Specification
+from ..models.user import User
 
 router = APIRouter(prefix="/api/v1/templates", tags=["templates"])
 

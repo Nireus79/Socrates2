@@ -3,9 +3,12 @@
 Stores individual chunks of documents with their vector embeddings
 for semantic search and RAG operations.
 """
-from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, ARRAY, FLOAT
 from datetime import datetime, timezone
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import ARRAY, FLOAT
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+
 from .base import BaseModel
 
 

@@ -1,10 +1,11 @@
 """
 Project model for user projects.
 """
-from sqlalchemy import Column, String, Text, Integer, DateTime, Index
+import enum
+
+from sqlalchemy import Column, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
-import enum
 
 from .base import BaseModel
 

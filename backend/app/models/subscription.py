@@ -3,11 +3,9 @@ Subscription model for Stripe billing integration.
 
 Tracks active subscriptions and their status.
 """
-from sqlalchemy import Column, String, DateTime, Boolean, Numeric, Index, ForeignKey, JSONB
+
+from sqlalchemy import JSONB, Boolean, Column, DateTime, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
-from uuid import uuid4
 
 from .base import BaseModel
 

@@ -19,10 +19,10 @@ This logic is extracted from ConflictDetectorAgent for:
 
 import json
 import logging
-from typing import Dict, List, Any, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from .models import SpecificationData, ConflictData
+from .models import ConflictData, SpecificationData
 
 
 class ConflictType(str, Enum):

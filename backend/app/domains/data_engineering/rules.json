@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "de_data_volume_consistency",
+    "name": "Data Volume Consistency",
+    "description": "Data volumes must be consistent across time periods unless explicitly accounted for",
+    "condition": "volume_variance > 20%",
+    "severity": "warning",
+    "message": "Data volume variance detected. Verify if legitimate or investigate data quality issues"
+  },
+  {
+    "rule_id": "de_latency_vs_cost",
+    "name": "Latency vs Cost Trade-off",
+    "description": "Real-time data pipelines have higher costs than batch pipelines",
+    "condition": "requires_real_time AND cost_sensitive",
+    "severity": "error",
+    "message": "Cannot achieve real-time latency with cost-sensitive requirements. Choose either lower latency or lower cost"
+  },
+  {
+    "rule_id": "de_schema_governance",
+    "name": "Schema Governance Requirements",
+    "description": "Strict data governance requires predefined schemas",
+    "condition": "requires_governance AND uses_schemaless_storage",
+    "severity": "error",
+    "message": "Schemaless storage conflicts with strict governance requirements. Implement schema validation"
+  },
+  {
+    "rule_id": "de_retention_compliance",
+    "name": "Retention Policy Compliance",
+    "description": "Retention policies must align with compliance requirements",
+    "condition": "retention_period < compliance_minimum",
+    "severity": "error",
+    "message": "Data retention period is shorter than compliance requirements"
+  },
+  {
+    "rule_id": "de_scalability_growth",
+    "name": "Scalability Planning",
+    "description": "Architecture must support projected data growth",
+    "condition": "growth_rate > 30% AND architecture_not_auto_scaling",
+    "severity": "warning",
+    "message": "High growth rate requires auto-scaling infrastructure"
+  },
+  {
+    "rule_id": "de_integration_complexity",
+    "name": "Integration Complexity",
+    "description": "Too many integration patterns increases operational complexity",
+    "condition": "num_integration_patterns > 5",
+    "severity": "warning",
+    "message": "Consider consolidating integration patterns to reduce complexity"
+  }
+]

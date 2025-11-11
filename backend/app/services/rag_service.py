@@ -3,9 +3,10 @@
 Enhances specification extraction by retrieving relevant document context
 and providing it to Claude for more accurate results.
 """
-from typing import Dict, List, Optional
-from sqlalchemy.orm import Session
 import logging
+from typing import Dict, List
+
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

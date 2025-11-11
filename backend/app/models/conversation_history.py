@@ -1,8 +1,9 @@
 """
 ConversationHistory model for storing complete conversation history.
 """
-from sqlalchemy import Column, String, Text, BigInteger, ForeignKey, Index, DateTime, func
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
+from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Index, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 
 from ..core.database import Base
@@ -83,8 +84,8 @@ class ConversationHistory(Base):
         Returns:
             Dictionary representation of model
         """
-        from datetime import datetime
         import uuid
+        from datetime import datetime
 
         exclude_fields = exclude_fields or set()
         result = {}

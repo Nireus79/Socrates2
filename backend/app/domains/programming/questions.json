@@ -1,0 +1,152 @@
+[
+  {
+    "question_id": "perf_1",
+    "text": "What is your target response time for critical operations?",
+    "category": "Performance",
+    "difficulty": "medium",
+    "help_text": "e.g., API response: <200ms, page load: <1s",
+    "example_answer": "API response: <200ms, page load: <3s",
+    "follow_up_questions": ["perf_2"],
+    "dependencies": []
+  },
+  {
+    "question_id": "perf_2",
+    "text": "What is your expected throughput (requests per second)?",
+    "category": "Performance",
+    "difficulty": "medium",
+    "help_text": "e.g., 1000 req/s, 100,000 events/day",
+    "example_answer": "1000 requests per second during peak hours",
+    "follow_up_questions": ["perf_3"],
+    "dependencies": ["perf_1"]
+  },
+  {
+    "question_id": "perf_3",
+    "text": "What are your memory constraints?",
+    "category": "Performance",
+    "difficulty": "easy",
+    "help_text": "e.g., <512MB for mobile, <4GB for server",
+    "example_answer": "<512MB for mobile clients, <4GB per server instance",
+    "follow_up_questions": [],
+    "dependencies": ["perf_2"]
+  },
+  {
+    "question_id": "sec_1",
+    "text": "What encryption standard will you use for data in transit?",
+    "category": "Security",
+    "difficulty": "medium",
+    "help_text": "e.g., TLS 1.2+, AES-256",
+    "example_answer": "TLS 1.3 for all network communication",
+    "follow_up_questions": ["sec_2"],
+    "dependencies": []
+  },
+  {
+    "question_id": "sec_2",
+    "text": "How will you store sensitive data (passwords, tokens)?",
+    "category": "Security",
+    "difficulty": "hard",
+    "help_text": "e.g., bcrypt for passwords, encrypted tokens",
+    "example_answer": "bcrypt with salt for passwords, JWT tokens encrypted with AES-256",
+    "follow_up_questions": ["sec_3"],
+    "dependencies": ["sec_1"]
+  },
+  {
+    "question_id": "sec_3",
+    "text": "What authentication mechanism will you implement?",
+    "category": "Security",
+    "difficulty": "medium",
+    "help_text": "e.g., OAuth 2.0, JWT, session-based",
+    "example_answer": "JWT with 15-minute expiration and refresh tokens",
+    "follow_up_questions": [],
+    "dependencies": ["sec_2"]
+  },
+  {
+    "question_id": "scale_1",
+    "text": "How will you handle increased load?",
+    "category": "Scalability",
+    "difficulty": "hard",
+    "help_text": "e.g., horizontal scaling, caching, load balancing",
+    "example_answer": "Horizontal scaling with auto-scaling groups and Redis caching",
+    "follow_up_questions": ["scale_2"],
+    "dependencies": ["perf_1", "perf_2"]
+  },
+  {
+    "question_id": "scale_2",
+    "text": "What caching strategy will you use?",
+    "category": "Scalability",
+    "difficulty": "medium",
+    "help_text": "e.g., Redis, memcached, CDN",
+    "example_answer": "Redis for session and API response caching with 5-minute TTL",
+    "follow_up_questions": [],
+    "dependencies": ["scale_1"]
+  },
+  {
+    "question_id": "usab_1",
+    "text": "What is your target user expertise level?",
+    "category": "Usability",
+    "difficulty": "easy",
+    "help_text": "e.g., expert developers, business users, children",
+    "example_answer": "Intermediate developers with some Python experience",
+    "follow_up_questions": ["usab_2"],
+    "dependencies": []
+  },
+  {
+    "question_id": "usab_2",
+    "text": "What accessibility standards must you meet?",
+    "category": "Usability",
+    "difficulty": "medium",
+    "help_text": "e.g., WCAG 2.1 AA, keyboard navigation",
+    "example_answer": "WCAG 2.1 Level AA compliance",
+    "follow_up_questions": [],
+    "dependencies": ["usab_1"]
+  },
+  {
+    "question_id": "rel_1",
+    "text": "What is your target uptime percentage?",
+    "category": "Reliability",
+    "difficulty": "easy",
+    "help_text": "e.g., 99.9%, 99.99%",
+    "example_answer": "99.9% uptime (8.76 hours downtime/year)",
+    "follow_up_questions": ["rel_2"],
+    "dependencies": []
+  },
+  {
+    "question_id": "rel_2",
+    "text": "How will you handle errors and failures?",
+    "category": "Reliability",
+    "difficulty": "hard",
+    "help_text": "e.g., retry logic, circuit breakers, graceful degradation",
+    "example_answer": "Exponential backoff retries, circuit breakers for external APIs",
+    "follow_up_questions": [],
+    "dependencies": ["rel_1"]
+  },
+  {
+    "question_id": "maint_1",
+    "text": "What code style and standards will you follow?",
+    "category": "Maintainability",
+    "difficulty": "easy",
+    "help_text": "e.g., PEP 8, Google style guide, linting rules",
+    "example_answer": "PEP 8 with black formatter, isort for imports",
+    "follow_up_questions": ["maint_2"],
+    "dependencies": []
+  },
+  {
+    "question_id": "maint_2",
+    "text": "What testing coverage do you target?",
+    "category": "Maintainability",
+    "difficulty": "medium",
+    "help_text": "e.g., 80%, 90%, 100% coverage",
+    "example_answer": "90% code coverage with unit and integration tests",
+    "follow_up_questions": [],
+    "dependencies": ["maint_1"]
+  },
+  {
+    "question_id": "access_1",
+    "text": "What accessibility features must be supported?",
+    "category": "Accessibility",
+    "difficulty": "medium",
+    "help_text": "e.g., screen readers, keyboard navigation, high contrast",
+    "example_answer": "Screen reader compatibility and full keyboard navigation",
+    "follow_up_questions": [],
+    "dependencies": []
+  }
+]

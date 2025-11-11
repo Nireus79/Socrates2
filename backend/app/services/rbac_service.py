@@ -3,14 +3,14 @@ Role-Based Access Control (RBAC) service.
 
 Manages admin roles, permissions, and access checks.
 """
-from typing import Set, List, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
 import logging
+from typing import List, Optional, Set
 
-from ..models.admin_role import AdminRole, SYSTEM_ROLES
-from ..models.admin_user import AdminUser
+from sqlalchemy.orm import Session
+
 from ..models.admin_audit_log import AdminAuditLog
+from ..models.admin_role import SYSTEM_ROLES, AdminRole
+from ..models.admin_user import AdminUser
 from ..models.user import User
 
 logger = logging.getLogger(__name__)

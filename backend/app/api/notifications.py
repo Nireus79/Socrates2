@@ -2,16 +2,17 @@
 
 Handles user notification preferences, notification delivery, and activity feed.
 """
+import logging
+from typing import Dict, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Dict, List, Optional
-import logging
 
-from ..core.security import get_current_active_user
 from ..core.database import get_db_auth, get_db_specs
-from ..models.user import User
-from ..models.notification_preferences import NotificationPreferences
+from ..core.security import get_current_active_user
 from ..models.activity_log import ActivityLog
+from ..models.notification_preferences import NotificationPreferences
+from ..models.user import User
 from ..services.email_service import EmailService
 
 logger = logging.getLogger(__name__)
