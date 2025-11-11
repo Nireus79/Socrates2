@@ -11,27 +11,27 @@ The pure business logic (calculating coverage, building prompts, parsing respons
 is handled by the QuestionGenerator in the Socrates library.
 This separation enables testing without database and library extraction.
 """
-from typing import Dict, Any, List
-from decimal import Decimal
 import json
+from decimal import Decimal
+from typing import Any, Dict, List
 
+# Import from Socrates library instead of local core
+from socrates import (
+    QuestionGenerator,
+    UserBehaviorData,
+    project_db_to_data,
+    questions_db_to_data,
+    specs_db_to_data,
+)
 from sqlalchemy import and_
 
-from .base import BaseAgent
-from ..models.project import Project
-from ..models.session import Session
-from ..models.question import Question
-from ..models.specification import Specification
+from ..core.action_logger import log_question
 from ..core.dependencies import ServiceContainer
-# Import from Socrates library instead of local core
-from socrates import QuestionGenerator
-from socrates import (
-    project_db_to_data,
-    specs_db_to_data,
-    questions_db_to_data,
-    UserBehaviorData
-)
-from ..core.action_logger import log_question, ActionLogger
+from ..models.project import Project
+from ..models.question import Question
+from ..models.session import Session
+from ..models.specification import Specification
+from .base import BaseAgent
 
 
 class SocraticCounselorAgent(BaseAgent):

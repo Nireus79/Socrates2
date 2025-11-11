@@ -1,7 +1,6 @@
 """Tests for BaseDomain abstract class."""
 
-import pytest
-from ..base import BaseDomain, Question, ExportFormat, ConflictRule, SeverityLevel
+from ..base import BaseDomain, ConflictRule, ExportFormat, Question, SeverityLevel
 
 
 class TestDomain(BaseDomain):

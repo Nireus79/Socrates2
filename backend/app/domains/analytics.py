@@ -5,10 +5,10 @@ Tracks domain usage, metrics, and provides analytics and reporting capabilities.
 """
 
 import logging
-from typing import Dict, List, Any, Set
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from collections import defaultdict
+from typing import Any, Dict, List, Set
 
 logger = logging.getLogger(__name__)
 
@@ -210,9 +210,7 @@ class DomainAnalytics:
             Overall analytics report
         """
         total_domain_accesses = sum(self.domain_access_count.values())
-        total_questions_answered = sum(
-            len(v) for v in self.domain_questions_answered.values()
-        )
+        total_questions_answered = sum(len(v) for v in self.domain_questions_answered.values())
         total_exports = sum(self.domain_exports_generated.values())
         total_conflicts = sum(self.domain_conflicts_detected.values())
         domains_used = set(self.domain_access_count.keys())
@@ -226,8 +224,7 @@ class DomainAnalytics:
             "unique_domains_used": list(domains_used),
             "unique_domains_count": len(domains_used),
             "domain_reports": {
-                domain_id: self.get_domain_report(domain_id)
-                for domain_id in domains_used
+                domain_id: self.get_domain_report(domain_id) for domain_id in domains_used
             },
             "workflows_tracked": len(self.workflow_analytics),
         }
@@ -242,9 +239,7 @@ class DomainAnalytics:
         Returns:
             List of (domain_id, access_count) tuples sorted by usage
         """
-        sorted_domains = sorted(
-            self.domain_access_count.items(), key=lambda x: x[1], reverse=True
-        )
+        sorted_domains = sorted(self.domain_access_count.items(), key=lambda x: x[1], reverse=True)
         return sorted_domains[:limit]
 
     def get_most_answered_questions(self, domain_id: str, limit: int = 10) -> List[str]:
@@ -285,13 +280,14 @@ class DomainAnalytics:
         if not self.workflow_analytics:
             return {"average_quality_score": 0, "workflows_analyzed": 0}
 
-        quality_scores = [
-            w.quality_score for w in self.workflow_analytics.values()
-        ]
+        quality_scores = [w.quality_score for w in self.workflow_analytics.values()]
         average_quality = sum(quality_scores) / len(quality_scores) if quality_scores else 0
-        average_completeness = sum(
-            w.specification_completeness for w in self.workflow_analytics.values()
-        ) / len(self.workflow_analytics) if self.workflow_analytics else 0
+        average_completeness = (
+            sum(w.specification_completeness for w in self.workflow_analytics.values())
+            / len(self.workflow_analytics)
+            if self.workflow_analytics
+            else 0
+        )
 
         return {
             "workflows_analyzed": len(self.workflow_analytics),
@@ -323,8 +319,7 @@ class DomainAnalytics:
             "overall_report": self.get_overall_report(),
             "quality_summary": self.get_quality_summary(),
             "most_used_domains": [
-                {"domain_id": d[0], "access_count": d[1]}
-                for d in self.get_most_used_domains()
+                {"domain_id": d[0], "access_count": d[1]} for d in self.get_most_used_domains()
             ],
             "total_metrics_collected": len(self.metrics),
         }

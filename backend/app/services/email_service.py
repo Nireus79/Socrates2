@@ -6,9 +6,9 @@ Handles sending email notifications for various events:
 - Maturity milestones
 - Mention notifications
 """
-from typing import List, Optional, Dict, Any
 import logging
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +134,7 @@ class EmailService:
             cta_text = "Upgrade Now"
         elif days_left == 1:
             subject = "⏰ Your Socrates2 trial expires tomorrow"
-            message = f"Your trial period expires tomorrow. Upgrade to continue using Socrates2."
+            message = "Your trial period expires tomorrow. Upgrade to continue using Socrates2."
             cta_text = "Upgrade Now"
         else:
             subject = f"⏰ Your Socrates2 trial expires in {days_left} days"

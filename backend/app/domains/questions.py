@@ -5,10 +5,10 @@ Handles loading, validating, and serving domain-specific questions
 from configuration files (YAML, JSON, etc).
 """
 
-import logging
-from typing import List, Dict, Optional, Any
-from pathlib import Path
 import json
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from .base import Question
 
@@ -98,9 +98,7 @@ class QuestionTemplateEngine:
 
         return self.load_questions_from_dict(data)
 
-    def filter_by_category(
-        self, questions: List[Question], category: str
-    ) -> List[Question]:
+    def filter_by_category(self, questions: List[Question], category: str) -> List[Question]:
         """
         Filter questions by category.
 
@@ -113,9 +111,7 @@ class QuestionTemplateEngine:
         """
         return [q for q in questions if q.category == category]
 
-    def filter_by_difficulty(
-        self, questions: List[Question], difficulty: str
-    ) -> List[Question]:
+    def filter_by_difficulty(self, questions: List[Question], difficulty: str) -> List[Question]:
         """
         Filter questions by difficulty level.
 
@@ -142,10 +138,7 @@ class QuestionTemplateEngine:
             Questions whose dependencies are met
         """
         answered_set = set(answered_ids)
-        return [
-            q for q in questions
-            if all(dep_id in answered_set for dep_id in q.dependencies)
-        ]
+        return [q for q in questions if all(dep_id in answered_set for dep_id in q.dependencies)]
 
     def validate_questions(self, questions: List[Question]) -> List[str]:
         """
@@ -194,10 +187,7 @@ class QuestionTemplateEngine:
         return errors
 
     def _has_circular_dependency(
-        self,
-        question: Question,
-        all_questions: List[Question],
-        visited: set
+        self, question: Question, all_questions: List[Question], visited: set
     ) -> bool:
         """Check if a question has circular dependencies."""
         if question.question_id in visited:
@@ -206,9 +196,7 @@ class QuestionTemplateEngine:
         visited.add(question.question_id)
 
         for dep_id in question.dependencies:
-            dep_question = next(
-                (q for q in all_questions if q.question_id == dep_id), None
-            )
+            dep_question = next((q for q in all_questions if q.question_id == dep_id), None)
             if dep_question and self._has_circular_dependency(
                 dep_question, all_questions, visited.copy()
             ):

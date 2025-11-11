@@ -8,23 +8,22 @@ Calculates and stores business metrics:
 - Feature usage
 - Conversion funnel
 """
-from datetime import datetime, timezone, date, timedelta
-from decimal import Decimal
-from sqlalchemy import func, and_
-from sqlalchemy.orm import Session
 import logging
+from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal
 
-from ..models.user import User
-from ..models.subscription import Subscription
-from ..models.invoice import Invoice
-from ..models.session import Session as UserSession
+from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import Session
+
 from ..models.analytics_metrics import (
+    ChurnAnalysis,
+    ConversionFunnel,
     DailyActiveUsers,
     MonthlyRecurringRevenue,
-    ChurnAnalysis,
-    FeatureUsage,
-    ConversionFunnel,
 )
+from ..models.session import Session as UserSession
+from ..models.subscription import Subscription
+from ..models.user import User
 
 logger = logging.getLogger(__name__)
 

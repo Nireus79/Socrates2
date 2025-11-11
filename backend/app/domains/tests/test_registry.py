@@ -1,7 +1,8 @@
 """Tests for DomainRegistry system."""
 
 import pytest
-from ..base import BaseDomain, Question, ExportFormat, ConflictRule
+
+from ..base import BaseDomain
 from ..registry import DomainRegistry, get_domain_registry, register_domain
 
 

@@ -7,10 +7,11 @@ Handles all Stripe API interactions:
 - Checkout sessions
 - Webhook processing
 """
-import stripe
-from typing import Optional, Dict, Any
 import logging
+from typing import Any, Dict, Optional
 from uuid import UUID
+
+import stripe
 
 from ..core.config import settings
 

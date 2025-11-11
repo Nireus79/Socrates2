@@ -1,19 +1,19 @@
 """Integration tests for Phase 7.0 complete pluggification system."""
 
-import pytest
 import time
-from ..programming import ProgrammingDomain
-from ..base import (
-    Question,
-    ExportFormat,
-    ConflictRule,
-    QualityAnalyzer,
-    SeverityLevel,
-)
-from ..questions import QuestionTemplateEngine
-from ..exporters import ExportTemplateEngine
-from ..rules import ConflictRuleEngine
+
+import pytest
+
 from ..analyzers import QualityAnalyzerEngine
+from ..base import (
+    ConflictRule,
+    ExportFormat,
+    Question,
+)
+from ..exporters import ExportTemplateEngine
+from ..programming import ProgrammingDomain
+from ..questions import QuestionTemplateEngine
+from ..rules import ConflictRuleEngine
 
 
 class TestPhase7Integration:
@@ -254,10 +254,10 @@ class TestPhase7Integration:
 
     def test_integration_with_singleton_engines(self):
         """Test that singleton engines work correctly across domains."""
-        from ..questions import get_question_engine
-        from ..exporters import get_exporter_engine
-        from ..rules import get_rule_engine
         from ..analyzers import get_analyzer_engine
+        from ..exporters import get_exporter_engine
+        from ..questions import get_question_engine
+        from ..rules import get_rule_engine
 
         # Get global engines
         q_engine = get_question_engine()
@@ -308,10 +308,10 @@ class TestPhase7Integration:
 
     def test_all_engines_serialize_to_json(self, domain):
         """Test that all engines can serialize their data to JSON."""
-        from ..questions import QuestionTemplateEngine
-        from ..exporters import ExportTemplateEngine
-        from ..rules import ConflictRuleEngine
         from ..analyzers import QualityAnalyzerEngine
+        from ..exporters import ExportTemplateEngine
+        from ..questions import QuestionTemplateEngine
+        from ..rules import ConflictRuleEngine
 
         q_engine = QuestionTemplateEngine()
         e_engine = ExportTemplateEngine()

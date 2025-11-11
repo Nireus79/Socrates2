@@ -1,20 +1,18 @@
 """
 ContextAnalyzerAgent - Extracts specifications from user answers.
 """
-from typing import Dict, Any, List
-from decimal import Decimal
 import json
+from decimal import Decimal
+from typing import Any, Dict, List
 
 from sqlalchemy import and_
 
-from .base import BaseAgent
+from ..core.action_logger import ActionLogger, log_specs
 from ..models.project import Project
-from ..models.session import Session
 from ..models.question import Question
+from ..models.session import Session
 from ..models.specification import Specification
-from ..core.dependencies import ServiceContainer
-from ..core.action_logger import log_specs, log_error, ActionLogger
-
+from .base import BaseAgent
 
 # Target spec count per category for 100% maturity
 CATEGORY_TARGETS = {

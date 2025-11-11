@@ -6,15 +6,16 @@ Provides:
 - Analyze repositories
 - List repositories (placeholder)
 """
+from typing import Any, Dict
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Dict, Any
 from sqlalchemy.orm import Session
 
+from ..agents.orchestrator import get_orchestrator
 from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
-from ..agents.orchestrator import get_orchestrator
 
 router = APIRouter(prefix="/api/v1/github", tags=["github"])
 

@@ -8,13 +8,12 @@ Questions are loaded from questions.json configuration file.
 import logging
 from pathlib import Path
 from typing import List, Optional
-import json
 
-from ..base import BaseDomain, Question, ExportFormat, ConflictRule, SeverityLevel, QualityAnalyzer
-from ..questions import QuestionTemplateEngine
-from ..exporters import ExportTemplateEngine
-from ..rules import ConflictRuleEngine
 from ..analyzers import QualityAnalyzerEngine
+from ..base import BaseDomain, ConflictRule, ExportFormat, QualityAnalyzer, Question
+from ..exporters import ExportTemplateEngine
+from ..questions import QuestionTemplateEngine
+from ..rules import ConflictRuleEngine
 
 logger = logging.getLogger(__name__)
 

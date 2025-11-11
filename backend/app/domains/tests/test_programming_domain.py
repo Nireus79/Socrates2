@@ -1,6 +1,7 @@
 """Tests for ProgrammingDomain implementation."""
 
 import pytest
+
 from ..programming import ProgrammingDomain
 
 

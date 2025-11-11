@@ -3,13 +3,14 @@ Quality Control API Endpoints
 
 Provides access to quality metrics, analysis, and recommendations.
 """
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, UUID4
-from typing import Optional, Dict, List, Any
+from typing import Any, Dict, List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import UUID4, BaseModel
+
+from ..agents.orchestrator import AgentOrchestrator, get_orchestrator
 from ..core.security import get_current_active_user
-from ..agents.orchestrator import get_orchestrator, AgentOrchestrator
-from ..models import User, Project
+from ..models import User
 
 router = APIRouter(prefix="/quality", tags=["quality"])
 

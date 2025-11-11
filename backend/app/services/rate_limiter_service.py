@@ -7,11 +7,12 @@ Provides:
 - Sliding window with TTL
 - Configurable limits and windows
 """
-import time
-from typing import Optional, Callable, Dict, Tuple
-from functools import wraps
-from fastapi import HTTPException, Request
 import logging
+import time
+from functools import wraps
+from typing import Callable, Dict, Optional, Tuple
+
+from fastapi import HTTPException, Request
 
 logger = logging.getLogger(__name__)
 

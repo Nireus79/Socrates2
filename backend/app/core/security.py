@@ -1,18 +1,19 @@
 """
 Security utilities for JWT token creation and validation.
 """
+import secrets
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any
-from jose import JWTError, jwt
+from typing import Any, Dict, Optional
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-import secrets
 
+from ..models.refresh_token import RefreshToken
+from ..models.user import User
 from .config import settings
 from .database import get_db_auth
-from ..models.user import User
-from ..models.refresh_token import RefreshToken
 
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")

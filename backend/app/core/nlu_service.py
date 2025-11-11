@@ -17,8 +17,8 @@ Features:
 import json
 import logging
 from collections import deque
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 from anthropic import Anthropic
 

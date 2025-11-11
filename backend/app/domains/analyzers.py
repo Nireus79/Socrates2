@@ -5,10 +5,10 @@ Handles loading, validating, and serving domain-specific quality analyzers
 from configuration files (JSON, etc).
 """
 
-import logging
-from typing import List, Dict, Optional, Any
-from pathlib import Path
 import json
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from .base import QualityAnalyzer
 
@@ -214,7 +214,9 @@ class QualityAnalyzerEngine:
 
         return errors
 
-    def get_analyzers_by_tag(self, analyzers: List[QualityAnalyzer]) -> Dict[str, List[QualityAnalyzer]]:
+    def get_analyzers_by_tag(
+        self, analyzers: List[QualityAnalyzer]
+    ) -> Dict[str, List[QualityAnalyzer]]:
         """
         Group analyzers by tag.
 

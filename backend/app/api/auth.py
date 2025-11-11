@@ -6,24 +6,25 @@ Provides:
 - User login (JWT token generation)
 - Logout
 """
+from datetime import timedelta
+from typing import Dict, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr, Field
-from typing import Dict, Optional
-from datetime import timedelta
+from sqlalchemy.orm import Session
 
+from ..core.action_logger import log_auth
+from ..core.config import settings
 from ..core.database import get_db_auth
 from ..core.security import (
     create_access_token,
     create_refresh_token,
-    validate_refresh_token,
+    get_current_active_user,
     get_current_user,
-    get_current_active_user
+    validate_refresh_token,
 )
 from ..models.user import User
-from ..core.config import settings
-from ..core.action_logger import log_auth
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 

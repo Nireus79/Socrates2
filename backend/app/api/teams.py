@@ -8,15 +8,16 @@ Provides:
 - Share projects with teams
 - View team activity
 """
+from typing import Any, Dict, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel
-from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
+from ..agents.orchestrator import get_orchestrator
 from ..core.database import get_db_auth, get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
-from ..agents.orchestrator import get_orchestrator
 
 router = APIRouter(prefix="/api/v1/teams", tags=["teams"])
 
@@ -137,8 +138,8 @@ def list_user_teams(
             ]
         }
     """
-    from ..models.team_member import TeamMember
     from ..models.team import Team
+    from ..models.team_member import TeamMember
 
     # Get all team memberships for this user
     memberships = db.query(TeamMember).filter_by(user_id=current_user.id).all()

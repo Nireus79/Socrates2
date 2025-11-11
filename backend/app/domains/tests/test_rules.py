@@ -1,10 +1,11 @@
 """Tests for conflict rule engine."""
 
-import pytest
 import json
-from pathlib import Path
-from ..rules import ConflictRuleEngine, get_rule_engine
+
+import pytest
+
 from ..base import ConflictRule, SeverityLevel
+from ..rules import ConflictRuleEngine, get_rule_engine
 
 
 class TestConflictRuleEngine:

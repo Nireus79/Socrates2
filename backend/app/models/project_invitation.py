@@ -1,10 +1,10 @@
 """
 Project invitation model for managing team collaboration requests.
 """
-from sqlalchemy import Column, String, Text, Index, Enum
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import relationship
 import enum
+
+from sqlalchemy import Column, Enum, Index, String, Text
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from .base import BaseModel
 

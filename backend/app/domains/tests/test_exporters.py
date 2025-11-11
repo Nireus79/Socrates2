@@ -1,10 +1,11 @@
 """Tests for exporter template engine."""
 
-import pytest
 import json
-from pathlib import Path
-from ..exporters import ExportTemplateEngine, get_exporter_engine
+
+import pytest
+
 from ..base import ExportFormat
+from ..exporters import ExportTemplateEngine, get_exporter_engine
 
 
 class TestExportTemplateEngine:

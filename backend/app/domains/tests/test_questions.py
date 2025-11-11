@@ -1,10 +1,11 @@
 """Tests for question template engine."""
 
-import pytest
 import json
-from pathlib import Path
-from ..questions import QuestionTemplateEngine, get_question_engine
+
+import pytest
+
 from ..base import Question
+from ..questions import QuestionTemplateEngine, get_question_engine
 
 
 class TestQuestionTemplateEngine:
@@ -97,8 +98,20 @@ class TestQuestionTemplateEngine:
     def test_validate_questions_duplicate_ids(self, engine):
         """Test validation catches duplicate IDs."""
         data = [
-            {"question_id": "q1", "text": "Q1?", "category": "C", "difficulty": "easy", "dependencies": []},
-            {"question_id": "q1", "text": "Q2?", "category": "C", "difficulty": "easy", "dependencies": []},
+            {
+                "question_id": "q1",
+                "text": "Q1?",
+                "category": "C",
+                "difficulty": "easy",
+                "dependencies": [],
+            },
+            {
+                "question_id": "q1",
+                "text": "Q2?",
+                "category": "C",
+                "difficulty": "easy",
+                "dependencies": [],
+            },
         ]
         questions = engine.load_questions_from_dict(data)
         errors = engine.validate_questions(questions)
@@ -107,7 +120,12 @@ class TestQuestionTemplateEngine:
     def test_validate_questions_missing_fields(self, engine):
         """Test validation catches missing required fields."""
         data = [
-            {"question_id": "q1", "category": "C", "difficulty": "easy", "dependencies": []},  # Missing text
+            {
+                "question_id": "q1",
+                "category": "C",
+                "difficulty": "easy",
+                "dependencies": [],
+            },  # Missing text
         ]
         questions = engine.load_questions_from_dict(data)
         errors = engine.validate_questions(questions)
@@ -116,8 +134,20 @@ class TestQuestionTemplateEngine:
     def test_validate_questions_circular_dependencies(self, engine):
         """Test validation catches circular dependencies."""
         data = [
-            {"question_id": "q1", "text": "Q1?", "category": "C", "difficulty": "easy", "dependencies": ["q2"]},
-            {"question_id": "q2", "text": "Q2?", "category": "C", "difficulty": "easy", "dependencies": ["q1"]},
+            {
+                "question_id": "q1",
+                "text": "Q1?",
+                "category": "C",
+                "difficulty": "easy",
+                "dependencies": ["q2"],
+            },
+            {
+                "question_id": "q2",
+                "text": "Q2?",
+                "category": "C",
+                "difficulty": "easy",
+                "dependencies": ["q1"],
+            },
         ]
         questions = engine.load_questions_from_dict(data)
         errors = engine.validate_questions(questions)

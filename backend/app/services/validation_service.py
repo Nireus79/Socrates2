@@ -9,10 +9,11 @@ Provides comprehensive validation for common input patterns:
 - Enum values
 - Pagination parameters
 """
-import re
 import logging
-from typing import Any, Optional, List
-from email_validator import validate_email, EmailNotValidError
+import re
+from typing import List, Optional
+
+from email_validator import EmailNotValidError, validate_email
 
 logger = logging.getLogger(__name__)
 

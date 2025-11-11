@@ -1,12 +1,12 @@
 """
 GitHubIntegrationAgent - Integrate with GitHub for repository analysis and import.
 """
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
-from .base import BaseAgent
+from ..core.dependencies import ServiceContainer
 from ..models.project import Project
 from ..models.specification import Specification
-from ..core.dependencies import ServiceContainer
+from .base import BaseAgent
 
 
 class GitHubIntegrationAgent(BaseAgent):

@@ -18,8 +18,7 @@ This logic is extracted from UserLearningAgent for:
 """
 
 import logging
-from typing import Dict, List, Any, Optional
-from collections import Counter
+from typing import Any, Dict, List, Optional
 
 from .models import UserBehaviorData
 

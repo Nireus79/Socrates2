@@ -3,9 +3,9 @@ Admin audit log model.
 
 Tracks all admin actions for compliance and debugging.
 """
-from sqlalchemy import Column, String, DateTime, ForeignKey, Index
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
-from datetime import datetime, timezone
+from sqlalchemy import Column, ForeignKey, Index, String
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from .base import BaseModel
 

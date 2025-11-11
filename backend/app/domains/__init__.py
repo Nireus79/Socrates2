@@ -19,15 +19,15 @@ Core components:
 - Analyzer engine: Domain-specific quality checks
 """
 
-from .base import BaseDomain
-from .registry import DomainRegistry, get_domain_registry
-from .programming import ProgrammingDomain
-from .data_engineering import DataEngineeringDomain
 from .architecture import ArchitectureDomain
-from .testing import TestingDomain
+from .base import BaseDomain
 from .business import BusinessDomain
-from .security import SecurityDomain
+from .data_engineering import DataEngineeringDomain
 from .devops import DevOpsDomain
+from .programming import ProgrammingDomain
+from .registry import DomainRegistry, get_domain_registry
+from .security import SecurityDomain
+from .testing import TestingDomain
 
 __all__ = [
     "BaseDomain",

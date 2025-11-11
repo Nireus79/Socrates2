@@ -11,20 +11,18 @@ The pure business logic (building prompts, parsing responses)
 is handled by the ConflictDetectionEngine in the Socrates library.
 This separation enables testing without database and library extraction.
 """
-from typing import Dict, Any, List
-from datetime import datetime, timezone
 import json
+from datetime import datetime, timezone
+from typing import Any, Dict, List
 from uuid import UUID
 
-from sqlalchemy import and_
-
-from .base import BaseAgent
-from ..models.specification import Specification
-from ..models.conflict import Conflict, ConflictType, ConflictSeverity, ConflictStatus
 # Import from Socrates library instead of local core
-from socrates import ConflictDetectionEngine
-from socrates import specs_db_to_data, SpecificationData
-from ..core.action_logger import log_conflict, log_error
+from socrates import ConflictDetectionEngine, SpecificationData, specs_db_to_data
+
+from ..core.action_logger import log_conflict
+from ..models.conflict import Conflict, ConflictSeverity, ConflictStatus, ConflictType
+from ..models.specification import Specification
+from .base import BaseAgent
 
 
 class ConflictDetectorAgent(BaseAgent):

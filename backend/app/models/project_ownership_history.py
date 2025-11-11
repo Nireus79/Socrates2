@@ -1,5 +1,5 @@
 """Project ownership history model for audit trail of ownership transfers."""
-from sqlalchemy import Column, String, Text, Index
+from sqlalchemy import Column, Index, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from .base import BaseModel

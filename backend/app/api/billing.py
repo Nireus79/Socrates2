@@ -8,19 +8,20 @@ Handles:
 - Billing portal access
 - Webhook processing
 """
-from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
-from pydantic import BaseModel
-from typing import Optional, Dict, Any
-from sqlalchemy.orm import Session
-import logging
 import json
+import logging
+from typing import Any, Dict, Optional
 
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
-from ..core.database import get_db_auth, get_db_specs
 from ..core.subscription_tiers import SubscriptionTier
-from ..models.user import User
-from ..models.subscription import Subscription
 from ..models.invoice import Invoice
+from ..models.subscription import Subscription
+from ..models.user import User
 from ..services.stripe_service import StripeService
 from ..services.trial_service import TrialService
 
@@ -433,7 +434,6 @@ async def handle_stripe_webhook(
         body = await request.body()
 
         # Verify signature
-        from ..core.config import settings
         if not StripeService.verify_webhook_signature(body, signature):
             raise HTTPException(status_code=403, detail="Invalid webhook signature")
 
@@ -465,7 +465,6 @@ async def _process_stripe_webhook(event: Dict[str, Any]) -> None:
     Args:
         event: Stripe event dictionary
     """
-    from ..core.database import SessionLocalSpecs, SessionLocalAuth
 
     event_type = event.get("type")
     data = event.get("data", {}).get("object", {})

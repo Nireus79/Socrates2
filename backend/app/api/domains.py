@@ -4,9 +4,10 @@ Domain API endpoints for Socrates2.
 Provides REST API access to all available knowledge domains and their specifications.
 """
 
-from fastapi import APIRouter, HTTPException
-from typing import List, Dict, Any
 import logging
+from typing import Any, Dict
+
+from fastapi import APIRouter, HTTPException
 
 from app.domains import get_domain_registry
 from app.domains.registry import register_all_domains
@@ -70,9 +71,10 @@ async def get_domain_details(domain_id: str) -> Dict[str, Any]:
     registry = get_domain_registry()
 
     if not registry.has_domain(domain_id):
+        available_domains = ", ".join(registry.list_domain_ids())
         raise HTTPException(
             status_code=404,
-            detail=f"Domain '{domain_id}' not found. Available domains: {', '.join(registry.list_domain_ids())}"
+            detail=f"Domain '{domain_id}' not found. Available domains: {available_domains}",
         )
 
     domain = registry.get_domain(domain_id)
@@ -127,7 +129,7 @@ async def get_domain_questions(domain_id: str) -> Dict[str, Any]:
                 "dependencies": q.dependencies,
             }
             for q in questions
-        ]
+        ],
     }
 
 
@@ -167,7 +169,7 @@ async def get_domain_exporters(domain_id: str) -> Dict[str, Any]:
                 "template_id": e.template_id,
             }
             for e in exporters
-        ]
+        ],
     }
 
 
@@ -207,7 +209,7 @@ async def get_domain_rules(domain_id: str) -> Dict[str, Any]:
                 "message": r.message,
             }
             for r in rules
-        ]
+        ],
     }
 
 
@@ -234,11 +236,7 @@ async def get_domain_analyzers(domain_id: str) -> Dict[str, Any]:
     domain = registry.get_domain(domain_id)
     analyzers = domain.get_quality_analyzers()
 
-    return {
-        "domain_id": domain_id,
-        "count": len(analyzers),
-        "analyzers": analyzers
-    }
+    return {"domain_id": domain_id, "count": len(analyzers), "analyzers": analyzers}
 
 
 @router.get("/{domain_id}/metadata", summary="Get complete domain metadata")
@@ -276,21 +274,18 @@ async def get_domain_metadata(domain_id: str) -> Dict[str, Any]:
         "subsystems": {
             "questions": {
                 "count": len(questions),
-                "categories": list(set(q.category for q in questions))
+                "categories": list(set(q.category for q in questions)),
             },
             "exporters": {
                 "count": len(exporters),
-                "extensions": list(set(e.file_extension for e in exporters))
+                "extensions": list(set(e.file_extension for e in exporters)),
             },
-            "rules": {
-                "count": len(rules),
-                "severities": list(set(r.severity for r in rules))
-            },
+            "rules": {"count": len(rules), "severities": list(set(r.severity for r in rules))},
             "analyzers": {
                 "count": len(analyzers),
                 "enabled": len(analyzers),
-            }
-        }
+            },
+        },
     }
 
 
@@ -317,18 +312,11 @@ async def get_domain_categories(domain_id: str) -> Dict[str, Any]:
     domain = registry.get_domain(domain_id)
     categories = domain.get_categories()
 
-    return {
-        "domain_id": domain_id,
-        "count": len(categories),
-        "categories": categories
-    }
+    return {"domain_id": domain_id, "count": len(categories), "categories": categories}
 
 
 @router.post("/{domain_id}/validate-specification", summary="Validate specification")
-async def validate_specification(
-    domain_id: str,
-    specification: Dict[str, Any]
-) -> Dict[str, Any]:
+async def validate_specification(domain_id: str, specification: Dict[str, Any]) -> Dict[str, Any]:
     """
     Validate a specification against domain rules.
 
@@ -356,16 +344,18 @@ async def validate_specification(
     for rule in rules:
         # This is a simplified validation - real implementation would parse conditions
         # and check against specification content
-        conflicts.append({
-            "rule_id": rule.rule_id,
-            "severity": rule.severity,
-            "message": rule.message,
-            "status": "not_evaluated"  # Would be evaluated based on actual rule conditions
-        })
+        conflicts.append(
+            {
+                "rule_id": rule.rule_id,
+                "severity": rule.severity,
+                "message": rule.message,
+                "status": "not_evaluated",  # Would be evaluated based on actual rule conditions
+            }
+        )
 
     return {
         "domain_id": domain_id,
         "valid": len([c for c in conflicts if c["severity"] == "error"]) == 0,
         "conflicts": conflicts,
-        "specification_excerpt": f"Validating {len(specification)} fields"
+        "specification_excerpt": f"Validating {len(specification)} fields",
     }

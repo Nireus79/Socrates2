@@ -3,9 +3,10 @@
 Handles parsing of PDF, DOCX, Markdown, and plain text documents,
 with support for text chunking with overlap for RAG.
 """
-from typing import List, Tuple
-from io import BytesIO
 import logging
+from io import BytesIO
+from typing import List, Tuple
+
 import chardet
 
 logger = logging.getLogger(__name__)

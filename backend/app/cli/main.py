@@ -9,16 +9,14 @@ Provides commands for:
 - Viewing analytics and metrics
 """
 
-import click
 import json
-from typing import Optional
-from datetime import datetime
+
+import click
 
 from app.domains import get_domain_registry
-from app.domains.registry import register_all_domains
-from app.domains.workflows import MultiDomainWorkflow, get_workflow_manager
 from app.domains.analytics import get_domain_analytics
-
+from app.domains.registry import register_all_domains
+from app.domains.workflows import get_workflow_manager
 
 # Ensure domains are registered
 try:
@@ -66,7 +64,9 @@ def list():
 
         click.echo(f"\n  {domain.name} ({domain_id})")
         click.echo(f"    Version: {domain.version}")
-        click.echo(f"    Questions: {len(questions)}, Exporters: {len(exporters)}, Rules: {len(rules)}")
+        click.echo(
+            f"    Questions: {len(questions)}, Exporters: {len(exporters)}, Rules: {len(rules)}"
+        )
 
     click.echo(f"\nTotal: {len(domains)} domains")
 
@@ -232,7 +232,10 @@ def validate(workflow_id: str):
         workflow = manager.get_workflow(workflow_id)
         result = workflow.validate()
 
-        click.secho(f"\nValidation Result: {result.status.upper()}", fg="green" if result.status == "valid" else "yellow")
+        click.secho(
+            f"\nValidation Result: {result.status.upper()}",
+            fg="green" if result.status == "valid" else "yellow",
+        )
 
         domains = workflow.get_involved_domains()
         click.echo(f"Domains: {', '.join(domains)}")
@@ -241,9 +244,11 @@ def validate(workflow_id: str):
             click.secho(f"Conflicts Found: {len(result.cross_domain_conflicts)}", fg="yellow")
             for conflict in result.cross_domain_conflicts:
                 severity_color = "red" if conflict.severity == "error" else "yellow"
-                click.secho(f"  [{conflict.severity.upper()}] {conflict.message}", fg=severity_color)
+                click.secho(
+                    f"  [{conflict.severity.upper()}] {conflict.message}", fg=severity_color
+                )
 
-        click.echo(f"\nDetails:")
+        click.echo("\nDetails:")
         for key, value in result.summary.items():
             click.echo(f"  {key}: {value}")
 
@@ -297,16 +302,16 @@ def report():
     click.secho("\nAnalytics Report", fg="cyan", bold=True)
     click.echo(f"Generated: {report['created_at']}")
 
-    click.echo(f"\nDomain Statistics:")
+    click.echo("\nDomain Statistics:")
     click.echo(f"  Total Accesses: {report['total_domain_accesses']}")
     click.echo(f"  Questions Answered: {report['total_questions_answered']}")
     click.echo(f"  Exports Generated: {report['total_exports_generated']}")
     click.echo(f"  Conflicts Detected: {report['total_conflicts_detected']}")
     click.echo(f"  Unique Domains Used: {report['unique_domains_count']}")
 
-    if report['domain_reports']:
-        click.echo(f"\nDomain Breakdown:")
-        for domain_id, d in report['domain_reports'].items():
+    if report["domain_reports"]:
+        click.echo("\nDomain Breakdown:")
+        for domain_id, d in report["domain_reports"].items():
             click.echo(f"  • {domain_id}:")
             click.echo(f"    Accesses: {d['access_count']}")
             click.echo(f"    Questions: {d['questions_answered']}")

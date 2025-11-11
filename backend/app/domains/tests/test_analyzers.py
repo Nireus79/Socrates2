@@ -1,8 +1,9 @@
 """Tests for quality analyzer engine."""
 
-import pytest
 import json
-from pathlib import Path
+
+import pytest
+
 from ..analyzers import QualityAnalyzerEngine, get_analyzer_engine
 from ..base import QualityAnalyzer
 

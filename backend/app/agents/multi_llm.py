@@ -1,13 +1,13 @@
 """
 MultiLLMManager - Manage multiple LLM providers and route requests.
 """
-from typing import Dict, Any, List
 from datetime import datetime, timezone
+from typing import Any, Dict, List
 
-from .base import BaseAgent
+from ..core.dependencies import ServiceContainer
 from ..models.api_key import APIKey
 from ..models.llm_usage_tracking import LLMUsageTracking
-from ..core.dependencies import ServiceContainer
+from .base import BaseAgent
 
 
 class MultiLLMManager(BaseAgent):
@@ -335,10 +335,13 @@ class MultiLLMManager(BaseAgent):
         Uses SECRET_KEY from configuration to derive encryption key.
         """
         try:
+            import base64
+
             from cryptography.fernet import Fernet
             from cryptography.hazmat.primitives import hashes
-            from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2  # TODO Module 'PBKDF2' not found
-            import base64
+            from cryptography.hazmat.primitives.kdf.pbkdf2 import (
+                PBKDF2,  # TODO Module 'PBKDF2' not found
+            )
 
             # Derive a Fernet-compatible key from SECRET_KEY
             # Using PBKDF2 to generate a proper 32-byte key
@@ -372,10 +375,13 @@ class MultiLLMManager(BaseAgent):
         Uses SECRET_KEY from configuration to derive decryption key.
         """
         try:
+            import base64
+
             from cryptography.fernet import Fernet
             from cryptography.hazmat.primitives import hashes
-            from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2  # TODO Module 'PBKDF2' not found
-            import base64
+            from cryptography.hazmat.primitives.kdf.pbkdf2 import (
+                PBKDF2,  # TODO Module 'PBKDF2' not found
+            )
 
             # Derive the same Fernet key from SECRET_KEY
             secret = self.services.get_config()['SECRET_KEY'].encode()
@@ -400,5 +406,5 @@ class MultiLLMManager(BaseAgent):
             try:
                 import base64
                 return base64.b64decode(encrypted_key.encode()).decode()
-            except:
+            except Exception:
                 raise ValueError("Failed to decrypt API key with both Fernet and base64 methods")

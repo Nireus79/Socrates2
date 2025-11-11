@@ -3,10 +3,11 @@
 Performs similarity searches across document chunks using
 vector embeddings stored in pgvector PostgreSQL extension.
 """
-from typing import List, Dict, Optional, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy import func
 import logging
+from typing import Dict, List
+
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +56,9 @@ class SemanticSearchService:
         Raises:
             Exception: If embedding or search fails
         """
-        from .embedding_service import EmbeddingService
         from ..models.document_chunk import DocumentChunk
         from ..models.knowledge_base_documents import KnowledgeBaseDocument
+        from .embedding_service import EmbeddingService
 
         try:
             # Embed the query

@@ -5,10 +5,10 @@ Handles loading, validating, and serving domain-specific export formats
 from configuration files (JSON, etc).
 """
 
-import logging
-from typing import List, Dict, Optional, Any
-from pathlib import Path
 import json
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from .base import ExportFormat
 
@@ -247,9 +247,7 @@ class ExportTemplateEngine:
         for e in exporters:
             if e.mime_type:
                 if not any(e.mime_type.startswith(p) for p in valid_mime_patterns):
-                    errors.append(
-                        f"Exporter {e.format_id} has invalid MIME type: {e.mime_type}"
-                    )
+                    errors.append(f"Exporter {e.format_id} has invalid MIME type: {e.mime_type}")
 
         return errors
 

@@ -2,10 +2,11 @@
 
 Commands for user login, logout, and API key management.
 """
-import click
+
 import json
 from pathlib import Path
-import os
+
+import click
 
 
 @click.group(name="auth")
@@ -56,8 +57,9 @@ def save_credentials(credentials):
 @auth.command(name="login")
 @click.option("--email", prompt="Email", help="Email address")
 @click.option("--password", prompt=True, hide_input=True, help="Password")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
 def login(email: str, password: str, api_url: str):
     """Authenticate with Socrates2 and save credentials.
 
@@ -74,12 +76,7 @@ def login(email: str, password: str, api_url: str):
         user_id = "user_123"
 
         # Save credentials
-        credentials = {
-            "email": email,
-            "token": token,
-            "user_id": user_id,
-            "api_url": api_url
-        }
+        credentials = {"email": email, "token": token, "user_id": user_id, "api_url": api_url}
         save_credentials(credentials)
 
         click.echo(f"✅ Logged in successfully as {click.style(email, fg='green')}")
@@ -115,8 +112,9 @@ def logout():
 @click.option("--generate", is_flag=True, help="Generate a new API token")
 @click.option("--show", is_flag=True, help="Show current token")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
 def manage_token(generate: bool, show: bool, api_key: str, api_url: str):
     """Manage API tokens.
 
@@ -140,7 +138,7 @@ def manage_token(generate: bool, show: bool, api_key: str, api_url: str):
             creds["token"] = new_token
             save_credentials(creds)
 
-            click.echo(f"✅ New API token generated!")
+            click.echo("✅ New API token generated!")
             click.echo(f"Token: {click.style(new_token[:20] + '...', fg='green')}")
 
         except Exception as e:

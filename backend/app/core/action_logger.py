@@ -8,8 +8,7 @@ the background workflow progress. Supports centralized enable/disable control.
 import logging
 import time
 from contextlib import contextmanager
-from typing import Optional, Dict, Any
-from datetime import datetime
+from typing import Optional
 
 # Global state for action logging
 _action_logging_enabled = True

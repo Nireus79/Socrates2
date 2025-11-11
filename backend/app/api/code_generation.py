@@ -6,20 +6,21 @@ Provides:
 - Check generation status
 - Download generated code
 """
+import io
+import zipfile
+from typing import Any, Dict
+
 from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from typing import Dict, Any
-import io
-import zipfile
+from sqlalchemy.orm import Session
 
-from ..core.security import get_current_active_user
-from ..models.user import User
-from ..models.generated_project import GeneratedProject
-from ..models.generated_file import GeneratedFile
 from ..agents.orchestrator import get_orchestrator
 from ..core.database import get_db_specs
-from sqlalchemy.orm import Session
+from ..core.security import get_current_active_user
+from ..models.generated_file import GeneratedFile
+from ..models.generated_project import GeneratedProject
+from ..models.user import User
 
 router = APIRouter(prefix="/api/v1/code", tags=["code-generation"])
 

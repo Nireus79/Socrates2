@@ -7,6 +7,7 @@ Supports registration, discovery, and lifecycle management of domains.
 
 import logging
 from typing import Dict, Optional, Type
+
 from .base import BaseDomain
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ class DomainRegistry:
         domain = registry.get_domain("programming")
     """
 
-    _instance: Optional['DomainRegistry'] = None
+    _instance: Optional["DomainRegistry"] = None
     _domains: Dict[str, Type[BaseDomain]] = {}
     _instances: Dict[str, BaseDomain] = {}
 
@@ -52,7 +53,7 @@ class DomainRegistry:
             raise ValueError(f"Domain '{domain_id}' already registered")
 
         if not issubclass(domain_class, BaseDomain):
-            raise ValueError(f"Domain class must inherit from BaseDomain")
+            raise ValueError("Domain class must inherit from BaseDomain")
 
         self._domains[domain_id] = domain_class
         logger.info(f"Registered domain: {domain_id} ({domain_class.__name__})")
@@ -201,13 +202,13 @@ def register_all_domains() -> None:
 
     Should be called during application initialization to ensure all domains are available.
     """
-    from .programming import ProgrammingDomain
-    from .data_engineering import DataEngineeringDomain
     from .architecture import ArchitectureDomain
-    from .testing import TestingDomain
     from .business import BusinessDomain
-    from .security import SecurityDomain
+    from .data_engineering import DataEngineeringDomain
     from .devops import DevOpsDomain
+    from .programming import ProgrammingDomain
+    from .security import SecurityDomain
+    from .testing import TestingDomain
 
     registry = get_domain_registry()
 

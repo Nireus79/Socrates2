@@ -2,11 +2,12 @@
 Resources API - Fetch and manage external resources (web pages, GitHub repos, etc).
 """
 
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
-import logging
 import asyncio
+import logging
+from typing import Any, Dict, Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
 from ..core.security import get_current_active_user
 from ..models import User

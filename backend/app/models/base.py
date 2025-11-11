@@ -5,11 +5,12 @@ All models inherit from BaseModel to get:
 - Automatic timestamps (created_at, updated_at)
 - to_dict() serialization method
 """
+import uuid
+from datetime import datetime
+
 from sqlalchemy import Column, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.ext.declarative import declared_attr
-from datetime import datetime
-import uuid
 
 from ..core.database import Base
 
@@ -27,9 +28,9 @@ class BaseModel(Base):
     __abstract__ = True
 
     @declared_attr
-    def __tablename__(cls):
+    def __tablename__(self):
         """Generate table name from class name (lowercase)"""
-        return cls.__name__.lower()
+        return self.__name__.lower()
 
     id = Column(
         PG_UUID(as_uuid=True),

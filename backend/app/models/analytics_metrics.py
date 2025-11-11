@@ -3,9 +3,8 @@ Analytics metrics models for dashboard.
 
 Tracks business metrics: DAU, MRR, churn, funnel, etc.
 """
-from sqlalchemy import Column, String, Integer, Numeric, DateTime, Date, Index, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
-from datetime import datetime, timezone, date
+from sqlalchemy import Column, Date, Index, Integer, Numeric, String
+from sqlalchemy.dialects.postgresql import JSONB
 
 from .base import BaseModel
 

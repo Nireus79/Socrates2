@@ -7,12 +7,13 @@ inherit from BaseDomain and implement these extension points.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class SeverityLevel(str, Enum):
     """Severity levels for conflicts and quality issues."""
+
     ERROR = "error"
     WARNING = "warning"
     INFO = "info"
@@ -21,6 +22,7 @@ class SeverityLevel(str, Enum):
 @dataclass
 class ConflictRule:
     """A rule that can be violated, creating a conflict."""
+
     rule_id: str
     name: str
     description: str
@@ -43,6 +45,7 @@ class ConflictRule:
 @dataclass
 class QualityIssue:
     """A quality issue detected by an analyzer."""
+
     analyzer_type: str
     issue_type: str
     severity: SeverityLevel
@@ -65,6 +68,7 @@ class QualityIssue:
 @dataclass
 class QualityAnalyzer:
     """A quality analyzer that can detect issues in a specification."""
+
     analyzer_id: str
     name: str
     description: str
@@ -89,6 +93,7 @@ class QualityAnalyzer:
 @dataclass
 class ExportFormat:
     """An export format supported by a domain."""
+
     format_id: str
     name: str
     description: str
@@ -111,6 +116,7 @@ class ExportFormat:
 @dataclass
 class Question:
     """A question in the Socratic dialogue."""
+
     question_id: str
     text: str
     category: str
@@ -170,9 +176,9 @@ class BaseDomain(ABC):
 
     def __init__(self):
         """Initialize domain."""
-        if not hasattr(self, 'domain_id') or not self.domain_id:
+        if not hasattr(self, "domain_id") or not self.domain_id:
             raise ValueError("Domain must define domain_id")
-        if not hasattr(self, 'name') or not self.name:
+        if not hasattr(self, "name") or not self.name:
             raise ValueError("Domain must define name")
 
     # ========== Categories ==========

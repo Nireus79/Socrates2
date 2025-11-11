@@ -1,14 +1,15 @@
 """Tests for multi-domain workflow system."""
 
 import pytest
+
+from app.domains.registry import register_all_domains
 from app.domains.workflows import (
-    MultiDomainWorkflow,
-    WorkflowManager,
     CrossDomainConflict,
     DomainSpec,
+    MultiDomainWorkflow,
+    WorkflowManager,
     get_workflow_manager,
 )
-from app.domains.registry import register_all_domains, get_domain_registry
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -88,13 +89,9 @@ class TestMultiDomainWorkflow:
     def test_detect_architecture_testing_conflict(self, workflow):
         """Test detecting architecture-testing conflicts."""
         workflow.add_domain_spec(
-            "architecture",
-            {"architecture_type": "microservices", "scalability": "manual_scaling"}
+            "architecture", {"architecture_type": "microservices", "scalability": "manual_scaling"}
         )
-        workflow.add_domain_spec(
-            "testing",
-            {"testing_strategy": "unit_only"}
-        )
+        workflow.add_domain_spec("testing", {"testing_strategy": "unit_only"})
 
         conflicts = workflow.detect_cross_domain_conflicts()
 
@@ -104,42 +101,31 @@ class TestMultiDomainWorkflow:
 
     def test_detect_performance_testing_conflict(self, workflow):
         """Test detecting performance-testing conflicts."""
-        workflow.add_domain_spec(
-            "programming",
-            {"target_response_time": 500}
-        )
-        workflow.add_domain_spec(
-            "testing",
-            {"testing_strategy": "just_unit_tests"}
-        )
+        workflow.add_domain_spec("programming", {"target_response_time": 500})
+        workflow.add_domain_spec("testing", {"testing_strategy": "just_unit_tests"})
 
         conflicts = workflow.detect_cross_domain_conflicts()
 
         # Should detect warning about performance targets without testing
         performance_conflicts = [
-            c for c in conflicts
+            c
+            for c in conflicts
             if "programming" in c.domains_involved and "testing" in c.domains_involved
         ]
         assert len(performance_conflicts) > 0
 
     def test_detect_data_architecture_conflict(self, workflow):
         """Test detecting data engineering-architecture conflicts."""
-        workflow.add_domain_spec(
-            "data_engineering",
-            {"data_growth": 50}
-        )
-        workflow.add_domain_spec(
-            "architecture",
-            {"scalability": "manual_scaling_only"}
-        )
+        workflow.add_domain_spec("data_engineering", {"data_growth": 50})
+        workflow.add_domain_spec("architecture", {"scalability": "manual_scaling_only"})
 
         conflicts = workflow.detect_cross_domain_conflicts()
 
         # Should detect warning about scaling needs
         data_arch_conflicts = [
-            c for c in conflicts
-            if "data_engineering" in c.domains_involved
-            and "architecture" in c.domains_involved
+            c
+            for c in conflicts
+            if "data_engineering" in c.domains_involved and "architecture" in c.domains_involved
         ]
         assert len(data_arch_conflicts) > 0
 
@@ -186,9 +172,7 @@ class TestMultiDomainWorkflow:
     def test_domain_spec_to_dict(self):
         """Test DomainSpec serialization."""
         spec = DomainSpec(
-            domain_id="programming",
-            responses={"q1": "a1"},
-            metadata={"source": "api"}
+            domain_id="programming", responses={"q1": "a1"}, metadata={"source": "api"}
         )
 
         spec_dict = spec.to_dict()
@@ -204,7 +188,7 @@ class TestMultiDomainWorkflow:
             domains_involved={"programming", "testing"},
             severity="warning",
             message="Test warning",
-            resolution_suggestions=["Suggestion 1"]
+            resolution_suggestions=["Suggestion 1"],
         )
 
         conflict_dict = conflict.to_dict()
@@ -312,17 +296,11 @@ class TestWorkflowIntegration:
         workflow = MultiDomainWorkflow("integration_test_001")
 
         # Add multiple domains
-        workflow.add_domain_spec("programming", {
-            "language": "python",
-            "target_response_time": 500
-        })
-        workflow.add_domain_spec("testing", {
-            "testing_strategy": "comprehensive"
-        })
-        workflow.add_domain_spec("architecture", {
-            "architecture_type": "microservices",
-            "scalability": "auto"
-        })
+        workflow.add_domain_spec("programming", {"language": "python", "target_response_time": 500})
+        workflow.add_domain_spec("testing", {"testing_strategy": "comprehensive"})
+        workflow.add_domain_spec(
+            "architecture", {"architecture_type": "microservices", "scalability": "auto"}
+        )
 
         # Validate
         result = workflow.validate()
@@ -341,12 +319,8 @@ class TestWorkflowIntegration:
         workflow = MultiDomainWorkflow("conflict_test_001")
 
         # Add conflicting specs
-        workflow.add_domain_spec("architecture", {
-            "architecture_type": "monolithic"
-        })
-        workflow.add_domain_spec("testing", {
-            "testing_strategy": "minimal_testing"
-        })
+        workflow.add_domain_spec("architecture", {"architecture_type": "monolithic"})
+        workflow.add_domain_spec("testing", {"testing_strategy": "minimal_testing"})
 
         conflicts = workflow.detect_cross_domain_conflicts()
 

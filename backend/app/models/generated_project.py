@@ -1,11 +1,13 @@
 """
 GeneratedProject model for storing code generation metadata.
 """
-from sqlalchemy import Column, String, Integer, DateTime, Text, Enum, DECIMAL, func
+import enum
+
+from sqlalchemy import DECIMAL, Column, DateTime, Enum, Integer, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
+
 from ..models.base import BaseModel
-import enum
 
 
 class GenerationStatus(enum.Enum):

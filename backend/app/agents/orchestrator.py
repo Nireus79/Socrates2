@@ -8,8 +8,7 @@ Responsibilities:
 - Statistics aggregation
 - Future: Quality control integration (Phase 5)
 """
-from typing import Dict, Any, List, Optional
-import logging
+from typing import Any, Dict, List, Optional
 
 from ..core.dependencies import ServiceContainer
 from .base import BaseAgent
@@ -60,10 +59,10 @@ class AgentOrchestrator:
         """
         # Check agent has required attributes (agent_id and name or agent_name)
         if not hasattr(agent, 'agent_id'):
-            raise ValueError(f"Agent must have 'agent_id' attribute")
+            raise ValueError("Agent must have 'agent_id' attribute")
 
         if not (hasattr(agent, 'name') or hasattr(agent, 'agent_name')):
-            raise ValueError(f"Agent must have 'name' or 'agent_name' attribute")
+            raise ValueError("Agent must have 'name' or 'agent_name' attribute")
 
         if agent.agent_id in self.agents:
             raise ValueError(
@@ -376,18 +375,18 @@ def initialize_default_agents(orchestrator: Optional[AgentOrchestrator] = None) 
         return orchestrator
 
     # Import all agent classes
-    from .project import ProjectManagerAgent
-    from .socratic import SocraticCounselorAgent
-    from .context import ContextAnalyzerAgent
-    from .conflict_detector import ConflictDetectorAgent
     from .code_generator import CodeGeneratorAgent
-    from .quality_controller import QualityControllerAgent
-    from .user_learning import UserLearningAgent
+    from .conflict_detector import ConflictDetectorAgent
+    from .context import ContextAnalyzerAgent
     from .direct_chat import DirectChatAgent
-    from .team_collaboration import TeamCollaborationAgent
     from .export import ExportAgent
-    from .multi_llm import MultiLLMManager
     from .github_integration import GitHubIntegrationAgent
+    from .multi_llm import MultiLLMManager
+    from .project import ProjectManagerAgent
+    from .quality_controller import QualityControllerAgent
+    from .socratic import SocraticCounselorAgent
+    from .team_collaboration import TeamCollaborationAgent
+    from .user_learning import UserLearningAgent
 
     services = orchestrator.services
 

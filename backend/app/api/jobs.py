@@ -4,16 +4,15 @@ Job monitoring and management API endpoints.
 Endpoints for viewing scheduled jobs status and manually triggering jobs.
 Admin-only access required.
 """
+import logging
+from typing import Any, Dict, List
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any
-import logging
 
 from ..core.security import get_current_active_user
-from ..core.database import get_db_auth
 from ..models.user import User
 from ..services.job_scheduler import get_scheduler
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/admin/jobs", tags=["admin", "jobs"])

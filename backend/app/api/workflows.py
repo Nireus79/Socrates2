@@ -5,11 +5,12 @@ Provides REST API for creating and managing multi-domain specifications
 with unified validation and cross-domain conflict detection.
 """
 
-from fastapi import APIRouter, HTTPException
-from typing import List, Dict, Any
 import logging
+from typing import Any, Dict
 
-from app.domains.workflows import get_workflow_manager, MultiDomainWorkflow
+from fastapi import APIRouter, HTTPException
+
+from app.domains.workflows import get_workflow_manager
 
 logger = logging.getLogger(__name__)
 

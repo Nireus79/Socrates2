@@ -3,10 +3,11 @@
 Provides easy interface for logging user activities across the application.
 All activities are recorded for audit trails and activity feeds.
 """
-from typing import Dict, Optional, Any
-from sqlalchemy.orm import Session
 import logging
 import uuid
+from typing import Any, Dict, Optional
+
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

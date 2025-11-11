@@ -1,11 +1,13 @@
 """
 QualityMetric model for quality control metrics and validation results.
 """
-from sqlalchemy import Column, String, Numeric, Boolean, ForeignKey, Index, DateTime
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
-from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Numeric, String
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.orm import relationship
 
 from ..core.database import Base
 

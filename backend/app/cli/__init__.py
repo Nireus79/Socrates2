@@ -5,6 +5,7 @@ Command-line interface for managing Socrates2 projects, specifications, and conf
 
 try:
     from .main import cli
+
     __all__ = ["cli"]
 except ImportError:
     # Click not installed yet

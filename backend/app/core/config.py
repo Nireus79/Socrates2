@@ -2,10 +2,11 @@
 Configuration management using Pydantic Settings.
 Loads configuration from .env file.
 """
-from pydantic_settings import BaseSettings
-from pydantic import ConfigDict
-from typing import Optional, List
 from functools import lru_cache
+from typing import List, Optional
+
+from pydantic import ConfigDict
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):

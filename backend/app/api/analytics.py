@@ -4,9 +4,10 @@ Analytics API endpoints for Socrates2.
 Provides REST API access to analytics reports and metrics tracking.
 """
 
-from fastapi import APIRouter, HTTPException
-from typing import Dict, Any
 import logging
+from typing import Any, Dict
+
+from fastapi import APIRouter, HTTPException
 
 from app.domains.analytics import get_domain_analytics
 
@@ -70,7 +71,7 @@ async def get_domain_metrics(domain_id: str) -> Dict[str, Any]:
     return {
         "domain_id": domain_id,
         "count": len(metrics),
-        "metrics": [m.to_dict() for m in metrics]
+        "metrics": [m.to_dict() for m in metrics],
     }
 
 
@@ -91,10 +92,7 @@ async def get_most_used_domains(limit: int = 10) -> Dict[str, Any]:
     return {
         "limit": limit,
         "count": len(most_used),
-        "domains": [
-            {"domain_id": d[0], "access_count": d[1]}
-            for d in most_used
-        ]
+        "domains": [{"domain_id": d[0], "access_count": d[1]} for d in most_used],
     }
 
 
@@ -116,10 +114,7 @@ async def get_workflow_analytics(workflow_id: str) -> Dict[str, Any]:
     report = analytics.get_workflow_report(workflow_id)
 
     if "error" in report:
-        raise HTTPException(
-            status_code=404,
-            detail=report["error"]
-        )
+        raise HTTPException(status_code=404, detail=report["error"])
 
     return report
 
@@ -159,10 +154,7 @@ async def export_analytics(format_id: str = "json") -> Dict[str, Any]:
     try:
         return analytics.export_analytics(format_id)
     except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/questions/{domain_id}/top", summary="Get most answered questions")
@@ -180,12 +172,7 @@ async def get_most_answered_questions(domain_id: str, limit: int = 10) -> Dict[s
     analytics = get_domain_analytics()
     questions = analytics.get_most_answered_questions(domain_id, limit)
 
-    return {
-        "domain_id": domain_id,
-        "limit": limit,
-        "count": len(questions),
-        "questions": questions
-    }
+    return {"domain_id": domain_id, "limit": limit, "count": len(questions), "questions": questions}
 
 
 @router.delete("", summary="Clear all analytics data")
@@ -201,7 +188,4 @@ async def clear_analytics() -> Dict[str, str]:
     analytics = get_domain_analytics()
     analytics.clear_metrics()
 
-    return {
-        "status": "success",
-        "message": "All analytics data cleared"
-    }
+    return {"status": "success", "message": "All analytics data cleared"}

@@ -9,9 +9,9 @@ This agent enables natural conversation mode alongside Socratic questioning:
 """
 import logging
 from datetime import datetime, timezone
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
-from ..models import Session, ConversationHistory, Specification, Project
+from ..models import ConversationHistory, Project, Session, Specification
 from .base import BaseAgent
 
 

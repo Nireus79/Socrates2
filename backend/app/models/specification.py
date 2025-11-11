@@ -1,8 +1,9 @@
 """
 Specification model for extracted project specifications.
 """
-from sqlalchemy import Column, String, Text, Numeric, Boolean, ForeignKey, Index, DateTime
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Numeric, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 
 from .base import BaseModel

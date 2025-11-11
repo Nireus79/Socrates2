@@ -1,10 +1,11 @@
 """
 Refresh token model for JWT token refresh mechanism.
 """
-from sqlalchemy import Column, String, DateTime, ForeignKey, func
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
 
 from .base import BaseModel
 
@@ -53,7 +54,7 @@ class RefreshToken(BaseModel):
 
     def is_valid(self) -> bool:
         """Check if refresh token is still valid"""
-        from datetime import datetime, timezone
+        from datetime import timezone
         # Ensure both datetimes have the same timezone awareness
         now = datetime.now(timezone.utc)
         expires = self.expires_at

@@ -72,10 +72,7 @@ class TestWorkflowCommands:
 
     def test_workflow_create_with_domain(self, cli_runner):
         """Test creating workflow with domain."""
-        result = cli_runner.invoke(
-            cli,
-            ["workflow", "create", "test_wf_002", "-d", "programming"]
-        )
+        result = cli_runner.invoke(cli, ["workflow", "create", "test_wf_002", "-d", "programming"])
 
         assert result.exit_code == 0
         assert "Created workflow" in result.output
@@ -104,20 +101,14 @@ class TestWorkflowCommands:
         """Test adding domain to workflow."""
         cli_runner.invoke(cli, ["workflow", "create", "test_wf_add"])
 
-        result = cli_runner.invoke(
-            cli,
-            ["workflow", "add", "test_wf_add", "programming"]
-        )
+        result = cli_runner.invoke(cli, ["workflow", "add", "test_wf_add", "programming"])
 
         assert result.exit_code == 0
         assert "Added domain" in result.output
 
     def test_workflow_validate(self, cli_runner):
         """Test workflow validation."""
-        cli_runner.invoke(
-            cli,
-            ["workflow", "create", "test_wf_validate", "-d", "programming"]
-        )
+        cli_runner.invoke(cli, ["workflow", "create", "test_wf_validate", "-d", "programming"])
 
         result = cli_runner.invoke(cli, ["workflow", "validate", "test_wf_validate"])
 
@@ -126,15 +117,9 @@ class TestWorkflowCommands:
 
     def test_workflow_export(self, cli_runner):
         """Test exporting workflow."""
-        cli_runner.invoke(
-            cli,
-            ["workflow", "create", "test_wf_export", "-d", "programming"]
-        )
+        cli_runner.invoke(cli, ["workflow", "create", "test_wf_export", "-d", "programming"])
 
-        result = cli_runner.invoke(
-            cli,
-            ["workflow", "export", "test_wf_export"]
-        )
+        result = cli_runner.invoke(cli, ["workflow", "export", "test_wf_export"])
 
         assert result.exit_code == 0
         assert "workflow_id" in result.output
@@ -144,11 +129,7 @@ class TestWorkflowCommands:
         """Test deleting workflow."""
         cli_runner.invoke(cli, ["workflow", "create", "test_wf_delete"])
 
-        result = cli_runner.invoke(
-            cli,
-            ["workflow", "delete", "test_wf_delete"],
-            input="y\n"
-        )
+        result = cli_runner.invoke(cli, ["workflow", "delete", "test_wf_delete"], input="y\n")
 
         assert result.exit_code == 0
         assert "Deleted workflow" in result.output

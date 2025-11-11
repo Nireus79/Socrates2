@@ -6,11 +6,10 @@ cross-domain conflict detection, and composite specification generation.
 """
 
 import logging
-from typing import List, Dict, Any, Set, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any, Dict, List, Set
 
-from .base import BaseDomain, ConflictRule
 from .registry import get_domain_registry
 
 logger = logging.getLogger(__name__)
@@ -204,7 +203,10 @@ class MultiDomainWorkflow:
             test_spec = self.domain_specs["testing"]
 
             # Check if testing strategy matches architecture
-            if "architecture_type" in arch_spec.responses and "testing_strategy" in test_spec.responses:
+            if (
+                "architecture_type" in arch_spec.responses
+                and "testing_strategy" in test_spec.responses
+            ):
                 arch_type = arch_spec.responses.get("architecture_type", "").lower()
                 test_strategy = test_spec.responses.get("testing_strategy", "").lower()
 
@@ -366,9 +368,11 @@ class MultiDomainWorkflow:
             "domains": {
                 domain_id: {
                     "spec": spec.to_dict(),
-                    "domain_metadata": self.registry.get_domain(domain_id).get_metadata()
-                    if self.registry.has_domain(domain_id)
-                    else {},
+                    "domain_metadata": (
+                        self.registry.get_domain(domain_id).get_metadata()
+                        if self.registry.has_domain(domain_id)
+                        else {}
+                    ),
                 }
                 for domain_id, spec in self.domain_specs.items()
             },

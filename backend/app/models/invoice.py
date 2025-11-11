@@ -3,10 +3,9 @@ Invoice model for billing records.
 
 Tracks all invoices from Stripe.
 """
-from sqlalchemy import Column, String, DateTime, Numeric, Index, ForeignKey, JSONB
+
+from sqlalchemy import JSONB, Column, DateTime, ForeignKey, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from datetime import datetime, timezone
-from uuid import uuid4
 
 from .base import BaseModel
 

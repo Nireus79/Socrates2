@@ -11,17 +11,15 @@ The pure business logic (behavior analysis, metrics calculation)
 is handled by the LearningEngine in the Socrates library.
 This separation enables testing without database and library extraction.
 """
-import logging
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Dict, List, Any
-import json
+from typing import Any, Dict, List
 
-from ..models import UserBehaviorPattern, QuestionEffectiveness, KnowledgeBaseDocument, Project
-from .base import BaseAgent
 # Import from Socrates library instead of local core
 from socrates import LearningEngine
-from socrates import UserBehaviorData
+
+from ..models import KnowledgeBaseDocument, QuestionEffectiveness, UserBehaviorPattern
+from .base import BaseAgent
 
 
 class UserLearningAgent(BaseAgent):

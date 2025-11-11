@@ -7,13 +7,15 @@ This module handles:
 - Performance monitoring
 - Release tagging
 """
-import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlAlchemyIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
 import logging
 import re
 from typing import Any, Dict, Optional
+
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlAlchemyIntegration
+
 from ..core.config import settings
 
 logger = logging.getLogger(__name__)

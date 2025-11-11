@@ -5,10 +5,10 @@ Handles loading, validating, and serving domain-specific conflict rules
 from configuration files (JSON, etc).
 """
 
-import logging
-from typing import List, Dict, Optional, Any
-from pathlib import Path
 import json
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from .base import ConflictRule
 
@@ -104,9 +104,7 @@ class ConflictRuleEngine:
 
         return self.load_rules_from_dict(data)
 
-    def filter_by_severity(
-        self, rules: List[ConflictRule], severity: str
-    ) -> List[ConflictRule]:
+    def filter_by_severity(self, rules: List[ConflictRule], severity: str) -> List[ConflictRule]:
         """
         Filter rules by severity level.
 
@@ -126,9 +124,7 @@ class ConflictRuleEngine:
 
         return [r for r in rules if r.severity == severity_level]
 
-    def filter_by_category(
-        self, rules: List[ConflictRule], category: str
-    ) -> List[ConflictRule]:
+    def filter_by_category(self, rules: List[ConflictRule], category: str) -> List[ConflictRule]:
         """
         Filter rules by category (based on rule_id prefix).
 

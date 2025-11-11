@@ -13,10 +13,9 @@ This enables:
 
 import json
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
-from .models import ProjectData, SpecificationData, QuestionData, UserBehaviorData
-
+from .models import ProjectData, QuestionData, SpecificationData, UserBehaviorData
 
 # Question categories and their priorities
 QUESTION_CATEGORIES = [

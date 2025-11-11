@@ -2,10 +2,12 @@
 
 Commands for creating, listing, importing, and exporting specifications.
 """
-import click
+
 import json
-from typing import Optional
 from pathlib import Path
+from typing import Optional
+
+import click
 
 
 @click.group(name="spec")
@@ -28,10 +30,18 @@ def spec():
 @click.option("--value", required=True, help="Specification value")
 @click.option("--content", help="Detailed specification content")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
-def create_spec(project: str, category: str, key: str, value: str, content: Optional[str],
-                api_key: str, api_url: str):
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
+def create_spec(
+    project: str,
+    category: str,
+    key: str,
+    value: str,
+    content: Optional[str],
+    api_key: str,
+    api_url: str,
+):
     """Create a new specification.
 
     Examples:
@@ -51,7 +61,7 @@ def create_spec(project: str, category: str, key: str, value: str, content: Opti
         # This would call the actual API
         spec_id = "spec_" + "123456"
 
-        click.echo(f"✅ Specification created successfully!")
+        click.echo("✅ Specification created successfully!")
         click.echo(f"ID: {click.style(spec_id, fg='green')}")
         click.echo(f"Category: {category}")
         click.echo(f"Key: {key}")
@@ -65,14 +75,17 @@ def create_spec(project: str, category: str, key: str, value: str, content: Opti
 @spec.command(name="list")
 @click.option("--project", required=True, help="Project ID")
 @click.option("--category", help="Filter by category")
-@click.option("--format", type=click.Choice(["table", "json"]), default="table",
-              help="Output format")
+@click.option(
+    "--format", type=click.Choice(["table", "json"]), default="table", help="Output format"
+)
 @click.option("--limit", type=int, default=50, help="Number of results")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
-def list_specs(project: str, category: Optional[str], format: str, limit: int,
-               api_key: str, api_url: str):
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
+def list_specs(
+    project: str, category: Optional[str], format: str, limit: int, api_key: str, api_url: str
+):
     """List specifications in a project.
 
     Examples:
@@ -95,7 +108,7 @@ def list_specs(project: str, category: Optional[str], format: str, limit: int,
                 "key": "objective1",
                 "value": "Build scalable API",
                 "source": "user_input",
-                "confidence": 0.95
+                "confidence": 0.95,
             },
             {
                 "id": "spec_456",
@@ -103,8 +116,8 @@ def list_specs(project: str, category: Optional[str], format: str, limit: int,
                 "key": "framework",
                 "value": "FastAPI",
                 "source": "extracted",
-                "confidence": 0.92
-            }
+                "confidence": 0.92,
+            },
         ]
 
         if category:
@@ -119,7 +132,9 @@ def list_specs(project: str, category: Optional[str], format: str, limit: int,
                 return
 
             click.echo("\n" + "=" * 100)
-            click.echo(f"{'Category':<15} {'Key':<20} {'Value':<35} {'Source':<15} {'Confidence':<10}")
+            click.echo(
+                f"{'Category':<15} {'Key':<20} {'Value':<35} {'Source':<15} {'Confidence':<10}"
+            )
             click.echo("=" * 100)
 
             for spec in specs[:limit]:
@@ -137,13 +152,18 @@ def list_specs(project: str, category: Optional[str], format: str, limit: int,
 
 @spec.command(name="import")
 @click.option("--project", required=True, help="Project ID")
-@click.option("--file", type=click.Path(exists=True), required=True,
-              help="File to import (JSON, CSV, YAML)")
-@click.option("--format", type=click.Choice(["json", "csv", "yaml"]),
-              help="File format (auto-detected if not specified)")
+@click.option(
+    "--file", type=click.Path(exists=True), required=True, help="File to import (JSON, CSV, YAML)"
+)
+@click.option(
+    "--format",
+    type=click.Choice(["json", "csv", "yaml"]),
+    help="File format (auto-detected if not specified)",
+)
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
 def import_specs(project: str, file: str, format: Optional[str], api_key: str, api_url: str):
     """Import specifications from a file.
 
@@ -180,11 +200,13 @@ def import_specs(project: str, file: str, format: Optional[str], api_key: str, a
             specs = json.loads(content)
         elif format == "csv":
             import csv
+
             reader = csv.DictReader(content.splitlines())
             specs = list(reader)
         elif format == "yaml":
             try:
                 import yaml
+
                 specs = yaml.safe_load(content).get("specifications", [])
             except ImportError:
                 click.echo("Warning: PyYAML not installed, falling back to JSON parsing", err=True)
@@ -204,15 +226,26 @@ def import_specs(project: str, file: str, format: Optional[str], api_key: str, a
 
 @spec.command(name="export")
 @click.option("--project", required=True, help="Project ID")
-@click.option("--format", type=click.Choice(["json", "csv", "markdown", "yaml", "html"]),
-              default="json", help="Export format")
+@click.option(
+    "--format",
+    type=click.Choice(["json", "csv", "markdown", "yaml", "html"]),
+    default="json",
+    help="Export format",
+)
 @click.option("--output", type=click.Path(), help="Output file path")
 @click.option("--category", help="Filter by category")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
-def export_specs(project: str, format: str, output: Optional[str], category: Optional[str],
-                 api_key: str, api_url: str):
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
+def export_specs(
+    project: str,
+    format: str,
+    output: Optional[str],
+    category: Optional[str],
+    api_key: str,
+    api_url: str,
+):
     """Export specifications to a file.
 
     Examples:
@@ -230,25 +263,30 @@ def export_specs(project: str, format: str, output: Optional[str], category: Opt
     try:
         # This would call the actual export API
         if format == "json":
-            content = json.dumps({
-                "project_id": project,
-                "format": "json",
-                "specifications": [
-                    {
-                        "category": "goals",
-                        "key": "objective1",
-                        "value": "Build scalable API"
-                    }
-                ]
-            }, indent=2)
+            content = json.dumps(
+                {
+                    "project_id": project,
+                    "format": "json",
+                    "specifications": [
+                        {"category": "goals", "key": "objective1", "value": "Build scalable API"}
+                    ],
+                },
+                indent=2,
+            )
         elif format == "csv":
-            content = "category,key,value,source,confidence\ngoals,objective1,Build API,user_input,0.95"
+            content = (
+                "category,key,value,source,confidence\ngoals,objective1,Build API,user_input,0.95"
+            )
         elif format == "markdown":
             content = f"# Project {project} Specifications\n\n## Goals\n### objective1\nBuild API"
         elif format == "yaml":
-            content = "project_id: " + project + "\nspecifications:\n  - category: goals\n    key: objective1"
+            content = (
+                "project_id: "
+                + project
+                + "\nspecifications:\n  - category: goals\n    key: objective1"
+            )
         else:  # html
-            content = f"<html><body><h1>Specifications</h1></body></html>"
+            content = "<html><body><h1>Specifications</h1></body></html>"
 
         if output:
             Path(output).write_text(content)
@@ -264,8 +302,9 @@ def export_specs(project: str, format: str, output: Optional[str], category: Opt
 @spec.command(name="validate")
 @click.option("--project", required=True, help="Project ID")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
 def validate_specs(project: str, api_key: str, api_url: str):
     """Validate specifications in a project.
 
@@ -285,7 +324,7 @@ def validate_specs(project: str, api_key: str, api_url: str):
         issues = [
             {
                 "severity": "warning",
-                "message": "Specification 'api_rate_limit' conflicts with 'request_throttling'"
+                "message": "Specification 'api_rate_limit' conflicts with 'request_throttling'",
             }
         ]
 
@@ -293,7 +332,9 @@ def validate_specs(project: str, api_key: str, api_url: str):
             click.echo(f"\nFound {len(issues)} issue(s):\n")
             for issue in issues:
                 severity_color = "red" if issue["severity"] == "error" else "yellow"
-                click.echo(f"  {click.style(issue['severity'].upper(), fg=severity_color)}: {issue['message']}")
+                click.echo(
+                    f"  {click.style(issue['severity'].upper(), fg=severity_color)}: {issue['message']}"
+                )
         else:
             click.echo("✅ No issues found!")
 

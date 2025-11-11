@@ -2,10 +2,12 @@
 
 Commands for creating, listing, updating, and managing Socrates2 projects.
 """
-import click
+
 import json
 from typing import Optional
 from uuid import uuid4
+
+import click
 
 
 @click.group(name="project")
@@ -27,8 +29,9 @@ def project():
 @click.option("--name", prompt="Project name", help="Name of the project")
 @click.option("--description", default="", help="Project description")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
 def create_project(name: str, description: str, api_key: str, api_url: str):
     """Create a new project.
 
@@ -44,22 +47,22 @@ def create_project(name: str, description: str, api_key: str, api_url: str):
 
     try:
         # This would call the actual API
+
         import httpx
-        import asyncio
 
         async def make_request():
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     f"{api_url}/api/v1/projects",
                     json={"name": name, "description": description},
-                    headers={"Authorization": f"Bearer {api_key}"}
+                    headers={"Authorization": f"Bearer {api_key}"},
                 )
                 return response
 
         # Placeholder - actual implementation would use the API
         project_id = str(uuid4())
 
-        click.echo(f"✅ Project created successfully!")
+        click.echo("✅ Project created successfully!")
         click.echo(f"Project ID: {click.style(project_id, fg='green')}")
         click.echo(f"Name: {name}")
         if description:
@@ -72,10 +75,12 @@ def create_project(name: str, description: str, api_key: str, api_url: str):
 
 @project.command(name="list")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
-@click.option("--format", type=click.Choice(["table", "json"]), default="table",
-              help="Output format")
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
+@click.option(
+    "--format", type=click.Choice(["table", "json"]), default="table", help="Output format"
+)
 def list_projects(api_key: str, api_url: str, format: str):
     """List all projects.
 
@@ -98,15 +103,15 @@ def list_projects(api_key: str, api_url: str, format: str):
                 "name": "Example Project",
                 "description": "A sample project",
                 "maturity_score": 75,
-                "status": "active"
+                "status": "active",
             },
             {
                 "id": "proj_456",
                 "name": "Another Project",
                 "description": "Another sample",
                 "maturity_score": 45,
-                "status": "active"
-            }
+                "status": "active",
+            },
         ]
 
         if format == "json":
@@ -137,8 +142,9 @@ def list_projects(api_key: str, api_url: str, format: str):
 @project.command(name="get")
 @click.argument("project_id")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
 def get_project(project_id: str, api_key: str, api_url: str):
     """Get project details.
 
@@ -162,7 +168,7 @@ def get_project(project_id: str, api_key: str, api_url: str):
             "status": "active",
             "created_at": "2025-11-11T10:30:00Z",
             "specifications_count": 45,
-            "team_members": 3
+            "team_members": 3,
         }
 
         click.echo("\n" + "=" * 50)
@@ -188,10 +194,12 @@ def get_project(project_id: str, api_key: str, api_url: str):
 @click.option("--name", help="New project name")
 @click.option("--description", help="New description")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
-def update_project(project_id: str, name: Optional[str], description: Optional[str],
-                   api_key: str, api_url: str):
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
+def update_project(
+    project_id: str, name: Optional[str], description: Optional[str], api_key: str, api_url: str
+):
     """Update project details.
 
     Examples:
@@ -210,7 +218,7 @@ def update_project(project_id: str, name: Optional[str], description: Optional[s
 
     try:
         # This would call the actual API
-        click.echo(f"✅ Project updated successfully!")
+        click.echo("✅ Project updated successfully!")
         if name:
             click.echo(f"Name: {name}")
         if description:
@@ -225,8 +233,9 @@ def update_project(project_id: str, name: Optional[str], description: Optional[s
 @click.argument("project_id")
 @click.option("--force", is_flag=True, help="Skip confirmation")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
 def delete_project(project_id: str, force: bool, api_key: str, api_url: str):
     """Delete a project.
 
@@ -248,7 +257,7 @@ def delete_project(project_id: str, force: bool, api_key: str, api_url: str):
 
     try:
         # This would call the actual API
-        click.echo(f"✅ Project deleted successfully!")
+        click.echo("✅ Project deleted successfully!")
 
     except Exception as e:
         click.echo(f"❌ Error deleting project: {e}", err=True)
@@ -257,14 +266,18 @@ def delete_project(project_id: str, force: bool, api_key: str, api_url: str):
 
 @project.command(name="export")
 @click.argument("project_id")
-@click.option("--format", type=click.Choice(["json", "csv", "markdown", "yaml", "html"]),
-              default="json", help="Export format")
+@click.option(
+    "--format",
+    type=click.Choice(["json", "csv", "markdown", "yaml", "html"]),
+    default="json",
+    help="Export format",
+)
 @click.option("--output", type=click.Path(), help="Output file path")
 @click.option("--api-key", envvar="SOCRATES_API_KEY", help="API key for authentication")
-@click.option("--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000",
-              help="API base URL")
-def export_project(project_id: str, format: str, output: Optional[str],
-                   api_key: str, api_url: str):
+@click.option(
+    "--api-url", envvar="SOCRATES_API_URL", default="http://localhost:8000", help="API base URL"
+)
+def export_project(project_id: str, format: str, output: Optional[str], api_key: str, api_url: str):
     """Export project specifications.
 
     Examples:

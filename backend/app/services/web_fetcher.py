@@ -9,9 +9,10 @@ Supports:
 """
 
 import logging
-import httpx
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 from urllib.parse import urlparse
+
+import httpx
 
 logger = logging.getLogger(__name__)
 

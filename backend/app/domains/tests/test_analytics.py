@@ -1,6 +1,7 @@
 """Tests for analytics system."""
 
 import pytest
+
 from app.domains.analytics import (
     DomainAnalytics,
     DomainMetric,
@@ -18,7 +19,7 @@ class TestDomainMetric:
             domain_id="programming",
             metric_name="domain_access",
             metric_value=1,
-            metric_type="counter"
+            metric_type="counter",
         )
 
         assert metric.domain_id == "programming"
@@ -33,7 +34,7 @@ class TestDomainMetric:
             domain_id="programming",
             metric_name="domain_access",
             metric_value=1,
-            metric_type="counter"
+            metric_type="counter",
         )
 
         metric_dict = metric.to_dict()
@@ -51,8 +52,7 @@ class TestWorkflowAnalytics:
     def test_create_workflow_analytics(self):
         """Test creating workflow analytics."""
         analytics = WorkflowAnalytics(
-            workflow_id="wf_001",
-            domains_involved={"programming", "testing"}
+            workflow_id="wf_001", domains_involved={"programming", "testing"}
         )
 
         assert analytics.workflow_id == "wf_001"
@@ -69,7 +69,7 @@ class TestWorkflowAnalytics:
             validation_duration_ms=150.5,
             conflicts_detected=2,
             quality_score=85.5,
-            specification_completeness=90.0
+            specification_completeness=90.0,
         )
 
         analytics_dict = analytics.to_dict()
@@ -142,8 +142,7 @@ class TestDomainAnalytics:
     def test_track_workflow_analytics(self, analytics):
         """Test tracking workflow analytics."""
         workflow_analytics = WorkflowAnalytics(
-            workflow_id="wf_001",
-            domains_involved={"programming", "testing"}
+            workflow_id="wf_001", domains_involved={"programming", "testing"}
         )
 
         analytics.track_workflow_analytics(workflow_analytics)
@@ -191,8 +190,7 @@ class TestDomainAnalytics:
 
         # Track a workflow
         workflow_analytics = WorkflowAnalytics(
-            workflow_id="wf_001",
-            domains_involved={"programming", "testing"}
+            workflow_id="wf_001", domains_involved={"programming", "testing"}
         )
         analytics.track_workflow_analytics(workflow_analytics)
 
@@ -261,7 +259,7 @@ class TestDomainAnalytics:
             domains_involved={"programming", "testing"},
             validation_duration_ms=250.0,
             conflicts_detected=1,
-            quality_score=85.0
+            quality_score=85.0,
         )
         analytics.track_workflow_analytics(workflow_analytics)
 
@@ -291,20 +289,24 @@ class TestDomainAnalytics:
 
     def test_get_quality_summary(self, analytics):
         """Test getting quality summary with workflows."""
-        analytics.track_workflow_analytics(WorkflowAnalytics(
-            workflow_id="wf_001",
-            domains_involved={"programming"},
-            quality_score=90.0,
-            specification_completeness=85.0,
-            conflicts_detected=1
-        ))
-        analytics.track_workflow_analytics(WorkflowAnalytics(
-            workflow_id="wf_002",
-            domains_involved={"testing"},
-            quality_score=80.0,
-            specification_completeness=75.0,
-            conflicts_detected=2
-        ))
+        analytics.track_workflow_analytics(
+            WorkflowAnalytics(
+                workflow_id="wf_001",
+                domains_involved={"programming"},
+                quality_score=90.0,
+                specification_completeness=85.0,
+                conflicts_detected=1,
+            )
+        )
+        analytics.track_workflow_analytics(
+            WorkflowAnalytics(
+                workflow_id="wf_002",
+                domains_involved={"testing"},
+                quality_score=80.0,
+                specification_completeness=75.0,
+                conflicts_detected=2,
+            )
+        )
 
         summary = analytics.get_quality_summary()
 
@@ -317,11 +319,11 @@ class TestDomainAnalytics:
         """Test exporting analytics as JSON."""
         analytics.track_domain_access("programming")
         analytics.track_question_answered("programming", "q1")
-        analytics.track_workflow_analytics(WorkflowAnalytics(
-            workflow_id="wf_001",
-            domains_involved={"programming"},
-            quality_score=85.0
-        ))
+        analytics.track_workflow_analytics(
+            WorkflowAnalytics(
+                workflow_id="wf_001", domains_involved={"programming"}, quality_score=85.0
+            )
+        )
 
         exported = analytics.export_analytics("json")
 
@@ -342,10 +344,9 @@ class TestDomainAnalytics:
         """Test clearing all metrics."""
         analytics.track_domain_access("programming")
         analytics.track_question_answered("programming", "q1")
-        analytics.track_workflow_analytics(WorkflowAnalytics(
-            workflow_id="wf_001",
-            domains_involved={"programming"}
-        ))
+        analytics.track_workflow_analytics(
+            WorkflowAnalytics(workflow_id="wf_001", domains_involved={"programming"})
+        )
 
         assert len(analytics.metrics) == 2
         assert len(analytics.domain_access_count) > 0
@@ -420,7 +421,7 @@ class TestAnalyticsIntegration:
             conflicts_detected=3,
             specification_questions_answered=3,
             specification_completeness=75.0,
-            quality_score=80.0
+            quality_score=80.0,
         )
         analytics.track_workflow_analytics(workflow_analytics)
 

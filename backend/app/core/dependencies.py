@@ -11,8 +11,9 @@ Provides centralized access to:
 ⚠️  NO FALLBACKS - All dependencies are REQUIRED.
 Missing dependencies raise clear errors instead of returning None.
 """
-from typing import Optional, TYPE_CHECKING
 import logging
+from typing import TYPE_CHECKING, Optional
+
 from anthropic import Anthropic
 from sqlalchemy.orm import Session
 
