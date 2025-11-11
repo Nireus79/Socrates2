@@ -1,0 +1,208 @@
+/**
+ * {{ name }} - Auto-generated async TypeScript class
+ *
+ * {{ docstring }}
+ *
+ * This class provides async/await methods for API interactions
+ */
+
+import axios, { AxiosInstance } from 'axios';
+
+export interface {{ name }}Data {
+  id?: string;
+  name?: string;
+  status?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  metadata?: Record<string, any>;
+}
+
+export interface ApiError {
+  code: string;
+  message: string;
+  statusCode: number;
+}
+
+/**
+ * {{ name }} async class
+ *
+ * Provides async operations for data management with API integration
+ */
+export class {{ name }} {
+  id: string;
+  name: string;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+  metadata: Record<string, any>;
+  private apiClient?: AxiosInstance;
+
+  constructor(data?: Partial<{{ name }}Data>, apiClient?: AxiosInstance) {
+    this.id = data?.id || this.generateId();
+    this.name = data?.name || '';
+    this.status = data?.status || 'pending';
+    this.createdAt = data?.createdAt || new Date();
+    this.updatedAt = data?.updatedAt || new Date();
+    this.metadata = data?.metadata || {};
+    this.apiClient = apiClient;
+  }
+
+  /**
+   * Generate a unique ID
+   */
+  generateId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Fetch data from remote API
+   */
+  async fetchData(): Promise<Record<string, any>> {
+    try {
+      if (!this.apiClient) {
+        throw new Error('API client not configured');
+      }
+
+      const response = await this.apiClient.get(`/api/v1/resources/${this.id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to fetch data for ${this.id}:`, error);
+      throw this.formatError(error);
+    }
+  }
+
+  /**
+   * Save current instance to API
+   */
+  async save(): Promise<void> {
+    try {
+      if (!this.apiClient) {
+        throw new Error('API client not configured');
+      }
+
+      if (!this.validate()) {
+        throw new Error('Invalid instance state');
+      }
+
+      const method = this.isNew() ? 'post' : 'put';
+      const url = this.isNew() ? '/api/v1/resources' : `/api/v1/resources/${this.id}`;
+
+      const response = await this.apiClient[method](url, this.toObject());
+      const updated = {{ name }}.fromObject(response.data);
+      Object.assign(this, updated);
+      this.updatedAt = new Date();
+    } catch (error) {
+      console.error(`Failed to save ${this.id}:`, error);
+      throw this.formatError(error);
+    }
+  }
+
+  /**
+   * Delete instance from API
+   */
+  async delete(): Promise<void> {
+    try {
+      if (!this.apiClient) {
+        throw new Error('API client not configured');
+      }
+
+      await this.apiClient.delete(`/api/v1/resources/${this.id}`);
+    } catch (error) {
+      console.error(`Failed to delete ${this.id}:`, error);
+      throw this.formatError(error);
+    }
+  }
+
+  /**
+   * Load related data asynchronously
+   */
+  async loadRelated(): Promise<Record<string, any>> {
+    try {
+      if (!this.apiClient) {
+        throw new Error('API client not configured');
+      }
+
+      const response = await this.apiClient.get(`/api/v1/resources/${this.id}/related`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to load related data for ${this.id}:`, error);
+      throw this.formatError(error);
+    }
+  }
+
+  /**
+   * Check if instance is new (not yet saved)
+   */
+  private isNew(): boolean {
+    return !this.id || this.id.startsWith('temp-');
+  }
+
+  /**
+   * Convert to plain object
+   */
+  toObject(): Record<string, any> {
+    return {
+      id: this.id,
+      name: this.name,
+      status: this.status,
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+      metadata: { ...this.metadata }
+    };
+  }
+
+  /**
+   * Create instance from plain object
+   */
+  static fromObject(data: Record<string, any>): {{ name }} {
+    return new {{ name }}({
+      id: data.id,
+      name: data.name,
+      status: data.status,
+      createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
+      updatedAt: data.updatedAt ? new Date(data.updatedAt) : undefined,
+      metadata: data.metadata
+    });
+  }
+
+  /**
+   * Validate instance state
+   */
+  validate(): boolean {
+    if (!this.id || this.id.length === 0) {
+      return false;
+    }
+    if (typeof this.name !== 'string' || this.name.length === 0) {
+      return false;
+    }
+    if (!['pending', 'active', 'completed', 'failed'].includes(this.status)) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Format error response
+   */
+  private formatError(error: any): ApiError {
+    if (error.response?.data) {
+      return {
+        code: error.response.data.code || 'UNKNOWN',
+        message: error.response.data.message || error.message,
+        statusCode: error.response.status
+      };
+    }
+    return {
+      code: 'NETWORK_ERROR',
+      message: error.message,
+      statusCode: 0
+    };
+  }
+
+  /**
+   * Get string representation
+   */
+  toString(): string {
+    return `{{ name }} { id: '${this.id}', name: '${this.name}', status: '${this.status}' }`;
+  }
+}

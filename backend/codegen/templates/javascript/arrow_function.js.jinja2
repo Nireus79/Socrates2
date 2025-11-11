@@ -1,0 +1,218 @@
+/**
+ * {{ name }} - Auto-generated ES6+ JavaScript class with arrow functions
+ *
+ * {{ docstring }}
+ *
+ * Uses modern ES6+ syntax with arrow functions for methods
+ */
+
+export class {{ name }} {
+  /**
+   * Create instance
+   */
+  constructor(data = {}) {
+    this.id = data.id || this.generateId();
+    this.name = data.name || '';
+    this.createdAt = data.createdAt ? new Date(data.createdAt) : new Date();
+    this.updatedAt = data.updatedAt ? new Date(data.updatedAt) : new Date();
+    this.metadata = data.metadata || {};
+
+    // Bind arrow functions to preserve 'this' context
+    this.toObject = this.toObject.bind(this);
+    this.validate = this.validate.bind(this);
+    this.update = this.update.bind(this);
+    this.toString = this.toString.bind(this);
+  }
+
+  /**
+   * Generate unique ID
+   */
+  generateId = () => {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  };
+
+  /**
+   * Get metadata value
+   */
+  getMetadata = (key) => this.metadata[key];
+
+  /**
+   * Set metadata value
+   */
+  setMetadata = (key, value) => {
+    this.metadata[key] = value;
+    this.updatedAt = new Date();
+  };
+
+  /**
+   * Update instance
+   */
+  update = (updates) => {
+    if (updates.name !== undefined) {
+      this.name = updates.name;
+    }
+    if (updates.metadata !== undefined) {
+      this.metadata = { ...this.metadata, ...updates.metadata };
+    }
+    this.updatedAt = new Date();
+  };
+
+  /**
+   * Process items using arrow function
+   */
+  process = (items) => {
+    return items
+      .filter(item => item && item.id)
+      .map(item => ({
+        ...item,
+        processed: true,
+        processedAt: new Date().toISOString()
+      }));
+  };
+
+  /**
+   * Filter items using predicate
+   */
+  filter = (predicate) => {
+    return Array.isArray(this.metadata.items)
+      ? this.metadata.items.filter(predicate)
+      : [];
+  };
+
+  /**
+   * Map items using transformer
+   */
+  map = (transformer) => {
+    return Array.isArray(this.metadata.items)
+      ? this.metadata.items.map(transformer)
+      : [];
+  };
+
+  /**
+   * Reduce items
+   */
+  reduce = (reducer, initialValue) => {
+    return Array.isArray(this.metadata.items)
+      ? this.metadata.items.reduce(reducer, initialValue)
+      : initialValue;
+  };
+
+  /**
+   * Check if valid
+   */
+  validate = () => {
+    if (!this.id || this.id.length === 0) return false;
+    if (typeof this.name !== 'string') return false;
+    return true;
+  };
+
+  /**
+   * Convert to object
+   */
+  toObject = () => ({
+    id: this.id,
+    name: this.name,
+    createdAt: this.createdAt.toISOString(),
+    updatedAt: this.updatedAt.toISOString(),
+    metadata: { ...this.metadata }
+  });
+
+  /**
+   * Convert to JSON
+   */
+  toJSON = () => JSON.stringify(this.toObject(), null, 2);
+
+  /**
+   * Create from object
+   */
+  static fromObject = (data) => new {{ name }}(data);
+
+  /**
+   * Create from JSON
+   */
+  static fromJSON = (jsonStr) => {
+    try {
+      const data = JSON.parse(jsonStr);
+      return {{ name }}.fromObject(data);
+    } catch (error) {
+      console.error('Failed to parse JSON:', error);
+      throw error;
+    }
+  };
+
+  /**
+   * Compare with another instance
+   */
+  equals = (other) => other && this.id === other.id;
+
+  /**
+   * Clone instance
+   */
+  clone = () => new {{ name }}(this.toObject());
+
+  /**
+   * Get string representation
+   */
+  toString = () =>
+    `{{ name }} { id: '${this.id}', name: '${this.name}', createdAt: '${this.createdAt.toISOString()}' }`;
+
+  /**
+   * Apply function to instance
+   */
+  tap = (fn) => {
+    fn(this);
+    return this;
+  };
+
+  /**
+   * Transform instance
+   */
+  pipe = (...fns) => {
+    return fns.reduce((acc, fn) => fn(acc), this);
+  };
+}
+
+/**
+ * Factory function for creating instances
+ */
+export const create{{ name }} = (data = {}) => new {{ name }}(data);
+
+/**
+ * Factory function with builder pattern
+ */
+export class {{ name }}Builder {
+  constructor() {
+    this.data = {
+      id: undefined,
+      name: '',
+      metadata: {}
+    };
+  }
+
+  id = (id) => {
+    this.data.id = id;
+    return this;
+  };
+
+  name = (name) => {
+    this.data.name = name;
+    return this;
+  };
+
+  metadata = (metadata) => {
+    this.data.metadata = metadata;
+    return this;
+  };
+
+  withMetadata = (key, value) => {
+    this.data.metadata[key] = value;
+    return this;
+  };
+
+  build = () => new {{ name }}(this.data);
+}
+
+/**
+ * Fluent builder factory
+ */
+export const build{{ name }} = () => new {{ name }}Builder();

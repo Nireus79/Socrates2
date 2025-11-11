@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<idea-plugin>
+    <id>com.socrates2.webstorm</id>
+    <name>Socrates2 for WebStorm</name>
+    <vendor email="dev@socrates2.io" url="https://socrates2.io">Socrates2</vendor>
+
+    <description><![CDATA[
+        <p>Socrates2 for WebStorm - JavaScript/TypeScript specification management and code generation</p>
+        <p>Features:</p>
+        <ul>
+            <li>JavaScript/TypeScript code generation</li>
+            <li>React and Vue component generation</li>
+            <li>Jest test suite generation</li>
+            <li>TypeScript interface generation</li>
+            <li>Project and specification management</li>
+            <li>Real-time conflict detection</li>
+        </ul>
+        <p><a href="https://github.com/Nireus79/Socrates2">Learn more on GitHub</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+        <h2>1.0.0 - November 15, 2025</h2>
+        <ul>
+            <li>Initial release</li>
+            <li>JavaScript/TypeScript code generation</li>
+            <li>React component generation</li>
+            <li>Vue 3 component generation</li>
+            <li>Jest test suite generation</li>
+            <li>ESLint configuration generation</li>
+            <li>Package.json script generation</li>
+        </ul>
+    ]]></change-notes>
+
+    <idea-version since-build="231.0" until-build="241.*"/>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>JavaScript</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- JavaScript/TypeScript inspections -->
+        <localInspection language="JavaScript"
+                         shortName="SocratesJSConflictInspection"
+                         displayName="Socrates2 JavaScript Conflict Detection"
+                         groupName="Socrates2"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="com.socrates2.webstorm.inspections.JavaScriptConflictInspection"/>
+
+        <!-- TypeScript inspections -->
+        <localInspection language="TypeScript"
+                         shortName="SocratesTSConflictInspection"
+                         displayName="Socrates2 TypeScript Conflict Detection"
+                         groupName="Socrates2"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="com.socrates2.webstorm.inspections.TypeScriptConflictInspection"/>
+
+        <!-- JavaScript intentions -->
+        <intentionAction>
+            <className>com.socrates2.webstorm.intentions.GenerateJavaScriptIntention</className>
+            <category>Socrates2</category>
+        </intentionAction>
+
+        <!-- TypeScript intentions -->
+        <intentionAction>
+            <className>com.socrates2.webstorm.intentions.GenerateTypeScriptIntention</className>
+            <category>Socrates2</category>
+        </intentionAction>
+
+        <!-- Line markers -->
+        <codeInsightProvider implementation="com.socrates2.webstorm.linemarkers.SpecificationLineMarkerProvider"/>
+    </extensions>
+
+    <actions>
+        <group id="Socrates2.WebStorm.MainMenu" text="Socrates2" popup="true">
+            <action id="Socrates2.WebStorm.GenerateJavaScript"
+                    class="com.socrates2.webstorm.actions.GenerateJavaScriptAction"
+                    text="Generate JavaScript"
+                    description="Generate JavaScript class from specification"/>
+
+            <action id="Socrates2.WebStorm.GenerateTypeScript"
+                    class="com.socrates2.webstorm.actions.GenerateTypeScriptAction"
+                    text="Generate TypeScript"
+                    description="Generate TypeScript class from specification"/>
+
+            <action id="Socrates2.WebStorm.GenerateReactComponent"
+                    class="com.socrates2.webstorm.actions.GenerateReactComponentAction"
+                    text="Generate React Component"
+                    description="Generate React component from specification"/>
+
+            <action id="Socrates2.WebStorm.GenerateVueComponent"
+                    class="com.socrates2.webstorm.actions.GenerateVueComponentAction"
+                    text="Generate Vue Component"
+                    description="Generate Vue 3 component from specification"/>
+
+            <separator/>
+
+            <action id="Socrates2.WebStorm.GenerateJestTests"
+                    class="com.socrates2.webstorm.actions.GenerateJestTestsAction"
+                    text="Generate Jest Tests"
+                    description="Generate Jest test suite from specification"/>
+
+            <separator/>
+
+            <action id="Socrates2.WebStorm.GenerateESLintConfig"
+                    class="com.socrates2.webstorm.actions.GenerateESLintConfigAction"
+                    text="Generate ESLint Config"
+                    description="Generate ESLint configuration"/>
+
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </group>
+    </actions>
+</idea-plugin>

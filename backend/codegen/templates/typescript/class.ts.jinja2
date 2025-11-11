@@ -1,0 +1,116 @@
+/**
+ * {{ name }} - Auto-generated TypeScript class
+ *
+ * {{ docstring }}
+ */
+
+export interface {{ name }}Data {
+  id?: string;
+  name?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * {{ name }} class provides core functionality
+ *
+ * This class is auto-generated from specifications and includes
+ * type-safe operations, validation, and serialization methods.
+ */
+export class {{ name }} {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  metadata: Record<string, any>;
+
+  constructor(data?: Partial<{{ name }}Data>) {
+    this.id = data?.id || this.generateId();
+    this.name = data?.name || '';
+    this.createdAt = data?.createdAt || new Date();
+    this.updatedAt = data?.updatedAt || new Date();
+    this.metadata = data?.metadata || {};
+  }
+
+  /**
+   * Generate a unique ID
+   */
+  generateId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Convert to plain object
+   */
+  toObject(): Record<string, any> {
+    return {
+      id: this.id,
+      name: this.name,
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+      metadata: { ...this.metadata }
+    };
+  }
+
+  /**
+   * Create instance from plain object
+   */
+  static fromObject(data: Record<string, any>): {{ name }} {
+    return new {{ name }}({
+      id: data.id,
+      name: data.name,
+      createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
+      updatedAt: data.updatedAt ? new Date(data.updatedAt) : undefined,
+      metadata: data.metadata
+    });
+  }
+
+  /**
+   * Convert to JSON string
+   */
+  toJSON(): string {
+    return JSON.stringify(this.toObject(), null, 2);
+  }
+
+  /**
+   * Create instance from JSON string
+   */
+  static fromJSON(jsonStr: string): {{ name }} {
+    const data = JSON.parse(jsonStr);
+    return {{ name }}.fromObject(data);
+  }
+
+  /**
+   * Update instance properties
+   */
+  update(updates: Partial<{{ name }}Data>): void {
+    if (updates.name !== undefined) {
+      this.name = updates.name;
+    }
+    if (updates.metadata !== undefined) {
+      this.metadata = updates.metadata;
+    }
+    this.updatedAt = new Date();
+  }
+
+  /**
+   * Validate instance state
+   */
+  validate(): boolean {
+    if (!this.id || this.id.length === 0) {
+      return false;
+    }
+    if (typeof this.name !== 'string') {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Get string representation
+   */
+  toString(): string {
+    return `{{ name }} { id: '${this.id}', name: '${this.name}', createdAt: '${this.createdAt.toISOString()}' }`;
+  }
+}

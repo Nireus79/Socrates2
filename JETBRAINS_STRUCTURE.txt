@@ -1,0 +1,39 @@
+plugins/jetbrains/
+├── common/                           # Shared code (Kotlin)
+│   ├── api/
+│   │   ├── client.kt                # Shared API client
+│   │   ├── auth.kt                  # Authentication
+│   │   └── models.kt                # API models
+│   ├── services/
+│   │   ├── projectService.kt
+│   │   ├── specificationService.kt
+│   │   └── codeGeneratorService.kt
+│   ├── models/
+│   │   ├── Project.kt
+│   │   ├── Specification.kt
+│   │   ├── Conflict.kt
+│   │   ├── Activity.kt
+│   │   └── GeneratedCode.kt
+│   └── utils/
+│       ├── Logger.kt
+│       ├── Settings.kt
+│       └── Extensions.kt
+├── intellij/                         # IntelliJ IDEA plugin
+│   ├── src/main/kotlin/
+│   │   ├── toolwindow/
+│   │   ├── inspections/
+│   │   ├── intentions/
+│   │   └── actions/
+│   ├── resources/
+│   │   └── plugin.xml
+│   └── build.gradle.kts
+├── pycharm/                          # PyCharm plugin
+│   ├── src/main/kotlin/
+│   ├── resources/
+│   │   └── plugin.xml
+│   └── build.gradle.kts
+└── webstorm/                         # WebStorm plugin
+    ├── src/main/kotlin/
+    ├── resources/
+    │   └── plugin.xml
+    └── build.gradle.kts

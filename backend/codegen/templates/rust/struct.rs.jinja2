@@ -1,0 +1,265 @@
+/// {{ name }} - Auto-generated Rust struct
+///
+/// {{ docstring }}
+///
+/// This struct is auto-generated from specifications and provides
+/// type-safe operations, validation, and serialization support.
+
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use chrono::{DateTime, Utc};
+use uuid::Uuid;
+
+/// {{ name }} data structure
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct {{ name }} {
+    /// Unique identifier
+    pub id: String,
+    /// Name field
+    pub name: String,
+    /// Creation timestamp
+    #[serde(default = "chrono::Utc::now")]
+    pub created_at: DateTime<Utc>,
+    /// Last update timestamp
+    #[serde(default = "chrono::Utc::now")]
+    pub updated_at: DateTime<Utc>,
+    /// Additional metadata
+    #[serde(default)]
+    pub metadata: HashMap<String, serde_json::Value>,
+}
+
+impl Default for {{ name }} {
+    fn default() -> Self {
+        Self::new(String::new())
+    }
+}
+
+impl {{ name }} {
+    /// Create a new {{ name }} instance
+    pub fn new(name: impl Into<String>) -> Self {
+        {{ name }} {
+            id: Uuid::new_v4().to_string(),
+            name: name.into(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+            metadata: HashMap::new(),
+        }
+    }
+
+    /// Create {{ name }} with ID
+    pub fn with_id(id: impl Into<String>, name: impl Into<String>) -> Self {
+        {{ name }} {
+            id: id.into(),
+            name: name.into(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+            metadata: HashMap::new(),
+        }
+    }
+
+    /// Get the ID
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    /// Get the name
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Set the name
+    pub fn set_name(&mut self, name: impl Into<String>) {
+        self.name = name.into();
+        self.updated_at = Utc::now();
+    }
+
+    /// Get metadata value
+    pub fn get_metadata(&self, key: &str) -> Option<&serde_json::Value> {
+        self.metadata.get(key)
+    }
+
+    /// Set metadata value
+    pub fn set_metadata(&mut self, key: impl Into<String>, value: serde_json::Value) {
+        self.metadata.insert(key.into(), value);
+        self.updated_at = Utc::now();
+    }
+
+    /// Update from another instance
+    pub fn update_from(&mut self, other: {{ name }}) -> Result<(), String> {
+        if !other.name.is_empty() {
+            self.name = other.name;
+        }
+        if !other.metadata.is_empty() {
+            self.metadata.extend(other.metadata);
+        }
+        self.updated_at = Utc::now();
+        Ok(())
+    }
+
+    /// Validate instance state
+    pub fn validate(&self) -> Result<(), String> {
+        if self.id.is_empty() {
+            return Err("ID cannot be empty".to_string());
+        }
+        if self.name.is_empty() {
+            return Err("Name cannot be empty".to_string());
+        }
+        Ok(())
+    }
+
+    /// Convert to JSON
+    pub fn to_json(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string(self)
+    }
+
+    /// Convert to JSON with pretty printing
+    pub fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string_pretty(self)
+    }
+
+    /// Create from JSON string
+    pub fn from_json(json: &str) -> Result<Self, serde_json::Error> {
+        serde_json::from_str(json)
+    }
+
+    /// Convert to map
+    pub fn to_map(&self) -> serde_json::Value {
+        serde_json::json!({
+            "id": self.id,
+            "name": self.name,
+            "created_at": self.created_at.to_rfc3339(),
+            "updated_at": self.updated_at.to_rfc3339(),
+            "metadata": self.metadata,
+        })
+    }
+
+    /// Create from map
+    pub fn from_map(value: serde_json::Value) -> Result<Self, String> {
+        serde_json::from_value(value)
+            .map_err(|e| format!("Failed to parse {{ name }}: {}", e))
+    }
+}
+
+impl PartialEq for {{ name }} {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for {{ name }} {}
+
+impl std::hash::Hash for {{ name }} {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl std::fmt::Display for {{ name }} {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{{ name }} {{ id: '{}', name: '{}', created_at: {} }}",
+            self.id,
+            self.name,
+            self.created_at.to_rfc3339()
+        )
+    }
+}
+
+/// Builder pattern implementation
+pub struct {{ name }}Builder {
+    id: Option<String>,
+    name: String,
+    metadata: HashMap<String, serde_json::Value>,
+}
+
+impl {{ name }}Builder {
+    /// Create new builder
+    pub fn new() -> Self {
+        {{ name }}Builder {
+            id: None,
+            name: String::new(),
+            metadata: HashMap::new(),
+        }
+    }
+
+    /// Set ID
+    pub fn id(mut self, id: impl Into<String>) -> Self {
+        self.id = Some(id.into());
+        self
+    }
+
+    /// Set name
+    pub fn name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
+    }
+
+    /// Add metadata
+    pub fn metadata(mut self, key: impl Into<String>, value: serde_json::Value) -> Self {
+        self.metadata.insert(key.into(), value);
+        self
+    }
+
+    /// Build {{ name }} instance
+    pub fn build(self) -> Result<{{ name }}, String> {
+        if self.name.is_empty() {
+            return Err("Name is required".to_string());
+        }
+
+        let mut instance = {{ name }} {
+            id: self.id.unwrap_or_else(|| Uuid::new_v4().to_string()),
+            name: self.name,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+            metadata: self.metadata,
+        };
+
+        instance.validate()?;
+        Ok(instance)
+    }
+}
+
+impl Default for {{ name }}Builder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new() {
+        let item = {{ name }}::new("Test");
+        assert_eq!(item.name(), "Test");
+        assert!(!item.id().is_empty());
+    }
+
+    #[test]
+    fn test_validate() {
+        let item = {{ name }}::new("Test");
+        assert!(item.validate().is_ok());
+    }
+
+    #[test]
+    fn test_to_json() {
+        let item = {{ name }}::new("Test");
+        let json = item.to_json().unwrap();
+        let parsed: {{ name }} = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.name(), item.name());
+    }
+
+    #[test]
+    fn test_builder() {
+        let item = {{ name }}Builder::new()
+            .name("Built Item")
+            .metadata("key", serde_json::json!("value"))
+            .build()
+            .unwrap();
+
+        assert_eq!(item.name(), "Built Item");
+        assert!(item.get_metadata("key").is_some());
+    }
+}

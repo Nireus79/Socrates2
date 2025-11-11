@@ -1,0 +1,231 @@
+package com.socrates2.generated
+
+import java.io.Serializable
+import java.time.LocalDateTime
+import java.util.UUID
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+
+/**
+ * {{ name }} - Auto-generated Kotlin data class
+ *
+ * {{ docstring }}
+ *
+ * This data class is auto-generated from specifications and provides
+ * type-safe operations, validation, and async support through coroutines.
+ */
+data class {{ name }}(
+    val id: String = UUID.randomUUID().toString(),
+    var name: String = "",
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    var updatedAt: LocalDateTime = LocalDateTime.now(),
+    val metadata: MutableMap<String, Any> = mutableMapOf()
+) : Serializable {
+
+    companion object {
+        private const val serialVersionUID = 1L
+
+        /**
+         * Create {{ name }} from map
+         */
+        fun fromMap(data: Map<String, Any?>): {{ name }} {
+            return {{ name }}(
+                id = (data["id"] as? String) ?: UUID.randomUUID().toString(),
+                name = (data["name"] as? String) ?: "",
+                metadata = (data["metadata"] as? MutableMap<String, Any>) ?: mutableMapOf()
+            )
+        }
+
+        /**
+         * Create {{ name }} from JSON string
+         */
+        fun fromJson(json: String): {{ name }} {
+            // In production would use kotlinx.serialization or Gson
+            return {{ name }}()
+        }
+    }
+
+    /**
+     * Convert to map representation
+     */
+    fun toMap(): Map<String, Any> = mapOf(
+        "id" to id,
+        "name" to name,
+        "createdAt" to createdAt.toString(),
+        "updatedAt" to updatedAt.toString(),
+        "metadata" to metadata.toMap()
+    )
+
+    /**
+     * Convert to JSON string
+     */
+    fun toJson(): String {
+        return toMap().toString()
+    }
+
+    /**
+     * Get metadata value
+     */
+    fun getMetadata(key: String): Any? = metadata[key]
+
+    /**
+     * Set metadata value
+     */
+    fun setMetadata(key: String, value: Any) {
+        metadata[key] = value
+        updatedAt = LocalDateTime.now()
+    }
+
+    /**
+     * Add multiple metadata entries
+     */
+    fun addMetadata(entries: Map<String, Any>) {
+        metadata.putAll(entries)
+        updatedAt = LocalDateTime.now()
+    }
+
+    /**
+     * Validate instance state
+     */
+    fun validate(): Boolean {
+        if (id.isBlank()) return false
+        if (name.isBlank()) return false
+        return true
+    }
+
+    /**
+     * Update from another instance
+     */
+    fun updateFrom(other: {{ name }}) {
+        if (other.name.isNotBlank()) {
+            name = other.name
+        }
+        if (other.metadata.isNotEmpty()) {
+            metadata.putAll(other.metadata)
+        }
+        updatedAt = LocalDateTime.now()
+    }
+
+    /**
+     * Copy with optional changes
+     */
+    fun copy(
+        id: String = this.id,
+        name: String = this.name,
+        createdAt: LocalDateTime = this.createdAt,
+        updatedAt: LocalDateTime = this.updatedAt,
+        metadata: MutableMap<String, Any> = this.metadata.toMutableMap()
+    ): {{ name }} {
+        return {{ name }}(
+            id = id,
+            name = name,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            metadata = metadata
+        )
+    }
+
+    /**
+     * Destructure to tuple
+     */
+    operator fun component1(): String = id
+    operator fun component2(): String = name
+    operator fun component3(): LocalDateTime = createdAt
+    operator fun component4(): LocalDateTime = updatedAt
+    operator fun component5(): MutableMap<String, Any> = metadata
+
+    /**
+     * Async validation with coroutines
+     */
+    suspend fun validateAsync(): Boolean = coroutineScope {
+        val idValid = async { id.isNotBlank() }
+        val nameValid = async { name.isNotBlank() }
+
+        idValid.await() && nameValid.await()
+    }
+
+    /**
+     * Async save operation
+     */
+    suspend fun saveAsync(onSuccess: ({{ name }}) -> Unit = {}, onError: (Exception) -> Unit = {}): Unit = coroutineScope {
+        try {
+            val validated = async { validate() }
+            if (validated.await()) {
+                updatedAt = LocalDateTime.now()
+                onSuccess(this@{{ name }})
+            } else {
+                onError(IllegalStateException("Validation failed"))
+            }
+        } catch (e: Exception) {
+            onError(e)
+        }
+    }
+
+    /**
+     * Async fetch related data
+     */
+    suspend fun fetchRelatedAsync(): Map<String, Any> = coroutineScope {
+        val metadataAsync = async { metadata.toMap() }
+        mapOf("metadata" to metadataAsync.await())
+    }
+
+    /**
+     * Compare instances for equality (by ID)
+     */
+    fun isSameAs(other: {{ name }}): Boolean = this.id == other.id
+
+    /**
+     * Get string representation
+     */
+    override fun toString(): String {
+        return "{{ name }}(id='$id', name='$name', createdAt=$createdAt, updatedAt=$updatedAt)"
+    }
+
+    /**
+     * Builder pattern extension function
+     */
+    fun toBuilder(): Builder = Builder(this)
+
+    /**
+     * Builder class for fluent creation
+     */
+    class Builder(item: {{ name }}? = null) {
+        private var id: String = item?.id ?: UUID.randomUUID().toString()
+        private var name: String = item?.name ?: ""
+        private var createdAt: LocalDateTime = item?.createdAt ?: LocalDateTime.now()
+        private var updatedAt: LocalDateTime = item?.updatedAt ?: LocalDateTime.now()
+        private var metadata: MutableMap<String, Any> = item?.metadata?.toMutableMap() ?: mutableMapOf()
+
+        fun id(id: String) = apply { this.id = id }
+        fun name(name: String) = apply { this.name = name }
+        fun createdAt(createdAt: LocalDateTime) = apply { this.createdAt = createdAt }
+        fun updatedAt(updatedAt: LocalDateTime) = apply { this.updatedAt = updatedAt }
+        fun metadata(metadata: Map<String, Any>) = apply { this.metadata = metadata.toMutableMap() }
+        fun withMetadata(key: String, value: Any) = apply { this.metadata[key] = value }
+
+        fun build(): {{ name }} {
+            require(id.isNotBlank()) { "ID cannot be blank" }
+            require(name.isNotBlank()) { "Name cannot be blank" }
+
+            return {{ name }}(
+                id = id,
+                name = name,
+                createdAt = createdAt,
+                updatedAt = updatedAt,
+                metadata = metadata
+            )
+        }
+    }
+}
+
+/**
+ * Builder extension function
+ */
+fun {{ name }}.builder(): {{ name }}.Builder = toBuilder()
+
+/**
+ * Create {{ name }} using DSL
+ */
+fun {{ name }}(block: {{ name }}.Builder.() -> Unit): {{ name }} {
+    return {{ name }}.Builder().apply(block).build()
+}

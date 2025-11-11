@@ -1,0 +1,266 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
+
+namespace Socrates2.Generated
+{
+    /// <summary>
+    /// {{ name }} - Auto-generated C# class
+    ///
+    /// {{ docstring }}
+    ///
+    /// This class is auto-generated from specifications and provides
+    /// type-safe operations, validation, and serialization support.
+    /// </summary>
+    [JsonObject(MemberSerialization.OptIn)]
+    public class {{ name }} : IEquatable<{{ name }}>
+    {
+        /// <summary>
+        /// Unique identifier
+        /// </summary>
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Name of the instance
+        /// </summary>
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Creation timestamp
+        /// </summary>
+        [JsonProperty("createdAt")]
+        public DateTime CreatedAt { get; set; }
+
+        /// <summary>
+        /// Last update timestamp
+        /// </summary>
+        [JsonProperty("updatedAt")]
+        public DateTime UpdatedAt { get; set; }
+
+        /// <summary>
+        /// Additional metadata
+        /// </summary>
+        [JsonProperty("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
+
+        /// <summary>
+        /// Initialize a new instance with defaults
+        /// </summary>
+        public {{ name }}()
+        {
+            Id = Guid.NewGuid().ToString();
+            Name = string.Empty;
+            CreatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+            Metadata = new Dictionary<string, object>();
+        }
+
+        /// <summary>
+        /// Initialize a new instance with name
+        /// </summary>
+        public {{ name }}(string name)
+            : this()
+        {
+            Name = name;
+        }
+
+        /// <summary>
+        /// Initialize a new instance with all fields
+        /// </summary>
+        public {{ name }}(string id, string name, Dictionary<string, object> metadata = null)
+        {
+            Id = id;
+            Name = name;
+            CreatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+            Metadata = metadata ?? new Dictionary<string, object>();
+        }
+
+        /// <summary>
+        /// Get a metadata value
+        /// </summary>
+        public object GetMetadata(string key)
+        {
+            return Metadata.ContainsKey(key) ? Metadata[key] : null;
+        }
+
+        /// <summary>
+        /// Set a metadata value
+        /// </summary>
+        public void SetMetadata(string key, object value)
+        {
+            Metadata[key] = value;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Add multiple metadata entries
+        /// </summary>
+        public void AddMetadata(Dictionary<string, object> entries)
+        {
+            foreach (var kvp in entries)
+            {
+                Metadata[kvp.Key] = kvp.Value;
+            }
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Validate the instance
+        /// </summary>
+        public bool Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Id))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(Name))
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Update from another instance
+        /// </summary>
+        public void UpdateFrom({{ name }} other)
+        {
+            if (other == null)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(other.Name))
+                Name = other.Name;
+
+            if (other.Metadata != null && other.Metadata.Count > 0)
+                AddMetadata(other.Metadata);
+
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Convert to dictionary
+        /// </summary>
+        public Dictionary<string, object> ToDictionary()
+        {
+            return new Dictionary<string, object>
+            {
+                { "id", Id },
+                { "name", Name },
+                { "createdAt", CreatedAt },
+                { "updatedAt", UpdatedAt },
+                { "metadata", new Dictionary<string, object>(Metadata) }
+            };
+        }
+
+        /// <summary>
+        /// Create from dictionary
+        /// </summary>
+        public static {{ name }} FromDictionary(Dictionary<string, object> data)
+        {
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            var instance = new {{ name }}
+            {
+                Id = data.ContainsKey("id") ? data["id"].ToString() : Guid.NewGuid().ToString(),
+                Name = data.ContainsKey("name") ? data["name"].ToString() : string.Empty,
+            };
+
+            if (data.ContainsKey("createdAt") && DateTime.TryParse(data["createdAt"].ToString(), out var createdAt))
+                instance.CreatedAt = createdAt;
+
+            if (data.ContainsKey("updatedAt") && DateTime.TryParse(data["updatedAt"].ToString(), out var updatedAt))
+                instance.UpdatedAt = updatedAt;
+
+            if (data.ContainsKey("metadata") && data["metadata"] is Dictionary<string, object> metadata)
+                instance.Metadata = metadata;
+
+            return instance;
+        }
+
+        /// <summary>
+        /// Serialize to JSON string
+        /// </summary>
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
+        }
+
+        /// <summary>
+        /// Deserialize from JSON string
+        /// </summary>
+        public static {{ name }} FromJson(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                throw new ArgumentNullException(nameof(json));
+
+            return JsonConvert.DeserializeObject<{{ name }}>(json)
+                ?? throw new InvalidOperationException("Failed to deserialize JSON");
+        }
+
+        /// <summary>
+        /// Get string representation
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{{ name }} {{ Id = '{Id}', Name = '{Name}', CreatedAt = {CreatedAt:O} }}";
+        }
+
+        /// <summary>
+        /// Determine equality by ID
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as {{ name }});
+        }
+
+        /// <summary>
+        /// Determine equality by ID
+        /// </summary>
+        public bool Equals({{ name }} other)
+        {
+            return other != null && Id == other.Id;
+        }
+
+        /// <summary>
+        /// Get hash code based on ID
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return Id?.GetHashCode() ?? 0;
+        }
+
+        /// <summary>
+        /// Equality operator
+        /// </summary>
+        public static bool operator ==({{ name }} left, {{ name }} right)
+        {
+            return Equals(left, right);
+        }
+
+        /// <summary>
+        /// Inequality operator
+        /// </summary>
+        public static bool operator !=({{ name }} left, {{ name }} right)
+        {
+            return !Equals(left, right);
+        }
+
+        /// <summary>
+        /// Create a copy of this instance
+        /// </summary>
+        public {{ name }} Clone()
+        {
+            return new {{ name }}
+            {
+                Id = Id,
+                Name = Name,
+                CreatedAt = CreatedAt,
+                UpdatedAt = UpdatedAt,
+                Metadata = new Dictionary<string, object>(Metadata)
+            };
+        }
+    }
+}

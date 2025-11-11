@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<idea-plugin>
+    <id>com.socrates2.pycharm</id>
+    <name>Socrates2 for PyCharm</name>
+    <vendor email="dev@socrates2.io" url="https://socrates2.io">Socrates2</vendor>
+
+    <description><![CDATA[
+        <p>Socrates2 for PyCharm - Python-specific specification management and code generation</p>
+        <p>Features:</p>
+        <ul>
+            <li>Python-specific code generation (classes, dataclasses, async)</li>
+            <li>Type hint generation and validation</li>
+            <li>Pytest integration and test generation</li>
+            <li>Project and specification management</li>
+            <li>Real-time conflict detection</li>
+        </ul>
+        <p><a href="https://github.com/Nireus79/Socrates2">Learn more on GitHub</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+        <h2>1.0.0 - November 15, 2025</h2>
+        <ul>
+            <li>Initial release</li>
+            <li>Python-specific code generation</li>
+            <li>Dataclass generation support</li>
+            <li>Async/await pattern generation</li>
+            <li>Type hint analysis and generation</li>
+            <li>Pytest test suite generation</li>
+        </ul>
+    ]]></change-notes>
+
+    <idea-version since-build="231.0" until-build="241.*"/>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.jetbrains.python</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Python-specific inspections -->
+        <localInspection language="Python"
+                         shortName="SocratesPythonConflictInspection"
+                         displayName="Socrates2 Python Conflict Detection"
+                         groupName="Socrates2"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="com.socrates2.pycharm.inspections.PythonConflictInspection"/>
+
+        <!-- Python-specific intentions -->
+        <intentionAction>
+            <className>com.socrates2.pycharm.intentions.GeneratePythonCodeIntention</className>
+            <category>Socrates2</category>
+        </intentionAction>
+
+        <!-- Line markers for Python -->
+        <codeInsightProvider implementation="com.socrates2.pycharm.linemarkers.SpecificationLineMarkerProvider"/>
+    </extensions>
+
+    <actions>
+        <group id="Socrates2.Python.MainMenu" text="Socrates2" popup="true">
+            <action id="Socrates2.Python.GenerateDataclass"
+                    class="com.socrates2.pycharm.actions.GenerateDataclassAction"
+                    text="Generate Dataclass"
+                    description="Generate dataclass from specification"/>
+
+            <action id="Socrates2.Python.GenerateAsyncClass"
+                    class="com.socrates2.pycharm.actions.GenerateAsyncClassAction"
+                    text="Generate Async Class"
+                    description="Generate async class from specification"/>
+
+            <action id="Socrates2.Python.GenerateTests"
+                    class="com.socrates2.pycharm.actions.GenerateTestsAction"
+                    text="Generate Tests"
+                    description="Generate pytest test suite from specification"/>
+
+            <action id="Socrates2.Python.GenerateTypeHints"
+                    class="com.socrates2.pycharm.actions.GenerateTypeHintsAction"
+                    text="Generate Type Hints"
+                    description="Generate type hints from specification"/>
+
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </group>
+    </actions>
+</idea-plugin>

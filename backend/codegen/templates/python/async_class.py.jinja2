@@ -1,0 +1,252 @@
+"""
+{{ name }} - Auto-generated async Python class
+
+{{ docstring }}
+
+This async class provides coroutine-based methods for API interactions
+and asynchronous operations using asyncio.
+"""
+
+import asyncio
+import json
+from typing import Any, Dict, List, Optional
+from datetime import datetime
+from dataclasses import dataclass, asdict, field
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class {{ name }}:
+    """
+    Async {{ name }} class with coroutine support
+
+    Provides async/await methods for API interactions and data management.
+    """
+    id: str = field(default_factory=lambda: __import__('uuid').uuid4().hex)
+    name: str = ""
+    status: str = "pending"
+    created_at: datetime = field(default_factory=datetime.utcnow)
+    updated_at: datetime = field(default_factory=datetime.utcnow)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    _api_client: Optional[Any] = field(default=None, repr=False)
+
+    async def fetch_data(self) -> Dict[str, Any]:
+        """
+        Fetch data from remote API asynchronously
+
+        Returns:
+            Dict containing remote data
+
+        Raises:
+            RuntimeError: If API client not configured
+            Exception: On API request failure
+        """
+        if not self._api_client:
+            raise RuntimeError("API client not configured")
+
+        try:
+            response = await self._api_client.get(f"/api/v1/resources/{self.id}")
+            logger.info(f"Fetched data for {self.id}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to fetch {self.id}: {e}")
+            raise
+
+    async def save(self) -> None:
+        """
+        Save current instance to API asynchronously
+
+        Raises:
+            RuntimeError: If API client not configured
+            ValueError: If validation fails
+            Exception: On API request failure
+        """
+        if not self._api_client:
+            raise RuntimeError("API client not configured")
+
+        if not self.validate():
+            raise ValueError("Invalid instance state")
+
+        try:
+            is_new = not self.id
+            method = "post" if is_new else "put"
+            url = "/api/v1/resources" if is_new else f"/api/v1/resources/{self.id}"
+
+            response = await self._api_client.request(
+                method, url, json=asdict(self)
+            )
+            self.updated_at = datetime.utcnow()
+            logger.info(f"Saved {self.id}")
+        except Exception as e:
+            logger.error(f"Failed to save {self.id}: {e}")
+            raise
+
+    async def delete(self) -> None:
+        """
+        Delete instance from API asynchronously
+
+        Raises:
+            RuntimeError: If API client not configured
+            Exception: On API request failure
+        """
+        if not self._api_client:
+            raise RuntimeError("API client not configured")
+
+        try:
+            await self._api_client.delete(f"/api/v1/resources/{self.id}")
+            logger.info(f"Deleted {self.id}")
+        except Exception as e:
+            logger.error(f"Failed to delete {self.id}: {e}")
+            raise
+
+    async def load_related(self) -> Dict[str, Any]:
+        """
+        Load related resources asynchronously
+
+        Returns:
+            Dict containing related data
+
+        Raises:
+            RuntimeError: If API client not configured
+            Exception: On API request failure
+        """
+        if not self._api_client:
+            raise RuntimeError("API client not configured")
+
+        try:
+            response = await self._api_client.get(
+                f"/api/v1/resources/{self.id}/related"
+            )
+            return response
+        except Exception as e:
+            logger.error(f"Failed to load related {self.id}: {e}")
+            raise
+
+    async def validate_async(self) -> bool:
+        """
+        Async validation with optional remote checks
+
+        Returns:
+            True if valid, False otherwise
+        """
+        # Local validation
+        if not self.id or not self.name:
+            return False
+
+        # Could do async remote validation here
+        await asyncio.sleep(0)  # Yield control
+        return True
+
+    @staticmethod
+    async def fetch_multiple(ids: List[str], api_client: Any) -> List[Optional[Dict]]:
+        """
+        Fetch multiple resources concurrently
+
+        Args:
+            ids: List of resource IDs
+            api_client: API client instance
+
+        Returns:
+            List of resource data or None for failed fetches
+        """
+        tasks = [
+            api_client.get(f"/api/v1/resources/{id_}")
+            for id_ in ids
+        ]
+        return await asyncio.gather(*tasks, return_exceptions=True)
+
+    @staticmethod
+    async def batch_save(instances: List["{{ name }}"], api_client: Any) -> None:
+        """
+        Save multiple instances concurrently
+
+        Args:
+            instances: List of instances to save
+            api_client: API client instance
+        """
+        tasks = [
+            inst._save_with_client(api_client)
+            for inst in instances
+            if inst.validate()
+        ]
+        await asyncio.gather(*tasks)
+
+    async def _save_with_client(self, api_client: Any) -> None:
+        """Internal method for batch saving"""
+        try:
+            await api_client.put(f"/api/v1/resources/{self.id}", json=asdict(self))
+            self.updated_at = datetime.utcnow()
+        except Exception as e:
+            logger.error(f"Failed to save {self.id}: {e}")
+            raise
+
+    def validate(self) -> bool:
+        """
+        Validate instance state synchronously
+
+        Returns:
+            True if valid, False otherwise
+        """
+        if not self.id:
+            return False
+        if not self.name:
+            return False
+        if self.status not in ["pending", "active", "completed", "failed"]:
+            return False
+        return True
+
+    def update(self, **kwargs) -> None:
+        """
+        Update instance fields
+
+        Args:
+            **kwargs: Field updates
+        """
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.updated_at = datetime.utcnow()
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary"""
+        data = asdict(self)
+        data.pop("_api_client", None)
+        return data
+
+    def to_json(self) -> str:
+        """Convert to JSON string"""
+        return json.dumps(
+            {
+                "id": self.id,
+                "name": self.name,
+                "status": self.status,
+                "created_at": self.created_at.isoformat(),
+                "updated_at": self.updated_at.isoformat(),
+                "metadata": self.metadata,
+            },
+            indent=2,
+        )
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "{{ name }}":
+        """Create from dictionary"""
+        return cls(
+            id=data.get("id"),
+            name=data.get("name", ""),
+            status=data.get("status", "pending"),
+            metadata=data.get("metadata", {}),
+        )
+
+    @classmethod
+    def from_json(cls, json_str: str) -> "{{ name }}":
+        """Create from JSON string"""
+        data = json.loads(json_str)
+        return cls.from_dict(data)
+
+    def __str__(self) -> str:
+        return f"{{ name }}(id={self.id!r}, name={self.name!r}, status={self.status!r})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
