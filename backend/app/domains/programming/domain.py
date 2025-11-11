@@ -2,10 +2,18 @@
 Programming domain implementation for Socrates2.
 
 Defines specifications, questions, exports, and rules for software development projects.
+Questions are loaded from questions.json configuration file.
 """
 
-from typing import List
+import logging
+from pathlib import Path
+from typing import List, Optional
+import json
+
 from ..base import BaseDomain, Question, ExportFormat, ConflictRule, SeverityLevel
+from ..questions import QuestionTemplateEngine
+
+logger = logging.getLogger(__name__)
 
 
 class ProgrammingDomain(BaseDomain):
@@ -14,12 +22,47 @@ class ProgrammingDomain(BaseDomain):
 
     Handles specification and code generation for software projects.
     Supports 8+ programming languages with specialized patterns.
+
+    Questions are loaded from questions.json configuration file,
+    making them easily customizable without code changes.
     """
 
     domain_id = "programming"
     name = "Software Programming"
     version = "1.0.0"
     description = "Specification and code generation for software development projects"
+
+    def __init__(self):
+        """Initialize programming domain and load questions from configuration."""
+        super().__init__()
+        self._questions: Optional[List[Question]] = None
+        self._load_questions()
+
+    def _load_questions(self) -> None:
+        """Load questions from questions.json configuration file."""
+        try:
+            # Get path to questions.json (same directory as this file)
+            config_dir = Path(__file__).parent
+            questions_file = config_dir / "questions.json"
+
+            if not questions_file.exists():
+                logger.error(f"Questions file not found: {questions_file}")
+                self._questions = []
+                return
+
+            # Load questions using question template engine
+            engine = QuestionTemplateEngine()
+            self._questions = engine.load_questions_from_json(str(questions_file))
+            logger.info(f"Loaded {len(self._questions)} programming questions")
+
+            # Validate questions
+            errors = engine.validate_questions(self._questions)
+            if errors:
+                logger.warning(f"Question validation errors: {errors}")
+
+        except Exception as e:
+            logger.error(f"Failed to load programming questions: {e}")
+            self._questions = []
 
     def get_categories(self) -> List[str]:
         """Return specification categories for programming."""
@@ -34,132 +77,10 @@ class ProgrammingDomain(BaseDomain):
         ]
 
     def get_questions(self) -> List[Question]:
-        """Return Socratic questions for programming domain."""
-        return [
-            # Performance questions
-            Question(
-                question_id="perf_1",
-                text="What is your target response time for critical operations?",
-                category="Performance",
-                difficulty="medium",
-                help_text="e.g., API response: <200ms, page load: <1s",
-                example_answer="API response: <200ms, page load: <3s",
-            ),
-            Question(
-                question_id="perf_2",
-                text="What is your expected throughput (requests per second)?",
-                category="Performance",
-                difficulty="medium",
-                help_text="e.g., 1000 req/s, 100,000 events/day",
-                example_answer="1000 requests per second during peak hours",
-            ),
-            Question(
-                question_id="perf_3",
-                text="What are your memory constraints?",
-                category="Performance",
-                difficulty="easy",
-                help_text="e.g., <512MB for mobile, <4GB for server",
-                example_answer="<512MB for mobile clients, <4GB per server instance",
-            ),
-
-            # Security questions
-            Question(
-                question_id="sec_1",
-                text="What encryption standard will you use for data in transit?",
-                category="Security",
-                difficulty="medium",
-                help_text="e.g., TLS 1.2+, AES-256",
-                example_answer="TLS 1.3 for all network communication",
-            ),
-            Question(
-                question_id="sec_2",
-                text="How will you store sensitive data (passwords, tokens)?",
-                category="Security",
-                difficulty="hard",
-                help_text="e.g., bcrypt for passwords, encrypted tokens",
-                example_answer="bcrypt with salt for passwords, JWT tokens encrypted with AES-256",
-            ),
-            Question(
-                question_id="sec_3",
-                text="What authentication mechanism will you implement?",
-                category="Security",
-                difficulty="medium",
-                help_text="e.g., OAuth 2.0, JWT, session-based",
-                example_answer="JWT with 15-minute expiration and refresh tokens",
-            ),
-
-            # Scalability questions
-            Question(
-                question_id="scale_1",
-                text="How will you handle increased load?",
-                category="Scalability",
-                difficulty="hard",
-                help_text="e.g., horizontal scaling, caching, load balancing",
-                example_answer="Horizontal scaling with auto-scaling groups and Redis caching",
-            ),
-            Question(
-                question_id="scale_2",
-                text="What caching strategy will you use?",
-                category="Scalability",
-                difficulty="medium",
-                help_text="e.g., Redis, memcached, CDN",
-                example_answer="Redis for session and API response caching with 5-minute TTL",
-            ),
-
-            # Usability questions
-            Question(
-                question_id="usab_1",
-                text="What is your target user expertise level?",
-                category="Usability",
-                difficulty="easy",
-                help_text="e.g., expert developers, business users, children",
-                example_answer="Intermediate developers with some Python experience",
-            ),
-            Question(
-                question_id="usab_2",
-                text="What accessibility standards must you meet?",
-                category="Usability",
-                difficulty="medium",
-                help_text="e.g., WCAG 2.1 AA, keyboard navigation",
-                example_answer="WCAG 2.1 Level AA compliance",
-            ),
-
-            # Reliability questions
-            Question(
-                question_id="rel_1",
-                text="What is your target uptime percentage?",
-                category="Reliability",
-                difficulty="easy",
-                help_text="e.g., 99.9%, 99.99%",
-                example_answer="99.9% uptime (8.76 hours downtime/year)",
-            ),
-            Question(
-                question_id="rel_2",
-                text="How will you handle errors and failures?",
-                category="Reliability",
-                difficulty="hard",
-                help_text="e.g., retry logic, circuit breakers, graceful degradation",
-                example_answer="Exponential backoff retries, circuit breakers for external APIs",
-            ),
-
-            # Maintainability questions
-            Question(
-                question_id="maint_1",
-                text="What code style and standards will you follow?",
-                category="Maintainability",
-                difficulty="easy",
-                help_text="e.g., PEP 8, Google style guide, linting rules",
-                example_answer="PEP 8 with black formatter, isort for imports",
-            ),
-            Question(
-                question_id="maint_2",
-                text="What testing coverage do you target?",
-                category="Maintainability",
-                difficulty="medium",
-                help_text="e.g., 80%, 90%, 100% coverage",
-                example_answer="90% code coverage with unit and integration tests",
-            ),
-        ]
+        """Return Socratic questions for programming domain from configuration."""
+        if self._questions is None:
+            self._load_questions()
+        return self._questions if self._questions is not None else []
 
     def get_export_formats(self) -> List[ExportFormat]:
         """Return supported code generation formats."""
