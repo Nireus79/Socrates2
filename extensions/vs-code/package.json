@@ -1,0 +1,263 @@
+{
+  "name": "socrates2",
+  "displayName": "Socrates2 - AI-Powered Specification Assistant",
+  "description": "Bring your specifications into VS Code. Generate code, detect conflicts, and manage projects directly from your editor.",
+  "version": "0.1.0",
+  "publisher": "anthropic",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "specification",
+    "specification-driven-development",
+    "code-generation",
+    "ai",
+    "socrates"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "socrates-explorer",
+          "title": "Socrates2",
+          "icon": "resources/socrates-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "socrates-explorer": [
+        {
+          "id": "projects",
+          "name": "Projects",
+          "contextualTitle": "Socrates2 Projects"
+        },
+        {
+          "id": "specifications",
+          "name": "Specifications",
+          "contextualTitle": "Project Specifications"
+        },
+        {
+          "id": "activity",
+          "name": "Activity",
+          "contextualTitle": "Team Activity"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "socrates.authenticate",
+        "title": "Socrates2: Sign In",
+        "description": "Sign in to your Socrates2 account"
+      },
+      {
+        "command": "socrates.logout",
+        "title": "Socrates2: Sign Out",
+        "description": "Sign out of your Socrates2 account"
+      },
+      {
+        "command": "socrates.refreshProjects",
+        "title": "Socrates2: Refresh Projects",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "socrates.openProject",
+        "title": "Open Project",
+        "icon": "$(folder)"
+      },
+      {
+        "command": "socrates.createProject",
+        "title": "Create Project",
+        "icon": "$(add)"
+      },
+      {
+        "command": "socrates.refreshSpecifications",
+        "title": "Socrates2: Refresh Specifications",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "socrates.viewSpecification",
+        "title": "View Specification Details",
+        "icon": "$(info)"
+      },
+      {
+        "command": "socrates.generateCode",
+        "title": "Socrates2: Generate Code from Specification",
+        "description": "Generate code snippet based on the selected specification",
+        "icon": "$(bracket)"
+      },
+      {
+        "command": "socrates.searchSpecifications",
+        "title": "Socrates2: Search Specifications",
+        "description": "Search across all specifications",
+        "icon": "$(search)"
+      },
+      {
+        "command": "socrates.viewConflicts",
+        "title": "Socrates2: View Project Conflicts",
+        "description": "View all specification conflicts in the current project",
+        "icon": "$(warning)"
+      },
+      {
+        "command": "socrates.openSettings",
+        "title": "Socrates2: Settings",
+        "description": "Open Socrates2 extension settings",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "socrates.showActivity",
+        "title": "Show Team Activity",
+        "icon": "$(history)"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "socrates.authenticate",
+          "when": "socrates.authenticated == false"
+        },
+        {
+          "command": "socrates.logout",
+          "when": "socrates.authenticated == true"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "socrates.refreshProjects",
+          "when": "view == projects",
+          "group": "navigation"
+        },
+        {
+          "command": "socrates.createProject",
+          "when": "view == projects",
+          "group": "navigation"
+        },
+        {
+          "command": "socrates.refreshSpecifications",
+          "when": "view == specifications && socrates.projectSelected",
+          "group": "navigation"
+        },
+        {
+          "command": "socrates.searchSpecifications",
+          "when": "view == specifications && socrates.projectSelected",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "socrates.openProject",
+          "when": "view == projects && viewItem == project",
+          "group": "inline"
+        },
+        {
+          "command": "socrates.generateCode",
+          "when": "view == specifications && viewItem == specification",
+          "group": "inline"
+        },
+        {
+          "command": "socrates.viewSpecification",
+          "when": "view == specifications && viewItem == specification",
+          "group": "inline"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "socrates.generateCode",
+          "group": "1_modification",
+          "when": "socrates.authenticated && editorTextFocus"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Socrates2",
+      "properties": {
+        "socrates.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Socrates2 API server URL"
+        },
+        "socrates.autoSync": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically sync with Socrates2 server"
+        },
+        "socrates.syncInterval": {
+          "type": "number",
+          "default": 30000,
+          "description": "Sync interval in milliseconds (30 seconds default)"
+        },
+        "socrates.codeGenLanguage": {
+          "type": "string",
+          "enum": [
+            "auto-detect",
+            "python",
+            "javascript",
+            "go",
+            "java"
+          ],
+          "default": "auto-detect",
+          "description": "Default language for code generation"
+        },
+        "socrates.enableConflictWarnings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warnings for specification conflicts"
+        },
+        "socrates.theme": {
+          "type": "string",
+          "enum": [
+            "light",
+            "dark",
+            "auto"
+          ],
+          "default": "auto",
+          "description": "Extension theme (auto follows VS Code theme)"
+        }
+      }
+    },
+    "snippets": [
+      {
+        "language": "python",
+        "path": "./snippets/python.json"
+      },
+      {
+        "language": "javascript",
+        "path": "./snippets/javascript.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "esbuild": "^0.19.0",
+    "eslint": "^8.50.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.2.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "lodash": "^4.17.21"
+  }
+}
