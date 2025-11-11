@@ -5,14 +5,43 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "socrates2"
 version = "0.1.0"
-description = "AI-Powered Specification Assistant"
+description = "AI-Powered Specification Assistant using Socratic Method"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
-    {name = "Socrates2 Team"}
+    {name = "Socrates2 Team", email = "info@socrates2.io"}
 ]
-keywords = ["ai", "specifications", "assistant", "socratic-method"]
+keywords = [
+    "ai",
+    "specifications",
+    "assistant",
+    "socratic-method",
+    "multi-domain",
+    "workflows",
+    "analytics"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Office/Business",
+    "Framework :: FastAPI",
+]
+
+[project.urls]
+Homepage = "https://github.com/socrates2/socrates2"
+Documentation = "https://github.com/socrates2/socrates2/blob/main/backend/README.md"
+Repository = "https://github.com/socrates2/socrates2"
+Issues = "https://github.com/socrates2/socrates2/issues"
+Changelog = "https://github.com/socrates2/socrates2/blob/main/backend/CHANGELOG.md"
 
 dependencies = [
     "fastapi==0.121.0",
