@@ -242,11 +242,19 @@ async def list_documents(
             KnowledgeBaseDocument.user_id == current_user.id
         ).all()
 
+        # Single query to get chunk counts for all documents (avoid N+1)
+        from sqlalchemy import func
+        chunk_counts = db_specs.query(
+            DocumentChunk.document_id,
+            func.count(DocumentChunk.id).label('chunk_count')
+        ).group_by(DocumentChunk.document_id).all()
+
+        # Build map of document_id -> chunk_count
+        count_map = {doc_id: count for doc_id, count in chunk_counts}
+
         documents = []
         for doc in docs:
-            chunk_count = db_specs.query(DocumentChunk).filter(
-                DocumentChunk.document_id == doc.id
-            ).count()
+            chunk_count = count_map.get(doc.id, 0)
 
             documents.append({
                 "id": str(doc.id),

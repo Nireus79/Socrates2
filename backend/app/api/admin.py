@@ -367,15 +367,25 @@ def list_admin_roles(
     """
     from ..models.admin_role import AdminRole
     from ..models.admin_user import AdminUser
+    from sqlalchemy import func
 
+    # Get all roles
     roles = db.query(AdminRole).all()
-    result = []
 
+    # Single query to get user counts for all roles
+    role_user_counts = db.query(
+        AdminUser.role_id,
+        func.count(AdminUser.id).label('users_count')
+    ).filter(
+        AdminUser.revoked_at.is_(None)
+    ).group_by(AdminUser.role_id).all()
+
+    # Build a map of role_id -> count
+    count_map = {role_id: count for role_id, count in role_user_counts}
+
+    result = []
     for role in roles:
-        users_count = db.query(AdminUser).filter(
-            AdminUser.role_id == role.id,
-            AdminUser.revoked_at.is_(None)
-        ).count()
+        users_count = count_map.get(role.id, 0)
 
         result.append(AdminRoleResponse(
             id=str(role.id),
@@ -447,8 +457,15 @@ def list_admin_users(
     """
     from ..models.admin_user import AdminUser
     from ..models.admin_role import AdminRole
+    from sqlalchemy.orm import joinedload
 
-    query = db.query(AdminUser).filter(AdminUser.revoked_at.is_(None))
+    query = db.query(AdminUser).filter(
+        AdminUser.revoked_at.is_(None)
+    ).options(
+        joinedload(AdminUser.role),
+        joinedload(AdminUser.user),
+        joinedload(AdminUser.granted_by_user)
+    )
 
     if role_id:
         query = query.filter(AdminUser.role_id == role_id)
@@ -457,17 +474,13 @@ def list_admin_users(
     result = []
 
     for admin_user in admin_users:
-        role = db.query(AdminRole).filter(AdminRole.id == admin_user.role_id).first()
-        user = db.query(User).filter(User.id == admin_user.user_id).first()
-        granted_by = db.query(User).filter(User.id == admin_user.granted_by_id).first() if admin_user.granted_by_id else None
-
         result.append(AdminUserResponse(
             id=str(admin_user.id),
             user_id=str(admin_user.user_id),
-            user_email=user.email if user else "Unknown",
-            role_name=role.name if role else "Unknown",
+            user_email=admin_user.user.email if admin_user.user else "Unknown",
+            role_name=admin_user.role.name if admin_user.role else "Unknown",
             granted_at=admin_user.created_at.isoformat(),
-            granted_by_email=granted_by.email if granted_by else None,
+            granted_by_email=admin_user.granted_by_user.email if admin_user.granted_by_user else None,
             reason=admin_user.reason,
             is_active=admin_user.is_active
         ))
@@ -569,6 +582,7 @@ def search_users(
         List of matching users
     """
     from sqlalchemy import or_
+    from sqlalchemy.orm import selectinload
 
     users = db.query(User).filter(
         or_(
@@ -576,19 +590,15 @@ def search_users(
             User.name.ilike(f"%{query}%"),
             User.id == query
         )
+    ).options(
+        selectinload(User.admin_user).selectinload(AdminUser.role)
     ).limit(limit).all()
 
     result = []
     for user in users:
-        admin_user = db.query(AdminUser).filter(
-            AdminUser.user_id == user.id,
-            AdminUser.revoked_at.is_(None)
-        ).first()
-
         admin_role = None
-        if admin_user:
-            role = db.query(AdminRole).filter(AdminRole.id == admin_user.role_id).first()
-            admin_role = role.name if role else None
+        if user.admin_user and user.admin_user.revoked_at is None:
+            admin_role = user.admin_user.role.name if user.admin_user.role else None
 
         result.append(UserSearchResponse(
             id=str(user.id),
