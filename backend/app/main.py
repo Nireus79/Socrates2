@@ -18,7 +18,7 @@ from .core.sentry_config import init_sentry
 from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
 from .api import export_endpoints, llm_endpoints, github_endpoints
 from .api import search, insights, templates, resources, jobs, billing, documents
-from .api import notifications, export, collaboration, domains, workflows
+from .api import notifications, export, collaboration, domains, workflows, analytics
 from .api.error_handlers import (
     general_exception_handler,
     validation_error_handler,
@@ -185,6 +185,7 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(collaboration.router)
     app.include_router(domains.router)
     app.include_router(workflows.router)
+    app.include_router(analytics.router)
 
     # Register exception handlers for error tracking and proper response formatting
     app.add_exception_handler(HTTPException, http_exception_handler)
@@ -209,11 +210,15 @@ def root():
     return {
         "message": "Socrates2 API",
         "version": "0.1.0",
-        "phase": "Phase 7.0+ - Pluggifiable Domain Architecture",
+        "phase": "Phase 7.4 - Advanced Analytics System",
         "domains_infrastructure": "Phase 7.0 (Complete - 197 tests passing)",
-        "domains_api_status": "Phase 7.2 (In Development)",
+        "domains_api": "Phase 7.2 (Complete)",
+        "workflows": "Phase 7.3 (Complete - 29 tests passing)",
+        "analytics": "Phase 7.4 (In Development)",
         "docs": "/docs",
         "domains_endpoint": "/api/v1/domains",
+        "workflows_endpoint": "/api/v1/workflows",
+        "analytics_endpoint": "/api/v1/analytics",
         "health": "/api/v1/admin/health"
     }
 
@@ -236,11 +241,13 @@ def api_info():
             "title": "Socrates2 API",
             "version": "0.1.0",
             "environment": settings.ENVIRONMENT,
-            "phase": "Phase 7.0+ - Pluggifiable Domain Architecture",
+            "phase": "Phase 7.4 - Advanced Analytics System",
             "domains": {
-                "infrastructure": "Phase 7.0 (COMPLETE)",
-                "api_integration": "Phase 7.2 (IN PROGRESS)",
-                "tests": "197 passing"
+                "infrastructure": "Phase 7.0 (COMPLETE - 197 tests)",
+                "api_integration": "Phase 7.2 (COMPLETE)",
+                "workflows": "Phase 7.3 (COMPLETE - 29 tests)",
+                "analytics": "Phase 7.4 (IN PROGRESS)",
+                "total_tests": "226 passing"
             }
         },
         "agents": {
