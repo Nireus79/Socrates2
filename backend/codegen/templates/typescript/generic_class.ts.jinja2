@@ -1,0 +1,221 @@
+/**
+ * {{ name }} - Auto-generated generic TypeScript class
+ *
+ * {{ docstring }}
+ *
+ * This is a generic implementation that can work with any data type
+ */
+
+export interface ISerializer<T> {
+  serialize(item: T): Record<string, any>;
+  deserialize(data: Record<string, any>): T;
+}
+
+export interface {{ name }}Options<T> {
+  serializer?: ISerializer<T>;
+  validator?: (item: T) => boolean;
+  maxItems?: number;
+}
+
+/**
+ * Generic {{ name }} class
+ *
+ * Provides type-safe operations for managing collections of typed items
+ */
+export class {{ name }}<T extends Record<string, any>> {
+  private items: T[] = [];
+  private maxItems: number = 1000;
+  private serializer?: ISerializer<T>;
+  private validator?: (item: T) => boolean;
+
+  constructor(options?: {{ name }}Options<T>) {
+    if (options?.maxItems) {
+      this.maxItems = options.maxItems;
+    }
+    this.serializer = options?.serializer;
+    this.validator = options?.validator;
+  }
+
+  /**
+   * Add item to collection
+   */
+  add(item: T): boolean {
+    if (this.items.length >= this.maxItems) {
+      throw new Error(`Maximum items (${this.maxItems}) exceeded`);
+    }
+
+    if (this.validator && !this.validator(item)) {
+      throw new Error('Item validation failed');
+    }
+
+    this.items.push(item);
+    return true;
+  }
+
+  /**
+   * Add multiple items
+   */
+  addAll(items: T[]): number {
+    let added = 0;
+    for (const item of items) {
+      try {
+        if (this.add(item)) {
+          added++;
+        }
+      } catch (error) {
+        console.warn('Failed to add item:', error);
+      }
+    }
+    return added;
+  }
+
+  /**
+   * Remove item by predicate
+   */
+  remove(predicate: (item: T) => boolean): boolean {
+    const index = this.items.findIndex(predicate);
+    if (index !== -1) {
+      this.items.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Find item by predicate
+   */
+  find(predicate: (item: T) => boolean): T | undefined {
+    return this.items.find(predicate);
+  }
+
+  /**
+   * Filter items by predicate
+   */
+  filter(predicate: (item: T) => boolean): T[] {
+    return this.items.filter(predicate);
+  }
+
+  /**
+   * Map items using transformer
+   */
+  map<U>(transformer: (item: T) => U): U[] {
+    return this.items.map(transformer);
+  }
+
+  /**
+   * Get all items
+   */
+  getAll(): T[] {
+    return [...this.items];
+  }
+
+  /**
+   * Get item count
+   */
+  size(): number {
+    return this.items.length;
+  }
+
+  /**
+   * Check if collection is empty
+   */
+  isEmpty(): boolean {
+    return this.items.length === 0;
+  }
+
+  /**
+   * Clear all items
+   */
+  clear(): void {
+    this.items = [];
+  }
+
+  /**
+   * Sort items using comparator
+   */
+  sort(comparator: (a: T, b: T) => number): void {
+    this.items.sort(comparator);
+  }
+
+  /**
+   * Serialize collection to JSON
+   */
+  toJSON(): string {
+    const serialized = this.items.map(item => {
+      if (this.serializer) {
+        return this.serializer.serialize(item);
+      }
+      return item;
+    });
+    return JSON.stringify(serialized, null, 2);
+  }
+
+  /**
+   * Deserialize collection from JSON
+   */
+  static fromJSON<T extends Record<string, any>>(
+    json: string,
+    serializer?: ISerializer<T>
+  ): {{ name }}<T> {
+    const instance = new {{ name }}<T>({ serializer });
+    const data = JSON.parse(json);
+
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        try {
+          const deserialized = serializer
+            ? serializer.deserialize(item)
+            : (item as T);
+          instance.add(deserialized);
+        } catch (error) {
+          console.warn('Failed to deserialize item:', error);
+        }
+      }
+    }
+
+    return instance;
+  }
+
+  /**
+   * Create collection from array
+   */
+  static from<T extends Record<string, any>>(
+    items: T[],
+    options?: {{ name }}Options<T>
+  ): {{ name }}<T> {
+    const instance = new {{ name }}<T>(options);
+    instance.addAll(items);
+    return instance;
+  }
+
+  /**
+   * Reduce collection to single value
+   */
+  reduce<U>(
+    reducer: (acc: U, item: T) => U,
+    initialValue: U
+  ): U {
+    return this.items.reduce(reducer, initialValue);
+  }
+
+  /**
+   * Check if any item matches predicate
+   */
+  some(predicate: (item: T) => boolean): boolean {
+    return this.items.some(predicate);
+  }
+
+  /**
+   * Check if all items match predicate
+   */
+  every(predicate: (item: T) => boolean): boolean {
+    return this.items.every(predicate);
+  }
+
+  /**
+   * Get string representation
+   */
+  toString(): string {
+    return `{{ name }}<T> { size: ${this.items.length}, maxItems: ${this.maxItems} }`;
+  }
+}

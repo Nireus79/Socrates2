@@ -1,0 +1,132 @@
+package main
+
+import (
+	"encoding/json"
+	"time"
+	"fmt"
+	"errors"
+)
+
+// {{ name }} represents {{ docstring | lower }}
+type {{ name }} struct {
+	ID        string                 `json:"id"`
+	Name      string                 `json:"name"`
+	CreatedAt time.Time              `json:"created_at"`
+	UpdatedAt time.Time              `json:"updated_at"`
+	Metadata  map[string]interface{} `json:"metadata"`
+}
+
+// New{{ name }} creates a new {{ name }} instance
+func New{{ name }}(name string) *{{ name }} {
+	return &{{ name }}{
+		ID:        generateID(),
+		Name:      name,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Metadata:  make(map[string]interface{}),
+	}
+}
+
+// generateID generates a unique identifier
+func generateID() string {
+	return fmt.Sprintf("{{ '{' }}%d{{ '}' }}", time.Now().UnixNano())
+}
+
+// String returns the string representation
+func ({{ name[0:1] | lower }} *{{ name }}) String() string {
+	return fmt.Sprintf("{{ name }}{{ '{' }}ID: %s, Name: %s{{ '}' }}", {{ name[0:1] | lower }}.ID, {{ name[0:1] | lower }}.Name)
+}
+
+// ToJSON converts the struct to JSON bytes
+func ({{ name[0:1] | lower }} *{{ name }}) ToJSON() ([]byte, error) {
+	return json.Marshal({{ name[0:1] | lower }})
+}
+
+// FromJSON creates a {{ name }} from JSON bytes
+func ({{ name[0:1] | lower }} *{{ name }}) FromJSON(data []byte) error {
+	return json.Unmarshal(data, {{ name[0:1] | lower }})
+}
+
+// Validate checks if the {{ name }} is valid
+func ({{ name[0:1] | lower }} *{{ name }}) Validate() error {
+	if {{ name[0:1] | lower }}.Name == "" {
+		return errors.New("name cannot be empty")
+	}
+	if {{ name[0:1] | lower }}.ID == "" {
+		return errors.New("id cannot be empty")
+	}
+	return nil
+}
+
+// Update updates the {{ name }} fields
+func ({{ name[0:1] | lower }} *{{ name }}) Update(name string, metadata map[string]interface{}) error {
+	if err := {{ name[0:1] | lower }}.Validate(); err != nil {
+		return err
+	}
+
+	{{ name[0:1] | lower }}.Name = name
+	{{ name[0:1] | lower }}.Metadata = metadata
+	{{ name[0:1] | lower }}.UpdatedAt = time.Now()
+
+	return nil
+}
+
+{% if error_handling == 'explicit' %}
+// Process processes the {{ name }} with explicit error handling
+func ({{ name[0:1] | lower }} *{{ name }}) Process() error {
+	// Validate before processing
+	if err := {{ name[0:1] | lower }}.Validate(); err != nil {
+		return fmt.Errorf("validation failed: %w", err)
+	}
+
+	// Implementation would go here
+	return nil
+}
+{% endif %}
+
+{% if concurrency %}
+// ProcessAsync processes the {{ name }} asynchronously
+func ({{ name[0:1] | lower }} *{{ name }}) ProcessAsync(done <-chan struct{}) <-chan error {
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer close(errChan)
+
+		select {
+		case <-done:
+			errChan <- errors.New("processing cancelled")
+		default:
+			if err := {{ name[0:1] | lower }}.Process(); err != nil {
+				errChan <- err
+			}
+		}
+	}()
+
+	return errChan
+}
+
+// FetchData fetches data concurrently
+func ({{ name[0:1] | lower }} *{{ name }}) FetchData(urls []string) ([][]byte, error) {
+	results := make([][]byte, len(urls))
+	errChan := make(chan error, len(urls))
+
+	for i, url := range urls {
+		go func(index int, u string) {
+			// Simulated fetch - would call actual HTTP in real implementation
+			data := []byte(`{{ '{' }}"url": "` + u + `"{{ '}' }}`)
+			results[index] = data
+		}(i, url)
+	}
+
+	// Wait for all goroutines
+	for i := 0; i < len(urls); i++ {
+		select {
+		case err := <-errChan:
+			return nil, err
+		default:
+		}
+	}
+
+	return results, nil
+}
+{% endif %}

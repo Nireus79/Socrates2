@@ -1,0 +1,347 @@
+package generated
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+	"sync"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+// {{ name }} represents a concurrent-safe data structure
+type {{ name }} struct {
+	ID        string                 `json:"id"`
+	Name      string                 `json:"name"`
+	CreatedAt time.Time              `json:"created_at"`
+	UpdatedAt time.Time              `json:"updated_at"`
+	Metadata  map[string]interface{} `json:"metadata"`
+	mu        sync.RWMutex           `json:"-"`
+}
+
+// New creates a new {{ name }} instance
+func New{{ name }}(name string) *{{ name }} {
+	return &{{ name }}{
+		ID:        uuid.New().String(),
+		Name:      name,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Metadata:  make(map[string]interface{}),
+	}
+}
+
+// NewWith creates {{ name }} with full initialization
+func NewWith{{ name }}(id, name string, metadata map[string]interface{}) *{{ name }} {
+	return &{{ name }}{
+		ID:        id,
+		Name:      name,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Metadata:  metadata,
+	}
+}
+
+// GetID safely retrieves the ID
+func ({{ name[0:1] | lower }} *{{ name }}) GetID() string {
+	{{ name[0:1] | lower }}.mu.RLock()
+	defer {{ name[0:1] | lower }}.mu.RUnlock()
+	return {{ name[0:1] | lower }}.ID
+}
+
+// GetName safely retrieves the name
+func ({{ name[0:1] | lower }} *{{ name }}) GetName() string {
+	{{ name[0:1] | lower }}.mu.RLock()
+	defer {{ name[0:1] | lower }}.mu.RUnlock()
+	return {{ name[0:1] | lower }}.Name
+}
+
+// SetName safely updates the name
+func ({{ name[0:1] | lower }} *{{ name }}) SetName(name string) {
+	{{ name[0:1] | lower }}.mu.Lock()
+	defer {{ name[0:1] | lower }}.mu.Unlock()
+	{{ name[0:1] | lower }}.Name = name
+	{{ name[0:1] | lower }}.UpdatedAt = time.Now()
+}
+
+// GetMetadata safely retrieves metadata value
+func ({{ name[0:1] | lower }} *{{ name }}) GetMetadata(key string) (interface{}, bool) {
+	{{ name[0:1] | lower }}.mu.RLock()
+	defer {{ name[0:1] | lower }}.mu.RUnlock()
+	val, ok := {{ name[0:1] | lower }}.Metadata[key]
+	return val, ok
+}
+
+// SetMetadata safely sets metadata value
+func ({{ name[0:1] | lower }} *{{ name }}) SetMetadata(key string, value interface{}) {
+	{{ name[0:1] | lower }}.mu.Lock()
+	defer {{ name[0:1] | lower }}.mu.Unlock()
+	{{ name[0:1] | lower }}.Metadata[key] = value
+	{{ name[0:1] | lower }}.UpdatedAt = time.Now()
+}
+
+// UpdateMetadata safely updates multiple metadata entries
+func ({{ name[0:1] | lower }} *{{ name }}) UpdateMetadata(updates map[string]interface{}) {
+	{{ name[0:1] | lower }}.mu.Lock()
+	defer {{ name[0:1] | lower }}.mu.Unlock()
+	for k, v := range updates {
+		{{ name[0:1] | lower }}.Metadata[k] = v
+	}
+	{{ name[0:1] | lower }}.UpdatedAt = time.Now()
+}
+
+// Validate checks instance validity
+func ({{ name[0:1] | lower }} *{{ name }}) Validate() error {
+	{{ name[0:1] | lower }}.mu.RLock()
+	defer {{ name[0:1] | lower }}.mu.RUnlock()
+
+	if {{ name[0:1] | lower }}.ID == "" {
+		return errors.New("ID cannot be empty")
+	}
+	if {{ name[0:1] | lower }}.Name == "" {
+		return errors.New("Name cannot be empty")
+	}
+	return nil
+}
+
+// ToJSON converts to JSON
+func ({{ name[0:1] | lower }} *{{ name }}) ToJSON() ([]byte, error) {
+	{{ name[0:1] | lower }}.mu.RLock()
+	defer {{ name[0:1] | lower }}.mu.RUnlock()
+
+	type Alias {{ name }}
+	return json.Marshal(&struct {
+		*Alias
+		CreatedAt string `json:"created_at"`
+		UpdatedAt string `json:"updated_at"`
+	}{
+		Alias:     (*Alias)({{ name[0:1] | lower }}),
+		CreatedAt: {{ name[0:1] | lower }}.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: {{ name[0:1] | lower }}.UpdatedAt.Format(time.RFC3339),
+	})
+}
+
+// FromJSON creates instance from JSON
+func ({{ name[0:1] | lower }} *{{ name }}) FromJSON(data []byte) error {
+	{{ name[0:1] | lower }}.mu.Lock()
+	defer {{ name[0:1] | lower }}.mu.Unlock()
+
+	type Alias {{ name }}
+	aux := &struct {
+		CreatedAt string `json:"created_at"`
+		UpdatedAt string `json:"updated_at"`
+		*Alias
+	}{
+		Alias: (*Alias)({{ name[0:1] | lower }}),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if aux.CreatedAt != "" {
+		t, err := time.Parse(time.RFC3339, aux.CreatedAt)
+		if err != nil {
+			return err
+		}
+		{{ name[0:1] | lower }}.CreatedAt = t
+	}
+
+	if aux.UpdatedAt != "" {
+		t, err := time.Parse(time.RFC3339, aux.UpdatedAt)
+		if err != nil {
+			return err
+		}
+		{{ name[0:1] | lower }}.UpdatedAt = t
+	}
+
+	return nil
+}
+
+// Clone creates a deep copy
+func ({{ name[0:1] | lower }} *{{ name }}) Clone() *{{ name }} {
+	{{ name[0:1] | lower }}.mu.RLock()
+	defer {{ name[0:1] | lower }}.mu.RUnlock()
+
+	metadata := make(map[string]interface{})
+	for k, v := range {{ name[0:1] | lower }}.Metadata {
+		metadata[k] = v
+	}
+
+	return &{{ name }}{
+		ID:        {{ name[0:1] | lower }}.ID,
+		Name:      {{ name[0:1] | lower }}.Name,
+		CreatedAt: {{ name[0:1] | lower }}.CreatedAt,
+		UpdatedAt: {{ name[0:1] | lower }}.UpdatedAt,
+		Metadata:  metadata,
+	}
+}
+
+// UpdateAsync updates instance asynchronously with context
+func ({{ name[0:1] | lower }} *{{ name }}) UpdateAsync(ctx context.Context, updates map[string]interface{}) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		{{ name[0:1] | lower }}.mu.Lock()
+		defer {{ name[0:1] | lower }}.mu.Unlock()
+
+		for k, v := range updates {
+			{{ name[0:1] | lower }}.Metadata[k] = v
+		}
+		{{ name[0:1] | lower }}.UpdatedAt = time.Now()
+		return nil
+	}
+}
+
+// ProcessConcurrent processes items concurrently with worker pool
+func ({{ name[0:1] | lower }} *{{ name }}) ProcessConcurrent(
+	ctx context.Context,
+	items []interface{},
+	workers int,
+	processor func(item interface{}) error,
+) error {
+	if workers <= 0 {
+		workers = 4
+	}
+
+	itemChan := make(chan interface{}, len(items))
+	errChan := make(chan error, workers)
+	var wg sync.WaitGroup
+
+	// Start workers
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case item, ok := <-itemChan:
+					if !ok {
+						return
+					}
+					if err := processor(item); err != nil {
+						errChan <- err
+					}
+				}
+			}
+		}()
+	}
+
+	// Send items
+	go func() {
+		for _, item := range items {
+			itemChan <- item
+		}
+		close(itemChan)
+	}()
+
+	// Wait for completion
+	wg.Wait()
+	close(errChan)
+
+	// Collect errors
+	var err error
+	for e := range errChan {
+		if e != nil {
+			err = e
+			break
+		}
+	}
+	return err
+}
+
+// WatchChanges watches for changes using a channel (example concurrent pattern)
+func ({{ name[0:1] | lower }} *{{ name }}) WatchChanges(ctx context.Context, interval time.Duration) <-chan *{{ name }} {
+	changeChan := make(chan *{{ name }})
+
+	go func() {
+		defer close(changeChan)
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				changeChan <- {{ name[0:1] | lower }}.Clone()
+			}
+		}
+	}()
+
+	return changeChan
+}
+
+// String returns string representation
+func ({{ name[0:1] | lower }} *{{ name }}) String() string {
+	{{ name[0:1] | lower }}.mu.RLock()
+	defer {{ name[0:1] | lower }}.mu.RUnlock()
+	return fmt.Sprintf("{{ name }} { id: %q, name: %q, created_at: %s }",
+		{{ name[0:1] | lower }}.ID, {{ name[0:1] | lower }}.Name, {{ name[0:1] | lower }}.CreatedAt.Format(time.RFC3339))
+}
+
+// Concurrent helper functions
+
+// BatchProcess processes multiple {{ name }} instances concurrently
+func BatchProcess(ctx context.Context, items []*{{ name }}, fn func(*{{ name }}) error) error {
+	if len(items) == 0 {
+		return nil
+	}
+
+	semaphore := make(chan struct{}, 4) // Limit concurrency
+	errChan := make(chan error, len(items))
+	var wg sync.WaitGroup
+
+	for _, item := range items {
+		wg.Add(1)
+		go func(i *{{ name }}) {
+			defer wg.Done()
+			semaphore <- struct{}{}
+			defer func() { <-semaphore }()
+
+			if err := fn(i); err != nil {
+				errChan <- err
+			}
+		}(item)
+	}
+
+	go func() {
+		wg.Wait()
+		close(errChan)
+	}()
+
+	for err := range errChan {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// MergeAsync merges multiple instances asynchronously
+func MergeAsync(ctx context.Context, items ...*{{ name }}) (*{{ name }}, error) {
+	if len(items) == 0 {
+		return nil, errors.New("at least one item required")
+	}
+
+	first := items[0].Clone()
+	for _, item := range items[1:] {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+			meta := make(map[string]interface{})
+			for k, v := range item.Metadata {
+				meta[k] = v
+			}
+			first.UpdateMetadata(meta)
+		}
+	}
+
+	return first, nil
+}

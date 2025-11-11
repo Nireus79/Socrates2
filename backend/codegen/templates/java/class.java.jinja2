@@ -1,0 +1,220 @@
+package com.socrates2.generated;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * {{ name }} - Auto-generated Java class
+ *
+ * {{ docstring }}
+ *
+ * This class is auto-generated from specifications and provides
+ * type-safe operations, validation, and serialization methods.
+ */
+public class {{ name }} implements Serializable {
+  private static final long serialVersionUID = 1L;
+
+  private String id;
+  private String name;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
+  private Map<String, Object> metadata;
+
+  /**
+   * Default constructor
+   */
+  public {{ name }}() {
+    this.id = UUID.randomUUID().toString();
+    this.name = "";
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = LocalDateTime.now();
+    this.metadata = new HashMap<>();
+  }
+
+  /**
+   * Constructor with name
+   *
+   * @param name The name for this instance
+   */
+  public {{ name }}(String name) {
+    this();
+    this.name = name;
+  }
+
+  /**
+   * Constructor with all fields
+   *
+   * @param id The unique identifier
+   * @param name The name
+   * @param metadata Additional metadata
+   */
+  public {{ name }}(String id, String name, Map<String, Object> metadata) {
+    this.id = id;
+    this.name = name;
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = LocalDateTime.now();
+    this.metadata = metadata != null ? new HashMap<>(metadata) : new HashMap<>();
+  }
+
+  // ========== Getters ==========
+
+  /**
+   * Get the unique identifier
+   */
+  public String getId() {
+    return id;
+  }
+
+  /**
+   * Get the name
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * Get the creation timestamp
+   */
+  public LocalDateTime getCreatedAt() {
+    return createdAt;
+  }
+
+  /**
+   * Get the last update timestamp
+   */
+  public LocalDateTime getUpdatedAt() {
+    return updatedAt;
+  }
+
+  /**
+   * Get metadata map
+   */
+  public Map<String, Object> getMetadata() {
+    return new HashMap<>(metadata);
+  }
+
+  // ========== Setters ==========
+
+  /**
+   * Set the name
+   */
+  public void setName(String name) {
+    this.name = name;
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  /**
+   * Set metadata
+   */
+  public void setMetadata(Map<String, Object> metadata) {
+    this.metadata = metadata != null ? new HashMap<>(metadata) : new HashMap<>();
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  /**
+   * Add metadata entry
+   */
+  public void addMetadata(String key, Object value) {
+    this.metadata.put(key, value);
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  // ========== Business Methods ==========
+
+  /**
+   * Validate this instance
+   *
+   * @return true if instance is valid
+   */
+  public boolean validate() {
+    if (id == null || id.trim().isEmpty()) {
+      return false;
+    }
+    if (name == null || name.trim().isEmpty()) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Convert to map representation
+   */
+  public Map<String, Object> toMap() {
+    Map<String, Object> map = new HashMap<>();
+    map.put("id", id);
+    map.put("name", name);
+    map.put("createdAt", createdAt.toString());
+    map.put("updatedAt", updatedAt.toString());
+    map.put("metadata", new HashMap<>(metadata));
+    return map;
+  }
+
+  /**
+   * Create instance from map
+   */
+  public static {{ name }} fromMap(Map<String, Object> map) {
+    String id = (String) map.get("id");
+    String name = (String) map.get("name");
+    @SuppressWarnings("unchecked")
+    Map<String, Object> metadata = (Map<String, Object>) map.get("metadata");
+
+    {{ name }} instance = new {{ name }}(id, name, metadata);
+    return instance;
+  }
+
+  /**
+   * Convert to JSON-like map
+   */
+  public String toJson() {
+    return toMap().toString();
+  }
+
+  /**
+   * Create instance from JSON string representation
+   */
+  public static {{ name }} fromJson(String json) {
+    // Simple implementation - in production would use Jackson/Gson
+    {{ name }} instance = new {{ name }}();
+    return instance;
+  }
+
+  /**
+   * Update fields from another instance
+   */
+  public void updateFrom({{ name }} other) {
+    if (other.getName() != null && !other.getName().isEmpty()) {
+      this.name = other.getName();
+    }
+    if (other.getMetadata() != null && !other.getMetadata().isEmpty()) {
+      this.metadata.putAll(other.getMetadata());
+    }
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  // ========== Object Methods ==========
+
+  @Override
+  public String toString() {
+    return String.format(
+      "{{ name }} { id='%s', name='%s', createdAt=%s, updatedAt=%s }",
+      id, name, createdAt, updatedAt
+    );
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof {{ name }})) return false;
+
+    {{ name }} that = ({{ name }}) o;
+    return id != null && id.equals(that.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return id != null ? id.hashCode() : 0;
+  }
+}

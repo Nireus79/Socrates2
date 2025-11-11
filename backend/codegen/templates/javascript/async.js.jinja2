@@ -1,0 +1,221 @@
+/**
+ * {{ name }} - Auto-generated async JavaScript class
+ *
+ * {{ docstring }}
+ *
+ * This class provides async/await methods for API interactions
+ */
+
+export class {{ name }} {
+  /**
+   * Create instance
+   * @param {Object} data - Initial data
+   * @param {AxiosInstance} apiClient - HTTP client for API calls
+   */
+  constructor(data = {}, apiClient = null) {
+    this.id = data.id || this.generateId();
+    this.name = data.name || '';
+    this.status = data.status || 'pending';
+    this.createdAt = data.createdAt ? new Date(data.createdAt) : new Date();
+    this.updatedAt = data.updatedAt ? new Date(data.updatedAt) : new Date();
+    this.metadata = data.metadata || {};
+    this.apiClient = apiClient;
+  }
+
+  /**
+   * Generate unique ID
+   */
+  generateId() {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Fetch data from API
+   * @async
+   * @returns {Promise<Object>} Remote data
+   */
+  async fetchData() {
+    if (!this.apiClient) {
+      throw new Error('API client not configured');
+    }
+
+    try {
+      const response = await this.apiClient.get(`/api/v1/resources/${this.id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to fetch ${this.id}:`, error);
+      throw this.formatError(error);
+    }
+  }
+
+  /**
+   * Save to API
+   * @async
+   * @returns {Promise<void>}
+   */
+  async save() {
+    if (!this.apiClient) {
+      throw new Error('API client not configured');
+    }
+
+    if (!this.validate()) {
+      throw new Error('Invalid instance state');
+    }
+
+    try {
+      const isNew = this.isNew();
+      const method = isNew ? 'post' : 'put';
+      const url = isNew ? '/api/v1/resources' : `/api/v1/resources/${this.id}`;
+
+      const response = await this.apiClient[method](url, this.toObject());
+      const updated = {{ name }}.fromObject(response.data);
+      Object.assign(this, updated);
+      this.updatedAt = new Date();
+    } catch (error) {
+      console.error(`Failed to save ${this.id}:`, error);
+      throw this.formatError(error);
+    }
+  }
+
+  /**
+   * Delete from API
+   * @async
+   * @returns {Promise<void>}
+   */
+  async delete() {
+    if (!this.apiClient) {
+      throw new Error('API client not configured');
+    }
+
+    try {
+      await this.apiClient.delete(`/api/v1/resources/${this.id}`);
+    } catch (error) {
+      console.error(`Failed to delete ${this.id}:`, error);
+      throw this.formatError(error);
+    }
+  }
+
+  /**
+   * Load related resources
+   * @async
+   * @returns {Promise<Object>} Related data
+   */
+  async loadRelated() {
+    if (!this.apiClient) {
+      throw new Error('API client not configured');
+    }
+
+    try {
+      const response = await this.apiClient.get(`/api/v1/resources/${this.id}/related`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to load related ${this.id}:`, error);
+      throw this.formatError(error);
+    }
+  }
+
+  /**
+   * Batch fetch multiple resources
+   * @async
+   * @param {Array<string>} ids - Resource IDs to fetch
+   * @returns {Promise<Array>} Array of resources
+   */
+  static async fetchMultiple(ids, apiClient) {
+    if (!apiClient) {
+      throw new Error('API client required');
+    }
+
+    try {
+      const promises = ids.map(id =>
+        apiClient.get(`/api/v1/resources/${id}`)
+          .then(res => res.data)
+          .catch(err => {
+            console.error(`Failed to fetch ${id}:`, err);
+            return null;
+          })
+      );
+      return await Promise.all(promises);
+    } catch (error) {
+      console.error('Batch fetch failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if instance is new
+   */
+  isNew() {
+    return !this.id || this.id.startsWith('temp-');
+  }
+
+  /**
+   * Convert to plain object
+   */
+  toObject() {
+    return {
+      id: this.id,
+      name: this.name,
+      status: this.status,
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+      metadata: { ...this.metadata }
+    };
+  }
+
+  /**
+   * Create from object
+   */
+  static fromObject(data) {
+    return new {{ name }}(data);
+  }
+
+  /**
+   * Serialize to JSON
+   */
+  toJSON() {
+    return JSON.stringify(this.toObject(), null, 2);
+  }
+
+  /**
+   * Deserialize from JSON
+   */
+  static fromJSON(jsonStr) {
+    const data = JSON.parse(jsonStr);
+    return {{ name }}.fromObject(data);
+  }
+
+  /**
+   * Validate instance
+   */
+  validate() {
+    if (!this.id || this.id.length === 0) return false;
+    if (typeof this.name !== 'string' || this.name.length === 0) return false;
+    if (!['pending', 'active', 'completed', 'failed'].includes(this.status)) return false;
+    return true;
+  }
+
+  /**
+   * Format error
+   */
+  formatError(error) {
+    if (error.response?.data) {
+      return {
+        code: error.response.data.code || 'UNKNOWN',
+        message: error.response.data.message || error.message,
+        statusCode: error.response.status
+      };
+    }
+    return {
+      code: 'NETWORK_ERROR',
+      message: error.message,
+      statusCode: 0
+    };
+  }
+
+  /**
+   * Get string representation
+   */
+  toString() {
+    return `{{ name }} { id: '${this.id}', name: '${this.name}', status: '${this.status}' }`;
+  }
+}

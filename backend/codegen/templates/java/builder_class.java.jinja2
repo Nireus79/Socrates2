@@ -1,0 +1,252 @@
+package com.socrates2.generated;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * {{ name }} - Auto-generated Java class with Builder pattern
+ *
+ * {{ docstring }}
+ *
+ * This class uses the Builder pattern for flexible instance creation
+ * and provides fluent API for configuration.
+ */
+public class {{ name }} implements Serializable {
+  private static final long serialVersionUID = 1L;
+
+  private final String id;
+  private final String name;
+  private final LocalDateTime createdAt;
+  private final LocalDateTime updatedAt;
+  private final Map<String, Object> metadata;
+
+  /**
+   * Private constructor - use builder instead
+   */
+  private {{ name }}(Builder builder) {
+    this.id = builder.id;
+    this.name = builder.name;
+    this.createdAt = builder.createdAt;
+    this.updatedAt = builder.updatedAt;
+    this.metadata = new HashMap<>(builder.metadata);
+  }
+
+  // ========== Getters ==========
+
+  public String getId() {
+    return id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public LocalDateTime getCreatedAt() {
+    return createdAt;
+  }
+
+  public LocalDateTime getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public Map<String, Object> getMetadata() {
+    return new HashMap<>(metadata);
+  }
+
+  public Object getMetadata(String key) {
+    return metadata.get(key);
+  }
+
+  // ========== Business Methods ==========
+
+  /**
+   * Validate this instance
+   */
+  public boolean validate() {
+    if (id == null || id.trim().isEmpty()) {
+      return false;
+    }
+    if (name == null || name.trim().isEmpty()) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Convert to map representation
+   */
+  public Map<String, Object> toMap() {
+    Map<String, Object> map = new HashMap<>();
+    map.put("id", id);
+    map.put("name", name);
+    map.put("createdAt", createdAt.toString());
+    map.put("updatedAt", updatedAt.toString());
+    map.put("metadata", new HashMap<>(metadata));
+    return map;
+  }
+
+  /**
+   * Create builder from existing instance
+   */
+  public Builder toBuilder() {
+    return new Builder()
+      .id(this.id)
+      .name(this.name)
+      .metadata(this.metadata);
+  }
+
+  /**
+   * Create builder for new instance
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /**
+   * Create new instance from map
+   */
+  public static {{ name }} fromMap(Map<String, Object> map) {
+    Builder builder = builder();
+
+    if (map.containsKey("id")) {
+      builder.id((String) map.get("id"));
+    }
+    if (map.containsKey("name")) {
+      builder.name((String) map.get("name"));
+    }
+    @SuppressWarnings("unchecked")
+    Map<String, Object> metadata = (Map<String, Object>) map.get("metadata");
+    if (metadata != null) {
+      builder.metadata(metadata);
+    }
+
+    return builder.build();
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+      "{{ name }} { id='%s', name='%s', createdAt=%s, updatedAt=%s, metadata=%d }",
+      id, name, createdAt, updatedAt, metadata.size()
+    );
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof {{ name }})) return false;
+
+    {{ name }} that = ({{ name }}) o;
+    return id != null && id.equals(that.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return id != null ? id.hashCode() : 0;
+  }
+
+  // ========== Builder Pattern Implementation ==========
+
+  /**
+   * Builder class for fluent {{ name }} creation
+   */
+  public static class Builder {
+    private String id;
+    private String name;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private final Map<String, Object> metadata;
+
+    /**
+     * Initialize builder with defaults
+     */
+    public Builder() {
+      this.id = UUID.randomUUID().toString();
+      this.name = "";
+      this.createdAt = LocalDateTime.now();
+      this.updatedAt = LocalDateTime.now();
+      this.metadata = new HashMap<>();
+    }
+
+    /**
+     * Set the ID
+     */
+    public Builder id(String id) {
+      this.id = id;
+      return this;
+    }
+
+    /**
+     * Set the name
+     */
+    public Builder name(String name) {
+      this.name = name;
+      return this;
+    }
+
+    /**
+     * Set creation timestamp
+     */
+    public Builder createdAt(LocalDateTime createdAt) {
+      this.createdAt = createdAt;
+      return this;
+    }
+
+    /**
+     * Set update timestamp
+     */
+    public Builder updatedAt(LocalDateTime updatedAt) {
+      this.updatedAt = updatedAt;
+      return this;
+    }
+
+    /**
+     * Set metadata
+     */
+    public Builder metadata(Map<String, Object> metadata) {
+      if (metadata != null) {
+        this.metadata.putAll(metadata);
+      }
+      return this;
+    }
+
+    /**
+     * Add single metadata entry
+     */
+    public Builder withMetadata(String key, Object value) {
+      this.metadata.put(key, value);
+      return this;
+    }
+
+    /**
+     * Build the final instance
+     */
+    public {{ name }} build() {
+      validate();
+      return new {{ name }}(this);
+    }
+
+    /**
+     * Validate builder state
+     */
+    private void validate() {
+      if (id == null || id.trim().isEmpty()) {
+        throw new IllegalStateException("ID cannot be empty");
+      }
+      if (name == null || name.trim().isEmpty()) {
+        throw new IllegalStateException("Name cannot be empty");
+      }
+    }
+
+    @Override
+    public String toString() {
+      return String.format(
+        "{{ name }}.Builder { name='%s', metadata=%d }",
+        name, metadata.size()
+      );
+    }
+  }
+}
