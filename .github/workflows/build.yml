@@ -1,0 +1,123 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      working-directory: backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt -r requirements-dev.txt
+
+    - name: Build backend package
+      working-directory: backend
+      run: |
+        python setup.py build
+        echo "Backend build successful"
+
+  jetbrains-plugins:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v3
+
+    - name: Build JetBrains plugins
+      working-directory: plugins/jetbrains
+      run: |
+        gradle build --info
+        echo "JetBrains plugins build successful"
+
+    - name: Build IntelliJ plugin
+      working-directory: plugins/jetbrains
+      run: gradle :intellij:buildPlugin
+
+    - name: Build PyCharm plugin
+      working-directory: plugins/jetbrains
+      run: gradle :pycharm:buildPlugin
+
+    - name: Build WebStorm plugin
+      working-directory: plugins/jetbrains
+      run: gradle :webstorm:buildPlugin
+
+  vs-code-extension:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: extensions/vs-code/package-lock.json
+
+    - name: Install dependencies
+      working-directory: extensions/vs-code
+      run: npm ci
+
+    - name: Build VSIX package
+      working-directory: extensions/vs-code
+      run: |
+        npm run compile
+        npx vsce package --out socrates2.vsix
+        echo "VS Code extension package created: socrates2.vsix"
+
+    - name: Upload VSIX artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: vs-code-extension
+        path: extensions/vs-code/socrates2.vsix
+        retention-days: 30
+
+  lsp-server:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      working-directory: backend/lsp
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Build LSP server package
+      working-directory: backend/lsp
+      run: |
+        python setup.py build
+        echo "LSP server build successful"
