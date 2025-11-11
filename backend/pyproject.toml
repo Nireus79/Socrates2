@@ -36,13 +36,6 @@ classifiers = [
     "Framework :: FastAPI",
 ]
 
-[project.urls]
-Homepage = "https://github.com/socrates2/socrates2"
-Documentation = "https://github.com/socrates2/socrates2/blob/main/backend/README.md"
-Repository = "https://github.com/socrates2/socrates2"
-Issues = "https://github.com/socrates2/socrates2/issues"
-Changelog = "https://github.com/socrates2/socrates2/blob/main/backend/CHANGELOG.md"
-
 dependencies = [
     "fastapi==0.121.0",
     "uvicorn[standard]==0.34.0",
@@ -75,6 +68,13 @@ dev = [
     "faker==33.1.0",
     "factory-boy==3.3.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/socrates2/socrates2"
+Documentation = "https://github.com/socrates2/socrates2/blob/main/backend/README.md"
+Repository = "https://github.com/socrates2/socrates2"
+Issues = "https://github.com/socrates2/socrates2/issues"
+Changelog = "https://github.com/socrates2/socrates2/blob/main/backend/CHANGELOG.md"
 
 [tool.setuptools]
 packages = ["app"]
