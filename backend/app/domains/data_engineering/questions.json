@@ -1,0 +1,142 @@
+[
+  {
+    "question_id": "de_data_modeling_001",
+    "text": "What is the primary data modeling approach for this project (dimensional, entity-relationship, graph, or document-based)?",
+    "category": "Data Modeling",
+    "difficulty": "intermediate",
+    "help_text": "Understanding the data modeling approach is crucial for determining storage, querying, and performance characteristics",
+    "example_answer": "We will use a dimensional data model with fact tables for transactions and dimension tables for customers and products",
+    "follow_up_questions": ["de_data_modeling_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "de_data_modeling_002",
+    "text": "What are the key dimensions and facts in your data model?",
+    "category": "Data Modeling",
+    "difficulty": "intermediate",
+    "help_text": "Identifying key dimensions and facts helps structure data for efficient querying and analysis",
+    "example_answer": "Key dimensions are Customer, Product, Date, and Location; Key facts are Sales, Quantity, and Revenue",
+    "follow_up_questions": [],
+    "dependencies": ["de_data_modeling_001"]
+  },
+  {
+    "question_id": "de_data_quality_001",
+    "text": "What are your data quality requirements and SLAs (accuracy, completeness, timeliness)?",
+    "category": "Data Quality",
+    "difficulty": "intermediate",
+    "help_text": "Data quality SLAs define the standards that data must meet for downstream consumers",
+    "example_answer": "We require 99.5% accuracy, 98% completeness, and daily updates within 4 hours of source data",
+    "follow_up_questions": ["de_data_quality_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "de_data_quality_002",
+    "text": "How will you monitor and enforce data quality metrics?",
+    "category": "Data Quality",
+    "difficulty": "intermediate",
+    "help_text": "Implementing monitoring and enforcement ensures quality SLAs are maintained",
+    "example_answer": "We will use automated data profiling, anomaly detection, and validation rules with alerting on SLA violations",
+    "follow_up_questions": [],
+    "dependencies": ["de_data_quality_001"]
+  },
+  {
+    "question_id": "de_pipeline_001",
+    "text": "What is your data pipeline architecture (batch, real-time, micro-batch, or hybrid)?",
+    "category": "Pipeline Architecture",
+    "difficulty": "intermediate",
+    "help_text": "The pipeline architecture determines latency, throughput, and operational complexity",
+    "example_answer": "We use a hybrid approach: real-time streaming for critical events and nightly batch for historical data",
+    "follow_up_questions": ["de_pipeline_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "de_pipeline_002",
+    "text": "What is your target latency for data availability in analytics?",
+    "category": "Pipeline Architecture",
+    "difficulty": "intermediate",
+    "help_text": "Latency requirements influence technology choices and pipeline design",
+    "example_answer": "Real-time dashboards need <5 minute latency for operational metrics; daily reports can tolerate 24-hour latency",
+    "follow_up_questions": [],
+    "dependencies": ["de_pipeline_001"]
+  },
+  {
+    "question_id": "de_storage_001",
+    "text": "What storage technologies will you use (data warehouse, data lake, lakehouse)?",
+    "category": "Storage",
+    "difficulty": "intermediate",
+    "help_text": "Storage choice impacts query performance, data governance, and operational costs",
+    "example_answer": "We will implement a modern lakehouse using Delta Lake with separate OLAP warehouse for structured analytics",
+    "follow_up_questions": ["de_storage_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "de_storage_002",
+    "text": "What are your data retention and archival policies?",
+    "category": "Storage",
+    "difficulty": "intermediate",
+    "help_text": "Retention policies affect storage costs and query patterns",
+    "example_answer": "We retain hot data for 2 years, warm data for 5 years archived, and cold data indefinitely in deep archive",
+    "follow_up_questions": [],
+    "dependencies": ["de_storage_001"]
+  },
+  {
+    "question_id": "de_governance_001",
+    "text": "What is your data governance and metadata management strategy?",
+    "category": "Data Governance",
+    "difficulty": "advanced",
+    "help_text": "Governance ensures data security, compliance, and discoverability",
+    "example_answer": "We will implement a metadata catalog with data lineage, ownership, and PII classification",
+    "follow_up_questions": ["de_governance_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "de_governance_002",
+    "text": "How will you ensure data security, privacy, and compliance?",
+    "category": "Data Governance",
+    "difficulty": "advanced",
+    "help_text": "Security and compliance requirements vary by jurisdiction and data sensitivity",
+    "example_answer": "We will use encryption at rest/transit, role-based access control, and automated compliance monitoring",
+    "follow_up_questions": [],
+    "dependencies": ["de_governance_001"]
+  },
+  {
+    "question_id": "de_scalability_001",
+    "text": "What is your expected data volume growth and scalability requirements?",
+    "category": "Scalability",
+    "difficulty": "intermediate",
+    "help_text": "Growth projections influence architecture decisions and technology selection",
+    "example_answer": "We expect data to grow from 10TB to 100TB within 3 years and need automatic scaling",
+    "follow_up_questions": [],
+    "dependencies": []
+  },
+  {
+    "question_id": "de_analytics_001",
+    "text": "What analytics capabilities do you need (BI, ML, real-time analytics)?",
+    "category": "Analytics",
+    "difficulty": "intermediate",
+    "help_text": "Analytics requirements drive data modeling and technology stack decisions",
+    "example_answer": "We need business intelligence dashboards, machine learning for predictions, and real-time monitoring",
+    "follow_up_questions": [],
+    "dependencies": []
+  },
+  {
+    "question_id": "de_integration_001",
+    "text": "What are your data integration requirements (APIs, batch files, CDC, messaging)?",
+    "category": "Integration",
+    "difficulty": "intermediate",
+    "help_text": "Integration patterns determine how source systems connect to the data platform",
+    "example_answer": "We will use CDC from operational databases, REST APIs for third-party systems, and file uploads for legacy systems",
+    "follow_up_questions": [],
+    "dependencies": []
+  },
+  {
+    "question_id": "de_testing_001",
+    "text": "What data testing and validation strategies will you implement?",
+    "category": "Testing",
+    "difficulty": "advanced",
+    "help_text": "Testing ensures data accuracy and prevents downstream issues",
+    "example_answer": "We will use schema validation, statistical tests, business rule checks, and regression testing",
+    "follow_up_questions": [],
+    "dependencies": []
+  }
+]

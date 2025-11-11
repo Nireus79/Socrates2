@@ -1,0 +1,142 @@
+[
+  {
+    "question_id": "arch_architectural_style_001",
+    "text": "What architectural style best suits your system (monolithic, microservices, serverless, distributed)?",
+    "category": "Architectural Style",
+    "difficulty": "intermediate",
+    "help_text": "The architectural style determines decomposition, deployment, and operational complexity",
+    "example_answer": "We will use microservices architecture for scalability and independent team ownership",
+    "follow_up_questions": ["arch_architectural_style_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "arch_architectural_style_002",
+    "text": "What are the key components/services and their responsibilities?",
+    "category": "Architectural Style",
+    "difficulty": "intermediate",
+    "help_text": "Clear component responsibilities enable independent development and deployment",
+    "example_answer": "Auth Service, User Service, Order Service, Payment Service, Notification Service",
+    "follow_up_questions": [],
+    "dependencies": ["arch_architectural_style_001"]
+  },
+  {
+    "question_id": "arch_scalability_001",
+    "text": "What are your scalability requirements (users, requests per second, data size)?",
+    "category": "Scalability",
+    "difficulty": "intermediate",
+    "help_text": "Scalability requirements drive infrastructure and architectural decisions",
+    "example_answer": "We need to support 1 million concurrent users and 100k requests per second",
+    "follow_up_questions": ["arch_scalability_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "arch_scalability_002",
+    "text": "How will you scale each component (horizontal scaling, database sharding, caching)?",
+    "category": "Scalability",
+    "difficulty": "advanced",
+    "help_text": "Scaling strategies vary by component and workload characteristics",
+    "example_answer": "Stateless services scale horizontally with load balancers; databases use read replicas and sharding",
+    "follow_up_questions": [],
+    "dependencies": ["arch_scalability_001"]
+  },
+  {
+    "question_id": "arch_reliability_001",
+    "text": "What is your target availability (uptime SLA)?",
+    "category": "Reliability",
+    "difficulty": "intermediate",
+    "help_text": "Availability targets impact redundancy and failure recovery strategies",
+    "example_answer": "We require 99.99% availability (four nines)",
+    "follow_up_questions": ["arch_reliability_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "arch_reliability_002",
+    "text": "How will you handle failures and ensure system resilience?",
+    "category": "Reliability",
+    "difficulty": "advanced",
+    "help_text": "Resilience patterns include redundancy, failover, circuit breakers, and graceful degradation",
+    "example_answer": "We will use active-active redundancy, automated failover, circuit breakers, and health checks",
+    "follow_up_questions": [],
+    "dependencies": ["arch_reliability_001"]
+  },
+  {
+    "question_id": "arch_communication_001",
+    "text": "What communication patterns will you use (synchronous, asynchronous, event-driven)?",
+    "category": "Communication",
+    "difficulty": "intermediate",
+    "help_text": "Communication patterns affect coupling, latency, and complexity",
+    "example_answer": "We will use REST for synchronous calls and event streams for asynchronous workflows",
+    "follow_up_questions": ["arch_communication_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "arch_communication_002",
+    "text": "What messaging and event streaming technologies will you use?",
+    "category": "Communication",
+    "difficulty": "intermediate",
+    "help_text": "Technology choices impact throughput, latency, and operational complexity",
+    "example_answer": "We will use Kafka for event streaming and RabbitMQ for task queues",
+    "follow_up_questions": [],
+    "dependencies": ["arch_communication_001"]
+  },
+  {
+    "question_id": "arch_data_001",
+    "text": "What is your data consistency strategy (strong, eventual)?",
+    "category": "Data Management",
+    "difficulty": "advanced",
+    "help_text": "Consistency requirements impact distributed transaction complexity",
+    "example_answer": "We will use eventual consistency for user data with strong consistency for financial transactions",
+    "follow_up_questions": ["arch_data_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "arch_data_002",
+    "text": "How will you manage distributed transactions across services?",
+    "category": "Data Management",
+    "difficulty": "advanced",
+    "help_text": "Distributed transaction patterns include sagas, two-phase commits, and eventual consistency",
+    "example_answer": "We will use the saga pattern with compensating transactions for cross-service workflows",
+    "follow_up_questions": [],
+    "dependencies": ["arch_data_001"]
+  },
+  {
+    "question_id": "arch_security_001",
+    "text": "What is your security architecture and threat model?",
+    "category": "Security",
+    "difficulty": "advanced",
+    "help_text": "Security architecture should address authentication, authorization, and protection against identified threats",
+    "example_answer": "We will use OAuth 2.0 for authentication, role-based access control, and encryption at rest/transit",
+    "follow_up_questions": ["arch_security_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "arch_security_002",
+    "text": "How will you manage secrets, keys, and credentials?",
+    "category": "Security",
+    "difficulty": "advanced",
+    "help_text": "Secrets management is critical for security and compliance",
+    "example_answer": "We will use a dedicated secrets management service with rotation and audit logging",
+    "follow_up_questions": [],
+    "dependencies": ["arch_security_001"]
+  },
+  {
+    "question_id": "arch_deployment_001",
+    "text": "What is your deployment strategy (monolithic, containerized, serverless)?",
+    "category": "Deployment",
+    "difficulty": "intermediate",
+    "help_text": "Deployment strategy affects release frequency, rollback capability, and operational complexity",
+    "example_answer": "We will use containerized microservices with Kubernetes orchestration",
+    "follow_up_questions": ["arch_deployment_002"],
+    "dependencies": []
+  },
+  {
+    "question_id": "arch_deployment_002",
+    "text": "How will you manage configuration and secrets in different environments?",
+    "category": "Deployment",
+    "difficulty": "intermediate",
+    "help_text": "Environment management ensures configuration differs appropriately across dev, test, staging, production",
+    "example_answer": "We will use environment variables and a secrets management service for all environments",
+    "follow_up_questions": [],
+    "dependencies": ["arch_deployment_001"]
+  }
+]

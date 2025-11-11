@@ -1,0 +1,66 @@
+[
+  {
+    "format_id": "sql_ddl",
+    "name": "SQL DDL Schema",
+    "description": "SQL Data Definition Language for creating database schemas",
+    "file_extension": ".sql",
+    "mime_type": "text/sql",
+    "template_id": "sql_schema"
+  },
+  {
+    "format_id": "apache_spark",
+    "name": "Apache Spark Job",
+    "description": "Python/Scala code for Apache Spark ETL pipelines",
+    "file_extension": ".py",
+    "mime_type": "text/x-python",
+    "template_id": "spark_pipeline"
+  },
+  {
+    "format_id": "dbt_project",
+    "name": "dbt Project",
+    "description": "dbt (data build tool) transformation specifications",
+    "file_extension": ".yml",
+    "mime_type": "text/yaml",
+    "template_id": "dbt_models"
+  },
+  {
+    "format_id": "airflow_dag",
+    "name": "Apache Airflow DAG",
+    "description": "Python code for Apache Airflow data orchestration",
+    "file_extension": ".py",
+    "mime_type": "text/x-python",
+    "template_id": "airflow_pipeline"
+  },
+  {
+    "format_id": "kafka_spec",
+    "name": "Apache Kafka Configuration",
+    "description": "Kafka topics and streaming specifications",
+    "file_extension": ".yaml",
+    "mime_type": "text/yaml",
+    "template_id": "kafka_config"
+  },
+  {
+    "format_id": "data_lineage",
+    "name": "Data Lineage Documentation",
+    "description": "Visual and textual data lineage documentation",
+    "file_extension": ".md",
+    "mime_type": "text/markdown",
+    "template_id": "lineage_doc"
+  },
+  {
+    "format_id": "terraform_infra",
+    "name": "Terraform Infrastructure as Code",
+    "description": "Terraform configuration for data platform infrastructure",
+    "file_extension": ".tf",
+    "mime_type": "text/x-terraform",
+    "template_id": "terraform_modules"
+  },
+  {
+    "format_id": "avro_schema",
+    "name": "Apache Avro Schema",
+    "description": "Avro schema definitions for data serialization",
+    "file_extension": ".avsc",
+    "mime_type": "application/json",
+    "template_id": "avro_definitions"
+  }
+]

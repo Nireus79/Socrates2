@@ -1,0 +1,66 @@
+[
+  {
+    "format_id": "pytest_suite",
+    "name": "pytest Test Suite",
+    "description": "Python pytest unit and integration tests",
+    "file_extension": ".py",
+    "mime_type": "text/x-python",
+    "template_id": "pytest_tests"
+  },
+  {
+    "format_id": "robot_framework",
+    "name": "Robot Framework Tests",
+    "description": "Robot Framework for acceptance and integration testing",
+    "file_extension": ".robot",
+    "mime_type": "text/plain",
+    "template_id": "robot_tests"
+  },
+  {
+    "format_id": "cucumber_bdd",
+    "name": "Cucumber BDD Scenarios",
+    "description": "Gherkin scenarios for behavior-driven development",
+    "file_extension": ".feature",
+    "mime_type": "text/plain",
+    "template_id": "bdd_scenarios"
+  },
+  {
+    "format_id": "selenium_tests",
+    "name": "Selenium Web Tests",
+    "description": "Selenium test automation for web applications",
+    "file_extension": ".py",
+    "mime_type": "text/x-python",
+    "template_id": "selenium_suite"
+  },
+  {
+    "format_id": "postman_collection",
+    "name": "Postman API Tests",
+    "description": "Postman collection for API testing",
+    "file_extension": ".json",
+    "mime_type": "application/json",
+    "template_id": "postman_api"
+  },
+  {
+    "format_id": "locust_load_test",
+    "name": "Locust Load Testing",
+    "description": "Locust load testing scripts",
+    "file_extension": ".py",
+    "mime_type": "text/x-python",
+    "template_id": "locust_scenarios"
+  },
+  {
+    "format_id": "sonarqube_config",
+    "name": "SonarQube Configuration",
+    "description": "SonarQube code quality configuration",
+    "file_extension": ".properties",
+    "mime_type": "text/plain",
+    "template_id": "sonar_config"
+  },
+  {
+    "format_id": "test_plan",
+    "name": "Test Plan Documentation",
+    "description": "Comprehensive test plan documentation",
+    "file_extension": ".md",
+    "mime_type": "text/markdown",
+    "template_id": "test_plan_doc"
+  }
+]

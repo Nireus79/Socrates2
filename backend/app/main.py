@@ -2,7 +2,8 @@
 Main FastAPI application.
 
 Socrates2 - AI-Powered Specification Assistant
-Phase 1: Infrastructure Foundation
+Phase 7.0+: Pluggifiable Domain Architecture (COMPLETE)
+Phase 7.2: Domain API Integration (IN PROGRESS)
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +18,7 @@ from .core.sentry_config import init_sentry
 from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
 from .api import export_endpoints, llm_endpoints, github_endpoints
 from .api import search, insights, templates, resources, jobs, billing, documents
-from .api import notifications, export, collaboration
+from .api import notifications, export, collaboration, domains
 from .api.error_handlers import (
     general_exception_handler,
     validation_error_handler,
@@ -182,6 +183,7 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(notifications.router)
     app.include_router(export.router)
     app.include_router(collaboration.router)
+    app.include_router(domains.router)
 
     # Register exception handlers for error tracking and proper response formatting
     app.add_exception_handler(HTTPException, http_exception_handler)
@@ -206,8 +208,11 @@ def root():
     return {
         "message": "Socrates2 API",
         "version": "0.1.0",
-        "phase": "Phase 1 - Infrastructure Foundation",
+        "phase": "Phase 7.0+ - Pluggifiable Domain Architecture",
+        "domains_infrastructure": "Phase 7.0 (Complete - 197 tests passing)",
+        "domains_api_status": "Phase 7.2 (In Development)",
         "docs": "/docs",
+        "domains_endpoint": "/api/v1/domains",
         "health": "/api/v1/admin/health"
     }
 
@@ -230,7 +235,12 @@ def api_info():
             "title": "Socrates2 API",
             "version": "0.1.0",
             "environment": settings.ENVIRONMENT,
-            "phase": "Phase 1"
+            "phase": "Phase 7.0+ - Pluggifiable Domain Architecture",
+            "domains": {
+                "infrastructure": "Phase 7.0 (COMPLETE)",
+                "api_integration": "Phase 7.2 (IN PROGRESS)",
+                "tests": "197 passing"
+            }
         },
         "agents": {
             "total": len(agent_info),

@@ -193,3 +193,25 @@ def register_domain(domain_id: str, domain_class: Type[BaseDomain]) -> None:
         register_domain("programming", ProgrammingDomain)
     """
     get_domain_registry().register(domain_id, domain_class)
+
+
+def register_all_domains() -> None:
+    """
+    Register all available Socrates2 domains.
+
+    Should be called during application initialization to ensure all domains are available.
+    """
+    from .programming import ProgrammingDomain
+    from .data_engineering import DataEngineeringDomain
+    from .architecture import ArchitectureDomain
+    from .testing import TestingDomain
+
+    registry = get_domain_registry()
+
+    # Register all available domains
+    registry.register("programming", ProgrammingDomain)
+    registry.register("data_engineering", DataEngineeringDomain)
+    registry.register("architecture", ArchitectureDomain)
+    registry.register("testing", TestingDomain)
+
+    logger.info(f"Registered {registry.get_domain_count()} domains")

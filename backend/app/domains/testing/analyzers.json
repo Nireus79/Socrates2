@@ -1,0 +1,56 @@
+[
+  {
+    "analyzer_id": "coverage_analyzer",
+    "name": "Code Coverage Analyzer",
+    "description": "Analyzes code coverage metrics and targets",
+    "analyzer_type": "coverage",
+    "enabled": true,
+    "required": true,
+    "tags": ["universal", "testing", "quality"]
+  },
+  {
+    "analyzer_id": "performance_analyzer",
+    "name": "Performance Testing Analyzer",
+    "description": "Analyzes performance testing requirements and SLAs",
+    "analyzer_type": "performance",
+    "enabled": true,
+    "required": true,
+    "tags": ["testing", "performance"]
+  },
+  {
+    "analyzer_id": "security_analyzer",
+    "name": "Security Testing Analyzer",
+    "description": "Analyzes security testing coverage and vulnerabilities",
+    "analyzer_type": "security",
+    "enabled": true,
+    "required": false,
+    "tags": ["testing", "security"]
+  },
+  {
+    "analyzer_id": "automation_analyzer",
+    "name": "Test Automation Analyzer",
+    "description": "Analyzes test automation strategy and coverage",
+    "analyzer_type": "automation",
+    "enabled": true,
+    "required": false,
+    "tags": ["testing", "automation"]
+  },
+  {
+    "analyzer_id": "strategy_analyzer",
+    "name": "Testing Strategy Analyzer",
+    "description": "Analyzes overall testing strategy and test pyramid",
+    "analyzer_type": "strategy",
+    "enabled": true,
+    "required": false,
+    "tags": ["testing", "strategy"]
+  },
+  {
+    "analyzer_id": "efficiency_analyzer",
+    "name": "Test Efficiency Analyzer",
+    "description": "Analyzes test execution time and CI/CD efficiency",
+    "analyzer_type": "efficiency",
+    "enabled": true,
+    "required": false,
+    "tags": ["testing", "efficiency", "ci_cd"]
+  }
+]
