@@ -1,5 +1,5 @@
 """
-Input validation utilities for Socrates2.
+Input validation utilities for Socrates.
 
 Provides validators for emails, passwords, and other user inputs.
 """

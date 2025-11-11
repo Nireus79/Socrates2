@@ -1,7 +1,7 @@
 """
 Main FastAPI application.
 
-Socrates2 - AI-Powered Specification Assistant
+Socrates - AI-Powered Specification Assistant
 Phase 7.0+: Pluggifiable Domain Architecture (COMPLETE)
 Phase 7.2: Domain API Integration (IN PROGRESS)
 """
@@ -129,7 +129,7 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
         Handles startup and shutdown events.
         """
         # Startup
-        logger.info("Starting Socrates2 API...")
+        logger.info("Starting Socrates API...")
         logger.info(f"Environment: {settings.ENVIRONMENT}")
         logger.info(f"Debug mode: {settings.DEBUG}")
 
@@ -154,7 +154,7 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
         yield
 
         # Shutdown
-        logger.info("Shutting down Socrates2 API...")
+        logger.info("Shutting down Socrates API...")
 
         # Shutdown job scheduler
         from .services.job_scheduler import get_scheduler
@@ -168,7 +168,7 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
 
     # Create FastAPI application
     app = FastAPI(
-        title="Socrates2 API",
+        title="Socrates API",
         description="AI-Powered Specification Assistant",
         version="0.1.0",
         lifespan=lifespan,
@@ -231,7 +231,7 @@ def root():
         Welcome message with API info
     """
     return {
-        "message": "Socrates2 API",
+        "message": "Socrates API",
         "version": "0.1.0",
         "phase": "Phase 7.4 - Advanced Analytics System",
         "domains_infrastructure": "Phase 7.0 (Complete - 197 tests passing)",
@@ -261,7 +261,7 @@ def api_info():
 
     return {
         "api": {
-            "title": "Socrates2 API",
+            "title": "Socrates API",
             "version": "0.1.0",
             "environment": settings.ENVIRONMENT,
             "phase": "Phase 7.4 - Advanced Analytics System",

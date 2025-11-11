@@ -1,5 +1,5 @@
 {
-  "name": "socrates2",
+  "name": "socrates",
   "displayName": "Socrates2 - AI-Powered Specification Assistant",
   "description": "Bring your specifications into VS Code. Generate code, detect conflicts, and manage projects directly from your editor.",
   "version": "0.1.0",

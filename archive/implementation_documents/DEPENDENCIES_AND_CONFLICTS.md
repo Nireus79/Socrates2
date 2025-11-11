@@ -419,7 +419,7 @@ factory-boy==3.3.1
 
 ### Step 1: Update SECURITY_GUIDE.md
 
-**File:** `/home/user/Socrates2/foundation_docs/SECURITY_GUIDE.md`
+**File:** `/home/user/Socrates/foundation_docs/SECURITY_GUIDE.md`
 
 **Change line 165:**
 ```python
@@ -443,7 +443,7 @@ import jwt  # PyJWT library
 
 ### Step 2: Create requirements.txt
 
-**File:** `/home/user/Socrates2/backend/requirements.txt`
+**File:** `/home/user/Socrates/backend/requirements.txt`
 
 **Contents:** See "Complete requirements.txt" section above
 
@@ -451,7 +451,7 @@ import jwt  # PyJWT library
 
 ### Step 3: Create requirements-dev.txt
 
-**File:** `/home/user/Socrates2/backend/requirements-dev.txt`
+**File:** `/home/user/Socrates/backend/requirements-dev.txt`
 
 **Contents:** See "Development Dependencies" section above
 
@@ -535,7 +535,7 @@ pip list | grep -E "fastapi|sqlalchemy|pydantic|anthropic|pytest"
 
 ### Step 6: Add Dependency Verification Script
 
-**File:** `/home/user/Socrates2/backend/scripts/verify_dependencies.py`
+**File:** `/home/user/Socrates/backend/scripts/verify_dependencies.py`
 
 ```python
 """

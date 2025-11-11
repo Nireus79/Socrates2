@@ -1,5 +1,5 @@
 """
-Unit tests for Socrates2 core models.
+Unit tests for Socrates core models.
 
 Tests data validation, constraints, and basic model functionality
 without database connectivity.
@@ -42,7 +42,7 @@ class TestProjectModel:
         """Test that project can be created with valid data."""
         assert test_project_data["name"] == "Test Project"
         assert test_project_data["maturity_score"] == 0.5
-        assert test_project_data["description"] == "A test project for Socrates2"
+        assert test_project_data["description"] == "A test project for Socrates"
 
     def test_maturity_score_range(self, test_project_data):
         """Test maturity score is between 0 and 1."""

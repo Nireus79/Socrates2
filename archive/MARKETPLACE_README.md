@@ -1,8 +1,8 @@
-# Socrates2 IDE Plugins - Marketplace Documentation
+# Socrates IDE Plugins - Marketplace Documentation
 
 ## Overview
 
-Socrates2 is an intelligent IDE integration platform that brings specification-aware development to your favorite IDEs. It provides real-time conflict detection, code generation, and specification management across VS Code, JetBrains IDEs, and via Language Server Protocol.
+Socrates is an intelligent IDE integration platform that brings specification-aware development to your favorite IDEs. It provides real-time conflict detection, code generation, and specification management across VS Code, JetBrains IDEs, and via Language Server Protocol.
 
 ## Supported IDEs
 
@@ -90,7 +90,7 @@ Supported languages:
 
 ### VS Code
 1. Open Extensions in VS Code
-2. Search for "Socrates2"
+2. Search for "Socrates"
 3. Click Install
 4. Reload VS Code
 5. Configure API endpoint in settings
@@ -98,30 +98,30 @@ Supported languages:
 ### IntelliJ IDEA / PyCharm / WebStorm
 1. Open IDE settings
 2. Go to Plugins → Marketplace
-3. Search "Socrates2"
+3. Search "Socrates"
 4. Click Install and Restart IDE
 5. Configure API endpoint in settings
 
 ### Language Server Protocol
-1. Install LSP server: `pip install socrates2-lsp`
+1. Install LSP server: `pip install socrates-lsp`
 2. Configure in your editor
 3. Restart editor to connect
 
 ## Configuration
 
 ### API Endpoint
-Set your Socrates2 backend API endpoint:
-- VS Code: Settings → Socrates2 → API URL
-- JetBrains: Settings → Tools → Socrates2 → API URL
+Set your Socrates backend API endpoint:
+- VS Code: Settings → Socrates → API URL
+- JetBrains: Settings → Tools → Socrates → API URL
 
 ### Authentication
-1. Register/login to Socrates2 backend
+1. Register/login to Socrates backend
 2. Generate API token
 3. Configure token in IDE settings
 4. Token is securely stored
 
 ### Project Selection
-1. Open Socrates2 panel in IDE
+1. Open Socrates panel in IDE
 2. Select project from list
 3. Specifications auto-load for selected project
 
@@ -129,7 +129,7 @@ Set your Socrates2 backend API endpoint:
 
 ### VS Code
 ```
-1. Open Socrates2 panel (Ctrl+Shift+S)
+1. Open Socrates panel (Ctrl+Shift+S)
 2. Select project
 3. Browse specifications
 4. Hover over spec reference for details
@@ -138,7 +138,7 @@ Set your Socrates2 backend API endpoint:
 
 ### IntelliJ IDEA / PyCharm
 ```
-1. Open Socrates2 tool window
+1. Open Socrates tool window
 2. Select project from dropdown
 3. View specifications by category
 4. Click "Generate Code" to create implementation
@@ -279,8 +279,8 @@ GET    /health
 
 ### Commercial Support
 For enterprise support, training, and consulting:
-- Contact: support@socrates2.io
-- Website: https://socrates2.io
+- Contact: support@socrates.io
+- Website: https://socrates.io
 
 ## License
 

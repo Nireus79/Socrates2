@@ -1039,10 +1039,10 @@ source venv/bin/activate
 
 # 2. Check you're in backend/ directory
 pwd
-# Should show: /path/to/Socrates2/backend
+# Should show: /path/to/Socrates/backend
 
 # 3. Add backend to PYTHONPATH
-export PYTHONPATH="${PYTHONPATH}:/path/to/Socrates2/backend"
+export PYTHONPATH="${PYTHONPATH}:/path/to/Socrates/backend"
 
 # 4. Or run with Python module syntax
 python -m app.main

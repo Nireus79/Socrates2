@@ -23,7 +23,7 @@ Created **2,000+ lines of TypeScript**:
 **Files Created (9 files):**
 1. **package.json** - Extension manifest with commands, views, config
 2. **src/extension.ts** - Main entry point (400 lines)
-3. **src/api/client.ts** - Socrates2 API client (250 lines)
+3. **src/api/client.ts** - Socrates API client (250 lines)
 4. **src/api/auth.ts** - Authentication service (150 lines)
 5. **src/utils/storage.ts** - Secure storage management (120 lines)
 6. **src/utils/logger.ts** - Structured logging (100 lines)
@@ -37,7 +37,7 @@ Created **2,000+ lines of TypeScript**:
 
 ### VS Code Extension Structure
 ```
-socrates2-vscode-extension/
+socrates-vscode-extension/
 ├── src/
 │   ├── extension.ts           # Main entry, command registration
 │   ├── api/

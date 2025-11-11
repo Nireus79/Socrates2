@@ -23,7 +23,7 @@
 
 ## OVERVIEW
 
-**Goal:** Deploy Socrates2 to production reliably and securely.
+**Goal:** Deploy Socrates to production reliably and securely.
 
 ### Recommended Platform
 
@@ -94,11 +94,11 @@ git push origin master
 
 ```yaml
 # .do/app.yaml (auto-generated, customize if needed)
-name: socrates2
+name: socrates
 services:
   - name: web
     github:
-      repo: Nireus79/Socrates2
+      repo: Nireus79/Socrates
       branch: master
       deploy_on_push: true
     build_command: pip install -r requirements.txt

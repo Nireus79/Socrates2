@@ -52,7 +52,7 @@ CREATE DATABASE socrates_specs;
 
 ```powershell
 # Navigate to backend
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Activate virtual environment
 ..\venv\Scripts\Activate.ps1

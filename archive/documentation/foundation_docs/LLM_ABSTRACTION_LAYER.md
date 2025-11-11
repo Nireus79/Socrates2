@@ -160,7 +160,7 @@ class LLMProvider(ABC):
     Abstract base class for LLM providers.
 
     All LLM providers must implement this interface to ensure
-    compatibility with Socrates2.
+    compatibility with Socrates.
     """
 
     @abstractmethod

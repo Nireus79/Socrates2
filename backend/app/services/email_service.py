@@ -52,7 +52,7 @@ class EmailService:
 
         try:
             message = self.Mail(
-                from_email="no-reply@socrates2.com",
+                from_email="no-reply@socrates.com",
                 to_emails=to_email,
                 subject=subject,
                 html_content=html_content
@@ -96,9 +96,9 @@ class EmailService:
                 <p><strong>Conflict:</strong> {conflict_details.get('description', 'Unknown')}</p>
                 <p><strong>Detected at:</strong> {datetime.now(timezone.utc).isoformat()}</p>
                 <p>
-                    <a href="https://app.socrates2.com/projects/{conflict_details.get('project_id')}"
+                    <a href="https://app.socrates.com/projects/{conflict_details.get('project_id')}"
                        style="background-color: #5cb85c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                        View in Socrates2
+                        View in Socrates
                     </a>
                 </p>
                 <hr>
@@ -129,15 +129,15 @@ class EmailService:
         greeting = f"Hi {user_name}," if user_name else "Hello,"
 
         if days_left == 0:
-            subject = "🚨 Your Socrates2 trial has expired"
+            subject = "🚨 Your Socrates trial has expired"
             message = "Your trial period has ended."
             cta_text = "Upgrade Now"
         elif days_left == 1:
-            subject = "⏰ Your Socrates2 trial expires tomorrow"
-            message = "Your trial period expires tomorrow. Upgrade to continue using Socrates2."
+            subject = "⏰ Your Socrates trial expires tomorrow"
+            message = "Your trial period expires tomorrow. Upgrade to continue using Socrates."
             cta_text = "Upgrade Now"
         else:
-            subject = f"⏰ Your Socrates2 trial expires in {days_left} days"
+            subject = f"⏰ Your Socrates trial expires in {days_left} days"
             message = f"Your trial period expires in {days_left} days."
             cta_text = "View Plans"
 
@@ -147,10 +147,10 @@ class EmailService:
                 <p>{greeting}</p>
                 <p>{message}</p>
                 <p>
-                    After your trial ends, you'll need a paid subscription to continue using Socrates2.
+                    After your trial ends, you'll need a paid subscription to continue using Socrates.
                 </p>
                 <p>
-                    <a href="https://app.socrates2.com/billing/plans"
+                    <a href="https://app.socrates.com/billing/plans"
                        style="background-color: #5cb85c; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
                         {cta_text}
                     </a>
@@ -207,7 +207,7 @@ class EmailService:
                     <strong>Maturity:</strong> {maturity_percent}%
                 </p>
                 <p>
-                    <a href="https://app.socrates2.com/projects/{project_name.lower().replace(' ', '-')}"
+                    <a href="https://app.socrates.com/projects/{project_name.lower().replace(' ', '-')}"
                        style="background-color: #5cb85c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                         View Project
                     </a>
@@ -252,7 +252,7 @@ class EmailService:
                     {comment_excerpt}
                 </blockquote>
                 <p>
-                    <a href="https://app.socrates2.com/projects/{project_name.lower().replace(' ', '-')}"
+                    <a href="https://app.socrates.com/projects/{project_name.lower().replace(' ', '-')}"
                        style="background-color: #5cb85c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                         View Discussion
                     </a>
@@ -303,12 +303,12 @@ class EmailService:
         <html>
             <body style="font-family: Arial, sans-serif;">
                 <p>{greeting}</p>
-                <p>Here's your {freq_text} digest of activities in Socrates2:</p>
+                <p>Here's your {freq_text} digest of activities in Socrates:</p>
                 <ul style="list-style-type: none; padding: 0;">
                     {activity_html}
                 </ul>
                 <p>
-                    <a href="https://app.socrates2.com/activity"
+                    <a href="https://app.socrates.com/activity"
                        style="background-color: #5cb85c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                         View All Activity
                     </a>
@@ -320,5 +320,5 @@ class EmailService:
             </body>
         </html>
         """
-        subject = f"📋 Your Socrates2 {freq_text} digest"
+        subject = f"📋 Your Socrates {freq_text} digest"
         return self._send(user_email, subject, html_content)

@@ -1,5 +1,5 @@
 """
-Data Engineering domain implementation for Socrates2.
+Data Engineering domain implementation for Socrates.
 
 Defines specifications, questions, exports, and rules for data engineering projects.
 Questions are loaded from questions.json configuration file.
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class DataEngineeringDomain(BaseDomain):
     """
-    Data Engineering domain for Socrates2.
+    Data Engineering domain for Socrates.
 
     Handles specification and architecture for data platforms, pipelines, and analytics systems.
     Supports data warehouses, data lakes, and modern lakehouse architectures.

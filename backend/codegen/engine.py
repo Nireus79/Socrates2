@@ -1,5 +1,5 @@
 """
-Socrates2 Code Generation Engine (Phase 6.4)
+Socrates Code Generation Engine (Phase 6.4)
 
 Multi-language code generator that converts specifications to production-ready code.
 Used by all IDE clients (VS Code 6.1, JetBrains 6.2, LSP 6.3).

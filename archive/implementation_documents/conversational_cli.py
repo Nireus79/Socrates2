@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Conversational CLI for Socrates2 - Natural Language Interface
+Conversational CLI for Socrates - Natural Language Interface
 
 Transforms the CLI into an AI-powered conversational interface where users
 can describe what they want instead of typing commands. Powered by Claude.
@@ -37,7 +37,7 @@ class MenuContext:
 
 class ConversationalCLI:
     """
-    AI-powered conversational CLI for Socrates2.
+    AI-powered conversational CLI for Socrates.
 
     Users describe what they want in natural language, and Claude interprets
     their intent to execute actions. Supports slash commands and graceful menu exits.

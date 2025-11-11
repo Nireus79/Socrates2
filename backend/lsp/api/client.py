@@ -1,7 +1,7 @@
 """
-Socrates2 API Client for LSP Server
+Socrates API Client for LSP Server
 
-Async HTTP client for communicating with Socrates2 backend API.
+Async HTTP client for communicating with Socrates backend API.
 Used by LSP handlers to fetch specifications, conflicts, and other data.
 """
 
@@ -54,7 +54,7 @@ class Conflict:
 
 class SocratesApiClient:
     """
-    Async API client for Socrates2 backend.
+    Async API client for Socrates backend.
 
     Provides methods for fetching specifications, conflicts, and other data.
     """
@@ -122,7 +122,7 @@ class SocratesApiClient:
         """Build request headers"""
         headers = {
             "Content-Type": "application/json",
-            "User-Agent": "Socrates2-LSP/0.1.0"
+            "User-Agent": "Socrates-LSP/0.1.0"
         }
 
         if self.auth_token:

@@ -41,7 +41,7 @@
                     └──────────────┬──────────────┘
                                    │
                     ┌──────────────▼──────────────┐
-                    │  Socrates2 Backend API     │
+                    │  Socrates Backend API     │
                     │  (Phases 1-5)              │
                     └────────────────────────────┘
 ```
@@ -108,7 +108,7 @@ VS Code Extension (6.1)          JetBrains Plugins (6.2)
         └───────────────┬───────────────┘
                         │
         ┌───────────────▼───────────────┐
-        │    Socrates2 Backend API      │
+        │    Socrates Backend API      │
         └───────────────────────────────┘
 
 Benefits:
@@ -274,7 +274,7 @@ backend/lsp/
 │   └── text_document_sync.py        # Document sync
 ├── api/
 │   ├── __init__.py
-│   └── client.py                    # Socrates2 API client
+│   └── client.py                    # Socrates API client
 ├── config.py                        # Configuration
 ├── logging.py                       # Structured logging
 └── tests/
@@ -303,7 +303,7 @@ textDocument/formatting          # Format document
 ```python
 @handler("textDocument/publishDiagnostics")
 async def publish_diagnostics(uri: str, document: TextDocument):
-    # Get conflicts from Socrates2 API
+    # Get conflicts from Socrates API
     conflicts = await api_client.get_conflicts(project_id)
 
     # Create diagnostics for each conflict
@@ -312,7 +312,7 @@ async def publish_diagnostics(uri: str, document: TextDocument):
             range=conflict_range,
             message=conflict.message,
             severity=DiagnosticSeverity.Warning,
-            source="Socrates2"
+            source="Socrates"
         )
         for conflict in conflicts
     ]
@@ -543,7 +543,7 @@ IDE Opens File
     ├─→ LSP Server watches document
     │        └─→ Detects specification references
     │
-    ├─→ Query Socrates2 API
+    ├─→ Query Socrates API
     │        └─→ Get conflicts for project
     │
     ├─→ Process Conflicts
@@ -578,7 +578,7 @@ IDE Opens File
 - Consistent output format
 
 ### Phases 6.1, 6.2, 6.3 → Backend
-- All use same Socrates2 API client
+- All use same Socrates API client
 - All authenticate with JWT
 - All respect rate limiting
 - All handle errors consistently
@@ -668,7 +668,7 @@ Same spec → Generate in VS Code → Compare output
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│           Socrates2 Unified IDE Platform               │
+│           Socrates Unified IDE Platform               │
 └─────────────────────────────────────────────────────────┘
                         │
         ┌───────────────┼───────────────┐
@@ -681,7 +681,7 @@ Same spec → Generate in VS Code → Compare output
         └───────────────┼───────────────┘
                         │
         ┌───────────────▼───────────────┐
-        │    Socrates2 Backend API      │
+        │    Socrates Backend API      │
         │  (Python/FastAPI)             │
         │                               │
         │  - Database (PostgreSQL)      │

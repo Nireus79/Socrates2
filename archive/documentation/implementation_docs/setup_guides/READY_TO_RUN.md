@@ -1,4 +1,4 @@
-# Socrates2 - Ready to Run
+# Socrates - Ready to Run
 
 **Status:** All dependencies installed and verified ✅
 **Next Step:** Configure environment and create databases
@@ -9,7 +9,7 @@
 
 ```powershell
 # Navigate to backend directory
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Activate virtual environment (if not already active)
 .\venv\Scripts\Activate.ps1
@@ -27,7 +27,7 @@ python scripts\setup_env.py
 **Expected interaction:**
 ```
 ======================================================================
-Socrates2 - Environment Setup
+Socrates - Environment Setup
 ======================================================================
 
 I'll help you create the .env file.
@@ -104,7 +104,7 @@ psql -U postgres -l
 Test that .env file works:
 
 ```powershell
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 python -c "from dotenv import load_dotenv; load_dotenv(); import os; print('✅ DATABASE_URL_AUTH:', os.getenv('DATABASE_URL_AUTH')[:30] + '...'); print('✅ ANTHROPIC_API_KEY:', 'sk-ant-' in os.getenv('ANTHROPIC_API_KEY', '')); print('✅ SECRET_KEY:', len(os.getenv('SECRET_KEY', '')) > 20)"
 ```
 
@@ -123,7 +123,7 @@ Once .env and databases are ready:
 
 ```powershell
 # Run Alembic migrations to create tables
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 alembic upgrade head
 ```
 

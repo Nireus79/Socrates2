@@ -1,15 +1,15 @@
-# Socrates Library & Socrates2 Project - Complete Roadmap
+# Socrates Library & Socrates Project - Complete Roadmap
 
 **Date Created:** November 9, 2025
-**Current Status:** Socrates v0.1.0 published to PyPI, Socrates2 testing suite 55/132 tests passing
-**Scope:** All planned improvements to the Socrates library and Socrates2 application
+**Current Status:** Socrates v0.1.0 published to PyPI, Socrates testing suite 55/132 tests passing
+**Scope:** All planned improvements to the Socrates library and Socrates application
 
 ---
 
 ## Table of Contents
 
 1. [Socrates Library (PyPI Package) Improvements](#socrates-library-pypi-package-improvements)
-2. [Socrates2 Application Development](#socrates2-application-development)
+2. [Socrates Application Development](#socrates-application-development)
 3. [Documentation Requirements](#documentation-requirements)
 4. [Testing & Quality Assurance](#testing--quality-assurance)
 5. [Performance & Optimization](#performance--optimization)
@@ -423,7 +423,7 @@
 
 ---
 
-## Socrates2 Application Development
+## Socrates Application Development
 
 ### Phase 1 - Core Platform (Currently In Progress)
 
@@ -717,7 +717,7 @@ See [Multi-Domain Expansion](#multi-domain-expansion) section below for details.
 
 ---
 
-### Socrates2 Documentation (Priority: HIGH)
+### Socrates Documentation (Priority: HIGH)
 
 #### 1. User Documentation (2 weeks)
 - Getting started guide
@@ -1354,11 +1354,11 @@ Before committing resources to a new domain:
 1. Install socrates-ai and fix remaining tests
 2. Add missing environment variables to conftest
 3. Implement database optimization (indices, caching)
-4. Add authentication endpoints to Socrates2
+4. Add authentication endpoints to Socrates
 5. Create QuestionGenerator enhancement templates
 
 ### High Priority (2-4 weeks, Critical for Functionality)
-1. Complete Socrates2 Phase 1 (100% tests passing)
+1. Complete Socrates Phase 1 (100% tests passing)
 2. Implement core agents (Socratic, Conflict, Quality, Learning)
 3. Expand Socrates library API (fluent API, batch processing)
 4. Add multi-LLM support to Socrates library
@@ -1428,7 +1428,7 @@ Before committing resources to a new domain:
 
 ## Total Effort Summary
 
-| Phase | Library Work | Socrates2 Work | Deployment | Total |
+| Phase | Library Work | Socrates Work | Deployment | Total |
 |-------|--------------|----------------|-----------|-------|
 | Core Fixes | 40h | - | - | 40h |
 | Phase 1-2 | 120h | 160h | - | 280h |

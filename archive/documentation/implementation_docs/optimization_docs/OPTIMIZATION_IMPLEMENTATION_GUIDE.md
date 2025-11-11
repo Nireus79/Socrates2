@@ -313,7 +313,7 @@ engine_specs = create_engine(
     echo_pool=False,           # Disable connection logging (noisy)
     connect_args={
         'connect_timeout': 10,
-        'application_name': 'socrates2'
+        'application_name': 'socrates'
     }
 )
 ```

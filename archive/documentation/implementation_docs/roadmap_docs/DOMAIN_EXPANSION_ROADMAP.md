@@ -1,4 +1,4 @@
-# Socrates2 Domain Expansion Roadmap
+# Socrates Domain Expansion Roadmap
 
 **Strategic Vision: From Code Generator to Universal Knowledge Organization System**
 
@@ -10,17 +10,17 @@
 
 ## Executive Summary
 
-Socrates2's current architecture is **fundamentally domain-agnostic**. The core components (Socratic questioning, context storage, conflict detection, quality analysis, team collaboration) can be adapted to ANY knowledge work domain without architectural changes.
+Socrates's current architecture is **fundamentally domain-agnostic**. The core components (Socratic questioning, context storage, conflict detection, quality analysis, team collaboration) can be adapted to ANY knowledge work domain without architectural changes.
 
 **Key Insight:** The specification system is generic—it's just structured requirements. A "spec" in programming ("response_time < 200ms") is identical in structure to a spec in book writing ("protagonist_age: 35-45") or business planning ("target_market: Enterprise B2B").
 
-**Opportunity:** Transform Socrates2 from a specialized code generation tool into a universal intelligent project assistant for any creative or strategic work.
+**Opportunity:** Transform Socrates from a specialized code generation tool into a universal intelligent project assistant for any creative or strategic work.
 
 ---
 
 ## Current State
 
-### What Socrates2 Does Today
+### What Socrates Does Today
 - **Domain:** Software project specification and code generation
 - **Process:** Socratic questioning → Specification gathering → Conflict detection → Quality analysis → Document generation (code)
 - **Users:** Software developers, architects, product managers
@@ -36,7 +36,7 @@ Socrates2's current architecture is **fundamentally domain-agnostic**. The core 
 
 ---
 
-## Vision: Multi-Domain Socrates2
+## Vision: Multi-Domain Socrates
 
 ### Tier 1: Direct Adaptations (Minimal Code Changes)
 
@@ -580,7 +580,7 @@ To prove concept with minimal effort:
 ## Business Opportunities
 
 ### B2C Products
-1. **Novelist's Assistant** - Socrates2 for authors
+1. **Novelist's Assistant** - Socrates for authors
 2. **Startup Builder** - Business plan generator
 3. **Product Manager's Tool** - PRD and roadmap assistant
 4. **Content Creator's Suite** - Podcast/video planning
@@ -626,7 +626,7 @@ To prove concept with minimal effort:
 | ChatGPT | Writing assistance | No structured process, no context |
 | Jira | Project management | Software only, not strategic planning |
 | Pitch | Business planning | Limited to pitch decks |
-| **Socrates2** | **All domains** | **Intelligent guidance + context** |
+| **Socrates** | **All domains** | **Intelligent guidance + context** |
 
 **Unique Value Proposition:** Only tool that combines Socratic questioning + structured context + AI-powered conflict detection + multi-domain support
 

@@ -1,5 +1,5 @@
 """
-Natural Language Understanding Service for Socrates2
+Natural Language Understanding Service for Socrates
 
 Provides natural language interpretation for all user-facing components:
 - Conversational CLI
@@ -35,7 +35,7 @@ class Intent:
 
 class NLUService:
     """
-    Natural Language Understanding service for Socrates2.
+    Natural Language Understanding service for Socrates.
 
     Transforms user natural language input into structured operations or
     conversational responses using Claude API.

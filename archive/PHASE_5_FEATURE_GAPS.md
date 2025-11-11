@@ -63,7 +63,7 @@ console.print("[red]Error occurred[/red]")
 ```python
 class CommandHistory:
     def save(self, command: str):
-        # Save to ~/.socrates2/history.db
+        # Save to ~/.socrates/history.db
         pass
 
     def get_last(self, n: int = 10) -> List[str]:
@@ -94,7 +94,7 @@ class SocratesCompleter(Completer):
 def setup_wizard():
     api_key = prompt("Enter OpenAI API key: ")
     default_project = prompt("Default project name: ")
-    # Save to ~/.socrates2/config.ini
+    # Save to ~/.socrates/config.ini
 ```
 
 ---
@@ -179,7 +179,7 @@ class EmailService:
     def send_conflict_alert(self, user_email: str, conflict_info: dict):
         """Alert user about specification conflicts"""
         message = Mail(
-            from_email="no-reply@socrates2.com",
+            from_email="no-reply@socrates.com",
             to_emails=user_email,
             subject="Conflict Detected in Your Project",
             html_content=f"<p>Conflict in project: {conflict_info['project']}</p>"
@@ -189,7 +189,7 @@ class EmailService:
     def send_trial_expiring(self, user_email: str, days_left: int):
         """Remind user trial is expiring"""
         message = Mail(
-            from_email="no-reply@socrates2.com",
+            from_email="no-reply@socrates.com",
             to_emails=user_email,
             subject=f"Your trial expires in {days_left} days",
             html_content=f"..."

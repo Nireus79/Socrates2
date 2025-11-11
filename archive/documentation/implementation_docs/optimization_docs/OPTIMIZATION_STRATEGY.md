@@ -10,7 +10,7 @@
 
 ### The Dual Vision
 
-**Primary Goal:** Optimize Socrates2 for production performance
+**Primary Goal:** Optimize Socrates for production performance
 - 50-60% faster API responses
 - 70-80% less memory usage
 - 3-5x more concurrent users

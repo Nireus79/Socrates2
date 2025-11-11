@@ -1,5 +1,5 @@
 """
-Advanced analytics system for Socrates2 domains.
+Advanced analytics system for Socrates domains.
 
 Tracks domain usage, metrics, and provides analytics and reporting capabilities.
 """

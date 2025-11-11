@@ -2,7 +2,7 @@
 
 **Time to read:** 30 minutes
 **Level:** Intermediate
-**Goal:** Master all Socrates2 features
+**Goal:** Master all Socrates features
 
 ---
 
@@ -24,7 +24,7 @@
 
 ### The Socratic Method
 
-Socrates2 uses the **Socratic method** - asking probing questions to guide discovery:
+Socrates uses the **Socratic method** - asking probing questions to guide discovery:
 
 1. **Question** - AI asks a targeted question
 2. **Answer** - You provide your answer
@@ -428,7 +428,7 @@ Publish to repository
 
 ### Automatic Analysis
 
-Socrates2 automatically:
+Socrates automatically:
 - ✅ Detects conflicting specifications
 - ✅ Identifies missing categories
 - ✅ Highlights assumptions
@@ -584,13 +584,13 @@ Connect with tools:
 
 ### API Access
 
-Use Socrates2 programmatically:
+Use Socrates programmatically:
 ```python
 import requests
 
 # Create project
 response = requests.post(
-    'https://api.socrates2.com/v1/projects',
+    'https://api.socrates.app/api/v1/projects',
     json={'name': 'My Project'},
     headers={'Authorization': 'Bearer token'}
 )

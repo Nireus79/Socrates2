@@ -1,5 +1,5 @@
 """
-End-to-end integration tests for Socrates2 workflows.
+End-to-end integration tests for Socrates workflows.
 
 Tests complete user journeys and multi-component interactions.
 """

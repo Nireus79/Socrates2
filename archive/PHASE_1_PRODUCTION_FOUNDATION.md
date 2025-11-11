@@ -9,7 +9,7 @@
 
 ## Overview
 
-Make Socrates2 production-ready by:
+Make Socrates production-ready by:
 1. **Fixing critical architecture gaps** (pgvector, subscription fields, analytics tables)
 2. Error monitoring and alerting (Sentry)
 3. Full-text search with autocomplete
@@ -1265,7 +1265,7 @@ def create_app(...):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         # Startup
-        logger.info("Starting Socrates2 API...")
+        logger.info("Starting Socrates API...")
 
         # Initialize scheduler
         scheduler = get_scheduler()

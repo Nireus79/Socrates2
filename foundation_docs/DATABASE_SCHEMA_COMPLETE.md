@@ -24,7 +24,7 @@
 
 ## OVERVIEW
 
-This document defines the COMPLETE database schema for Socrates2, including:
+This document defines the COMPLETE database schema for Socrates, including:
 - ✅ **Phase 0-2 (MVP)**: Tables implemented immediately
 - 📋 **Phase 3-6 (Future)**: Tables documented now, implemented later
 

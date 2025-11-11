@@ -283,7 +283,7 @@ engine = create_engine(
 ```python
 # scripts/load_test.py
 """
-Load test Socrates2 API.
+Load test Socrates API.
 
 Tests:
 - Authentication

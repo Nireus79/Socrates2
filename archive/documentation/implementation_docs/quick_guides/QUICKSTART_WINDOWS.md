@@ -1,4 +1,4 @@
-# Socrates2 - Quick Start Guide (Windows)
+# Socrates - Quick Start Guide (Windows)
 
 **Platform:** Windows PowerShell
 **Status:** Ready for Phase 1 Setup
@@ -21,7 +21,7 @@
 ## Step 1: Pull Latest Code (Migration Files Added)
 
 ```powershell
-cd C:\Users\themi\PycharmProjects\Socrates2
+cd C:\Users\themi\PycharmProjects\Socrates
 git pull origin master
 ```
 
@@ -94,7 +94,7 @@ psql -U postgres -l
 ## Step 5: Run Migrations (Automated)
 
 ```powershell
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 .\venv\Scripts\Activate.ps1
 .\scripts\run_migrations.ps1
 ```
@@ -110,7 +110,7 @@ cd C:\Users\themi\PycharmProjects\Socrates2\backend
 **Expected output:**
 ```
 ======================================================================
-Socrates2 - Database Migration Script
+Socrates - Database Migration Script
 ======================================================================
 
 Loading configuration from .env file...
@@ -269,7 +269,7 @@ Once all migrations succeed, you're ready for **Phase 1 implementation**:
 ### Start Development Server
 
 ```powershell
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 .\venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload
 ```

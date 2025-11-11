@@ -1,10 +1,10 @@
-# Socrates2 🧠
+# Socrates 🧠
 
 **AI-Powered Project Discovery & Code Generation Platform**
 
-Socrates2 is a sophisticated multi-agent system that guides users through project discovery using the Socratic method, extracting comprehensive specifications, and generating production-ready code across multiple technology stacks.
+Socrates is a sophisticated multi-agent system that guides users through project discovery using the Socratic method, extracting comprehensive specifications, and generating production-ready code across multiple technology stacks.
 
-[![CI/CD Pipeline](https://github.com/your-org/Socrates2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/your-org/Socrates2/actions)
+[![CI/CD Pipeline](https://github.com/your-org/Socrates/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/your-org/Socrates/actions)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.121.0-009688.svg)](https://fastapi.tiangolo.com)
 [![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-336791.svg)](https://www.postgresql.org/)
@@ -71,8 +71,8 @@ Socrates2 is a sophisticated multi-agent system that guides users through projec
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/Socrates2.git
-cd Socrates2
+git clone https://github.com/your-org/Socrates.git
+cd Socrates
 
 # Create environment file
 cp .env.production.example .env.production
@@ -251,8 +251,8 @@ See full API documentation at `/docs` after starting the server.
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/Socrates2.git
-cd Socrates2/backend
+git clone https://github.com/your-org/Socrates.git
+cd Socrates/backend
 
 # Create virtual environment
 python3.12 -m venv .venv
@@ -308,7 +308,7 @@ mypy app/
 ## Project Structure
 
 ```
-Socrates2/
+Socrates/
 ├── backend/
 │   ├── alembic/                 # Database migrations
 │   │   └── versions/            # Migration files (001-019)
@@ -377,7 +377,7 @@ See [DEPLOYMENT.md](archive/implementation_documents/DEPLOYMENT.md) for comprehe
 
 ## Implementation Phases
 
-Socrates2 was developed in 10+ phases:
+Socrates was developed in 10+ phases:
 
 - **Phase 0:** Project setup and foundation
 - **Phase 1:** Core infrastructure (auth, database, agents)
@@ -479,7 +479,7 @@ We welcome contributions! Please follow these guidelines:
 - Security headers middleware
 
 ### Reporting Security Issues
-Please report security vulnerabilities to: security@socrates2.com
+Please report security vulnerabilities to: security@socrates.com
 
 **Do not** create public GitHub issues for security vulnerabilities.
 
@@ -493,10 +493,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Documentation:** https://docs.socrates2.com (coming soon)
-- **GitHub Issues:** https://github.com/your-org/Socrates2/issues
-- **Email:** support@socrates2.com
-- **Discord:** https://discord.gg/socrates2 (coming soon)
+- **Documentation:** https://docs.socrates.com (coming soon)
+- **GitHub Issues:** https://github.com/your-org/Socrates/issues
+- **Email:** support@socrates.com
+- **Discord:** https://discord.gg/socrates (coming soon)
 
 ---
 
@@ -509,4 +509,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ by the Socrates2 Team**
+**Made with ❤️ by the Socrates Team**

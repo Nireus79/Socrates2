@@ -2,11 +2,11 @@
 
 ## Reporting Security Vulnerabilities
 
-If you discover a security vulnerability in Socrates2, please **do not** open a public GitHub issue. Instead, please report it responsibly.
+If you discover a security vulnerability in Socrates, please **do not** open a public GitHub issue. Instead, please report it responsibly.
 
 ### Reporting Process
 
-1. **Email:** Send details to `security@socrates2.io`
+1. **Email:** Send details to `security@socrates.io`
 2. **Include:**
    - Description of the vulnerability
    - Steps to reproduce
@@ -271,12 +271,12 @@ None reported yet (project is new).
 ## Support
 
 ### Security Questions
-- Email: `security@socrates2.io`
+- Email: `security@socrates.io`
 - GitHub Security Tab: Use for discussions
 - Documentation: See security guides
 
 ### Incident Response
-- Report at: `security@socrates2.io`
+- Report at: `security@socrates.io`
 - Expected response: 48 hours
 - Fix timeline: 14-30 days depending on severity
 

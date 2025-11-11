@@ -2,7 +2,7 @@
 
 **Date:** November 5, 2025
 **Platform:** Windows with PowerShell
-**Target:** Python 3.12 for Socrates2
+**Target:** Python 3.12 for Socrates
 
 ---
 
@@ -66,7 +66,7 @@ where python
 
 ```powershell
 # Navigate to project backend directory
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Create virtual environment with Python 3.12
 python -m venv venv
@@ -128,7 +128,7 @@ python -m pip install --upgrade pip
 
 ```powershell
 # Make sure you're in backend directory with (venv) active
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Install production dependencies
 pip install -r requirements.txt
@@ -151,7 +151,7 @@ If PowerShell keeps giving issues, use **Command Prompt (cmd.exe)**:
 # Press Win+R, type 'cmd', press Enter
 
 # Navigate to project
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Create virtual environment
 python -m venv venv
@@ -175,7 +175,7 @@ pip install -r requirements-dev.txt
 python --version
 
 # 2. Navigate to backend
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # 3. Create virtual environment
 python -m venv venv

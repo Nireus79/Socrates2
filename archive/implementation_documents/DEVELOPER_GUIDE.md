@@ -1,4 +1,4 @@
-# Socrates2 Developer Quick-Start Guide
+# Socrates Developer Quick-Start Guide
 
 **Last Updated:** November 9, 2025
 **Test Status:** 245/287 passing (85.4%)

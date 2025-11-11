@@ -1,4 +1,4 @@
-# Socrates2 Test Coverage Analysis Report
+# Socrates Test Coverage Analysis Report
 **Date:** November 9, 2025
 **Analysis Scope:** Complete test suite review for existing and new features
 
@@ -43,7 +43,7 @@
 ### A. Three New Backend API Endpoints
 
 #### 1. POST/GET `/api/v1/search` - Full-text search
-**File:** `/home/user/Socrates2/backend/app/api/search.py` (179 lines)
+**File:** `/home/user/Socrates/backend/app/api/search.py` (179 lines)
 - Searches projects, specifications, questions
 - Filters by resource_type, category
 - Pagination support (skip, limit)
@@ -51,7 +51,7 @@
 - **Test Status:** ❌ NO TESTS
 
 #### 2. GET `/api/v1/insights/{project_id}` - Project analysis
-**File:** `/home/user/Socrates2/backend/app/api/insights.py` (190 lines)
+**File:** `/home/user/Socrates/backend/app/api/insights.py` (190 lines)
 - Gap detection (missing categories)
 - Risk identification (low confidence specs)
 - Opportunity detection (well-specified areas)
@@ -60,7 +60,7 @@
 - **Test Status:** ❌ NO TESTS
 
 #### 3. GET/POST `/api/v1/templates` - Project templates
-**File:** `/home/user/Socrates2/backend/app/api/templates.py` (295 lines)
+**File:** `/home/user/Socrates/backend/app/api/templates.py` (295 lines)
 - List templates with filtering (industry, tags)
 - Get template details with preview specs
 - Apply template to project

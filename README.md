@@ -1,4 +1,4 @@
-# Socrates2 🧠
+# Socrates 🧠
 
 **AI-Powered Intelligent Specification & Requirements Engineering Platform**
 
@@ -10,9 +10,9 @@
 
 ---
 
-## 🎯 What is Socrates2?
+## 🎯 What is Socrates?
 
-Socrates2 is an **AI-powered specification and requirements engineering platform** that helps teams:
+Socrates is an **AI-powered specification and requirements engineering platform** that helps teams:
 
 - **📋 Gather Requirements** - Systematic approach across 7 knowledge domains
 - **🤖 Leverage AI** - Claude powers intelligent Socratic questioning
@@ -141,8 +141,8 @@ Comprehensive coverage across all aspects:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Nireus79/Socrates2.git
-cd Socrates2
+git clone https://github.com/Nireus79/Socrates.git
+cd Socrates
 
 # 2. Install dependencies
 cd backend
@@ -351,7 +351,7 @@ pytest tests/ --cov=app --cov-report=html
 ## 🏗️ Project Structure
 
 ```
-Socrates2/
+Socrates/
 ├── docs/                          # Documentation
 │   ├── user/                      # User guides
 │   ├── developer/                 # Developer docs
@@ -494,7 +494,7 @@ See [API Reference](docs/developer/API_REFERENCE.md) for complete API documentat
 
 ## 🤝 Contributing
 
-Socrates2 is open source and welcomes contributions!
+Socrates is open source and welcomes contributions!
 
 1. **Fork** the repository
 2. **Create** a feature branch
@@ -514,7 +514,7 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **GitHub:** https://github.com/Nireus79/Socrates2
+- **GitHub:** https://github.com/Nireus79/Socrates
 - **Documentation:** [View Docs](docs/INDEX.md)
 - **API Reference:** [API Docs](docs/developer/API_REFERENCE.md)
 - **Project Overview:** [Overview](docs/presentation/PROJECT_OVERVIEW.md)
@@ -526,7 +526,7 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 **Q: What is Socratic method?**
 A: A teaching method that uses probing questions to guide discovery and uncover knowledge gaps.
 
-**Q: Can I use Socrates2 for non-software projects?**
+**Q: Can I use Socrates for non-software projects?**
 A: Yes! The framework applies to any complex requirements gathering (systems, processes, products).
 
 **Q: How long does a specification session take?**
@@ -543,8 +543,8 @@ See [FAQ](docs/user/FAQ.md) for more questions.
 
 - **Documentation:** [View Complete Docs](docs/INDEX.md)
 - **Troubleshooting:** [Troubleshooting Guide](docs/operations/TROUBLESHOOTING.md)
-- **GitHub Issues:** [Report Issues](https://github.com/Nireus79/Socrates2/issues)
-- **Email:** contact@socrates2.app
+- **GitHub Issues:** [Report Issues](https://github.com/Nireus79/Socrates/issues)
+- **Email:** contact@socrates.app
 
 ---
 

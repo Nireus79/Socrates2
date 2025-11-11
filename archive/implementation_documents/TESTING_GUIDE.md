@@ -1,4 +1,4 @@
-# Socrates2 Testing Guide
+# Socrates Testing Guide
 
 ## Overview
 

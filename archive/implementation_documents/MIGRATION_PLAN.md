@@ -1,4 +1,4 @@
-# Socrates2 - Database Migration Plan (Starting from Scratch)
+# Socrates - Database Migration Plan (Starting from Scratch)
 
 **Status:** Starting with empty databases
 **Target:** Phase 1 MVP implementation
@@ -8,7 +8,7 @@
 
 ## Overview
 
-Since Socrates2 is starting from scratch, you need to:
+Since Socrates is starting from scratch, you need to:
 1. Initialize Alembic (database migration tool)
 2. Create 4 migration files for Phase 1
 3. Run migrations against two databases
@@ -119,7 +119,7 @@ Since Socrates2 is starting from scratch, you need to:
 ### Step 1: Initialize Alembic
 
 ```powershell
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Initialize Alembic (creates alembic/ directory and alembic.ini)
 alembic init alembic
@@ -397,7 +397,7 @@ def downgrade():
 
 ```powershell
 # 1. Navigate to backend directory
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # 2. Activate virtual environment
 .\venv\Scripts\Activate.ps1

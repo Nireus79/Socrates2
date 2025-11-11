@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Socrates CLI - Interactive Command-Line Interface for Socrates2
+Socrates CLI - Interactive Command-Line Interface for Socrates
 A Claude Code-style interface for specification gathering and project development.
 
 Usage:

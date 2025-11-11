@@ -1,4 +1,4 @@
-# Socrates2 Backend - Installation Guide
+# Socrates Backend - Installation Guide
 
 ## Proper Installation (Works on Any System)
 
@@ -7,7 +7,7 @@
 This installs the package in "editable" mode, so imports work from anywhere:
 
 ```bash
-cd Socrates2/backend
+cd Socrates/backend
 
 # Install in editable mode with dev dependencies
 pip install -e ".[dev]"
@@ -26,7 +26,7 @@ pip install -e .
 **Verify it worked:**
 ```bash
 python -c "import app; print(app.__file__)"
-# Should print: /path/to/Socrates2/backend/app/__init__.py
+# Should print: /path/to/Socrates/backend/app/__init__.py
 
 python -c "from app.models.user import User; print('Success!')"
 # Should print: Success!
@@ -37,7 +37,7 @@ python -c "from app.models.user import User; print('Success!')"
 Always run from the `backend/` directory:
 
 ```bash
-cd Socrates2/backend
+cd Socrates/backend
 
 # Set PYTHONPATH to current directory
 export PYTHONPATH="${PYTHONPATH}:."  # Linux/Mac
@@ -119,7 +119,7 @@ sudo apt install python3.12 python3.12-venv
 ### 2. Create Virtual Environment
 
 ```bash
-cd Socrates2/backend
+cd Socrates/backend
 
 # Create venv
 python -m venv venv
@@ -129,7 +129,7 @@ python -m venv venv
 source venv/bin/activate     # Linux/Mac
 ```
 
-### 3. Install Socrates2 in Editable Mode
+### 3. Install Socrates in Editable Mode
 
 ```bash
 # Install with dev dependencies (testing, linting)
@@ -260,7 +260,7 @@ pytest tests/
 
 **For Development (Recommended):**
 ```bash
-cd Socrates2/backend
+cd Socrates/backend
 pip install -e ".[dev]"
 pytest tests/
 python -m uvicorn app.main:app --reload
@@ -268,7 +268,7 @@ python -m uvicorn app.main:app --reload
 
 **For Production/Docker:**
 ```bash
-cd Socrates2/backend
+cd Socrates/backend
 export PYTHONPATH=.
 pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0
@@ -276,7 +276,7 @@ uvicorn app.main:app --host 0.0.0.0
 
 **For CI/CD:**
 ```bash
-cd Socrates2/backend
+cd Socrates/backend
 pip install -r requirements.txt -r requirements-dev.txt
 export PYTHONPATH=.
 pytest tests/ --cov=app

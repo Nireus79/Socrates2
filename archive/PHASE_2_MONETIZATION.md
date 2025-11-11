@@ -8,7 +8,7 @@
 
 ## Overview
 
-Transform Socrates2 from free service to sustainable SaaS business model:
+Transform Socrates from free service to sustainable SaaS business model:
 1. Stripe payment integration (checkout, invoices, customer portal)
 2. Tiered subscription plans (Free, Pro, Team, Enterprise)
 3. Usage limits and enforcement (projects, specifications, API calls)
@@ -198,7 +198,7 @@ class StripeService:
         """Get Stripe billing portal session"""
         session = stripe.billing_portal.Session.create(
             customer=customer_id,
-            return_url="https://socrates2.com/dashboard"
+            return_url="https://socrates.com/dashboard"
         )
         return session.url
 
@@ -312,8 +312,8 @@ async def create_checkout(
     session_id = stripe_service.create_checkout_session(
         customer_id=current_user.stripe_customer_id,
         price_id=STRIPE_PRICES[tier],
-        success_url="https://socrates2.com/success",
-        cancel_url="https://socrates2.com/cancel"
+        success_url="https://socrates.com/success",
+        cancel_url="https://socrates.com/cancel"
     )
 
     return {"session_id": session_id}
@@ -589,7 +589,7 @@ GRACE_PERIOD_DAYS=3
 
 1. **Stripe SDK Installation** ✅
    - Added `stripe==8.10.0` to requirements.txt
-   - All 30+ dependencies for full Socrates2 stack
+   - All 30+ dependencies for full Socrates stack
 
 2. **Billing Models** ✅
    - `backend/app/models/subscription.py` (57 lines)

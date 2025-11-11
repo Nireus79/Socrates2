@@ -1,5 +1,5 @@
 """
-Base domain abstraction for Socrates2.
+Base domain abstraction for Socrates.
 
 All knowledge domains (programming, book writing, business planning, etc.)
 inherit from BaseDomain and implement these extension points.
@@ -142,7 +142,7 @@ class Question:
 
 class BaseDomain(ABC):
     """
-    Abstract base class for all knowledge domains in Socrates2.
+    Abstract base class for all knowledge domains in Socrates.
 
     Each domain represents a knowledge area (programming, books, business, etc.)
     and defines how specifications, questions, exports, and quality checks work.

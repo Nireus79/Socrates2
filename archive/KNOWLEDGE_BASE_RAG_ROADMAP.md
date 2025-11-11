@@ -1,4 +1,4 @@
-# Knowledge Base & RAG Integration Roadmap for Socrates2
+# Knowledge Base & RAG Integration Roadmap for Socrates
 
 **Date:** November 10, 2025
 **Status:** Planning Phase - Not Yet Implemented
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-Socrates2 currently works with **user-provided specifications** only. Adding a Knowledge Base with RAG (Retrieval-Augmented Generation) would enable:
+Socrates currently works with **user-provided specifications** only. Adding a Knowledge Base with RAG (Retrieval-Augmented Generation) would enable:
 - 📚 **Document Upload**: Users upload design docs, API specs, requirements
 - 🔍 **Semantic Search**: Find relevant specifications using natural language
 - 🤖 **Context-Aware Extraction**: Claude uses uploaded docs for more accurate specs

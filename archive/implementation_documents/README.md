@@ -1,4 +1,4 @@
-# Socrates2 - Agentic RAG System for Vibe Coding
+# Socrates - Agentic RAG System for Vibe Coding
 
 **Status:** 🚧 Documentation Phase - Implementation Pending
 
@@ -117,8 +117,8 @@ User → FastAPI → AgentOrchestrator → 10 Specialized Agents → PostgreSQL
 
 ```bash
 # Clone repository
-git clone https://github.com/Nireus79/Socrates2.git
-cd Socrates2
+git clone https://github.com/Nireus79/Socrates.git
+cd Socrates
 
 # Read all documentation FIRST
 # Then proceed to Phase 1 implementation

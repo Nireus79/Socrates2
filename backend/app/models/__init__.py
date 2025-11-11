@@ -1,5 +1,5 @@
 """
-SQLAlchemy Models for Socrates2
+SQLAlchemy Models for Socrates
 
 This module exports all models for both socrates_auth and socrates_specs databases.
 Each model corresponds to a table created by the Alembic migrations.

@@ -1,5 +1,5 @@
 """
-Architecture domain implementation for Socrates2.
+Architecture domain implementation for Socrates.
 
 Defines specifications, questions, exports, and rules for system architecture.
 Questions are loaded from questions.json configuration file.
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class ArchitectureDomain(BaseDomain):
     """
-    System Architecture domain for Socrates2.
+    System Architecture domain for Socrates.
 
     Handles specification for distributed systems, microservices, and enterprise architectures.
     Supports architecture decision making, design patterns, and deployment strategies.

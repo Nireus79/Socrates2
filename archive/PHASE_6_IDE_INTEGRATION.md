@@ -8,7 +8,7 @@
 
 ## Overview
 
-Enable developers to use Socrates2 directly in their IDEs:
+Enable developers to use Socrates directly in their IDEs:
 
 1. **VS Code Extension** - Sidebar with projects/specs, sync to workspace
 2. **PyCharm Plugin** - Same features via JetBrains platform
@@ -31,7 +31,7 @@ Enable developers to use Socrates2 directly in their IDEs:
 ```
 VS Code Extension (TypeScript)
     ↕ HTTP/WebSocket
-Socrates2 Backend (FastAPI)
+Socrates Backend (FastAPI)
     ↓
 Database (PostgreSQL)
 ```
@@ -40,7 +40,7 @@ Database (PostgreSQL)
 
 **Create extension structure:**
 ```
-socrates2-vscode/
+socrates-vscode/
 ├── src/
 │   ├── extension.ts           # Entry point
 │   ├── activate.ts            # Activation logic
@@ -84,17 +84,17 @@ export class AuthenticationProvider {
 
     async authenticate(serverUrl: string): Promise<string> {
         // Get API key from VS Code secrets
-        this.apiKey = await this.context.secrets.get('socrates2.apiKey');
+        this.apiKey = await this.context.secrets.get('socrates.apiKey');
 
         if (!this.apiKey) {
             // Prompt user for API key
             this.apiKey = await vscode.window.showInputBox({
-                prompt: 'Enter your Socrates2 API Key',
+                prompt: 'Enter your Socrates API Key',
                 password: true
             });
 
             if (this.apiKey) {
-                await this.context.secrets.store('socrates2.apiKey', this.apiKey);
+                await this.context.secrets.store('socrates.apiKey', this.apiKey);
             }
         }
 
@@ -180,7 +180,7 @@ export class FileSyncService {
         }
 
         vscode.window.showInformationMessage(
-            `Synced ${files.length} files from Socrates2`
+            `Synced ${files.length} files from Socrates`
         );
     }
 
@@ -188,7 +188,7 @@ export class FileSyncService {
         const watcher = vscode.workspace.createFileSystemWatcher(workspacePath);
 
         watcher.onDidChange(async (uri) => {
-            // Upload changed file back to Socrates2
+            // Upload changed file back to Socrates
             const content = await fs.readFile(uri.fsPath, 'utf-8');
             await this.apiClient.uploadFile(uri.fsPath, content);
         });
@@ -203,7 +203,7 @@ export class FileSyncService {
 ```typescript
 export function registerCommands(context: vscode.ExtensionContext) {
     // Sync project to workspace
-    vscode.commands.registerCommand('socrates2.sync', async (item) => {
+    vscode.commands.registerCommand('socrates.sync', async (item) => {
         const workspacePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
         if (workspacePath && item instanceof ProjectItem) {
             await syncService.syncProjectToWorkspace(item.project.id, workspacePath);
@@ -211,7 +211,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
     });
 
     // Generate code for project
-    vscode.commands.registerCommand('socrates2.generate', async (item) => {
+    vscode.commands.registerCommand('socrates.generate', async (item) => {
         if (item instanceof ProjectItem) {
             vscode.window.showInformationMessage('Generating code...');
             const result = await apiClient.generateCode(item.project.id);
@@ -220,7 +220,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
     });
 
     // View spec details
-    vscode.commands.registerCommand('socrates2.viewSpec', async (item) => {
+    vscode.commands.registerCommand('socrates.viewSpec', async (item) => {
         if (item instanceof SpecItem) {
             const panel = vscode.window.createWebviewPanel(
                 'specDetail',
@@ -288,7 +288,7 @@ async def log_extension_event(
 # Click "Sync Project" → should create files in workspace
 
 # 4. Test file watching
-# Edit file → should sync back to Socrates2
+# Edit file → should sync back to Socrates
 
 # Publish to VS Code Marketplace
 vsce package

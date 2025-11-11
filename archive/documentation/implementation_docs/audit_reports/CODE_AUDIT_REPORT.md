@@ -1,10 +1,10 @@
-# Socrates2 Backend Code Audit Report
+# Socrates Backend Code Audit Report
 **Date Generated:** November 9, 2025
-**Codebase:** Socrates2 Backend (`/home/user/Socrates2/backend`)
+**Codebase:** Socrates Backend (`/home/user/Socrates/backend`)
 
 ## Executive Summary
 
-This comprehensive code audit identified **18 issues** across the Socrates2 backend, including:
+This comprehensive code audit identified **18 issues** across the Socrates backend, including:
 - **7 Critical Issues** requiring immediate fixes before runtime
 - **5 High Priority** issues affecting type safety and functionality
 - **6 Medium Priority** issues affecting design and completeness
@@ -18,43 +18,43 @@ This comprehensive code audit identified **18 issues** across the Socrates2 back
 ### 1. Missing to_dict() Methods (7 models) - CRITICAL
 
 #### Session Model Missing to_dict()
-- **File:** `/home/user/Socrates2/backend/app/models/session.py`
-- **Used At:** `/home/user/Socrates2/backend/app/api/sessions.py` line 334
+- **File:** `/home/user/Socrates/backend/app/models/session.py`
+- **Used At:** `/home/user/Socrates/backend/app/api/sessions.py` line 334
 - **Error:** `AttributeError: 'Session' object has no attribute 'to_dict'`
 - **Fix:** Add `to_dict()` method to Session class (use BaseModel.to_dict() as template)
 
 #### Question Model Missing to_dict()
-- **File:** `/home/user/Socrates2/backend/app/models/question.py`
+- **File:** `/home/user/Socrates/backend/app/models/question.py`
 - **Used By:** Socratic agent (returns questions), Context agent
 - **Error:** Cannot serialize Question objects for API responses
 - **Fix:** Implement to_dict() method
 
 #### Specification Model Missing to_dict()
-- **File:** `/home/user/Socrates2/backend/app/models/specification.py`
+- **File:** `/home/user/Socrates/backend/app/models/specification.py`
 - **Used By:** Context agent (returns specifications), API endpoints
 - **Error:** Cannot serialize Specification objects
 - **Fix:** Implement to_dict() method
 
 #### Project Model Missing to_dict()
-- **File:** `/home/user/Socrates2/backend/app/models/project.py`
+- **File:** `/home/user/Socrates/backend/app/models/project.py`
 - **Used By:** Project API endpoints, Project Manager agent
 - **Error:** Cannot serialize Project objects
 - **Fix:** Implement to_dict() method
 
 #### Team Model Missing to_dict()
-- **File:** `/home/user/Socrates2/backend/app/models/team.py`
+- **File:** `/home/user/Socrates/backend/app/models/team.py`
 - **Used By:** Team collaboration endpoints
 - **Error:** Team data cannot be serialized for responses
 - **Fix:** Implement to_dict() method
 
 #### APIKey Model Missing to_dict()
-- **File:** `/home/user/Socrates2/backend/app/models/api_key.py`
+- **File:** `/home/user/Socrates/backend/app/models/api_key.py`
 - **Used By:** LLM integration endpoints
 - **Error:** API key metadata cannot be serialized
 - **Fix:** Implement to_dict() method
 
 #### ProjectCollaborator Model Missing to_dict()
-- **File:** `/home/user/Socrates2/backend/app/models/project_collaborator.py`
+- **File:** `/home/user/Socrates/backend/app/models/project_collaborator.py`
 - **Used By:** Team management endpoints
 - **Error:** Collaborator data cannot be serialized
 - **Fix:** Implement to_dict() method
@@ -63,7 +63,7 @@ This comprehensive code audit identified **18 issues** across the Socrates2 back
 
 ### 2. ConversationHistory Constructor Parameter Mismatch - CRITICAL
 
-**File:** `/home/user/Socrates2/backend/app/api/sessions.py` lines 252-257
+**File:** `/home/user/Socrates/backend/app/api/sessions.py` lines 252-257
 
 **Problem:** API code creates ConversationHistory with wrong parameter names
 ```python
@@ -98,7 +98,7 @@ conversation = ConversationHistory(
 ### 3. Type Safety Issues (3 items) - HIGH
 
 #### 3.1 Security Module - Type Narrowing Error
-- **File:** `/home/user/Socrates2/backend/app/core/security.py` line 134
+- **File:** `/home/user/Socrates/backend/app/core/security.py` line 134
 - **Issue:** Type checker warning: expected `User`, got `Type[User]`
 - **Code:**
 ```python
@@ -109,7 +109,7 @@ return user  # TODO: Type checker warning about Type[User]
 - **Fix:** Add proper type narrowing (use `assert user is not None` or check before return)
 
 #### 3.2 ProjectManager Agent - SQLAlchemy Type Error
-- **File:** `/home/user/Socrates2/backend/app/agents/project.py` line 84
+- **File:** `/home/user/Socrates/backend/app/agents/project.py` line 84
 - **Issue:** SQLAlchemy filter type mismatch
 - **Code:**
 ```python
@@ -118,7 +118,7 @@ user = db_auth.query(User).filter(User.id == user_id).first()
 ```
 
 #### 3.3 CodeGenerator Agent - SQLAlchemy Type Error
-- **File:** `/home/user/Socrates2/backend/app/agents/code_generator.py` line 90
+- **File:** `/home/user/Socrates/backend/app/agents/code_generator.py` line 90
 - **Issue:** Same SQLAlchemy filter type issue
 - **Code:**
 ```python
@@ -129,7 +129,7 @@ project = db.query(Project).filter(Project.id == project_id).first()
 ---
 
 ### 4. ContextAnalyzer Type Annotation Warning - HIGH
-- **File:** `/home/user/Socrates2/backend/app/agents/context.py` line 125
+- **File:** `/home/user/Socrates/backend/app/agents/context.py` line 125
 - **Issue:** Type mismatch in method call
 - **Code:**
 ```python
@@ -141,7 +141,7 @@ prompt = self._build_extraction_prompt(question, answer, existing_specs)
 ---
 
 ### 5. ProjectOwnershipHistory Missing to_dict() - MEDIUM
-- **File:** `/home/user/Socrates2/backend/app/models/project_ownership_history.py`
+- **File:** `/home/user/Socrates/backend/app/models/project_ownership_history.py`
 - **Used By:** Project history tracking
 - **Fix:** Implement to_dict() method
 
@@ -150,7 +150,7 @@ prompt = self._build_extraction_prompt(question, answer, existing_specs)
 ## SECTION 3: DESIGN AND COMPLETENESS ISSUES
 
 ### 6. ContextAnalyzerAgent._analyze_context() - Placeholder - MEDIUM
-- **File:** `/home/user/Socrates2/backend/app/agents/context.py` lines 264-292
+- **File:** `/home/user/Socrates/backend/app/agents/context.py` lines 264-292
 - **Status:** Returns placeholder response
 - **Code:**
 ```python
@@ -166,7 +166,7 @@ def _analyze_context(self, data: Dict[str, Any]) -> Dict[str, Any]:
 ---
 
 ### 7. Orchestrator Quality Gates Incomplete - MEDIUM
-- **File:** `/home/user/Socrates2/backend/app/agents/orchestrator.py` lines 197-218
+- **File:** `/home/user/Socrates/backend/app/agents/orchestrator.py` lines 197-218
 - **Issue:** Quality control only applied to 2 operation types
 ```python
 major_ops = {
@@ -183,7 +183,7 @@ major_ops = {
 ---
 
 ### 8. ServiceContainer.close() Empty Implementation - LOW
-- **File:** `/home/user/Socrates2/backend/app/core/dependencies.py` lines 240-250
+- **File:** `/home/user/Socrates/backend/app/core/dependencies.py` lines 240-250
 - **Code:**
 ```python
 def close(self):
@@ -199,13 +199,13 @@ def close(self):
 ### 9. Debug Code in Production Files - LOW
 
 #### Debug writes in projects.py
-- **File:** `/home/user/Socrates2/backend/app/api/projects.py` lines 45-52
+- **File:** `/home/user/Socrates/backend/app/api/projects.py` lines 45-52
 - **Issue:** Debug file write that silently fails
 - **Risk:** Very low (fails silently, won't break execution)
 - **Action:** Remove before final deployment
 
 #### Debug output in project.py agent
-- **File:** `/home/user/Socrates2/backend/app/agents/project.py` lines 57-67
+- **File:** `/home/user/Socrates/backend/app/agents/project.py` lines 57-67
 - **Issue:** Debug file writes and logger output
 - **Risk:** Low (informational only)
 - **Action:** Remove or keep logger.info() only, remove file writes
@@ -213,7 +213,7 @@ def close(self):
 ---
 
 ### 10. Orphaned Component: MultiLLMManager - MEDIUM
-- **File:** `/home/user/Socrates2/backend/app/main.py` lines 61, 74
+- **File:** `/home/user/Socrates/backend/app/main.py` lines 61, 74
 - **Issue:** Agent is instantiated and registered but never called
 - **Status:** Unclear if this is intended for Phase 5 or abandoned
 - **Action:** Clarify purpose or remove
@@ -327,25 +327,25 @@ pytest backend/tests/agents/ -v
 ### File-by-File Breakdown
 
 #### Models Needing to_dict()
-- `/home/user/Socrates2/backend/app/models/session.py` - CRITICAL
-- `/home/user/Socrates2/backend/app/models/question.py` - CRITICAL
-- `/home/user/Socrates2/backend/app/models/specification.py` - CRITICAL
-- `/home/user/Socrates2/backend/app/models/project.py` - CRITICAL
-- `/home/user/Socrates2/backend/app/models/team.py` - CRITICAL
-- `/home/user/Socrates2/backend/app/models/api_key.py` - HIGH
-- `/home/user/Socrates2/backend/app/models/project_collaborator.py` - HIGH
-- `/home/user/Socrates2/backend/app/models/project_ownership_history.py` - MEDIUM
+- `/home/user/Socrates/backend/app/models/session.py` - CRITICAL
+- `/home/user/Socrates/backend/app/models/question.py` - CRITICAL
+- `/home/user/Socrates/backend/app/models/specification.py` - CRITICAL
+- `/home/user/Socrates/backend/app/models/project.py` - CRITICAL
+- `/home/user/Socrates/backend/app/models/team.py` - CRITICAL
+- `/home/user/Socrates/backend/app/models/api_key.py` - HIGH
+- `/home/user/Socrates/backend/app/models/project_collaborator.py` - HIGH
+- `/home/user/Socrates/backend/app/models/project_ownership_history.py` - MEDIUM
 
 #### API Issues
-- `/home/user/Socrates2/backend/app/api/sessions.py` line 252 - Fix ConversationHistory
+- `/home/user/Socrates/backend/app/api/sessions.py` line 252 - Fix ConversationHistory
 
 #### Agent Issues
-- `/home/user/Socrates2/backend/app/agents/project.py` line 84 - Type warning
-- `/home/user/Socrates2/backend/app/agents/code_generator.py` line 90 - Type warning
-- `/home/user/Socrates2/backend/app/agents/context.py` line 125 - Type warning
+- `/home/user/Socrates/backend/app/agents/project.py` line 84 - Type warning
+- `/home/user/Socrates/backend/app/agents/code_generator.py` line 90 - Type warning
+- `/home/user/Socrates/backend/app/agents/context.py` line 125 - Type warning
 
 #### Type Safety
-- `/home/user/Socrates2/backend/app/core/security.py` line 134 - Type narrowing
+- `/home/user/Socrates/backend/app/core/security.py` line 134 - Type narrowing
 
 ---
 

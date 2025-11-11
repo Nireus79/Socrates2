@@ -9,14 +9,14 @@
 
 ## Executive Summary
 
-Phase 6 brings Socrates2 to the IDEs developers use daily - VS Code and JetBrains products. This phase implements three major components:
+Phase 6 brings Socrates to the IDEs developers use daily - VS Code and JetBrains products. This phase implements three major components:
 
 1. **VS Code Extension** - Native extension for VS Code
 2. **JetBrains Plugin Suite** - Plugins for IntelliJ, PyCharm, WebStorm
 3. **Language Server Protocol (LSP)** - IDE-agnostic protocol for code intelligence
 4. **Code Generation Engine** - Generate code from specifications
 
-**Overall Impact:** Seamless integration of Socrates2 into developer workflows
+**Overall Impact:** Seamless integration of Socrates into developer workflows
 
 ---
 
@@ -63,7 +63,7 @@ Phase 6: IDE Integration (75 days)
 ## Phase 6.1: VS Code Extension (18 days)
 
 ### Overview
-Develop a native VS Code extension providing full Socrates2 integration within the editor.
+Develop a native VS Code extension providing full Socrates integration within the editor.
 
 ### Timeline
 - **Days 1-2:** Project setup and scaffolding
@@ -85,7 +85,7 @@ Develop a native VS Code extension providing full Socrates2 integration within t
 ### Key Features
 
 #### 1. Authentication & Configuration
-- **OAuth/Token-based login** to Socrates2 API
+- **OAuth/Token-based login** to Socrates API
 - **Credential storage** in VS Code secret storage
 - **Configuration settings** for API URL, preferences
 - **Quick setup** with guided authentication
@@ -129,7 +129,7 @@ vs-code-extension/
 ├── src/
 │   ├── extension.ts              # Main entry point
 │   ├── api/
-│   │   ├── client.ts             # Socrates2 API client
+│   │   ├── client.ts             # Socrates API client
 │   │   ├── auth.ts               # Authentication service
 │   │   └── types.ts              # TypeScript interfaces
 │   ├── views/
@@ -183,7 +183,7 @@ vs-code-extension/
 
 ### VS Code Commands
 ```
-socrates.authenticate          - Log in to Socrates2
+socrates.authenticate          - Log in to Socrates
 socrates.logout               - Log out
 socrates.refreshProjects      - Refresh project list
 socrates.openSpecification    - Open specification details
@@ -278,7 +278,7 @@ jetbrains-plugins/
 ├── plugin-base/                 # Shared code
 │   ├── src/
 │   │   ├── api/
-│   │   │   ├── client.kt        # Socrates2 API client
+│   │   │   ├── client.kt        # Socrates API client
 │   │   │   ├── auth.kt          # Authentication
 │   │   │   └── types.kt         # Data models
 │   │   ├── ui/
@@ -461,7 +461,7 @@ socrates-lsp/
 │   ├── definition.py      # Go-to-definition handler
 │   └── symbols.py         # Symbol outline handler
 ├── client/
-│   ├── api.py            # Socrates2 API client
+│   ├── api.py            # Socrates API client
 │   ├── cache.py          # Response caching
 │   └── auth.py           # Authentication
 ├── models/

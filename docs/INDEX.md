@@ -1,15 +1,15 @@
-# Socrates2 Documentation Index
+# Socrates Documentation Index
 
 ## 📚 Complete Documentation Guide
 
-Welcome to the Socrates2 documentation. This directory contains all documentation needed to understand, develop, and operate the Socrates2 system.
+Welcome to the Socrates documentation. This directory contains all documentation needed to understand, develop, and operate the Socrates system.
 
 ---
 
 ## 🎯 Quick Navigation
 
 ### For Users
-- **[User Guide](user/USER_GUIDE.md)** - How to use Socrates2 (30 min read)
+- **[User Guide](user/USER_GUIDE.md)** - How to use Socrates (30 min read)
 - **[Getting Started](user/GETTING_STARTED.md)** - Quick start guide (15 min read)
 - **[Tutorials](user/TUTORIALS.md)** - Step-by-step examples
 - **[FAQ](user/FAQ.md)** - Frequently asked questions
@@ -29,7 +29,7 @@ Welcome to the Socrates2 documentation. This directory contains all documentatio
 
 ### For Leadership/Presentation
 - **[Project Overview](presentation/PROJECT_OVERVIEW.md)** - Vision and mission
-- **[Features & Capabilities](presentation/FEATURES.md)** - What Socrates2 does
+- **[Features & Capabilities](presentation/FEATURES.md)** - What Socrates does
 - **[Roadmap](presentation/ROADMAP.md)** - Future plans
 
 ### Technical Specifications
@@ -85,7 +85,7 @@ docs/
 ## 🚀 Get Started
 
 ### First Time Here?
-1. **[Project Overview](presentation/PROJECT_OVERVIEW.md)** - Understand what Socrates2 is
+1. **[Project Overview](presentation/PROJECT_OVERVIEW.md)** - Understand what Socrates is
 2. **[Getting Started](user/GETTING_STARTED.md)** - Get running in 15 minutes
 3. **[User Guide](user/USER_GUIDE.md)** - Learn how to use it
 
@@ -120,7 +120,7 @@ docs/
 
 - **Issues:** Check [Troubleshooting](operations/TROUBLESHOOTING.md)
 - **FAQ:** See [FAQ](user/FAQ.md)
-- **GitHub Issues:** https://github.com/Nireus79/Socrates2/issues
+- **GitHub Issues:** https://github.com/Nireus79/Socrates/issues
 - **Contributing:** See [Contributing Guide](developer/CONTRIBUTING.md)
 
 ---

@@ -1,4 +1,4 @@
-# Socrates2 Features & Capabilities
+# Socrates Features & Capabilities
 
 **Document Type:** Product Features Overview
 **Audience:** Business stakeholders, decision makers
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Socrates2 is a comprehensive specifications platform with 7 key features that address critical challenges in requirements engineering:
+Socrates is a comprehensive specifications platform with 7 key features that address critical challenges in requirements engineering:
 
 1. **🤖 AI-Powered Questioning** - Claude guides intelligent discovery
 2. **🏗️ Seven-Domain System** - Complete coverage of all concerns
@@ -24,7 +24,7 @@ Socrates2 is a comprehensive specifications platform with 7 key features that ad
 
 ### What It Does
 
-Socrates2 uses Claude AI to ask intelligent, context-aware questions that guide discovery of requirements.
+Socrates uses Claude AI to ask intelligent, context-aware questions that guide discovery of requirements.
 
 ### How It Works
 
@@ -541,7 +541,7 @@ Export specifications in multiple formats and integrate with development tools.
 
 ## Comparative Feature Matrix
 
-| Feature | Socrates2 | Manual | Templates | Other Tools |
+| Feature | Socrates | Manual | Templates | Other Tools |
 |---------|-----------|--------|-----------|------------|
 | **AI-Powered** | ✅ | ❌ | ❌ | Partial |
 | **7 Domains** | ✅ | ❌ | ❌ | 1-2 |
@@ -570,7 +570,7 @@ Export specifications in multiple formats and integrate with development tools.
 
 ## Summary
 
-Socrates2's seven features combine to create a unique, powerful platform for specification engineering:
+Socrates's seven features combine to create a unique, powerful platform for specification engineering:
 
 1. **AI Power** - Intelligent discovery
 2. **Systematic** - Seven-domain coverage

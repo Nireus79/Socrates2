@@ -1,5 +1,5 @@
 """
-Analytics API endpoints for Socrates2.
+Analytics API endpoints for Socrates.
 
 Provides REST API access to analytics reports and metrics tracking.
 """

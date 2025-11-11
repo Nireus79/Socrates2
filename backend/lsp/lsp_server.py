@@ -1,5 +1,5 @@
 """
-Socrates2 Language Server Protocol (LSP) Server
+Socrates Language Server Protocol (LSP) Server
 
 Implements LSP specification for providing IDE features like:
 - Hover documentation
@@ -63,7 +63,7 @@ class JSONRPCNotification:
 
 class SocratesLSPServer:
     """
-    Main Language Server Protocol server for Socrates2
+    Main Language Server Protocol server for Socrates
 
     Implements LSP 3.17 specification with support for:
     - Multiple clients (VS Code, JetBrains IDEs)
@@ -116,7 +116,7 @@ class SocratesLSPServer:
 
     async def start(self):
         """Start the LSP server"""
-        self.logger.info("Starting Socrates2 LSP Server")
+        self.logger.info("Starting Socrates LSP Server")
         self.logger.info(f"API URL: {self.config.api_url}")
         self.logger.info(f"Listen address: {self.config.listen_host}:{self.config.listen_port}")
 
@@ -237,7 +237,7 @@ class SocratesLSPServer:
                 }
             },
             "serverInfo": {
-                "name": "Socrates2",
+                "name": "Socrates",
                 "version": "0.1.0"
             }
         }
@@ -397,7 +397,7 @@ class SocratesLSPServer:
                         "end": {"line": 1, "character": 0}
                     },
                     "severity": self._severity_to_lsp(conflict.get("severity", "medium")),
-                    "source": "Socrates2",
+                    "source": "Socrates",
                     "message": conflict.get("message", "Specification conflict"),
                     "code": conflict.get("id")
                 }
@@ -416,7 +416,7 @@ class SocratesLSPServer:
 
     def _setup_logging(self) -> logging.Logger:
         """Setup structured logging"""
-        logger = logging.getLogger("socrates2.lsp")
+        logger = logging.getLogger("socrates.lsp")
         handler = logging.FileHandler(self.config.log_file)
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

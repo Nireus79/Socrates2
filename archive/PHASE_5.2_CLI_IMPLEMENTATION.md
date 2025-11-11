@@ -8,7 +8,7 @@
 
 ## Overview
 
-Phase 5.2 successfully implements a comprehensive command-line interface (CLI) for Socrates2, allowing users to manage projects, specifications, and configurations from the terminal.
+Phase 5.2 successfully implements a comprehensive command-line interface (CLI) for Socrates, allowing users to manage projects, specifications, and configurations from the terminal.
 
 **Features:** 5+ command groups with 20+ commands
 **Code:** 1,732 lines across 10 files
@@ -645,10 +645,10 @@ echo "✅ All tests passed!"
 ### Installation Steps
 ```bash
 # 1. Clone repository
-git clone https://github.com/Nireus79/Socrates2
+git clone https://github.com/Nireus79/Socrates
 
 # 2. Install CLI
-cd Socrates2/backend
+cd Socrates/backend
 pip install -e .
 
 # 3. Initialize

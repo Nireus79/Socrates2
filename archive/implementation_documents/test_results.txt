@@ -1,11 +1,11 @@
-C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\pytest_asyncio\plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\pytest_asyncio\plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
 The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
 
   warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
 ============================= test session starts =============================
-platform win32 -- Python 3.12.3, pytest-8.3.4, pluggy-1.6.0 -- C:\Users\themi\PycharmProjects\Socrates2\.venv\Scripts\python.exe
+platform win32 -- Python 3.12.3, pytest-8.3.4, pluggy-1.6.0 -- C:\Users\themi\PycharmProjects\Socrates\.venv\Scripts\python.exe
 cachedir: .pytest_cache
-rootdir: C:\Users\themi\PycharmProjects\Socrates2\backend
+rootdir: C:\Users\themi\PycharmProjects\Socrates\backend
 configfile: pytest.ini
 plugins: anyio-4.11.0, Faker-33.1.0, asyncio-0.25.0, cov-6.0.0, mock-3.14.0
 asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None
@@ -362,7 +362,7 @@ E   (Background on this error at: https://sqlalche.me/e/20/gkpj)
 ----------------------------- Captured log setup ------------------------------
 WARNING  passlib.handlers.bcrypt:bcrypt.py:622 (trapped) error reading bcrypt version
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
     version = _bcrypt.__about__.__version__
               ^^^^^^^^^^^^^^^^^
 AttributeError: module 'bcrypt' has no attribute '__about__'
@@ -10308,9 +10308,9 @@ WHERE conflicts.id = %(id_1)s::UUID
 [parameters: {'id_1': 'non-existent-id', 'param_1': 1}]
 (Background on this error at: https://sqlalche.me/e/20/9h9h)
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE conflicts.id = 'non-existent-id'::UUID 
@@ -10320,43 +10320,43 @@ LINE 3: WHERE conflicts.id = 'non-existent-id'::UUID
 The above exception was the direct cause of the following exception:
 
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\backend\app\agents\conflict_detector.py", line 216, in _resolve_conflict
+  File "C:\Users\themi\PycharmProjects\Socrates\backend\app\agents\conflict_detector.py", line 216, in _resolve_conflict
     conflict = db.query(Conflict).where(Conflict.id == conflict_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
     return self.limit(1)._iter().first()  # type: ignore
            ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
                                                   ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
     return self._execute_internal(
            ^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
     result: Result[Any] = compile_state_cls.orm_execute_statement(
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
     result = conn.execute(
              ^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
     return meth(
            ^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
     return connection._execute_clauseelement(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
     ret = self._execute_context(
           ^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
     return self._exec_single_context(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
     self._handle_dbapi_exception(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE conflicts.id = 'non-existent-id'::UUID 
@@ -10381,9 +10381,9 @@ WHERE conflicts.id = %(id_1)s::UUID
 [parameters: {'id_1': 'non-existent-id', 'param_1': 1}]
 (Background on this error at: https://sqlalche.me/e/20/9h9h)
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE conflicts.id = 'non-existent-id'::UUID 
@@ -10393,43 +10393,43 @@ LINE 3: WHERE conflicts.id = 'non-existent-id'::UUID
 The above exception was the direct cause of the following exception:
 
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\backend\app\agents\conflict_detector.py", line 216, in _resolve_conflict
+  File "C:\Users\themi\PycharmProjects\Socrates\backend\app\agents\conflict_detector.py", line 216, in _resolve_conflict
     conflict = db.query(Conflict).where(Conflict.id == conflict_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
     return self.limit(1)._iter().first()  # type: ignore
            ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
                                                   ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
     return self._execute_internal(
            ^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
     result: Result[Any] = compile_state_cls.orm_execute_statement(
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
     result = conn.execute(
              ^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
     return meth(
            ^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
     return connection._execute_clauseelement(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
     ret = self._execute_context(
           ^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
     return self._exec_single_context(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
     self._handle_dbapi_exception(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE conflicts.id = 'non-existent-id'::UUID 
@@ -10532,9 +10532,9 @@ WHERE projects.id = %(id_1)s::UUID
 [parameters: {'id_1': 'non-existent-id', 'param_1': 1}]
 (Background on this error at: https://sqlalche.me/e/20/9h9h)
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE projects.id = 'non-existent-id'::UUID 
@@ -10544,43 +10544,43 @@ LINE 3: WHERE projects.id = 'non-existent-id'::UUID
 The above exception was the direct cause of the following exception:
 
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\backend\app\agents\code_generator.py", line 90, in _generate_code
+  File "C:\Users\themi\PycharmProjects\Socrates\backend\app\agents\code_generator.py", line 90, in _generate_code
     project = db.query(Project).where(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
     return self.limit(1)._iter().first()  # type: ignore
            ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
                                                   ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
     return self._execute_internal(
            ^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
     result: Result[Any] = compile_state_cls.orm_execute_statement(
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
     result = conn.execute(
              ^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
     return meth(
            ^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
     return connection._execute_clauseelement(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
     ret = self._execute_context(
           ^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
     return self._exec_single_context(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
     self._handle_dbapi_exception(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE projects.id = 'non-existent-id'::UUID 
@@ -10605,9 +10605,9 @@ WHERE projects.id = %(id_1)s::UUID
 [parameters: {'id_1': 'non-existent-id', 'param_1': 1}]
 (Background on this error at: https://sqlalche.me/e/20/9h9h)
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE projects.id = 'non-existent-id'::UUID 
@@ -10617,43 +10617,43 @@ LINE 3: WHERE projects.id = 'non-existent-id'::UUID
 The above exception was the direct cause of the following exception:
 
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\backend\app\agents\code_generator.py", line 90, in _generate_code
+  File "C:\Users\themi\PycharmProjects\Socrates\backend\app\agents\code_generator.py", line 90, in _generate_code
     project = db.query(Project).where(Project.id == project_id).first()  # TODO Expected type 'ColumnElement[bool] | _HasClauseElement[bool] | SQLCoreOperations[bool] | ExpressionElementRole[bool] | TypedColumnsClauseRole[bool] | () -> ColumnElement[bool] | LambdaElement', got 'bool' instead
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
     return self.limit(1)._iter().first()  # type: ignore
            ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
                                                   ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
     return self._execute_internal(
            ^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
     result: Result[Any] = compile_state_cls.orm_execute_statement(
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
     result = conn.execute(
              ^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
     return meth(
            ^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
     return connection._execute_clauseelement(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
     ret = self._execute_context(
           ^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
     return self._exec_single_context(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
     self._handle_dbapi_exception(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE projects.id = 'non-existent-id'::UUID 
@@ -10689,9 +10689,9 @@ WHERE generated_projects.id = %(id_1)s::UUID
 [parameters: {'id_1': 'non-existent-id', 'param_1': 1}]
 (Background on this error at: https://sqlalche.me/e/20/9h9h)
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE generated_projects.id = 'non-existent-id'::UUID 
@@ -10701,43 +10701,43 @@ LINE 3: WHERE generated_projects.id = 'non-existent-id'::UUID
 The above exception was the direct cause of the following exception:
 
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\backend\app\agents\code_generator.py", line 309, in _get_generation_status
+  File "C:\Users\themi\PycharmProjects\Socrates\backend\app\agents\code_generator.py", line 309, in _get_generation_status
     ).first()
       ^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
     return self.limit(1)._iter().first()  # type: ignore
            ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
                                                   ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
     return self._execute_internal(
            ^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
     result: Result[Any] = compile_state_cls.orm_execute_statement(
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
     result = conn.execute(
              ^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
     return meth(
            ^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
     return connection._execute_clauseelement(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
     ret = self._execute_context(
           ^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
     return self._exec_single_context(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
     self._handle_dbapi_exception(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE generated_projects.id = 'non-existent-id'::UUID 
@@ -10762,9 +10762,9 @@ WHERE generated_projects.id = %(id_1)s::UUID
 [parameters: {'id_1': 'non-existent-id', 'param_1': 1}]
 (Background on this error at: https://sqlalche.me/e/20/9h9h)
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE generated_projects.id = 'non-existent-id'::UUID 
@@ -10774,43 +10774,43 @@ LINE 3: WHERE generated_projects.id = 'non-existent-id'::UUID
 The above exception was the direct cause of the following exception:
 
 Traceback (most recent call last):
-  File "C:\Users\themi\PycharmProjects\Socrates2\backend\app\agents\code_generator.py", line 309, in _get_generation_status
+  File "C:\Users\themi\PycharmProjects\Socrates\backend\app\agents\code_generator.py", line 309, in _get_generation_status
     ).first()
       ^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
     return self.limit(1)._iter().first()  # type: ignore
            ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
                                                   ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
     return self._execute_internal(
            ^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
     result: Result[Any] = compile_state_cls.orm_execute_statement(
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
     result = conn.execute(
              ^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
     return meth(
            ^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
     return connection._execute_clauseelement(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
     ret = self._execute_context(
           ^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
     return self._exec_single_context(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
     self._handle_dbapi_exception(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
-  File "C:\Users\themi\PycharmProjects\Socrates2\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+  File "C:\Users\themi\PycharmProjects\Socrates\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
     cursor.execute(statement, parameters)
 sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type uuid: "non-existent-id"
 LINE 3: WHERE generated_projects.id = 'non-existent-id'::UUID 

@@ -224,7 +224,7 @@ def list_projects(user_id: str, db: Session = Depends(get_db_specs)):
 from fastapi import FastAPI
 from app.api import auth, projects
 
-app = FastAPI(title="Socrates2 API", version="0.1.0")
+app = FastAPI(title="Socrates API", version="0.1.0")
 
 app.include_router(auth.router)
 app.include_router(projects.router)
@@ -241,7 +241,7 @@ if __name__ == "__main__":
 ### 6. Start Development Server
 
 ```powershell
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 ..\venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload
 ```

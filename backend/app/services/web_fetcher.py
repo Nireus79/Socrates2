@@ -91,7 +91,7 @@ class WebFetcherService:
         """
         try:
             api_url = f"https://api.github.com/repos/{owner}/{repo}"
-            headers = {'User-Agent': 'Socrates2/1.0'}
+            headers = {'User-Agent': 'Socrates/1.0'}
 
             response = self.client.get(api_url, headers=headers)
             response.raise_for_status()

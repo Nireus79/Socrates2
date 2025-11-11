@@ -1,4 +1,4 @@
-"""DevOps domain for Socrates2.
+"""DevOps domain for Socrates.
 
 Covers infrastructure, deployment, monitoring, disaster recovery,
 and operational excellence.

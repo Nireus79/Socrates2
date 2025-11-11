@@ -1,6 +1,6 @@
-# Socrates2 CLI - Command Line Interface
+# Socrates CLI - Command Line Interface
 
-The Socrates2 CLI provides a command-line interface for managing projects, specifications, and configurations without using the web interface.
+The Socrates CLI provides a command-line interface for managing projects, specifications, and configurations without using the web interface.
 
 ## Installation
 
@@ -24,7 +24,7 @@ python socrates [command]
 
 ### 1. Authentication
 ```bash
-# Login to Socrates2
+# Login to Socrates
 socrates auth login
 
 # Check login status
@@ -604,7 +604,7 @@ main.add_command(newcommand.newcommand)
 
 ## API Reference
 
-The CLI communicates with the Socrates2 API. See the API documentation at `/docs` when the server is running.
+The CLI communicates with the Socrates API. See the API documentation at `/docs` when the server is running.
 
 ## License
 

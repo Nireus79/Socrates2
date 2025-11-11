@@ -1,7 +1,7 @@
-# Socrates2 - AI-Powered Specification Assistant for VS Code
+# Socrates - AI-Powered Specification Assistant for VS Code
 
-[![Visual Studio Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-blue)](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates2)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates2)
+[![Visual Studio Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-blue)](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 Bring your AI-generated specifications directly into VS Code. Generate code, detect conflicts, manage projects, and collaborate with your team—all without leaving your editor.
@@ -26,7 +26,7 @@ Bring your AI-generated specifications directly into VS Code. Generate code, det
 - **Global Search** - Find specifications across all projects
 
 ### ⚙️ Configuration
-- **API Server Configuration** - Connect to your Socrates2 instance
+- **API Server Configuration** - Connect to your Socrates instance
 - **Auto-Sync** - Keep data fresh with configurable sync intervals
 - **Code Gen Preferences** - Set default language and generation options
 - **Theme Support** - Integrates with VS Code light/dark themes
@@ -34,20 +34,20 @@ Bring your AI-generated specifications directly into VS Code. Generate code, det
 ## Installation
 
 1. Open VS Code Extension Marketplace
-2. Search for "Socrates2"
+2. Search for "Socrates"
 3. Click Install
 4. Reload VS Code
 
 Or install from command line:
 ```bash
-code --install-extension anthropic.socrates2
+code --install-extension anthropic.socrates
 ```
 
 ## Getting Started
 
 ### 1. Sign In
 - Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
-- Run `Socrates2: Sign In`
+- Run `Socrates: Sign In`
 - Enter your email and password
 - Grant permission to access your projects
 
@@ -78,30 +78,30 @@ code --install-extension anthropic.socrates2
 ### Core Commands
 | Command | Shortcut | Description |
 |---------|----------|-------------|
-| `Socrates2: Sign In` | `Ctrl+Shift+P` | Authenticate with Socrates2 |
-| `Socrates2: Sign Out` | `Ctrl+Shift+P` | Logout from Socrates2 |
-| `Socrates2: Settings` | `Ctrl+Shift+P` | Open configuration panel |
+| `Socrates: Sign In` | `Ctrl+Shift+P` | Authenticate with Socrates |
+| `Socrates: Sign Out` | `Ctrl+Shift+P` | Logout from Socrates |
+| `Socrates: Settings` | `Ctrl+Shift+P` | Open configuration panel |
 
 ### Project Commands
 | Command | Description |
 |---------|-------------|
-| `Socrates2: Refresh Projects` | Reload projects from server |
-| `Socrates2: Create Project` | Create new project |
-| `Socrates2: Open Project` | View project details |
+| `Socrates: Refresh Projects` | Reload projects from server |
+| `Socrates: Create Project` | Create new project |
+| `Socrates: Open Project` | View project details |
 
 ### Specification Commands
 | Command | Description |
 |---------|-------------|
-| `Socrates2: Refresh Specifications` | Reload specs for current project |
-| `Socrates2: View Specification Details` | Show spec information |
-| `Socrates2: Search Specifications` | Global search across all specs |
-| `Socrates2: Generate Code from Specification` | Create code from spec |
+| `Socrates: Refresh Specifications` | Reload specs for current project |
+| `Socrates: View Specification Details` | Show spec information |
+| `Socrates: Search Specifications` | Global search across all specs |
+| `Socrates: Generate Code from Specification` | Create code from spec |
 
 ### Other Commands
 | Command | Description |
 |---------|-------------|
-| `Socrates2: View Project Conflicts` | Show all conflicts |
-| `Socrates2: Show Team Activity` | Display activity feed |
+| `Socrates: View Project Conflicts` | Show all conflicts |
+| `Socrates: Show Team Activity` | Display activity feed |
 
 ## Settings
 
@@ -110,7 +110,7 @@ Open extension settings via Command Palette or VS Code Settings:
 ### `socrates.apiUrl`
 - **Type:** `string`
 - **Default:** `http://localhost:8000`
-- **Description:** URL of your Socrates2 API server
+- **Description:** URL of your Socrates API server
 
 ### `socrates.autoSync`
 - **Type:** `boolean`
@@ -146,7 +146,7 @@ Open extension settings via Command Palette or VS Code Settings:
 | Open Command Palette | `Ctrl+Shift+P` / `Cmd+Shift+P` |
 | Generate Code | `Alt+Ctrl+G` / `Alt+Cmd+G` |
 | Quick Settings | `Alt+Ctrl+,` / `Alt+Cmd+,` |
-| Refresh Projects | `F5` (in Socrates2 view) |
+| Refresh Projects | `F5` (in Socrates view) |
 
 ## Usage Examples
 
@@ -170,7 +170,7 @@ Open extension settings via Command Palette or VS Code Settings:
 
 ### Check Conflicts in Your Project
 ```
-1. Open Socrates2 view (icon in activity bar)
+1. Open Socrates view (icon in activity bar)
 2. Click "View Project Conflicts"
 3. See all conflicts with descriptions
 4. Click to navigate to related specifications
@@ -179,7 +179,7 @@ Open extension settings via Command Palette or VS Code Settings:
 ### Configure API Server
 ```
 1. Open Command Palette (Ctrl+Shift+P)
-2. Type "Socrates2: Settings"
+2. Type "Socrates: Settings"
 3. Update API URL
 4. Click "Save Settings"
 5. Extension reconnects to new server
@@ -198,7 +198,7 @@ Open extension settings via Command Palette or VS Code Settings:
 - Confirm API URL in settings (default: `http://localhost:8000`)
 
 ### Specifications not loading
-- Refresh projects with `Socrates2: Refresh Projects`
+- Refresh projects with `Socrates: Refresh Projects`
 - Verify you've selected a project
 - Check that project has specifications defined
 - Look at Output panel for error details
@@ -218,19 +218,19 @@ Open extension settings via Command Palette or VS Code Settings:
 ## Support
 
 ### Documentation
-- [Socrates2 Documentation](https://docs.socrates2.ai)
-- [Socrates2 API Docs](https://api.socrates2.ai/docs)
-- [VS Code Extension Docs](https://docs.socrates2.ai/vscode)
+- [Socrates Documentation](https://docs.socrates.ai)
+- [Socrates API Docs](https://api.socrates.ai/docs)
+- [VS Code Extension Docs](https://docs.socrates.ai/vscode)
 
 ### Feedback & Issues
-- [Report a Bug](https://github.com/anthropics/socrates2/issues)
-- [Request a Feature](https://github.com/anthropics/socrates2/issues)
-- [Discussion Forum](https://github.com/anthropics/socrates2/discussions)
+- [Report a Bug](https://github.com/anthropics/socrates/issues)
+- [Request a Feature](https://github.com/anthropics/socrates/issues)
+- [Discussion Forum](https://github.com/anthropics/socrates/discussions)
 
 ### Community
-- [GitHub Discussions](https://github.com/anthropics/socrates2/discussions)
-- [Discord Server](https://discord.gg/socrates2)
-- [Twitter](https://twitter.com/socrates2)
+- [GitHub Discussions](https://github.com/anthropics/socrates/discussions)
+- [Discord Server](https://discord.gg/socrates)
+- [Twitter](https://twitter.com/socrates)
 
 ## Release Notes
 
@@ -260,4 +260,4 @@ Created with ❤️ by [Anthropic](https://anthropic.com)
 
 ---
 
-**[Install Now](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates2)** | **[Documentation](https://docs.socrates2.ai)** | **[Report Issue](https://github.com/anthropics/socrates2/issues)**
+**[Install Now](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates)** | **[Documentation](https://docs.socrates.ai)** | **[Report Issue](https://github.com/anthropics/socrates/issues)**

@@ -31,7 +31,7 @@
 
 ```bash
 # Create timestamped backup
-cd C:\Users\themi\PycharmProjects\Socrates2
+cd C:\Users\themi\PycharmProjects\Socrates
 
 # Backup PostgreSQL databases
 pg_dump socrates_auth > backup_auth_$(date +%Y%m%d_%H%M%S).sql
@@ -49,7 +49,7 @@ pg_dump socrates_specs > backup_specs_$(date +%Y%m%d_%H%M%S).sql
 **Step 2.1: Run migration 023 (add columns)**
 
 ```bash
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Run the migration that adds key/value columns (nullable)
 alembic upgrade +1
@@ -78,7 +78,7 @@ INFO [alembic.runtime.migration] Done
 **Step 3.1: Run data migration script (DRY RUN first)**
 
 ```bash
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # DRY RUN - shows what would happen without making changes
 python scripts/migrate_specifications_to_key_value.py --dry-run
@@ -169,7 +169,7 @@ LIMIT 5;
 **Step 4.1: Run migration 024 (make NOT NULL)**
 
 ```bash
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Run migration that makes key/value NOT NULL
 # (Safe because we just populated them all)
@@ -196,7 +196,7 @@ alembic current
 **Step 5.1: Start the backend server**
 
 ```bash
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Start FastAPI server
 python -m uvicorn app.main:app --reload
@@ -212,7 +212,7 @@ Using the CLI (Socrates.py):
 
 ```bash
 # In another terminal
-cd C:\Users\themi\PycharmProjects\Socrates2
+cd C:\Users\themi\PycharmProjects\Socrates
 
 python Socrates.py
 
@@ -275,7 +275,7 @@ I need a PostgreSQL database with JSON support
 **If migrations fail:**
 
 ```bash
-cd C:\Users\themi\PycharmProjects\Socrates2\backend
+cd C:\Users\themi\PycharmProjects\Socrates\backend
 
 # Rollback last migration
 alembic downgrade -1

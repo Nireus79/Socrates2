@@ -1,4 +1,4 @@
-# Socrates2 - Project Overview
+# Socrates - Project Overview
 
 **Document Type:** Executive Summary
 **Audience:** Leadership, Investors, Stakeholders
@@ -48,9 +48,9 @@ Teams struggle with requirements gathering:
 
 ---
 
-## Solution: Socrates2
+## Solution: Socrates
 
-### What is Socrates2?
+### What is Socrates?
 
 An **AI-powered requirements engineering platform** that:
 
@@ -89,7 +89,7 @@ Traditional approach:
 - No systematic coverage
 - Domain expertise required
 
-Socrates2 approach:
+Socrates approach:
 - AI asks guided questions
 - Systematic coverage of domains
 - Automatic specification generation
@@ -250,7 +250,7 @@ Real-world problems solved, immediate value.
 - Growing emphasis on "requirements quality"
 - Manual processes still dominant
 
-### Socrates2 Position
+### Socrates Position
 - First AI-powered systematic requirements tool
 - Addresses key pain point (40% rework)
 - Scalable SaaS model
@@ -348,23 +348,23 @@ Real-world problems solved, immediate value.
 
 ### 1. Systematic Approach
 Competitors: Ad-hoc tools
-Socrates2: Seven-domain systematic methodology
+Socrates: Seven-domain systematic methodology
 
 ### 2. AI-Powered
 Competitors: Manual templates
-Socrates2: Claude AI guides discovery
+Socrates: Claude AI guides discovery
 
 ### 3. Cross-Domain Integration
 Competitors: Single domain focus
-Socrates2: Integrated 7-domain system
+Socrates: Integrated 7-domain system
 
 ### 4. Maturity Metrics
 Competitors: No measurement
-Socrates2: Confidence and maturity scores
+Socrates: Confidence and maturity scores
 
 ### 5. User Experience
 Competitors: Complex, enterprise-focused
-Socrates2: Simple, accessible, team-friendly
+Socrates: Simple, accessible, team-friendly
 
 ---
 
@@ -417,26 +417,26 @@ Socrates2: Simple, accessible, team-friendly
 ### Case Study 1: Startup MVP
 **Company:** Early-stage fintech
 **Challenge:** Define MVP specifications
-**Solution:** Socrates2 multi-domain workflow
+**Solution:** Socrates multi-domain workflow
 **Result:** 50% faster spec definition, better team alignment
 
 ### Case Study 2: Enterprise Integration
 **Company:** Large financial services
 **Challenge:** System integration specifications
-**Solution:** Socrates2 custom domains + team collaboration
+**Solution:** Socrates custom domains + team collaboration
 **Result:** Complete, compliant specifications, audit-ready
 
 ### Case Study 3: Distributed Team
 **Company:** Global software company
 **Challenge:** Requirements across timezones
-**Solution:** Socrates2 async sessions + exports
+**Solution:** Socrates async sessions + exports
 **Result:** Single source of truth, reduced miscommunication
 
 ---
 
 ## Investment Highlights
 
-### Why Invest in Socrates2?
+### Why Invest in Socrates?
 
 1. **Huge Pain Point** - 40% of development time wasted
 2. **Proven Model** - SaaS subscriptions
@@ -455,11 +455,11 @@ Socrates2: Simple, accessible, team-friendly
 
 ## Contact & More Information
 
-- **Website:** https://socrates2.app
-- **GitHub:** https://github.com/Nireus79/Socrates2
-- **Documentation:** https://docs.socrates2.app
-- **Email:** contact@socrates2.app
-- **Demo:** Schedule at https://socrates2.app/demo
+- **Website:** https://socrates.app
+- **GitHub:** https://github.com/Nireus79/Socrates
+- **Documentation:** https://docs.socrates.app
+- **Email:** contact@socrates.app
+- **Demo:** Schedule at https://socrates.app/demo
 
 ---
 

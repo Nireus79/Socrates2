@@ -1,8 +1,8 @@
-# Socrates2 Roadmap
+# Socrates Roadmap
 
 ## Project Vision
 
-Socrates2 is a specification-driven development platform that integrates with multiple IDEs to enable intelligent code generation, real-time conflict detection, and collaborative development workflows.
+Socrates is a specification-driven development platform that integrates with multiple IDEs to enable intelligent code generation, real-time conflict detection, and collaborative development workflows.
 
 **Current Status:** Phase 6 Complete (95% of MVP)
 **Version:** 1.0.0
@@ -404,9 +404,9 @@ Phase 9: Advanced observability, auto-scaling
 
 ## Contacts & Resources
 
-- **GitHub:** https://github.com/nireus79/Socrates2
-- **Email:** dev@socrates2.io
-- **Security Issues:** security@socrates2.io
+- **GitHub:** https://github.com/nireus79/Socrates
+- **Email:** dev@socrates.io
+- **Security Issues:** security@socrates.io
 - **Documentation:** See README.md and CONTRIBUTING.md
 - **GitHub Discussions:** Feature requests and community Q&A
 
@@ -433,4 +433,4 @@ A: We follow semantic versioning. Phase 7+ features will be fully backward compa
 
 **Last Updated:** November 2025
 **Next Review:** February 2026
-**Maintainer:** Socrates2 Project Team
+**Maintainer:** Socrates Project Team

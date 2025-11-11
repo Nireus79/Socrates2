@@ -61,7 +61,7 @@ def check_package(name: str, min_version: str, purpose: str, optional: bool = Fa
 
 def main():
     """Run all dependency checks."""
-    print("[*] Checking Socrates2 Dependencies...\n")
+    print("[*] Checking Socrates Dependencies...\n")
     print("=" * 70)
     print("REQUIRED PACKAGES (Production)")
     print("=" * 70)

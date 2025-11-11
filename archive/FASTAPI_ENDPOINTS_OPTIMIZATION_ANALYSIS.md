@@ -1,13 +1,13 @@
 # FastAPI Endpoints Analysis Report
 **Date:** November 11, 2025  
-**Project:** Socrates2 Backend  
+**Project:** Socrates Backend  
 **Scope:** Comprehensive optimization analysis of 23 API endpoint files
 
 ---
 
 ## Executive Summary
 
-This analysis identifies optimization opportunities across the Socrates2 FastAPI backend. The codebase shows:
+This analysis identifies optimization opportunities across the Socrates FastAPI backend. The codebase shows:
 
 - **23 API endpoint modules** with 80+ endpoints
 - **Multiple database access patterns** with optimization potential
@@ -22,7 +22,7 @@ This analysis identifies optimization opportunities across the Socrates2 FastAPI
 ### High Priority - Cache These Endpoints
 
 #### 1.1 User Profile & Authentication Data
-**File:** `/home/user/Socrates2/backend/app/api/auth.py`
+**File:** `/home/user/Socrates/backend/app/api/auth.py`
 
 **Endpoint:** `GET /api/v1/auth/me` (Line 319-361)
 ```python
@@ -63,7 +63,7 @@ def get_current_user_info(current_user: User = Depends(get_current_active_user))
 ---
 
 #### 1.2 Project Listings & Status
-**File:** `/home/user/Socrates2/backend/app/api/projects.py`
+**File:** `/home/user/Socrates/backend/app/api/projects.py`
 
 **Endpoints:**
 - `GET /api/v1/projects` (Line 107-175) - List projects
@@ -83,7 +83,7 @@ def get_current_user_info(current_user: User = Depends(get_current_active_user))
 ---
 
 #### 1.3 Admin Statistics & Health Check
-**File:** `/home/user/Socrates2/backend/app/api/admin.py`
+**File:** `/home/user/Socrates/backend/app/api/admin.py`
 
 **Endpoints:**
 - `GET /api/v1/admin/health` (Line 39-92)
@@ -98,7 +98,7 @@ def get_current_user_info(current_user: User = Depends(get_current_active_user))
 ---
 
 #### 1.4 Notification Preferences
-**File:** `/home/user/Socrates2/backend/app/api/notifications.py`
+**File:** `/home/user/Socrates/backend/app/api/notifications.py`
 
 **Endpoint:** `GET /api/v1/notifications/preferences` (Line 23-74)
 ```python
@@ -118,7 +118,7 @@ async def get_notification_preferences(
 ---
 
 #### 1.5 Supported Export Formats
-**File:** `/home/user/Socrates2/backend/app/api/export.py`
+**File:** `/home/user/Socrates/backend/app/api/export.py`
 
 **Endpoint:** `GET /api/v1/export/formats` (Line 279-377)
 
@@ -133,7 +133,7 @@ async def get_notification_preferences(
 ### Medium Priority - Selective Caching
 
 #### 1.6 Search Results
-**File:** `/home/user/Socrates2/backend/app/api/search.py`
+**File:** `/home/user/Socrates/backend/app/api/search.py`
 
 **Endpoint:** `GET /api/v1/search` (Line 42-178)
 
@@ -152,7 +152,7 @@ cache_key = f"search:{current_user.id}:{query}:{resource_type}"
 ---
 
 #### 1.7 Activity Feed
-**File:** `/home/user/Socrates2/backend/app/api/notifications.py`
+**File:** `/home/user/Socrates/backend/app/api/notifications.py`
 
 **Endpoint:** `GET /api/v1/notifications/projects/{project_id}/activity` (Line 158-241)
 
@@ -170,7 +170,7 @@ cache_key = f"search:{current_user.id}:{query}:{resource_type}"
 ### Critical Issues - Missing Joins
 
 #### 2.1 Project Listing with Related Data
-**File:** `/home/user/Socrates2/backend/app/api/projects.py` - `list_projects()` (Line 107-175)
+**File:** `/home/user/Socrates/backend/app/api/projects.py` - `list_projects()` (Line 107-175)
 
 **Current Problem:**
 ```python
@@ -195,7 +195,7 @@ projects = db.query(Project).filter(
 ---
 
 #### 2.2 Session Details with History
-**File:** `/home/user/Socrates2/backend/app/api/sessions.py`
+**File:** `/home/user/Socrates/backend/app/api/sessions.py`
 
 **Multiple N+1 Issues:**
 
@@ -243,7 +243,7 @@ query = db.query(SessionModel).join(
 ---
 
 #### 2.3 Admin Endpoints - Multiple Separate Queries
-**File:** `/home/user/Socrates2/backend/app/api/admin.py`
+**File:** `/home/user/Socrates/backend/app/api/admin.py`
 
 **a) `list_admin_users()` (Line 432-475)**
 ```python
@@ -316,7 +316,7 @@ users = db.query(User).filter(
 ---
 
 #### 2.4 Collaboration Endpoints
-**File:** `/home/user/Socrates2/backend/app/api/collaboration.py`
+**File:** `/home/user/Socrates/backend/app/api/collaboration.py`
 
 **a) `get_project_collaborators()` (Line 365-433)**
 ```python
@@ -350,7 +350,7 @@ invitation = db.query(ProjectInvitation).filter(...).first()
 ---
 
 #### 2.5 Document Management
-**File:** `/home/user/Socrates2/backend/app/api/documents.py`
+**File:** `/home/user/Socrates/backend/app/api/documents.py`
 
 **a) `list_documents()` (Line 204-268)**
 ```python
@@ -382,7 +382,7 @@ for doc in docs:
 ### High Priority - Reduce Query Count
 
 #### 2.6 Billing Endpoints
-**File:** `/home/user/Socrates2/backend/app/api/billing.py`
+**File:** `/home/user/Socrates/backend/app/api/billing.py`
 
 **`get_invoices()` (Line 257-297)**
 ```python
@@ -399,7 +399,7 @@ invoices = db.query(Invoice).filter(
 ---
 
 #### 2.7 Export Endpoints
-**File:** `/home/user/Socrates2/backend/app/api/export.py`
+**File:** `/home/user/Socrates/backend/app/api/export.py`
 
 **`export_project_specs()` (Line 21-168)**
 ```python
@@ -449,7 +449,7 @@ if not resource:
 ---
 
 ### Pattern 2: Database Session Rollback on Error
-**Location:** `/home/user/Socrates2/backend/app/api/collaboration.py` (Line 138, 299, 360)
+**Location:** `/home/user/Socrates/backend/app/api/collaboration.py` (Line 138, 299, 360)
 
 **Pattern Used:**
 ```python
@@ -471,7 +471,7 @@ except Exception as e:
 ---
 
 ### Pattern 3: Global Error Handler
-**Location:** `/home/user/Socrates2/backend/app/api/error_handlers.py`
+**Location:** `/home/user/Socrates/backend/app/api/error_handlers.py`
 
 **Pattern Used:**
 ```python
@@ -555,7 +555,7 @@ def require_permission(permission: str):
 ### Critical Issues - Missing Validation
 
 #### 4.1 String Injection Vulnerabilities
-**File:** `/home/user/Socrates2/backend/app/api/search.py` (Line 83-93)
+**File:** `/home/user/Socrates/backend/app/api/search.py` (Line 83-93)
 
 **Current Code:**
 ```python
@@ -573,7 +573,7 @@ projects_query = db.query(Project).where(
 ---
 
 #### 4.2 Missing Input Constraints
-**File:** `/home/user/Socrates2/backend/app/api/auth.py` (Line 32-49)
+**File:** `/home/user/Socrates/backend/app/api/auth.py` (Line 32-49)
 
 **RegisterRequest Model:**
 ```python
@@ -588,7 +588,7 @@ class RegisterRequest(BaseModel):
 ---
 
 #### 4.3 Email Validation
-**File:** `/home/user/Socrates2/backend/app/api/collaboration.py` (Line 79-81)
+**File:** `/home/user/Socrates/backend/app/api/collaboration.py` (Line 79-81)
 
 **Current Code:**
 ```python
@@ -609,7 +609,7 @@ email: EmailStr = Field(..., description="Email address to invite")
 ---
 
 #### 4.4 Query Parameter Validation - Pagination
-**File:** `/home/user/Socrates2/backend/app/api/sessions.py` (Line 500-503)
+**File:** `/home/user/Socrates/backend/app/api/sessions.py` (Line 500-503)
 
 **Current Code:**
 ```python
@@ -632,7 +632,7 @@ limit: int = Query(100, ge=1, le=1000, description="Maximum records to return"),
 ---
 
 #### 4.5 Regex Pattern Validation
-**File:** `/home/user/Socrates2/backend/app/api/documents.py` (Line 492)
+**File:** `/home/user/Socrates/backend/app/api/documents.py` (Line 492)
 
 **Current Code:**
 ```python
@@ -649,7 +649,7 @@ spec_type: str = Query("functional", regex="^(functional|non-functional|performa
 ---
 
 #### 4.6 File Upload Validation
-**File:** `/home/user/Socrates2/backend/app/api/documents.py` (Line 77-199)
+**File:** `/home/user/Socrates/backend/app/api/documents.py` (Line 77-199)
 
 **Current Code:**
 ```python
@@ -691,7 +691,7 @@ if file.content_type not in ALLOWED_TYPES:
 ### Medium Priority - Improve Validation
 
 #### 4.7 UUID Validation
-**File:** `/home/user/Socrates2/backend/app/api/projects.py` (Line 179)
+**File:** `/home/user/Socrates/backend/app/api/projects.py` (Line 179)
 
 **Current Code:**
 ```python
@@ -716,7 +716,7 @@ def get_project(
 ---
 
 #### 4.8 Range Validation for Numeric Fields
-**File:** `/home/user/Socrates2/backend/app/api/documents.py` (Line 327-328)
+**File:** `/home/user/Socrates/backend/app/api/documents.py` (Line 327-328)
 
 **Current Code:**
 ```python
@@ -733,7 +733,7 @@ threshold: float = Query(0.7, ge=0.0, le=1.0),
 ---
 
 #### 4.9 Message/Text Content Validation
-**File:** `/home/user/Socrates2/backend/app/api/sessions.py` (Line 37-40)
+**File:** `/home/user/Socrates/backend/app/api/sessions.py` (Line 37-40)
 
 **Current Code:**
 ```python
@@ -752,7 +752,7 @@ class ChatMessageRequest(BaseModel):
 ---
 
 #### 4.10 Enum Validation
-**File:** `/home/user/Socrates2/backend/app/api/sessions.py` (Line 686-735)
+**File:** `/home/user/Socrates/backend/app/api/sessions.py` (Line 686-735)
 
 **Current Code:**
 ```python
@@ -938,7 +938,7 @@ def fetch_related_counts(
 from typing import Optional, Dict, Any
 
 class SocratesException(Exception):
-    """Base exception for Socrates2."""
+    """Base exception for Socrates."""
     
     def __init__(
         self,
