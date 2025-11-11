@@ -12,6 +12,7 @@ import json
 
 from ..base import BaseDomain, Question, ExportFormat, ConflictRule, SeverityLevel
 from ..questions import QuestionTemplateEngine
+from ..exporters import ExportTemplateEngine
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +24,9 @@ class ProgrammingDomain(BaseDomain):
     Handles specification and code generation for software projects.
     Supports 8+ programming languages with specialized patterns.
 
-    Questions are loaded from questions.json configuration file,
-    making them easily customizable without code changes.
+    Questions are loaded from questions.json configuration file.
+    Export formats are loaded from exporters.json configuration file.
+    Making both easily customizable without code changes.
     """
 
     domain_id = "programming"
@@ -33,10 +35,12 @@ class ProgrammingDomain(BaseDomain):
     description = "Specification and code generation for software development projects"
 
     def __init__(self):
-        """Initialize programming domain and load questions from configuration."""
+        """Initialize programming domain and load questions/exporters from configuration."""
         super().__init__()
         self._questions: Optional[List[Question]] = None
+        self._exporters: Optional[List[ExportFormat]] = None
         self._load_questions()
+        self._load_exporters()
 
     def _load_questions(self) -> None:
         """Load questions from questions.json configuration file."""
@@ -64,6 +68,32 @@ class ProgrammingDomain(BaseDomain):
             logger.error(f"Failed to load programming questions: {e}")
             self._questions = []
 
+    def _load_exporters(self) -> None:
+        """Load exporters from exporters.json configuration file."""
+        try:
+            # Get path to exporters.json (same directory as this file)
+            config_dir = Path(__file__).parent
+            exporters_file = config_dir / "exporters.json"
+
+            if not exporters_file.exists():
+                logger.error(f"Exporters file not found: {exporters_file}")
+                self._exporters = []
+                return
+
+            # Load exporters using exporter template engine
+            engine = ExportTemplateEngine()
+            self._exporters = engine.load_exporters_from_json(str(exporters_file))
+            logger.info(f"Loaded {len(self._exporters)} programming exporters")
+
+            # Validate exporters
+            errors = engine.validate_exporters(self._exporters)
+            if errors:
+                logger.warning(f"Exporter validation errors: {errors}")
+
+        except Exception as e:
+            logger.error(f"Failed to load programming exporters: {e}")
+            self._exporters = []
+
     def get_categories(self) -> List[str]:
         """Return specification categories for programming."""
         return [
@@ -83,73 +113,10 @@ class ProgrammingDomain(BaseDomain):
         return self._questions if self._questions is not None else []
 
     def get_export_formats(self) -> List[ExportFormat]:
-        """Return supported code generation formats."""
-        return [
-            ExportFormat(
-                format_id="python",
-                name="Python",
-                description="Python class/function generation",
-                file_extension=".py",
-                mime_type="text/x-python",
-                template_id="python_class",
-            ),
-            ExportFormat(
-                format_id="javascript",
-                name="JavaScript",
-                description="JavaScript class/function generation",
-                file_extension=".js",
-                mime_type="text/javascript",
-                template_id="js_class",
-            ),
-            ExportFormat(
-                format_id="typescript",
-                name="TypeScript",
-                description="TypeScript class/interface generation",
-                file_extension=".ts",
-                mime_type="text/typescript",
-                template_id="ts_class",
-            ),
-            ExportFormat(
-                format_id="go",
-                name="Go",
-                description="Go struct/interface generation",
-                file_extension=".go",
-                mime_type="text/x-go",
-                template_id="go_struct",
-            ),
-            ExportFormat(
-                format_id="java",
-                name="Java",
-                description="Java class generation",
-                file_extension=".java",
-                mime_type="text/x-java-source",
-                template_id="java_class",
-            ),
-            ExportFormat(
-                format_id="rust",
-                name="Rust",
-                description="Rust struct generation",
-                file_extension=".rs",
-                mime_type="text/x-rust",
-                template_id="rust_struct",
-            ),
-            ExportFormat(
-                format_id="csharp",
-                name="C#",
-                description="C# class generation",
-                file_extension=".cs",
-                mime_type="text/x-csharp",
-                template_id="csharp_class",
-            ),
-            ExportFormat(
-                format_id="kotlin",
-                name="Kotlin",
-                description="Kotlin data class generation",
-                file_extension=".kt",
-                mime_type="text/x-kotlin",
-                template_id="kotlin_dataclass",
-            ),
-        ]
+        """Return supported code generation formats from configuration."""
+        if self._exporters is None:
+            self._load_exporters()
+        return self._exporters if self._exporters is not None else []
 
     def get_conflict_rules(self) -> List[ConflictRule]:
         """Return conflict detection rules for programming."""

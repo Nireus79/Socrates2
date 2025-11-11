@@ -110,7 +110,7 @@ class TestProgrammingDomain:
         assert metadata["domain_id"] == "programming"
         assert metadata["question_count"] > 0
         assert metadata["export_formats"] >= 8
-        assert len(metadata["conflict_rules"]) > 0
+        assert metadata["conflict_rules"] > 0  # conflict_rules is a count, not a list
 
 
 class TestProgrammingDomainQuestions:
