@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     ACTION_LOGGING_ENABLED: bool = True  # Enable/disable action logging for workflow monitoring
     ACTION_LOG_LEVEL: str = "INFO"  # INFO | DEBUG | WARNING
 
+    # ===== SENTRY ERROR TRACKING =====
+    SENTRY_DSN: Optional[str] = None  # Sentry error tracking DSN (leave blank to disable)
+    APP_VERSION: str = "0.1.0"  # App version for error tracking
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 0-1: percentage of transactions to trace (10% default)
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1  # 0-1: percentage of transactions to profile (10% default)
+
     model_config = ConfigDict(
         env_file=".env",
         case_sensitive=True,

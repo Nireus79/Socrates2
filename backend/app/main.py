@@ -13,9 +13,17 @@ import logging
 from .core.config import settings
 from .core.database import close_db_connections
 from .core.action_logger import initialize_action_logger
+from .core.sentry_config import init_sentry
 from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
 from .api import export_endpoints, llm_endpoints, github_endpoints
 from .api import search, insights, templates, resources
+from .api.error_handlers import (
+    general_exception_handler,
+    validation_error_handler,
+    http_exception_handler
+)
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException
 
 # Configure logging
 logging.basicConfig(
@@ -49,6 +57,9 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     Returns:
         Configured FastAPI application
     """
+    # Initialize Sentry error tracking before creating the app
+    init_sentry()
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         """
@@ -116,6 +127,11 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(insights.router)
     app.include_router(templates.router)
     app.include_router(resources.router)
+
+    # Register exception handlers for error tracking and proper response formatting
+    app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(RequestValidationError, validation_error_handler)
+    app.add_exception_handler(Exception, general_exception_handler)
 
     return app
 

@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="cli" />
+    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="cli">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/future_features/Library.odt" beforeDir="false" afterPath="$PROJECT_DIR$/archive/future_features/Library.odt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/future_features/PHASE_4_CRITICAL_FEATURES.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/future_features/PHASE_4_CRITICAL_FEATURES.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/future_features/PHASE_4_PLAN_REVIEW.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/future_features/PHASE_4_PLAN_REVIEW.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/future_features/PHASE_4_RECOMMENDATIONS.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/future_features/PHASE_4_RECOMMENDATIONS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/future_features/PHASE_4_REVIEW_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/future_features/PHASE_4_REVIEW_SUMMARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/future_features/README_PHASE_4.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/future_features/README_PHASE_4.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/future_features/future.odt" beforeDir="false" afterPath="$PROJECT_DIR$/archive/future_features/future.odt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

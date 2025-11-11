@@ -31,7 +31,7 @@ python -m uvicorn app.main:app --reload
 
 ## Documentation
 
-- **[INSTALL.md](INSTALL.md)** - Complete installation guide
+- **[INSTALL.md](../archive/INSTALL.md)** - Complete installation guide
 - **[PYCHARM_SETUP.md](../PYCHARM_SETUP.md)** - PyCharm configuration
 - **[PHASE_1_IMPLEMENTATION_COMPLETE.md](../PHASE_1_IMPLEMENTATION_COMPLETE.md)** - Implementation details
 
@@ -103,7 +103,7 @@ export PYTHONPATH=.
 pip install -r requirements.txt
 ```
 
-See [INSTALL.md](INSTALL.md) for complete instructions.
+See [INSTALL.md](../archive/INSTALL.md) for complete instructions.
 
 ## Testing
 
