@@ -17,6 +17,7 @@ from .core.sentry_config import init_sentry
 from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
 from .api import export_endpoints, llm_endpoints, github_endpoints
 from .api import search, insights, templates, resources, jobs, billing, documents
+from .api import notifications, export
 from .api.error_handlers import (
     general_exception_handler,
     validation_error_handler,
@@ -178,6 +179,8 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(jobs.router)
     app.include_router(billing.router)
     app.include_router(documents.router)
+    app.include_router(notifications.router)
+    app.include_router(export.router)
 
     # Register exception handlers for error tracking and proper response formatting
     app.add_exception_handler(HTTPException, http_exception_handler)
