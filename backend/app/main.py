@@ -16,7 +16,7 @@ from .core.action_logger import initialize_action_logger
 from .core.sentry_config import init_sentry
 from .api import auth, admin, projects, sessions, conflicts, code_generation, quality, teams
 from .api import export_endpoints, llm_endpoints, github_endpoints
-from .api import search, insights, templates, resources
+from .api import search, insights, templates, resources, jobs
 from .api.error_handlers import (
     general_exception_handler,
     validation_error_handler,
@@ -41,6 +41,43 @@ def _register_default_agents():
     from .agents.orchestrator import initialize_default_agents
     initialize_default_agents()
     logger.info("AgentOrchestrator initialized with default agents")
+
+
+def _initialize_job_scheduler():
+    """
+    Initialize the background job scheduler.
+    Registers all scheduled tasks.
+    """
+    from .services.job_scheduler import get_scheduler
+    from .jobs import aggregate_daily_analytics, cleanup_old_sessions
+
+    scheduler = get_scheduler()
+    scheduler.start()
+
+    # Register jobs
+    # Daily analytics aggregation at 2 AM UTC
+    scheduler.add_job(
+        aggregate_daily_analytics,
+        trigger="cron",
+        job_id="daily_analytics_aggregation",
+        name="Daily Analytics Aggregation",
+        hour=2,
+        minute=0,
+        timezone="UTC"
+    )
+
+    # Session cleanup at 3 AM UTC
+    scheduler.add_job(
+        cleanup_old_sessions,
+        trigger="cron",
+        job_id="cleanup_old_sessions",
+        name="Clean Up Old Sessions",
+        hour=3,
+        minute=0,
+        timezone="UTC"
+    )
+
+    logger.info("Background job scheduler initialized with registered jobs")
 
 
 def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
@@ -78,6 +115,9 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
         )
         logger.info(f"Action logging: {'ENABLED' if settings.ACTION_LOGGING_ENABLED else 'DISABLED'}")
 
+        # Initialize background job scheduler
+        _initialize_job_scheduler()
+
         # Initialize orchestrator and register agents
         if register_agents_fn:
             # Use injected agent registration function
@@ -90,6 +130,14 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
 
         # Shutdown
         logger.info("Shutting down Socrates2 API...")
+
+        # Shutdown job scheduler
+        from .services.job_scheduler import get_scheduler
+        scheduler = get_scheduler()
+        if scheduler.is_running:
+            scheduler.stop()
+            logger.info("Job scheduler stopped")
+
         close_db_connections()
         logger.info("Database connections closed")
 
@@ -127,6 +175,7 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(insights.router)
     app.include_router(templates.router)
     app.include_router(resources.router)
+    app.include_router(jobs.router)
 
     # Register exception handlers for error tracking and proper response formatting
     app.add_exception_handler(HTTPException, http_exception_handler)
