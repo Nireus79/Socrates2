@@ -241,8 +241,14 @@
     "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:coverage:open": "jest --coverage && open coverage/index.html",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "test:ci": "jest --coverage --passWithNoTests",
     "lint": "eslint src/**/*.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && npm run esbuild",
+    "build:prod": "npm run typecheck && npm run vscode:prepublish"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
