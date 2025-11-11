@@ -13,6 +13,7 @@ import json
 from ..base import BaseDomain, Question, ExportFormat, ConflictRule, SeverityLevel
 from ..questions import QuestionTemplateEngine
 from ..exporters import ExportTemplateEngine
+from ..rules import ConflictRuleEngine
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,8 @@ class ProgrammingDomain(BaseDomain):
 
     Questions are loaded from questions.json configuration file.
     Export formats are loaded from exporters.json configuration file.
-    Making both easily customizable without code changes.
+    Conflict rules are loaded from rules.json configuration file.
+    Making all easily customizable without code changes.
     """
 
     domain_id = "programming"
@@ -35,12 +37,14 @@ class ProgrammingDomain(BaseDomain):
     description = "Specification and code generation for software development projects"
 
     def __init__(self):
-        """Initialize programming domain and load questions/exporters from configuration."""
+        """Initialize programming domain and load configuration from files."""
         super().__init__()
         self._questions: Optional[List[Question]] = None
         self._exporters: Optional[List[ExportFormat]] = None
+        self._rules: Optional[List[ConflictRule]] = None
         self._load_questions()
         self._load_exporters()
+        self._load_rules()
 
     def _load_questions(self) -> None:
         """Load questions from questions.json configuration file."""
@@ -94,6 +98,32 @@ class ProgrammingDomain(BaseDomain):
             logger.error(f"Failed to load programming exporters: {e}")
             self._exporters = []
 
+    def _load_rules(self) -> None:
+        """Load conflict rules from rules.json configuration file."""
+        try:
+            # Get path to rules.json (same directory as this file)
+            config_dir = Path(__file__).parent
+            rules_file = config_dir / "rules.json"
+
+            if not rules_file.exists():
+                logger.error(f"Rules file not found: {rules_file}")
+                self._rules = []
+                return
+
+            # Load rules using conflict rule engine
+            engine = ConflictRuleEngine()
+            self._rules = engine.load_rules_from_json(str(rules_file))
+            logger.info(f"Loaded {len(self._rules)} programming conflict rules")
+
+            # Validate rules
+            errors = engine.validate_rules(self._rules)
+            if errors:
+                logger.warning(f"Rule validation errors: {errors}")
+
+        except Exception as e:
+            logger.error(f"Failed to load programming rules: {e}")
+            self._rules = []
+
     def get_categories(self) -> List[str]:
         """Return specification categories for programming."""
         return [
@@ -119,41 +149,10 @@ class ProgrammingDomain(BaseDomain):
         return self._exporters if self._exporters is not None else []
 
     def get_conflict_rules(self) -> List[ConflictRule]:
-        """Return conflict detection rules for programming."""
-        return [
-            ConflictRule(
-                rule_id="perf_conflict",
-                name="Performance Consistency",
-                description="Response time requirements must be consistent",
-                condition="response_time specifications must not contradict",
-                severity=SeverityLevel.ERROR,
-                message="Conflicting response time specifications",
-            ),
-            ConflictRule(
-                rule_id="sec_conflict",
-                name="Security Consistency",
-                description="Security standards must align",
-                condition="encryption_standard specifications must be compatible",
-                severity=SeverityLevel.ERROR,
-                message="Conflicting security specifications",
-            ),
-            ConflictRule(
-                rule_id="scale_conflict",
-                name="Scalability Planning",
-                description="Scalability approach must be feasible",
-                condition="throughput and resource constraints must align",
-                severity=SeverityLevel.WARNING,
-                message="Scalability specifications may be unrealistic",
-            ),
-            ConflictRule(
-                rule_id="arch_consistency",
-                name="Architectural Alignment",
-                description="Architecture must support requirements",
-                condition="performance targets must be achievable with proposed architecture",
-                severity=SeverityLevel.ERROR,
-                message="Requirements conflict with proposed architecture",
-            ),
-        ]
+        """Return conflict detection rules from configuration."""
+        if self._rules is None:
+            self._load_rules()
+        return self._rules if self._rules is not None else []
 
     def get_quality_analyzers(self) -> List[str]:
         """Return quality analyzers for programming domain."""
