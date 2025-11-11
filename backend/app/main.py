@@ -18,17 +18,17 @@ from .api import (
     admin,
     analytics,
     auth,
-    billing,
+    # billing,  # TODO: Install stripe module
     code_generation,
     collaboration,
     conflicts,
-    documents,
+    # documents,  # TODO: Install chardet module
     domains,
     export,
     export_endpoints,
     github_endpoints,
     insights,
-    jobs,
+    # jobs,  # TODO: Install apscheduler module
     llm_endpoints,
     notifications,
     projects,
@@ -200,9 +200,9 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(insights.router)
     app.include_router(templates.router)
     app.include_router(resources.router)
-    app.include_router(jobs.router)
-    app.include_router(billing.router)
-    app.include_router(documents.router)
+    # app.include_router(jobs.router)  # TODO: Install apscheduler module
+    # app.include_router(billing.router)  # TODO: Install stripe module
+    # app.include_router(documents.router)  # TODO: Install chardet module
     app.include_router(notifications.router)
     app.include_router(export.router)
     app.include_router(collaboration.router)

@@ -6,49 +6,30 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="Extension, or extinction">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Socrates2.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/001_create_users_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/002_create_refresh_tokens_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/003_create_projects_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/004_create_sessions_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/005_create_questions_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/006_create_specifications_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/007_create_conversation_history_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/008_create_conflicts_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/009_create_generated_projects_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/010_create_generated_files_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/011_create_quality_metrics_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/012_create_user_behavior_patterns_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/013_create_question_effectiveness_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/014_create_knowledge_base_documents_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/015_create_teams_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/016_create_team_members_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/017_create_project_shares_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/018_create_api_keys_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/019_create_llm_usage_tracking_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/020_add_user_identity_fields.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/021_add_project_ownership.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/022_add_performance_indexes.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/023_add_key_value_to_specifications.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/024_make_key_value_required.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/025_add_search_indexes.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/026_migrate_to_pgvector.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/027_add_user_subscription_fields.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/028_add_analytics_tables.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/029_create_subscriptions_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/030_create_invoices_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/031_create_admin_roles_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/032_create_admin_users_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/033_create_admin_audit_logs_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/034_create_analytics_metrics_tables.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/035_create_document_chunks_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/036_create_notification_preferences_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/037_create_activity_logs_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/alembic/versions/038_create_project_invitations_table.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/api/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/api/projects.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/projects.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/api/teams.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/teams.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/archive/DATABASE_SCHEMA_REFERENCE.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/DATABASE_SCHEMA_REFERENCE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/archive/MIGRATION_AUDIT_REPORT.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/MIGRATION_AUDIT_REPORT.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/archive/MIGRATION_IMPLEMENTATION_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/MIGRATION_IMPLEMENTATION_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/archive/MIGRATION_REDESIGN_COMPLETE.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/MIGRATION_REDESIGN_COMPLETE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/archive/PHASE_2_COMPLETION_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/PHASE_2_COMPLETION_SUMMARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/archive/PHASE_2_DELIVERABLES.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/PHASE_2_DELIVERABLES.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/archive/PHASE_3_PROGRESS_REPORT.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/PHASE_3_PROGRESS_REPORT.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/archive/QUICK_START_MIGRATIONS.md" beforeDir="false" afterPath="$PROJECT_DIR$/archive/QUICK_START_MIGRATIONS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/PHASE_4_PROGRESS_REPORT.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/PHASE_4_PROGRESS_REPORT.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/api/error_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/error_handlers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/core/sentry_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/sentry_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/app/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/models/activity_log.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/activity_log.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/models/invoice.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/invoice.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/models/subscription.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/models/subscription.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/repositories/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/repositories/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pytest.ini" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pytest.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/scripts/run_migrations_safe.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/scripts/run_migrations_safe.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/pytest.ini" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/pytest.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extensions/vs-code/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/extensions/vs-code/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,8 +97,30 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.main">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="Socrates" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="Socrates2" />
+      <module name="Socrates" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -138,8 +141,54 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="Socrates" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Docutils task">
+      <module name="Socrates" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Sphinx task">
+      <module name="Socrates" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
     <configuration name="Python tests in tests" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="Socrates2" />
+      <module name="Socrates" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -151,6 +200,40 @@
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;$PROJECT_DIR$/backend/tests&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Autodetect">
+      <module name="Socrates" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <module name="Socrates" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
   </component>
@@ -410,7 +493,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762835563941</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="Extension, or extinction">
+      <option name="closed" value="true" />
+      <created>1762875271910</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1762875271910</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

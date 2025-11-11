@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir \"C:\\Users\\themi\\PycharmProjects\\Socrates2\\backend\\alembic\\versions\")",
+      "Bash(dir \"C:\\Users\\themi\\PycharmProjects\\Socrates\\backend\\alembic\\versions\")",
       "Bash(ls:*)",
       "Bash(set DATABASE_URL=postgresql://postgres@localhost:5432/socrates_auth:*)",
       "Bash(alembic current:*)",
@@ -38,7 +38,11 @@
       "Bash(export DATABASE_URL_AUTH=\"postgresql://postgres@localhost:5432/socrates_auth\")",
       "Bash(done)",
       "Bash(export DATABASE_URL=\"postgresql://postgres@localhost:5432/socrates_specs\")",
-      "Bash(export DATABASE_URL:*)"
+      "Bash(export DATABASE_URL:*)",
+      "Bash(git -C \"/c/Users/themi/PycharmProjects/Socrates\" log -1 --oneline)",
+      "Bash(git -C \"/c/Users/themi/PycharmProjects/Socrates\" log -1 --oneline)",
+      "Bash(REN \"C:\\Users\\themi\\PycharmProjects\\Socrates\" \"Socrates_temp\")",
+      "Bash(REN \"C:\\Users\\themi\\PycharmProjects\\Socrates_temp\" \"Socrates\")"
     ],
     "deny": [],
     "ask": []

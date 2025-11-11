@@ -9,7 +9,12 @@ This module provides:
 import logging
 from typing import Any, Dict
 
-import sentry_sdk
+try:
+    import sentry_sdk
+    SENTRY_AVAILABLE = True
+except ImportError:
+    SENTRY_AVAILABLE = False
+
 from fastapi import Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -36,7 +41,7 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
         JSON response with 500 status code and error details
     """
     # Capture in Sentry for monitoring and alerting
-    event_id = sentry_sdk.capture_exception(exc)
+    event_id = sentry_sdk.capture_exception(exc) if SENTRY_AVAILABLE else None
 
     # Extract request info for logging
     method = request.method
@@ -102,14 +107,15 @@ async def validation_error_handler(
     )
 
     # Capture in Sentry with context
-    sentry_sdk.capture_exception(
-        exc,
-        tags={
-            "error_type": "validation",
-            "path": path,
-            "method": method,
-        }
-    )
+    if SENTRY_AVAILABLE:
+        sentry_sdk.capture_exception(
+            exc,
+            tags={
+                "error_type": "validation",
+                "path": path,
+                "method": method,
+            }
+        )
 
     # Return validation errors to client
     return JSONResponse(
@@ -149,7 +155,7 @@ async def http_exception_handler(
         JSON response with the specified status code
     """
     # Only capture 5xx errors in Sentry
-    if exc.status_code >= 500:
+    if exc.status_code >= 500 and SENTRY_AVAILABLE:
         event_id = sentry_sdk.capture_exception(exc)
     else:
         event_id = None

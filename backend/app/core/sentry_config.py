@@ -11,10 +11,14 @@ import logging
 import re
 from typing import Any, Dict, Optional
 
-import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlAlchemyIntegration
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+    from sentry_sdk.integrations.sqlalchemy import SqlAlchemyIntegration
+    SENTRY_AVAILABLE = True
+except ImportError:
+    SENTRY_AVAILABLE = False
 
 from ..core.config import settings
 
@@ -169,8 +173,12 @@ def init_sentry() -> None:
     - Release tagging
     - Data scrubbing for security
 
-    Does nothing if SENTRY_DSN is not configured.
+    Does nothing if SENTRY_DSN is not configured or Sentry is not available.
     """
+    if not SENTRY_AVAILABLE:
+        logger.debug("Sentry SDK not installed, error tracking disabled")
+        return
+
     if not settings.SENTRY_DSN:
         logger.debug("Sentry DSN not configured, error tracking disabled")
         return

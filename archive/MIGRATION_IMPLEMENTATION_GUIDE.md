@@ -43,7 +43,7 @@ python scripts/run_migrations_safe.py --specs-only
 
 ### Two-Database Design
 
-Socrates2 uses **Alembic branching** for multi-database migrations:
+Socrates uses **Alembic branching** for multi-database migrations:
 
 ```
 DATABASE: socrates_auth
@@ -622,4 +622,4 @@ For issues or questions:
 ---
 
 **Last Updated:** November 11, 2025
-**Maintained By:** Socrates2 Team
+**Maintained By:** Socrates Team

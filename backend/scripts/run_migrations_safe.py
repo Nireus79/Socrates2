@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Safe Migration Runner for Socrates2
+Safe Migration Runner for Socrates
 
 Handles running migrations for both databases (socrates_auth and socrates_specs)
 with proper error handling and rollback capabilities.
@@ -203,7 +203,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Safe migration runner for Socrates2",
+        description="Safe migration runner for Socrates",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

@@ -1,6 +1,6 @@
 {
   "name": "socrates",
-  "displayName": "Socrates2 - AI-Powered Specification Assistant",
+  "displayName": "Socrates - AI-Powered Specification Assistant",
   "description": "Bring your specifications into VS Code. Generate code, detect conflicts, and manage projects directly from your editor.",
   "version": "0.1.0",
   "publisher": "anthropic",
@@ -28,7 +28,7 @@
       "activitybar": [
         {
           "id": "socrates-explorer",
-          "title": "Socrates2",
+          "title": "Socrates",
           "icon": "resources/socrates-icon.svg"
         }
       ]
@@ -38,7 +38,7 @@
         {
           "id": "projects",
           "name": "Projects",
-          "contextualTitle": "Socrates2 Projects"
+          "contextualTitle": "Socrates Projects"
         },
         {
           "id": "specifications",
@@ -55,17 +55,17 @@
     "commands": [
       {
         "command": "socrates.authenticate",
-        "title": "Socrates2: Sign In",
-        "description": "Sign in to your Socrates2 account"
+        "title": "Socrates: Sign In",
+        "description": "Sign in to your Socrates account"
       },
       {
         "command": "socrates.logout",
-        "title": "Socrates2: Sign Out",
-        "description": "Sign out of your Socrates2 account"
+        "title": "Socrates: Sign Out",
+        "description": "Sign out of your Socrates account"
       },
       {
         "command": "socrates.refreshProjects",
-        "title": "Socrates2: Refresh Projects",
+        "title": "Socrates: Refresh Projects",
         "icon": "$(refresh)"
       },
       {
@@ -80,7 +80,7 @@
       },
       {
         "command": "socrates.refreshSpecifications",
-        "title": "Socrates2: Refresh Specifications",
+        "title": "Socrates: Refresh Specifications",
         "icon": "$(refresh)"
       },
       {
@@ -90,26 +90,26 @@
       },
       {
         "command": "socrates.generateCode",
-        "title": "Socrates2: Generate Code from Specification",
+        "title": "Socrates: Generate Code from Specification",
         "description": "Generate code snippet based on the selected specification",
         "icon": "$(bracket)"
       },
       {
         "command": "socrates.searchSpecifications",
-        "title": "Socrates2: Search Specifications",
+        "title": "Socrates: Search Specifications",
         "description": "Search across all specifications",
         "icon": "$(search)"
       },
       {
         "command": "socrates.viewConflicts",
-        "title": "Socrates2: View Project Conflicts",
+        "title": "Socrates: View Project Conflicts",
         "description": "View all specification conflicts in the current project",
         "icon": "$(warning)"
       },
       {
         "command": "socrates.openSettings",
-        "title": "Socrates2: Settings",
-        "description": "Open Socrates2 extension settings",
+        "title": "Socrates: Settings",
+        "description": "Open Socrates extension settings",
         "icon": "$(gear)"
       },
       {
@@ -177,17 +177,17 @@
       ]
     },
     "configuration": {
-      "title": "Socrates2",
+      "title": "Socrates",
       "properties": {
         "socrates.apiUrl": {
           "type": "string",
           "default": "http://localhost:8000",
-          "description": "Socrates2 API server URL"
+          "description": "Socrates API server URL"
         },
         "socrates.autoSync": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically sync with Socrates2 server"
+          "description": "Automatically sync with Socrates server"
         },
         "socrates.syncInterval": {
           "type": "number",

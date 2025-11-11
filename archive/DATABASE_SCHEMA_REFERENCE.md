@@ -1,4 +1,4 @@
-# Socrates2 Database Schema Reference
+# Socrates Database Schema Reference
 
 **Version:** 1.0 (Phase 2 Complete)
 **Date:** November 11, 2025
@@ -8,7 +8,7 @@
 
 ## Overview
 
-Socrates2 uses a two-database architecture for optimal separation of concerns:
+Socrates uses a two-database architecture for optimal separation of concerns:
 - **socrates_auth:** User authentication and admin management
 - **socrates_specs:** Project specifications, collaboration, and analytics
 
@@ -1118,4 +1118,4 @@ socrates_specs:
 ---
 
 **Last Updated:** November 11, 2025
-**Maintained By:** Socrates2 Team
+**Maintained By:** Socrates Team

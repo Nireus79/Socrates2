@@ -3,7 +3,7 @@ Activity log model for tracking user actions on projects.
 
 Records all significant user activities for audit trails, activity feeds, and analytics.
 """
-from sqlalchemy import Column, ForeignKey, Index, String, Text
+from sqlalchemy import Column, ForeignKey, Index, JSON, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
@@ -102,8 +102,8 @@ class ActivityLog(BaseModel):
         comment="Human-readable description of the action"
     )
 
-    metadata = Column(
-        JSONB,
+    activity_metadata = Column(
+        JSON,
         nullable=True,
         comment="""Additional context as JSON. Examples:
                    - before/after values for updates
@@ -125,7 +125,7 @@ class ActivityLog(BaseModel):
             "entity_type": self.entity_type,
             "entity_id": str(self.entity_id) if self.entity_id else None,
             "description": self.description,
-            "metadata": self.metadata,
+            "metadata": self.activity_metadata,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }

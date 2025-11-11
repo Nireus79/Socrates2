@@ -1,6 +1,6 @@
 # Quick Start: Database Migrations
 
-**For:** Developers new to Socrates2
+**For:** Developers new to Socrates
 **Time:** 5 minutes to read
 
 ---
@@ -179,7 +179,7 @@ project = specs_session.query(Project).filter_by(id=project_id).first()
 
 ### Database Separation
 
-Socrates2 uses **two separate databases** for different purposes:
+Socrates uses **two separate databases** for different purposes:
 
 | Database | Purpose | Tables |
 |---|---|---|
