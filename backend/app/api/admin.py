@@ -6,17 +6,27 @@ Provides:
 - System statistics
 - Agent information
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
+from datetime import datetime
 
 from ..core.database import get_db_auth, get_db_specs
-from ..core.security import get_current_admin_user
+from ..core.security import get_current_admin_user, get_current_active_user
 from ..models.user import User
 from ..agents.orchestrator import get_orchestrator
 from ..core.action_logger import toggle_action_logging, is_action_logging_enabled
+from ..services.rbac_service import RBACService, PERMISSIONS
+from ..services.analytics_service import AnalyticsService
+from ..models.admin_user import AdminUser
+from ..models.admin_role import AdminRole
+from ..models.admin_audit_log import AdminAuditLog
+from datetime import timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
@@ -258,4 +268,533 @@ def get_action_logging_status(
     return {
         "enabled": enabled,
         "message": f"Action logging is currently {'enabled' if enabled else 'disabled'}"
+    }
+
+
+# ===== Response Models =====
+
+class AdminRoleResponse(BaseModel):
+    """Admin role response model."""
+    id: str
+    name: str
+    description: str
+    permissions: List[str]
+    is_system_role: bool
+    users_count: int
+
+
+class AdminUserResponse(BaseModel):
+    """Admin user response model."""
+    id: str
+    user_id: str
+    user_email: str
+    role_name: str
+    granted_at: str
+    granted_by_email: Optional[str]
+    reason: Optional[str]
+    is_active: bool
+
+
+class AuditLogResponse(BaseModel):
+    """Audit log entry response model."""
+    id: str
+    admin_email: str
+    action: str
+    resource_type: str
+    resource_id: Optional[str]
+    details: Dict[str, Any]
+    ip_address: Optional[str]
+    created_at: str
+
+
+class MetricsResponse(BaseModel):
+    """Metrics data response model."""
+    dau: Optional[Dict[str, Any]]
+    mrr: Optional[Dict[str, Any]]
+    churn: Optional[Dict[str, Any]]
+    funnel: Optional[Dict[str, Any]]
+
+
+class UserSearchResponse(BaseModel):
+    """User search result response model."""
+    id: str
+    email: str
+    name: Optional[str]
+    is_active: bool
+    is_verified: bool
+    subscription_tier: str
+    created_at: str
+    last_login: Optional[str]
+    admin_role: Optional[str]
+
+
+# ===== Helper Functions =====
+
+def require_permission(permission: str):
+    """
+    Dependency to check if user has specific permission.
+
+    Args:
+        permission: Required permission name
+
+    Returns:
+        Dependency function
+    """
+    async def check_permission(current_user: User = Depends(get_current_admin_user)) -> User:
+        if not RBACService.has_permission(current_user.id, permission):
+            raise HTTPException(
+                status_code=403,
+                detail=f"User does not have '{permission}' permission"
+            )
+        return current_user
+
+    return check_permission
+
+
+# ===== Admin Roles Endpoints =====
+
+@router.get("/roles", response_model=List[AdminRoleResponse])
+def list_admin_roles(
+    current_user: User = Depends(require_permission("roles_view")),
+    db: Session = Depends(get_db_auth)
+) -> List[AdminRoleResponse]:
+    """
+    List all admin roles.
+    Requires 'roles_view' permission.
+
+    Returns:
+        List of admin roles with user counts
+    """
+    from ..models.admin_role import AdminRole
+    from ..models.admin_user import AdminUser
+
+    roles = db.query(AdminRole).all()
+    result = []
+
+    for role in roles:
+        users_count = db.query(AdminUser).filter(
+            AdminUser.role_id == role.id,
+            AdminUser.revoked_at.is_(None)
+        ).count()
+
+        result.append(AdminRoleResponse(
+            id=str(role.id),
+            name=role.name,
+            description=role.description,
+            permissions=role.permissions,
+            is_system_role=role.is_system_role,
+            users_count=users_count
+        ))
+
+    return result
+
+
+@router.get("/roles/{role_id}", response_model=AdminRoleResponse)
+def get_admin_role(
+    role_id: str,
+    current_user: User = Depends(require_permission("roles_view")),
+    db: Session = Depends(get_db_auth)
+) -> AdminRoleResponse:
+    """
+    Get specific admin role details.
+    Requires 'roles_view' permission.
+
+    Args:
+        role_id: Role ID
+
+    Returns:
+        Admin role details
+    """
+    from ..models.admin_role import AdminRole
+    from ..models.admin_user import AdminUser
+
+    role = db.query(AdminRole).filter(AdminRole.id == role_id).first()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+
+    users_count = db.query(AdminUser).filter(
+        AdminUser.role_id == role.id,
+        AdminUser.revoked_at.is_(None)
+    ).count()
+
+    return AdminRoleResponse(
+        id=str(role.id),
+        name=role.name,
+        description=role.description,
+        permissions=role.permissions,
+        is_system_role=role.is_system_role,
+        users_count=users_count
+    )
+
+
+# ===== Admin Users Endpoints =====
+
+@router.get("/users", response_model=List[AdminUserResponse])
+def list_admin_users(
+    role_id: Optional[str] = None,
+    current_user: User = Depends(require_permission("users_view")),
+    db: Session = Depends(get_db_auth)
+) -> List[AdminUserResponse]:
+    """
+    List all admin users.
+    Requires 'users_view' permission.
+
+    Args:
+        role_id: Optional role filter
+
+    Returns:
+        List of admin users
+    """
+    from ..models.admin_user import AdminUser
+    from ..models.admin_role import AdminRole
+
+    query = db.query(AdminUser).filter(AdminUser.revoked_at.is_(None))
+
+    if role_id:
+        query = query.filter(AdminUser.role_id == role_id)
+
+    admin_users = query.all()
+    result = []
+
+    for admin_user in admin_users:
+        role = db.query(AdminRole).filter(AdminRole.id == admin_user.role_id).first()
+        user = db.query(User).filter(User.id == admin_user.user_id).first()
+        granted_by = db.query(User).filter(User.id == admin_user.granted_by_id).first() if admin_user.granted_by_id else None
+
+        result.append(AdminUserResponse(
+            id=str(admin_user.id),
+            user_id=str(admin_user.user_id),
+            user_email=user.email if user else "Unknown",
+            role_name=role.name if role else "Unknown",
+            granted_at=admin_user.created_at.isoformat(),
+            granted_by_email=granted_by.email if granted_by else None,
+            reason=admin_user.reason,
+            is_active=admin_user.is_active
+        ))
+
+    return result
+
+
+@router.post("/users/{user_id}/grant-role")
+def grant_admin_role(
+    user_id: str,
+    role_id: str = Query(..., description="Role ID to grant"),
+    reason: Optional[str] = Query(None, description="Reason for granting"),
+    current_user: User = Depends(require_permission("users_manage")),
+    db: Session = Depends(get_db_auth)
+) -> Dict[str, Any]:
+    """
+    Grant admin role to user.
+    Requires 'users_manage' permission.
+
+    Args:
+        user_id: User ID
+        role_id: Role ID to grant
+        reason: Optional reason for granting
+
+    Returns:
+        Success response
+    """
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    RBACService.grant_admin_role(
+        user_id=user_id,
+        role_id=role_id,
+        granted_by_id=str(current_user.id),
+        reason=reason,
+        db=db
+    )
+
+    logger.info(f"Admin {current_user.id} granted role {role_id} to user {user_id}")
+
+    return {
+        "status": "success",
+        "message": f"Role granted to {target_user.email}",
+        "user_id": user_id,
+        "role_id": role_id
+    }
+
+
+@router.post("/users/{user_id}/revoke-role")
+def revoke_admin_role(
+    user_id: str,
+    current_user: User = Depends(require_permission("users_manage")),
+    db: Session = Depends(get_db_auth)
+) -> Dict[str, Any]:
+    """
+    Revoke admin role from user.
+    Requires 'users_manage' permission.
+
+    Args:
+        user_id: User ID
+
+    Returns:
+        Success response
+    """
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    RBACService.revoke_admin_role(user_id=user_id, db=db)
+
+    logger.info(f"Admin {current_user.id} revoked admin role from user {user_id}")
+
+    return {
+        "status": "success",
+        "message": f"Role revoked from {target_user.email}",
+        "user_id": user_id
+    }
+
+
+# ===== User Management Endpoints =====
+
+@router.get("/users/search", response_model=List[UserSearchResponse])
+def search_users(
+    query: str = Query(..., min_length=1, description="Search query (email, name, or ID)"),
+    limit: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(require_permission("users_view")),
+    db: Session = Depends(get_db_auth)
+) -> List[UserSearchResponse]:
+    """
+    Search users by email, name, or ID.
+    Requires 'users_view' permission.
+
+    Args:
+        query: Search query
+        limit: Maximum results to return
+
+    Returns:
+        List of matching users
+    """
+    from sqlalchemy import or_
+
+    users = db.query(User).filter(
+        or_(
+            User.email.ilike(f"%{query}%"),
+            User.name.ilike(f"%{query}%"),
+            User.id == query
+        )
+    ).limit(limit).all()
+
+    result = []
+    for user in users:
+        admin_user = db.query(AdminUser).filter(
+            AdminUser.user_id == user.id,
+            AdminUser.revoked_at.is_(None)
+        ).first()
+
+        admin_role = None
+        if admin_user:
+            role = db.query(AdminRole).filter(AdminRole.id == admin_user.role_id).first()
+            admin_role = role.name if role else None
+
+        result.append(UserSearchResponse(
+            id=str(user.id),
+            email=user.email,
+            name=user.name,
+            is_active=user.is_active,
+            is_verified=user.is_verified,
+            subscription_tier=user.subscription_tier or "free",
+            created_at=user.created_at.isoformat(),
+            last_login=user.last_login.isoformat() if user.last_login else None,
+            admin_role=admin_role
+        ))
+
+    return result
+
+
+@router.post("/users/{user_id}/suspend")
+def suspend_user(
+    user_id: str,
+    reason: Optional[str] = Query(None, description="Suspension reason"),
+    current_user: User = Depends(require_permission("users_manage")),
+    db: Session = Depends(get_db_auth)
+) -> Dict[str, Any]:
+    """
+    Suspend user account (disable login).
+    Requires 'users_manage' permission.
+
+    Args:
+        user_id: User ID
+        reason: Suspension reason
+
+    Returns:
+        Success response
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.id == str(current_user.id):
+        raise HTTPException(status_code=400, detail="Cannot suspend yourself")
+
+    user.is_active = False
+    db.commit()
+
+    RBACService.audit_log(
+        admin_id=str(current_user.id),
+        action="user_suspended",
+        resource_type="user",
+        resource_id=user_id,
+        details={"reason": reason},
+        db=db
+    )
+
+    logger.info(f"Admin {current_user.id} suspended user {user_id}")
+
+    return {
+        "status": "success",
+        "message": f"User {user.email} has been suspended",
+        "user_id": user_id
+    }
+
+
+@router.post("/users/{user_id}/activate")
+def activate_user(
+    user_id: str,
+    current_user: User = Depends(require_permission("users_manage")),
+    db: Session = Depends(get_db_auth)
+) -> Dict[str, Any]:
+    """
+    Activate suspended user account.
+    Requires 'users_manage' permission.
+
+    Args:
+        user_id: User ID
+
+    Returns:
+        Success response
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.is_active = True
+    db.commit()
+
+    RBACService.audit_log(
+        admin_id=str(current_user.id),
+        action="user_activated",
+        resource_type="user",
+        resource_id=user_id,
+        details={},
+        db=db
+    )
+
+    logger.info(f"Admin {current_user.id} activated user {user_id}")
+
+    return {
+        "status": "success",
+        "message": f"User {user.email} has been activated",
+        "user_id": user_id
+    }
+
+
+# ===== Analytics Endpoints =====
+
+@router.get("/metrics", response_model=MetricsResponse)
+def get_metrics(
+    current_user: User = Depends(require_permission("metrics_view")),
+    db_auth: Session = Depends(get_db_auth),
+    db_specs: Session = Depends(get_db_specs)
+) -> MetricsResponse:
+    """
+    Get current analytics metrics.
+    Requires 'metrics_view' permission.
+
+    Returns:
+        Current metrics snapshot
+    """
+    metrics = AnalyticsService.get_current_metrics(db_auth, db_specs)
+
+    return MetricsResponse(**metrics)
+
+
+@router.get("/audit-logs", response_model=List[AuditLogResponse])
+def get_audit_logs(
+    action: Optional[str] = None,
+    resource_type: Optional[str] = None,
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(require_permission("audit_logs_view")),
+    db: Session = Depends(get_db_auth)
+) -> List[AuditLogResponse]:
+    """
+    Get audit logs with optional filtering.
+    Requires 'audit_logs_view' permission.
+
+    Args:
+        action: Filter by action type
+        resource_type: Filter by resource type
+        limit: Maximum results
+        offset: Result offset for pagination
+
+    Returns:
+        List of audit log entries
+    """
+    logs = RBACService.get_admin_log(
+        action=action,
+        resource_type=resource_type,
+        limit=limit,
+        offset=offset,
+        db=db
+    )
+
+    result = []
+    for log in logs:
+        admin_user = db.query(User).filter(User.id == log.admin_id).first()
+
+        result.append(AuditLogResponse(
+            id=str(log.id),
+            admin_email=admin_user.email if admin_user else "Unknown",
+            action=log.action,
+            resource_type=log.resource_type,
+            resource_id=log.resource_id,
+            details=log.details or {},
+            ip_address=log.ip_address,
+            created_at=log.created_at.isoformat()
+        ))
+
+    return result
+
+
+@router.get("/metrics/export")
+async def export_metrics(
+    format: str = Query("json", regex="^(json|csv)$"),
+    current_user: User = Depends(require_permission("metrics_export")),
+    db_auth: Session = Depends(get_db_auth),
+    db_specs: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Export metrics in specified format.
+    Requires 'metrics_export' permission.
+
+    Args:
+        format: Export format (json or csv)
+
+    Returns:
+        Metrics data
+    """
+    from datetime import timezone
+
+    metrics = AnalyticsService.get_current_metrics(db_auth, db_specs)
+
+    RBACService.audit_log(
+        admin_id=str(current_user.id),
+        action="metrics_exported",
+        resource_type="metrics",
+        resource_id=None,
+        details={"format": format},
+        db=db_auth
+    )
+
+    logger.info(f"Admin {current_user.id} exported metrics in {format} format")
+
+    return {
+        "status": "success",
+        "format": format,
+        "data": metrics,
+        "exported_at": datetime.now(timezone.utc).isoformat()
     }
