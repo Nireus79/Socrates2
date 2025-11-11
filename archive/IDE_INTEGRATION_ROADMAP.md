@@ -87,7 +87,7 @@ Automatically syncs files to IDE workspace
 
 ### 📁 File Structure
 ```
-socrates2-vscode-extension/
+socrates-vscode-extension/
 ├── package.json
 ├── tsconfig.json
 ├── webpack.config.js

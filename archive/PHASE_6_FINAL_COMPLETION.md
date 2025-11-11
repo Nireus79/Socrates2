@@ -339,7 +339,7 @@ Socrates Phase 6 has been **successfully completed** with all components at 100%
 2. **IntelliJ IDEA:** JetBrains Marketplace
 3. **PyCharm:** JetBrains Marketplace
 4. **WebStorm:** JetBrains Marketplace
-5. **LSP:** PyPI (pip install socrates2-lsp)
+5. **LSP:** PyPI (pip install socrates-lsp)
 
 ### Publication Process
 - Automated via GitHub Actions on release creation

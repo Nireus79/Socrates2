@@ -405,8 +405,8 @@ Phase 9: Advanced observability, auto-scaling
 ## Contacts & Resources
 
 - **GitHub:** https://github.com/nireus79/Socrates
-- **Email:** dev@socrates2.io
-- **Security Issues:** security@socrates2.io
+- **Email:** dev@socrates.io
+- **Security Issues:** security@socrates.io
 - **Documentation:** See README.md and CONTRIBUTING.md
 - **GitHub Discussions:** Feature requests and community Q&A
 

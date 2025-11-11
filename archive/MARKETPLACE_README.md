@@ -103,7 +103,7 @@ Supported languages:
 5. Configure API endpoint in settings
 
 ### Language Server Protocol
-1. Install LSP server: `pip install socrates2-lsp`
+1. Install LSP server: `pip install socrates-lsp`
 2. Configure in your editor
 3. Restart editor to connect
 
@@ -279,8 +279,8 @@ GET    /health
 
 ### Commercial Support
 For enterprise support, training, and consulting:
-- Contact: support@socrates2.io
-- Website: https://socrates2.io
+- Contact: support@socrates.io
+- Website: https://socrates.io
 
 ## License
 

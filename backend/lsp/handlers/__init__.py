@@ -301,7 +301,7 @@ class DefinitionHandler:
             # Return location (in this case, just the specification itself)
             return [
                 {
-                    "uri": f"socrates2://spec/{specs[0].id}",
+                    "uri": f"socrates://spec/{specs[0].id}",
                     "range": {
                         "start": {"line": 0, "character": 0},
                         "end": {"line": 0, "character": len(spec_ref)}
@@ -367,7 +367,7 @@ class ReferencesHandler:
             for spec in specs:
                 if include_declaration or spec.key != spec_ref:
                     references.append({
-                        "uri": f"socrates2://spec/{spec.id}",
+                        "uri": f"socrates://spec/{spec.id}",
                         "range": {
                             "start": {"line": 0, "character": 0},
                             "end": {"line": 0, "character": len(spec.key)}

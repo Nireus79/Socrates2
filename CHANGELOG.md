@@ -215,7 +215,7 @@ This is the initial production release. No upgrade necessary.
 ### Installation Instructions
 - **VS Code:** Search "Socrates" in Extensions
 - **IntelliJ/PyCharm/WebStorm:** Search "Socrates" in Marketplace
-- **LSP:** `pip install socrates2-lsp`
+- **LSP:** `pip install socrates-lsp`
 
 ### Configuration
 1. Configure API endpoint (default: localhost:8000)
@@ -255,7 +255,7 @@ This is the initial production release. No upgrade necessary.
 ### Community
 - GitHub Issues: Report bugs and request features
 - GitHub Discussions: Ask questions and share experiences
-- Email: dev@socrates2.io
+- Email: dev@socrates.io
 
 ---
 

@@ -52,7 +52,7 @@ class EmailService:
 
         try:
             message = self.Mail(
-                from_email="no-reply@socrates2.com",
+                from_email="no-reply@socrates.com",
                 to_emails=to_email,
                 subject=subject,
                 html_content=html_content
@@ -96,7 +96,7 @@ class EmailService:
                 <p><strong>Conflict:</strong> {conflict_details.get('description', 'Unknown')}</p>
                 <p><strong>Detected at:</strong> {datetime.now(timezone.utc).isoformat()}</p>
                 <p>
-                    <a href="https://app.socrates2.com/projects/{conflict_details.get('project_id')}"
+                    <a href="https://app.socrates.com/projects/{conflict_details.get('project_id')}"
                        style="background-color: #5cb85c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                         View in Socrates
                     </a>
@@ -150,7 +150,7 @@ class EmailService:
                     After your trial ends, you'll need a paid subscription to continue using Socrates.
                 </p>
                 <p>
-                    <a href="https://app.socrates2.com/billing/plans"
+                    <a href="https://app.socrates.com/billing/plans"
                        style="background-color: #5cb85c; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
                         {cta_text}
                     </a>
@@ -207,7 +207,7 @@ class EmailService:
                     <strong>Maturity:</strong> {maturity_percent}%
                 </p>
                 <p>
-                    <a href="https://app.socrates2.com/projects/{project_name.lower().replace(' ', '-')}"
+                    <a href="https://app.socrates.com/projects/{project_name.lower().replace(' ', '-')}"
                        style="background-color: #5cb85c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                         View Project
                     </a>
@@ -252,7 +252,7 @@ class EmailService:
                     {comment_excerpt}
                 </blockquote>
                 <p>
-                    <a href="https://app.socrates2.com/projects/{project_name.lower().replace(' ', '-')}"
+                    <a href="https://app.socrates.com/projects/{project_name.lower().replace(' ', '-')}"
                        style="background-color: #5cb85c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                         View Discussion
                     </a>
@@ -308,7 +308,7 @@ class EmailService:
                     {activity_html}
                 </ul>
                 <p>
-                    <a href="https://app.socrates2.com/activity"
+                    <a href="https://app.socrates.com/activity"
                        style="background-color: #5cb85c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                         View All Activity
                     </a>

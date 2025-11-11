@@ -94,12 +94,12 @@ vsce publish 1.0.0
 ```
 
 ### Step 4: Marketplace Configuration
-- **Publisher ID:** socrates2
-- **Extension Name:** socrates2
+- **Publisher ID:** socrates
+- **Extension Name:** socrates
 - **Display Name:** Socrates
 - **Repository:** GitHub URL
 - **License:** MIT
-- **Home Page:** https://socrates2.io
+- **Home Page:** https://socrates.io
 
 ## JetBrains Plugin Publication
 
@@ -135,7 +135,7 @@ gradle publishPlugin \
 - **Category:** IDE Integration
 - **Vendor:** Socrates
 - **License:** MIT
-- **Plugin ID:** com.socrates2.jetbrains
+- **Plugin ID:** com.socrates.jetbrains
 
 **Supported IDEs:**
 - IntelliJ IDEA (2023.1+)
@@ -182,13 +182,13 @@ twine upload dist/*
 ### Step 3: Setup.py Configuration
 ```python
 setup(
-    name='socrates2-lsp',
+    name='socrates-lsp',
     version='1.0.0',
     description='Socrates Language Server Protocol implementation',
     author='Socrates',
-    author_email='dev@socrates2.io',
+    author_email='dev@socrates.io',
     license='MIT',
-    packages=['socrates2_lsp'],
+    packages=['socrates_lsp'],
     install_requires=[
         'aiohttp>=0.27.0',
         'pydantic>=2.0.0',
@@ -196,7 +196,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'socrates2-lsp=socrates2_lsp.server:main',
+            'socrates-lsp=socrates_lsp.server:main',
         ],
     },
 )
@@ -239,7 +239,7 @@ Specification-aware development for IntelliJ IDEA, PyCharm, WebStorm, and more.
 - Conflict detection and diagnostics
 - Language-specific patterns
 
-[Read more...](https://socrates2.io)
+[Read more...](https://socrates.io)
 ```
 
 #### LSP: README.md
@@ -250,8 +250,8 @@ LSP implementation for specification-aware development in any LSP-compatible edi
 
 ## Installation
 ```bash
-pip install socrates2-lsp
-socrates2-lsp --help
+pip install socrates-lsp
+socrates-lsp --help
 ```
 
 ## Configuration
@@ -327,7 +327,7 @@ gradle runPlugin  # Test locally
 gradle hidePlugin  # Hide from marketplace
 
 # pypi
-pip index versions socrates2-lsp  # Check versions
+pip index versions socrates-lsp  # Check versions
 # Mark newer version as preferred
 ```
 

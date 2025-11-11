@@ -1,7 +1,7 @@
 # Socrates - AI-Powered Specification Assistant for VS Code
 
-[![Visual Studio Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-blue)](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates2)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates2)
+[![Visual Studio Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-blue)](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 Bring your AI-generated specifications directly into VS Code. Generate code, detect conflicts, manage projects, and collaborate with your team—all without leaving your editor.
@@ -40,7 +40,7 @@ Bring your AI-generated specifications directly into VS Code. Generate code, det
 
 Or install from command line:
 ```bash
-code --install-extension anthropic.socrates2
+code --install-extension anthropic.socrates
 ```
 
 ## Getting Started
@@ -218,19 +218,19 @@ Open extension settings via Command Palette or VS Code Settings:
 ## Support
 
 ### Documentation
-- [Socrates Documentation](https://docs.socrates2.ai)
-- [Socrates API Docs](https://api.socrates2.ai/docs)
-- [VS Code Extension Docs](https://docs.socrates2.ai/vscode)
+- [Socrates Documentation](https://docs.socrates.ai)
+- [Socrates API Docs](https://api.socrates.ai/docs)
+- [VS Code Extension Docs](https://docs.socrates.ai/vscode)
 
 ### Feedback & Issues
-- [Report a Bug](https://github.com/anthropics/socrates2/issues)
-- [Request a Feature](https://github.com/anthropics/socrates2/issues)
-- [Discussion Forum](https://github.com/anthropics/socrates2/discussions)
+- [Report a Bug](https://github.com/anthropics/socrates/issues)
+- [Request a Feature](https://github.com/anthropics/socrates/issues)
+- [Discussion Forum](https://github.com/anthropics/socrates/discussions)
 
 ### Community
-- [GitHub Discussions](https://github.com/anthropics/socrates2/discussions)
-- [Discord Server](https://discord.gg/socrates2)
-- [Twitter](https://twitter.com/socrates2)
+- [GitHub Discussions](https://github.com/anthropics/socrates/discussions)
+- [Discord Server](https://discord.gg/socrates)
+- [Twitter](https://twitter.com/socrates)
 
 ## Release Notes
 
@@ -260,4 +260,4 @@ Created with ❤️ by [Anthropic](https://anthropic.com)
 
 ---
 
-**[Install Now](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates2)** | **[Documentation](https://docs.socrates2.ai)** | **[Report Issue](https://github.com/anthropics/socrates2/issues)**
+**[Install Now](https://marketplace.visualstudio.com/items?itemName=anthropic.socrates)** | **[Documentation](https://docs.socrates.ai)** | **[Report Issue](https://github.com/anthropics/socrates/issues)**

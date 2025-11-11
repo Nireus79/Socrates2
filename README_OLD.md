@@ -479,7 +479,7 @@ We welcome contributions! Please follow these guidelines:
 - Security headers middleware
 
 ### Reporting Security Issues
-Please report security vulnerabilities to: security@socrates2.com
+Please report security vulnerabilities to: security@socrates.com
 
 **Do not** create public GitHub issues for security vulnerabilities.
 
@@ -493,10 +493,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Documentation:** https://docs.socrates2.com (coming soon)
+- **Documentation:** https://docs.socrates.com (coming soon)
 - **GitHub Issues:** https://github.com/your-org/Socrates/issues
-- **Email:** support@socrates2.com
-- **Discord:** https://discord.gg/socrates2 (coming soon)
+- **Email:** support@socrates.com
+- **Discord:** https://discord.gg/socrates (coming soon)
 
 ---
 

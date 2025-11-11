@@ -8,7 +8,7 @@
 ## Directory Structure
 
 ```
-socrates2/
+socrates/
 ├── README.md
 ├── pyproject.toml              # Python project configuration
 ├── requirements.txt            # Python dependencies
@@ -331,7 +331,7 @@ LOG_LEVEL=INFO
 ### `pyproject.toml`
 ```toml
 [project]
-name = "socrates2"
+name = "socrates"
 version = "0.1.0"
 description = "Agentic RAG system for vibe coding"
 requires-python = ">=3.12"

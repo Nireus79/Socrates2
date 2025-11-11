@@ -711,7 +711,7 @@ X-RateLimit-Reset: 1731320460
 ### Python SDK
 
 ```python
-from socrates2 import SocratesClient
+from socrates import SocratesClient
 
 client = SocratesClient(api_token="your_token")
 
@@ -738,7 +738,7 @@ result = client.sessions.submit_answer(
 ### JavaScript/TypeScript SDK
 
 ```typescript
-import { SocratesAPI } from 'socrates2-sdk';
+import { SocratesAPI } from 'socrates-sdk';
 
 const client = new SocratesAPI({ apiToken: 'your_token' });
 

@@ -416,7 +416,7 @@ class SocratesLSPServer:
 
     def _setup_logging(self) -> logging.Logger:
         """Setup structured logging"""
-        logger = logging.getLogger("socrates2.lsp")
+        logger = logging.getLogger("socrates.lsp")
         handler = logging.FileHandler(self.config.log_file)
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

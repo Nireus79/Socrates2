@@ -431,13 +431,13 @@ alembic upgrade head  # Apply all pending
 
 ```bash
 # Build development image
-docker build -f Dockerfile.dev -t socrates2-dev .
+docker build -f Dockerfile.dev -t socrates-dev .
 
 # Run container
 docker run -p 8000:8000 \
   -v $(pwd):/app \
   -e DATABASE_URL_AUTH=postgresql://postgres:password@host.docker.internal:5432/socrates_auth \
-  socrates2-dev
+  socrates-dev
 
 # Or use docker-compose
 docker-compose -f docker-compose.dev.yml up

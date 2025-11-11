@@ -40,7 +40,7 @@ Database (PostgreSQL)
 
 **Create extension structure:**
 ```
-socrates2-vscode/
+socrates-vscode/
 ├── src/
 │   ├── extension.ts           # Entry point
 │   ├── activate.ts            # Activation logic
@@ -84,7 +84,7 @@ export class AuthenticationProvider {
 
     async authenticate(serverUrl: string): Promise<string> {
         // Get API key from VS Code secrets
-        this.apiKey = await this.context.secrets.get('socrates2.apiKey');
+        this.apiKey = await this.context.secrets.get('socrates.apiKey');
 
         if (!this.apiKey) {
             // Prompt user for API key
@@ -94,7 +94,7 @@ export class AuthenticationProvider {
             });
 
             if (this.apiKey) {
-                await this.context.secrets.store('socrates2.apiKey', this.apiKey);
+                await this.context.secrets.store('socrates.apiKey', this.apiKey);
             }
         }
 
@@ -203,7 +203,7 @@ export class FileSyncService {
 ```typescript
 export function registerCommands(context: vscode.ExtensionContext) {
     // Sync project to workspace
-    vscode.commands.registerCommand('socrates2.sync', async (item) => {
+    vscode.commands.registerCommand('socrates.sync', async (item) => {
         const workspacePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
         if (workspacePath && item instanceof ProjectItem) {
             await syncService.syncProjectToWorkspace(item.project.id, workspacePath);
@@ -211,7 +211,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
     });
 
     // Generate code for project
-    vscode.commands.registerCommand('socrates2.generate', async (item) => {
+    vscode.commands.registerCommand('socrates.generate', async (item) => {
         if (item instanceof ProjectItem) {
             vscode.window.showInformationMessage('Generating code...');
             const result = await apiClient.generateCode(item.project.id);
@@ -220,7 +220,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
     });
 
     // View spec details
-    vscode.commands.registerCommand('socrates2.viewSpec', async (item) => {
+    vscode.commands.registerCommand('socrates.viewSpec', async (item) => {
         if (item instanceof SpecItem) {
             const panel = vscode.window.createWebviewPanel(
                 'specDetail',

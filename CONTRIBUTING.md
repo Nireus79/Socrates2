@@ -9,7 +9,7 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
 - Be respectful and inclusive
 - Welcome differing opinions and experiences
 - Focus on constructive criticism
-- Report inappropriate behavior to dev@socrates2.io
+- Report inappropriate behavior to dev@socrates.io
 
 ## How to Contribute
 
@@ -403,7 +403,7 @@ Releases follow [Semantic Versioning](https://semver.org/):
 
 - **GitHub Issues:** Report bugs and request features
 - **GitHub Discussions:** Ask questions
-- **Email:** dev@socrates2.io
+- **Email:** dev@socrates.io
 - **Documentation:** See README and CONTRIBUTING.md files
 
 ## License

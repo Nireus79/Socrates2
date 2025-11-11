@@ -21,7 +21,7 @@ class LSPConfig:
     listen_port: int = int(os.getenv("LSP_PORT", "8080"))
 
     # Logging Configuration
-    log_file: str = os.getenv("LSP_LOG_FILE", "/tmp/socrates2-lsp.log")
+    log_file: str = os.getenv("LSP_LOG_FILE", "/tmp/socrates-lsp.log")
     log_level: str = os.getenv("LSP_LOG_LEVEL", "INFO")
 
     # Feature Configuration

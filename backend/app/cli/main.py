@@ -27,7 +27,7 @@ except ValueError:
 
 
 @click.group(invoke_without_command=True)
-@click.version_option(version="0.1.0", prog_name="socrates2")
+@click.version_option(version="0.1.0", prog_name="socrates")
 @click.pass_context
 def cli(ctx):
     """
@@ -37,7 +37,7 @@ def cli(ctx):
     """
     if ctx.invoked_subcommand is None:
         click.echo("Socrates CLI v0.1.0")
-        click.echo("Use 'socrates2 --help' to see available commands")
+        click.echo("Use 'socrates --help' to see available commands")
 
 
 @cli.group()

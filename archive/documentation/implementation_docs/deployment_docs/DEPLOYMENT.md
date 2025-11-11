@@ -450,7 +450,7 @@ sudo apt install nginx certbot python3-certbot-nginx
 
 ### 2. Configure Nginx
 
-Create `/etc/nginx/sites-available/socrates2`:
+Create `/etc/nginx/sites-available/socrates`:
 
 ```nginx
 server {
@@ -469,7 +469,7 @@ server {
 
 Enable site:
 ```bash
-sudo ln -s /etc/nginx/sites-available/socrates2 /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/socrates /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -488,8 +488,8 @@ Certbot automatically configures HTTPS and renewal.
 
 For issues or questions:
 - **GitHub Issues:** https://github.com/your-org/Socrates/issues
-- **Documentation:** https://docs.socrates2.com
-- **Email:** support@socrates2.com
+- **Documentation:** https://docs.socrates.com
+- **Email:** support@socrates.com
 
 ---
 

@@ -278,7 +278,7 @@ Socrates Backend has successfully completed Phase 7.4 with comprehensive optimiz
 ### Deployment Steps
 ```bash
 # 1. Install production package
-pip install socrates2
+pip install socrates
 
 # 2. Configure environment
 cp .env.example .env

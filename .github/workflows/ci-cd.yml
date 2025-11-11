@@ -172,7 +172,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          tags: socrates2:${{ github.sha }}
+          tags: socrates:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -206,15 +206,15 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/socrates2:latest
-            ${{ secrets.DOCKER_USERNAME }}/socrates2:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/socrates:latest
+            ${{ secrets.DOCKER_USERNAME }}/socrates:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Deploy notification
         run: |
           echo "✅ Docker image built and pushed successfully"
-          echo "🚀 Image: ${{ secrets.DOCKER_USERNAME }}/socrates2:${{ github.sha }}"
+          echo "🚀 Image: ${{ secrets.DOCKER_USERNAME }}/socrates:${{ github.sha }}"
           echo "📦 Also tagged as: latest"
 
       # Add actual deployment steps here (SSH, kubectl, etc.)
@@ -226,7 +226,7 @@ jobs:
       #     username: ${{ secrets.DEPLOY_USER }}
       #     key: ${{ secrets.DEPLOY_SSH_KEY }}
       #     script: |
-      #       cd /app/socrates2
+      #       cd /app/socrates
       #       docker-compose pull
       #       docker-compose up -d
 

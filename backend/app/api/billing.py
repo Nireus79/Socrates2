@@ -323,7 +323,7 @@ async def get_billing_portal_url(
 
         portal_url = StripeService.get_portal_session(
             customer_id=current_user.stripe_customer_id,
-            return_url="https://app.socrates2.com/settings/billing"  # TODO: Make configurable
+            return_url="https://app.socrates.com/settings/billing"  # TODO: Make configurable
         )
 
         logger.info(f"Created billing portal session for user {current_user.id}")

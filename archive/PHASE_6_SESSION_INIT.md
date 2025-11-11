@@ -37,7 +37,7 @@ Created **2,000+ lines of TypeScript**:
 
 ### VS Code Extension Structure
 ```
-socrates2-vscode-extension/
+socrates-vscode-extension/
 ├── src/
 │   ├── extension.ts           # Main entry, command registration
 │   ├── api/

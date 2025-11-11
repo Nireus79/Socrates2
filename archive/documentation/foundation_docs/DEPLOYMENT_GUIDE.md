@@ -94,7 +94,7 @@ git push origin master
 
 ```yaml
 # .do/app.yaml (auto-generated, customize if needed)
-name: socrates2
+name: socrates
 services:
   - name: web
     github:

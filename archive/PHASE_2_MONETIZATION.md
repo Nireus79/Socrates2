@@ -198,7 +198,7 @@ class StripeService:
         """Get Stripe billing portal session"""
         session = stripe.billing_portal.Session.create(
             customer=customer_id,
-            return_url="https://socrates2.com/dashboard"
+            return_url="https://socrates.com/dashboard"
         )
         return session.url
 
@@ -312,8 +312,8 @@ async def create_checkout(
     session_id = stripe_service.create_checkout_session(
         customer_id=current_user.stripe_customer_id,
         price_id=STRIPE_PRICES[tier],
-        success_url="https://socrates2.com/success",
-        cancel_url="https://socrates2.com/cancel"
+        success_url="https://socrates.com/success",
+        cancel_url="https://socrates.com/cancel"
     )
 
     return {"session_id": session_id}

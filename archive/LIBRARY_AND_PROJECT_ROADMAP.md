@@ -9,7 +9,7 @@
 ## Table of Contents
 
 1. [Socrates Library (PyPI Package) Improvements](#socrates-library-pypi-package-improvements)
-2. [Socrates Application Development](#socrates2-application-development)
+2. [Socrates Application Development](#socrates-application-development)
 3. [Documentation Requirements](#documentation-requirements)
 4. [Testing & Quality Assurance](#testing--quality-assurance)
 5. [Performance & Optimization](#performance--optimization)

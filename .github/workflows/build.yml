@@ -88,14 +88,14 @@ jobs:
       working-directory: extensions/vs-code
       run: |
         npm run compile
-        npx vsce package --out socrates2.vsix
-        echo "VS Code extension package created: socrates2.vsix"
+        npx vsce package --out socrates.vsix
+        echo "VS Code extension package created: socrates.vsix"
 
     - name: Upload VSIX artifact
       uses: actions/upload-artifact@v4
       with:
         name: vs-code-extension
-        path: extensions/vs-code/socrates2.vsix
+        path: extensions/vs-code/socrates.vsix
         retention-days: 30
 
   lsp-server:
