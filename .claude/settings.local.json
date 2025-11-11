@@ -32,7 +32,13 @@
       "Bash(alembic history:*)",
       "Bash(alembic upgrade:*)",
       "Bash(export DATABASE_URL_SPECS:*)",
-      "Bash(PYTHONUTF8=1 python:*)"
+      "Bash(PYTHONUTF8=1 python:*)",
+      "Bash(dir:*)",
+      "Bash(test:*)",
+      "Bash(export DATABASE_URL_AUTH=\"postgresql://postgres@localhost:5432/socrates_auth\")",
+      "Bash(done)",
+      "Bash(export DATABASE_URL=\"postgresql://postgres@localhost:5432/socrates_specs\")",
+      "Bash(export DATABASE_URL:*)"
     ],
     "deny": [],
     "ask": []

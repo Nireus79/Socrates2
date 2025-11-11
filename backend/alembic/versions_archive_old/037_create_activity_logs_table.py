@@ -12,8 +12,8 @@ import os
 
 
 # revision identifiers, used by Alembic.
-revision = '037_create_activity_logs_table'
-down_revision = '036_create_notification_preferences_table'
+revision = '037'
+down_revision = '036'
 branch_labels = None
 depends_on = None
 

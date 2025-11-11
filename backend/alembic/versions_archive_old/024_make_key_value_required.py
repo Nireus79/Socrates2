@@ -27,12 +27,21 @@ branch_labels = None
 depends_on = None
 
 
+
+def _should_run():
+    """Only run this migration for socrates_specs database"""
+    import os
+    db_url = os.getenv("DATABASE_URL", "")
+    return "socrates_specs" in db_url
+
 def upgrade() -> None:
     """
     Upgrade: Make key and value columns NOT NULL.
 
     REQUIRES: All specifications must have key and value populated.
     """
+    if not _should_run():
+        return
     # Check if migration script has been run
     # This is a safety check - the script will verify this
 
@@ -59,6 +68,8 @@ def downgrade() -> None:
     """
     Downgrade: Make key and value columns nullable again.
     """
+    if not _should_run():
+        return
     # Make key column nullable
     op.alter_column(
         'specifications',

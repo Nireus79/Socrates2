@@ -12,8 +12,8 @@ import os
 
 
 # revision identifiers, used by Alembic.
-revision = '035_create_document_chunks_table'
-down_revision = '034_create_analytics_metrics_tables'
+revision = '035'
+down_revision = '034'
 branch_labels = None
 depends_on = None
 

@@ -20,8 +20,17 @@ branch_labels = None
 depends_on = None
 
 
+
+def _should_run():
+    """Only run this migration for socrates_specs database"""
+    import os
+    db_url = os.getenv("DATABASE_URL", "")
+    return "socrates_specs" in db_url
+
 def upgrade() -> None:
     """Create full-text search indexes."""
+    if not _should_run():
+        return
 
     # Enable pg_trgm extension for fuzzy search (if not already enabled)
     op.execute('CREATE EXTENSION IF NOT EXISTS pg_trgm')
@@ -47,6 +56,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Remove search indexes."""
+    if not _should_run():
+        return
 
     op.execute('DROP INDEX IF EXISTS idx_projects_search')
     op.execute('DROP INDEX IF EXISTS idx_specifications_search')

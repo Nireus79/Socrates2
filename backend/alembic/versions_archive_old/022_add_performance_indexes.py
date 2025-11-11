@@ -93,9 +93,7 @@ def upgrade() -> None:
             if_not_exists=True
         )
 
-    # Indexes for socrates_auth database
-    elif _should_run("socrates_auth"):
-        # Foreign key indexes for auth database tables
+        # Indexes for team_members (also in socrates_specs)
         op.create_index(
             'idx_team_members_team_id',
             'team_members',
@@ -112,6 +110,11 @@ def upgrade() -> None:
             if_not_exists=True
         )
 
+    # Indexes for socrates_auth database
+    elif _should_run("socrates_auth"):
+        # Currently no additional indexes needed for auth database
+        pass
+
 
 def downgrade() -> None:
     """Remove performance indexes."""
@@ -124,8 +127,10 @@ def downgrade() -> None:
         op.drop_index('idx_quality_metrics_project_id', table_name='quality_metrics', if_exists=True)
         op.drop_index('idx_projects_user_id_status', table_name='projects', if_exists=True)
         op.drop_index('idx_question_effectiveness_user_template', table_name='question_effectiveness', if_exists=True)
+        op.drop_index('idx_team_members_team_id', table_name='team_members', if_exists=True)
+        op.drop_index('idx_team_members_user_id', table_name='team_members', if_exists=True)
 
     # Revert indexes for socrates_auth database
     elif _should_run("socrates_auth"):
-        op.drop_index('idx_team_members_team_id', table_name='team_members', if_exists=True)
-        op.drop_index('idx_team_members_user_id', table_name='team_members', if_exists=True)
+        # No indexes to revert for auth database
+        pass
