@@ -10,10 +10,11 @@ from pathlib import Path
 from typing import List, Optional
 import json
 
-from ..base import BaseDomain, Question, ExportFormat, ConflictRule, SeverityLevel
+from ..base import BaseDomain, Question, ExportFormat, ConflictRule, SeverityLevel, QualityAnalyzer
 from ..questions import QuestionTemplateEngine
 from ..exporters import ExportTemplateEngine
 from ..rules import ConflictRuleEngine
+from ..analyzers import QualityAnalyzerEngine
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +26,12 @@ class ProgrammingDomain(BaseDomain):
     Handles specification and code generation for software projects.
     Supports 8+ programming languages with specialized patterns.
 
-    Questions are loaded from questions.json configuration file.
-    Export formats are loaded from exporters.json configuration file.
-    Conflict rules are loaded from rules.json configuration file.
-    Making all easily customizable without code changes.
+    All specifications are loaded from configuration files:
+    - questions.json: Socratic questions
+    - exporters.json: Code generation formats
+    - rules.json: Conflict detection rules
+    - analyzers.json: Quality analyzers
+    Making everything easily customizable without code changes.
     """
 
     domain_id = "programming"
@@ -37,14 +40,16 @@ class ProgrammingDomain(BaseDomain):
     description = "Specification and code generation for software development projects"
 
     def __init__(self):
-        """Initialize programming domain and load configuration from files."""
+        """Initialize programming domain and load all configuration from files."""
         super().__init__()
         self._questions: Optional[List[Question]] = None
         self._exporters: Optional[List[ExportFormat]] = None
         self._rules: Optional[List[ConflictRule]] = None
+        self._analyzers: Optional[List[QualityAnalyzer]] = None
         self._load_questions()
         self._load_exporters()
         self._load_rules()
+        self._load_analyzers()
 
     def _load_questions(self) -> None:
         """Load questions from questions.json configuration file."""
@@ -124,6 +129,32 @@ class ProgrammingDomain(BaseDomain):
             logger.error(f"Failed to load programming rules: {e}")
             self._rules = []
 
+    def _load_analyzers(self) -> None:
+        """Load quality analyzers from analyzers.json configuration file."""
+        try:
+            # Get path to analyzers.json (same directory as this file)
+            config_dir = Path(__file__).parent
+            analyzers_file = config_dir / "analyzers.json"
+
+            if not analyzers_file.exists():
+                logger.error(f"Analyzers file not found: {analyzers_file}")
+                self._analyzers = []
+                return
+
+            # Load analyzers using quality analyzer engine
+            engine = QualityAnalyzerEngine()
+            self._analyzers = engine.load_analyzers_from_json(str(analyzers_file))
+            logger.info(f"Loaded {len(self._analyzers)} programming quality analyzers")
+
+            # Validate analyzers
+            errors = engine.validate_analyzers(self._analyzers)
+            if errors:
+                logger.warning(f"Analyzer validation errors: {errors}")
+
+        except Exception as e:
+            logger.error(f"Failed to load programming analyzers: {e}")
+            self._analyzers = []
+
     def get_categories(self) -> List[str]:
         """Return specification categories for programming."""
         return [
@@ -155,10 +186,10 @@ class ProgrammingDomain(BaseDomain):
         return self._rules if self._rules is not None else []
 
     def get_quality_analyzers(self) -> List[str]:
-        """Return quality analyzers for programming domain."""
-        return [
-            "bias_detector",  # Universal analyzer
-            "performance_validator",
-            "security_validator",
-            "scalability_checker",
-        ]
+        """Return quality analyzer IDs enabled for programming domain from configuration."""
+        if self._analyzers is None:
+            self._load_analyzers()
+        # Return analyzer IDs from loaded configuration
+        if self._analyzers:
+            return [a.analyzer_id for a in self._analyzers if a.enabled]
+        return []

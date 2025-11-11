@@ -63,6 +63,30 @@ class QualityIssue:
 
 
 @dataclass
+class QualityAnalyzer:
+    """A quality analyzer that can detect issues in a specification."""
+    analyzer_id: str
+    name: str
+    description: str
+    analyzer_type: str  # e.g., "bias_detector", "performance_validator"
+    enabled: bool = True
+    required: bool = False  # If true, must be run
+    tags: List[str] = field(default_factory=list)  # e.g., ["universal", "programming", "security"]
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "analyzer_id": self.analyzer_id,
+            "name": self.name,
+            "description": self.description,
+            "analyzer_type": self.analyzer_type,
+            "enabled": self.enabled,
+            "required": self.required,
+            "tags": self.tags,
+        }
+
+
+@dataclass
 class ExportFormat:
     """An export format supported by a domain."""
     format_id: str

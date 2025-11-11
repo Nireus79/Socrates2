@@ -1,0 +1,56 @@
+[
+  {
+    "analyzer_id": "bias_detector",
+    "name": "Bias Detector",
+    "description": "Detects potential bias and assumptions in specifications that may not be stated explicitly",
+    "analyzer_type": "bias_detector",
+    "enabled": true,
+    "required": true,
+    "tags": ["universal"]
+  },
+  {
+    "analyzer_id": "performance_validator",
+    "name": "Performance Validator",
+    "description": "Validates that performance specifications are realistic and internally consistent",
+    "analyzer_type": "performance_validator",
+    "enabled": true,
+    "required": false,
+    "tags": ["programming", "performance"]
+  },
+  {
+    "analyzer_id": "security_validator",
+    "name": "Security Validator",
+    "description": "Validates security requirements and identifies potential security gaps",
+    "analyzer_type": "security_validator",
+    "enabled": true,
+    "required": false,
+    "tags": ["programming", "security"]
+  },
+  {
+    "analyzer_id": "scalability_checker",
+    "name": "Scalability Checker",
+    "description": "Checks scalability requirements and suggests patterns for high-load scenarios",
+    "analyzer_type": "scalability_checker",
+    "enabled": true,
+    "required": false,
+    "tags": ["programming", "performance"]
+  },
+  {
+    "analyzer_id": "compliance_checker",
+    "name": "Compliance Checker",
+    "description": "Verifies specifications meet regulatory and compliance standards (GDPR, HIPAA, SOC2)",
+    "analyzer_type": "compliance_checker",
+    "enabled": true,
+    "required": false,
+    "tags": ["programming", "compliance"]
+  },
+  {
+    "analyzer_id": "accessibility_analyzer",
+    "name": "Accessibility Analyzer",
+    "description": "Checks accessibility requirements and suggests improvements for inclusive design",
+    "analyzer_type": "accessibility_analyzer",
+    "enabled": true,
+    "required": false,
+    "tags": ["programming", "accessibility"]
+  }
+]
