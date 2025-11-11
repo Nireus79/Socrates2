@@ -12,6 +12,9 @@ fastapi==0.121.0
 uvicorn[standard]==0.34.0
 python-multipart==0.0.20
 
+# ===== CLI & COMMAND LINE =====
+click==8.1.7
+
 # ===== DATABASE & ORM =====
 sqlalchemy==2.0.44
 alembic==1.14.0
