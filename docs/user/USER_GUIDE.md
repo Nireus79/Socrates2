@@ -590,7 +590,7 @@ import requests
 
 # Create project
 response = requests.post(
-    'https://api.socrates.com/v1/projects',
+    'https://api.socrates.app/api/v1/projects',
     json={'name': 'My Project'},
     headers={'Authorization': 'Bearer token'}
 )
