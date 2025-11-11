@@ -9,14 +9,23 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '032_create_admin_users_table'
-down_revision = '031_create_admin_roles_table'
+revision = '032'
+down_revision = '031'
 branch_labels = None
 depends_on = None
 
 
+
+def _should_run():
+    """Only run this migration for socrates_specs database"""
+    import os
+    db_url = os.getenv("DATABASE_URL", "")
+    return "socrates_auth" in db_url
+
 def upgrade() -> None:
     """Create admin_users table in auth database."""
+    if not _should_run():
+        return
     op.create_table(
         'admin_users',
         sa.Column('id', sa.String(36), nullable=False),
@@ -42,6 +51,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop admin_users table."""
+    if not _should_run():
+        return
     op.drop_index('ix_admin_users_created_at', table_name='admin_users')
     op.drop_index('ix_admin_users_revoked_at', table_name='admin_users')
     op.drop_index('ix_admin_users_role_id', table_name='admin_users')

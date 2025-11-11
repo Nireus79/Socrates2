@@ -6,56 +6,90 @@ Provides:
 - List user's projects
 - Get project details
 - Update project
-- Delete project
+- Archive project
 - Get project status/maturity
 
-All CRUD operations are routed through the ProjectManagerAgent via the orchestrator.
+Uses repository pattern for efficient data access.
 """
 from typing import Any, Dict, Optional
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
-from ..agents.orchestrator import get_orchestrator
+from ..core.database import get_db_auth, get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
+from ..repositories import RepositoryService
 
 router = APIRouter(prefix="/api/v1/projects", tags=["projects"])
 
 
+# Dependency for repository service
+def get_repository_service(
+    auth_session: Session = Depends(get_db_auth),
+    specs_session: Session = Depends(get_db_specs)
+) -> RepositoryService:
+    """Get repository service with both database sessions."""
+    return RepositoryService(auth_session, specs_session)
+
+
 class CreateProjectRequest(BaseModel):
     """Request model for creating a project."""
-    name: str
-    description: Optional[str] = ""
+    name: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = Field(default="", max_length=2000)
 
 
 class UpdateProjectRequest(BaseModel):
     """Request model for updating a project."""
-    name: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[str] = None
-    current_phase: Optional[str] = None
-    maturity_score: Optional[int] = None
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = Field(None, max_length=2000)
+    status: Optional[str] = Field(None, pattern="^(active|archived|completed)$")
+    phase: Optional[str] = Field(None, pattern="^(discovery|specification|implementation|testing|deployment)$")
+    maturity_level: Optional[int] = Field(None, ge=0, le=100)
 
 
-@router.post("")
+class ProjectResponse(BaseModel):
+    """Response model for project data."""
+    id: str
+    user_id: str
+    name: str
+    description: Optional[str]
+    status: str
+    phase: str
+    maturity_level: int
+    created_at: str
+    updated_at: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectListResponse(BaseModel):
+    """Response for project list."""
+    projects: list[ProjectResponse]
+    total: int
+    skip: int
+    limit: int
+
+
+@router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 def create_project(
     request: CreateProjectRequest,
-    current_user: User = Depends(get_current_active_user)
-) -> Dict[str, Any]:
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> ProjectResponse:
     """
     Create a new project.
 
     Args:
         request: Project details (name, description)
         current_user: Authenticated user
+        service: Repository service
 
     Returns:
-        {
-            'success': bool,
-            'project_id': str,
-            'project': dict
-        }
+        ProjectResponse with created project details
 
     Example:
         POST /api/v1/projects
@@ -65,52 +99,56 @@ def create_project(
             "description": "A FastAPI web application"
         }
 
-        Response:
+        Response 201:
         {
-            "success": true,
-            "project_id": "abc-123",
-            "project": {
-                "id": "abc-123",
-                "name": "My Web App",
-                "description": "A FastAPI web application",
-                "current_phase": "discovery",
-                "maturity_score": 0,
-                "status": "active",
-                ...
-            }
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "user_id": "550e8400-e29b-41d4-a716-446655440001",
+            "name": "My Web App",
+            "description": "A FastAPI web application",
+            "phase": "discovery",
+            "maturity_level": 0,
+            "status": "active",
+            "created_at": "2025-11-11T12:00:00"
         }
     """
-    # Route through ProjectManagerAgent
-    orchestrator = get_orchestrator()
-    result = orchestrator.route_request(
-        'project',
-        'create_project',
-        {
-            'user_id': str(current_user.id),
-            'name': request.name,
-            'description': request.description or ''
-        }
-    )
-
-    if not result.get('success'):
-        raise HTTPException(
-            status_code=400,
-            detail=result.get('error', 'Failed to create project')
+    try:
+        # Create project using repository
+        project = service.projects.create_project(
+            user_id=current_user.id,
+            name=request.name,
+            description=request.description or ""
         )
 
-    return {
-        'success': True,
-        'project_id': result.get('project_id'),
-        'project': result.get('project')
-    }
+        # Commit transaction
+        service.commit_all()
+
+        return ProjectResponse(
+            id=str(project.id),
+            user_id=str(project.user_id),
+            name=project.name,
+            description=project.description,
+            status=project.status,
+            phase=project.phase,
+            maturity_level=project.maturity_level or 0,
+            created_at=project.created_at.isoformat(),
+            updated_at=project.updated_at.isoformat() if project.updated_at else None
+        )
+
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create project"
+        ) from e
 
 
-@router.get("")
+@router.get("", response_model=ProjectListResponse)
 def list_projects(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    current_user: User = Depends(get_current_active_user)
-) -> Dict[str, Any]:
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> ProjectListResponse:
     """
     List all projects for the current user.
 
@@ -118,15 +156,10 @@ def list_projects(
         skip: Number of projects to skip (pagination)
         limit: Maximum number of projects to return
         current_user: Authenticated user
+        service: Repository service
 
     Returns:
-        {
-            'success': bool,
-            'projects': List[dict],
-            'total': int,
-            'skip': int,
-            'limit': int
-        }
+        ProjectListResponse with projects list and metadata
 
     Example:
         GET /api/v1/projects?skip=0&limit=10
@@ -134,357 +167,353 @@ def list_projects(
 
         Response:
         {
-            "success": true,
             "projects": [
                 {
-                    "id": "abc-123",
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "user_id": "550e8400-e29b-41d4-a716-446655440001",
                     "name": "My Web App",
-                    "maturity_score": 45,
+                    "phase": "discovery",
+                    "maturity_level": 45,
+                    "status": "active",
                     ...
-                },
-                ...
+                }
             ],
             "total": 5,
             "skip": 0,
             "limit": 10
         }
     """
-    # Route through ProjectManagerAgent
-    orchestrator = get_orchestrator()
-    result = orchestrator.route_request(
-        'project',
-        'list_projects',
-        {
-            'user_id': str(current_user.id),
-            'skip': skip,
-            'limit': limit
-        }
-    )
-
-    if not result.get('success'):
-        raise HTTPException(
-            status_code=500,
-            detail=result.get('error', 'Failed to list projects')
+    try:
+        # Get user's projects
+        projects = service.projects.get_user_projects(
+            user_id=current_user.id,
+            skip=skip,
+            limit=limit
         )
 
-    return {
-        'success': True,
-        'projects': result.get('projects', []),
-        'total': result.get('count', 0),  # Agent returns 'count', API returns 'total'
-        'skip': skip,
-        'limit': limit
-    }
+        # Get total count
+        total = service.projects.count_user_projects(current_user.id)
+
+        return ProjectListResponse(
+            projects=[
+                ProjectResponse(
+                    id=str(p.id),
+                    user_id=str(p.user_id),
+                    name=p.name,
+                    description=p.description,
+                    status=p.status,
+                    phase=p.phase,
+                    maturity_level=p.maturity_level or 0,
+                    created_at=p.created_at.isoformat(),
+                    updated_at=p.updated_at.isoformat() if p.updated_at else None
+                )
+                for p in projects
+            ],
+            total=total,
+            skip=skip,
+            limit=limit
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list projects"
+        ) from e
 
 
-@router.get("/{project_id}")
+@router.get("/{project_id}", response_model=ProjectResponse)
 def get_project(
     project_id: str,
-    current_user: User = Depends(get_current_active_user)
-) -> Dict[str, Any]:
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> ProjectResponse:
     """
     Get project details.
 
     Args:
         project_id: Project UUID
         current_user: Authenticated user
+        service: Repository service
 
     Returns:
-        {
-            'success': bool,
-            'project': dict
-        }
+        ProjectResponse with project details
 
     Example:
-        GET /api/v1/projects/abc-123
+        GET /api/v1/projects/550e8400-e29b-41d4-a716-446655440000
         Authorization: Bearer <token>
 
         Response:
         {
-            "success": true,
-            "project": {
-                "id": "abc-123",
-                "name": "My Web App",
-                "description": "A FastAPI web application",
-                "current_phase": "discovery",
-                "maturity_score": 45,
-                "status": "active",
-                "created_at": "2025-01-01T00:00:00Z",
-                ...
-            }
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "user_id": "550e8400-e29b-41d4-a716-446655440001",
+            "name": "My Web App",
+            "description": "A FastAPI web application",
+            "phase": "discovery",
+            "maturity_level": 45,
+            "status": "active",
+            "created_at": "2025-01-01T00:00:00"
         }
     """
-    # Route through ProjectManagerAgent
-    orchestrator = get_orchestrator()
-    result = orchestrator.route_request(
-        'project',
-        'get_project',
-        {'project_id': project_id}
-    )
-
-    # Handle not found
-    if not result.get('success'):
-        error_code = result.get('error_code')
-        if error_code == 'PROJECT_NOT_FOUND':
-            raise HTTPException(
-                status_code=404,
-                detail=result.get('error', f'Project not found: {project_id}')
-            )
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
         raise HTTPException(
-            status_code=500,
-            detail=result.get('error', 'Failed to get project')
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
         )
 
-    # Validate permissions (user must have access to this project)
-    project = result.get('project', {})
-    if str(project.get('user_id')) != str(current_user.id):
+    # Get project by ID
+    project = service.projects.get_by_id(project_uuid)
+
+    # Validate project exists
+    if not project:
         raise HTTPException(
-            status_code=403,
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    # Validate permissions (user must be owner)
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Permission denied: you don't have access to this project"
         )
 
-    return {
-        'success': True,
-        'project': project
-    }
+    return ProjectResponse(
+        id=str(project.id),
+        user_id=str(project.user_id),
+        name=project.name,
+        description=project.description,
+        status=project.status,
+        phase=project.phase,
+        maturity_level=project.maturity_level or 0,
+        created_at=project.created_at.isoformat(),
+        updated_at=project.updated_at.isoformat() if project.updated_at else None
+    )
 
 
-@router.put("/{project_id}")
+@router.put("/{project_id}", response_model=ProjectResponse)
 def update_project(
     project_id: str,
     request: UpdateProjectRequest,
-    current_user: User = Depends(get_current_active_user)
-) -> Dict[str, Any]:
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> ProjectResponse:
     """
     Update project details.
 
     Args:
         project_id: Project UUID
-        request: Fields to update
+        request: Fields to update (name, description, status, phase, maturity_level)
         current_user: Authenticated user
+        service: Repository service
 
     Returns:
-        {
-            'success': bool,
-            'project': dict
-        }
+        ProjectResponse with updated project
 
     Example:
-        PUT /api/v1/projects/abc-123
+        PUT /api/v1/projects/550e8400-e29b-41d4-a716-446655440000
         Authorization: Bearer <token>
         {
             "name": "Updated Project Name",
-            "description": "Updated description"
+            "description": "Updated description",
+            "phase": "specification"
         }
 
         Response:
         {
-            "success": true,
-            "project": {...}
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            ...
         }
     """
-    orchestrator = get_orchestrator()
-
-    # First, get project to validate permissions
-    get_result = orchestrator.route_request(
-        'project',
-        'get_project',
-        {'project_id': project_id}
-    )
-
-    if not get_result.get('success'):
-        error_code = get_result.get('error_code')
-        if error_code == 'PROJECT_NOT_FOUND':
-            raise HTTPException(
-                status_code=404,
-                detail=get_result.get('error', f'Project not found: {project_id}')
-            )
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
         raise HTTPException(
-            status_code=500,
-            detail=get_result.get('error', 'Failed to get project')
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
         )
 
-    # Validate permissions (only owner can update)
-    project = get_result.get('project', {})
-    if str(project.get('owner_id')) != str(current_user.id):
+    # Get project first
+    project = service.projects.get_by_id(project_uuid)
+
+    if not project:
         raise HTTPException(
-            status_code=403,
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    # Validate permissions
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Permission denied: only project owner can update project"
         )
 
-    # Build update data (only include fields that are provided)
-    update_data = {'project_id': project_id}
-    if request.name is not None:
-        update_data['name'] = request.name
-    if request.description is not None:
-        update_data['description'] = request.description
-    if request.current_phase is not None:
-        update_data['current_phase'] = request.current_phase
-    if request.status is not None:
-        update_data['status'] = request.status
-    if request.maturity_score is not None:
-        update_data['maturity_score'] = request.maturity_score
+    try:
+        # Update fields if provided
+        if request.name is not None:
+            project = service.projects.update(project_uuid, name=request.name)
+        if request.description is not None:
+            project = service.projects.update(project_uuid, description=request.description)
+        if request.status is not None:
+            project = service.projects.update_project_status(project_uuid, request.status)
+        if request.phase is not None:
+            project = service.projects.update_project_phase(project_uuid, request.phase)
+        if request.maturity_level is not None:
+            project = service.projects.update_maturity_level(project_uuid, request.maturity_level)
 
-    # Route update through agent
-    result = orchestrator.route_request(
-        'project',
-        'update_project',
-        update_data
-    )
+        # Commit transaction
+        service.commit_all()
 
-    if not result.get('success'):
-        raise HTTPException(
-            status_code=500,
-            detail=result.get('error', 'Failed to update project')
+        return ProjectResponse(
+            id=str(project.id),
+            user_id=str(project.user_id),
+            name=project.name,
+            description=project.description,
+            status=project.status,
+            phase=project.phase,
+            maturity_level=project.maturity_level or 0,
+            created_at=project.created_at.isoformat(),
+            updated_at=project.updated_at.isoformat() if project.updated_at else None
         )
 
-    return {
-        'success': True,
-        'project': result.get('project')
-    }
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update project"
+        ) from e
 
 
-@router.delete("/{project_id}")
+@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_project(
     project_id: str,
-    current_user: User = Depends(get_current_active_user)
-) -> Dict[str, Any]:
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> None:
     """
     Delete (archive) a project.
 
     Args:
         project_id: Project UUID
         current_user: Authenticated user
+        service: Repository service
 
     Returns:
-        {
-            'success': bool,
-            'message': str
-        }
+        No content (204 response)
 
     Example:
-        DELETE /api/v1/projects/abc-123
+        DELETE /api/v1/projects/550e8400-e29b-41d4-a716-446655440000
         Authorization: Bearer <token>
 
-        Response:
-        {
-            "success": true,
-            "message": "Project deleted"
-        }
+        Response 204: No Content
     """
-    orchestrator = get_orchestrator()
-
-    # First, get project to validate permissions
-    get_result = orchestrator.route_request(
-        'project',
-        'get_project',
-        {'project_id': project_id}
-    )
-
-    if not get_result.get('success'):
-        error_code = get_result.get('error_code')
-        if error_code == 'PROJECT_NOT_FOUND':
-            raise HTTPException(
-                status_code=404,
-                detail=get_result.get('error', f'Project not found: {project_id}')
-            )
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
         raise HTTPException(
-            status_code=500,
-            detail=get_result.get('error', 'Failed to get project')
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
         )
 
-    # Validate permissions (only creator can delete)
-    project = get_result.get('project', {})
-    if str(project.get('creator_id')) != str(current_user.id):
+    # Get project
+    project = service.projects.get_by_id(project_uuid)
+
+    if not project:
         raise HTTPException(
-            status_code=403,
-            detail="Permission denied: only project creator can delete project"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
         )
 
-    # Route delete through agent (archives the project)
-    result = orchestrator.route_request(
-        'project',
-        'delete_project',
-        {'project_id': project_id}
-    )
-
-    if not result.get('success'):
+    # Validate permissions
+    if str(project.user_id) != str(current_user.id):
         raise HTTPException(
-            status_code=500,
-            detail=result.get('error', 'Failed to delete project')
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied: only project owner can delete project"
         )
 
-    return {
-        'success': True,
-        'message': 'Project deleted'
-    }
+    try:
+        # Archive project
+        service.projects.archive_project(project_uuid)
+        service.commit_all()
+
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete project"
+        ) from e
 
 
-@router.get("/{project_id}/status")
+class ProjectStatusResponse(BaseModel):
+    """Response model for project status."""
+    project_id: str
+    status: str
+    phase: str
+    maturity_level: int
+
+
+@router.get("/{project_id}/status", response_model=ProjectStatusResponse)
 def get_project_status(
     project_id: str,
-    current_user: User = Depends(get_current_active_user)
-) -> Dict[str, Any]:
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> ProjectStatusResponse:
     """
-    Get project status including maturity score and phase.
+    Get project status including phase and maturity level.
 
     Args:
         project_id: Project UUID
         current_user: Authenticated user
+        service: Repository service
 
     Returns:
-        {
-            'success': bool,
-            'status': str,
-            'current_phase': str,
-            'maturity_score': float
-        }
+        ProjectStatusResponse with status, phase, maturity_level
 
     Example:
-        GET /api/v1/projects/abc-123/status
+        GET /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/status
         Authorization: Bearer <token>
 
         Response:
         {
-            "success": true,
+            "project_id": "550e8400-e29b-41d4-a716-446655440000",
             "status": "active",
-            "current_phase": "discovery",
-            "maturity_score": 45.5
+            "phase": "discovery",
+            "maturity_level": 45
         }
     """
-    # Route through ProjectManagerAgent
-    orchestrator = get_orchestrator()
-    result = orchestrator.route_request(
-        'project',
-        'get_project',
-        {'project_id': project_id}
-    )
-
-    # Handle not found
-    if not result.get('success'):
-        error_code = result.get('error_code')
-        if error_code == 'PROJECT_NOT_FOUND':
-            raise HTTPException(
-                status_code=404,
-                detail=result.get('error', f'Project not found: {project_id}')
-            )
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
         raise HTTPException(
-            status_code=500,
-            detail=result.get('error', 'Failed to get project')
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    # Get project
+    project = service.projects.get_by_id(project_uuid)
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
         )
 
     # Validate permissions
-    project = result.get('project', {})
-    if str(project.get('user_id')) != str(current_user.id):
+    if str(project.user_id) != str(current_user.id):
         raise HTTPException(
-            status_code=403,
-            detail="Permission denied"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied: you don't have access to this project"
         )
 
-    # Extract and return status fields
-    return {
-        'success': True,
-        'project_id': project_id,
-        'status': project.get('status'),
-        'current_phase': project.get('current_phase'),
-        'maturity_score': project.get('maturity_score')
-    }
+    return ProjectStatusResponse(
+        project_id=project_id,
+        status=project.status,
+        phase=project.phase,
+        maturity_level=project.maturity_level or 0
+    )

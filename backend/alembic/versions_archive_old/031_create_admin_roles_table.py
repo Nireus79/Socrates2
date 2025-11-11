@@ -1,7 +1,7 @@
 """Create admin roles table.
 
-Revision ID: 031_create_admin_roles_table
-Revises: 030_create_invoices_table
+Revision ID: 031
+Revises: 030
 Create Date: 2025-11-11
 
 """
@@ -10,14 +10,23 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '031_create_admin_roles_table'
-down_revision = '030_create_invoices_table'
+revision = '031'
+down_revision = '030'
 branch_labels = None
 depends_on = None
 
 
+
+def _should_run():
+    """Only run this migration for socrates_specs database"""
+    import os
+    db_url = os.getenv("DATABASE_URL", "")
+    return "socrates_auth" in db_url
+
 def upgrade() -> None:
     """Create admin_roles table in auth database."""
+    if not _should_run():
+        return
     op.create_table(
         'admin_roles',
         sa.Column('id', sa.String(36), nullable=False),
@@ -37,6 +46,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop admin_roles table."""
+    if not _should_run():
+        return
     op.drop_index('ix_admin_roles_is_system_role', table_name='admin_roles')
     op.drop_index('ix_admin_roles_name', table_name='admin_roles')
     op.drop_table('admin_roles')

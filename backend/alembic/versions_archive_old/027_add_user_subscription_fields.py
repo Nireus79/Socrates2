@@ -23,8 +23,17 @@ branch_labels = None
 depends_on = None
 
 
+
+def _should_run():
+    """Only run this migration for socrates_auth database"""
+    import os
+    db_url = os.getenv("DATABASE_URL", "")
+    return "socrates_auth" in db_url
+
 def upgrade() -> None:
     """Add subscription fields to users table."""
+    if not _should_run():
+        return
 
     # Add subscription tier (free, pro, team, enterprise)
     op.add_column(
@@ -101,6 +110,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Remove subscription fields from users table."""
+    if not _should_run():
+        return
 
     # Drop indexes
     op.drop_index('idx_users_subscription_status', table_name='users')

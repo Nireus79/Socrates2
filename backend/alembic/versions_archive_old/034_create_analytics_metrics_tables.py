@@ -10,14 +10,23 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '034_create_analytics_metrics_tables'
-down_revision = '033_create_admin_audit_logs_table'
+revision = '034'
+down_revision = '033'
 branch_labels = None
 depends_on = None
 
 
+
+def _should_run():
+    """Only run this migration for socrates_specs database"""
+    import os
+    db_url = os.getenv("DATABASE_URL", "")
+    return "socrates_specs" in db_url
+
 def upgrade() -> None:
     """Create analytics metrics tables in specs database."""
+    if not _should_run():
+        return
 
     # Daily Active Users (DAU)
     op.create_table(
@@ -101,6 +110,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop analytics metrics tables."""
+    if not _should_run():
+        return
     op.drop_index('ix_conversion_funnel_date', table_name='conversion_funnel')
     op.drop_table('conversion_funnel')
 

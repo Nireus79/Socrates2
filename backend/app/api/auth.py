@@ -5,6 +5,8 @@ Provides:
 - User registration
 - User login (JWT token generation)
 - Logout
+- Token refresh
+- Current user info
 """
 from datetime import timedelta
 from typing import Dict, Optional
@@ -16,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from ..core.action_logger import log_auth
 from ..core.config import settings
-from ..core.database import get_db_auth
+from ..core.database import get_db_auth, get_db_specs
 from ..core.security import (
     create_access_token,
     create_refresh_token,
@@ -25,8 +27,18 @@ from ..core.security import (
     validate_refresh_token,
 )
 from ..models.user import User
+from ..repositories import RepositoryService
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
+
+
+# Dependency for repository service
+def get_repository_service(
+    auth_session: Session = Depends(get_db_auth),
+    specs_session: Session = Depends(get_db_specs)
+) -> RepositoryService:
+    """Get repository service with both database sessions."""
+    return RepositoryService(auth_session, specs_session)
 
 
 # Pydantic schemas for request/response
@@ -113,7 +125,7 @@ class UserResponse(BaseModel):
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 def register(
     request: RegisterRequest,
-    db: Session = Depends(get_db_auth)
+    service: RepositoryService = Depends(get_repository_service)
 ) -> RegisterResponse:
     """
     Register a new user.
@@ -129,7 +141,7 @@ def register(
 
     Args:
         request: Registration data (name, surname, username, password, optional email)
-        db: Database session
+        service: Repository service with database access
 
     Returns:
         RegisterResponse with user_id, username, and user details
@@ -157,57 +169,60 @@ def register(
             "email": "john@example.com"
         }
     """
-    # Check if username already exists
-    existing_user = db.query(User).filter(User.username == request.username).first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already taken"
-        )
+    try:
+        # Check if username already exists using repository
+        if service.users.user_exists_by_username(request.username):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken"
+            )
 
-    # Check if email already exists (if provided)
-    if request.email:
-        existing_email = db.query(User).filter(User.email == request.email).first()
-        if existing_email:
+        # Check if email already exists (if provided)
+        if request.email and service.users.user_exists_by_email(request.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
             )
 
-    # Create new user
-    user = User(
-        name=request.name,
-        surname=request.surname,
-        username=request.username,
-        email=request.email,
-        hashed_password=User.hash_password(request.password),
-        is_active=True,
-        is_verified=False,
-        status='active',
-        role='user'
-    )
+        # Create new user using repository
+        user = service.users.create_user(
+            name=request.name,
+            surname=request.surname,
+            username=request.username,
+            email=request.email,
+            hashed_password=User.hash_password(request.password)
+        )
 
-    db.add(user)
-    db.commit()  # Commit to ensure UUID is assigned from database
-    db.refresh(user)  # Refresh to get the ID from database
+        # Commit changes
+        service.commit_all()
 
-    # Log the successful registration
-    log_auth("User registered", user_id=str(user.id), username=user.username, success=True)
+        # Log the successful registration
+        log_auth("User registered", user_id=str(user.id), username=user.username, success=True)
 
-    return RegisterResponse(
-        message="User registered successfully",
-        user_id=str(user.id),
-        username=user.username,
-        name=user.name,
-        surname=user.surname,
-        email=user.email
-    )
+        return RegisterResponse(
+            message="User registered successfully",
+            user_id=str(user.id),
+            username=user.username,
+            name=user.name,
+            surname=user.surname,
+            email=user.email
+        )
+
+    except HTTPException:
+        service.rollback_all()
+        raise
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to register user"
+        ) from e
 
 
 @router.post("/login", response_model=LoginResponse)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db_auth)
+    service: RepositoryService = Depends(get_repository_service)
 ) -> LoginResponse:
     """
     Login and receive JWT access token.
@@ -216,7 +231,7 @@ def login(
 
     Args:
         form_data: OAuth2 password form (username, password)
-        db: Database session
+        service: Repository service with database access
 
     Returns:
         LoginResponse with access_token and user info
@@ -240,8 +255,8 @@ def login(
             "surname": "Doe"
         }
     """
-    # Find user by username
-    user = db.query(User).filter(User.username == form_data.username).first()
+    # Find user by username using repository
+    user = service.users.get_by_username(form_data.username)
 
     # Validate user exists and password is correct
     if not user or not user.verify_password(form_data.password):  # type: ignore[arg-type]  # form_data.password exists, type checker limitation
@@ -265,8 +280,14 @@ def login(
         expires_delta=access_token_expires
     )
 
-    # Create refresh token
-    refresh_token = create_refresh_token(str(user.id), db)
+    # Create refresh token using repository
+    refresh_token_obj = service.refresh_tokens.create(
+        user_id=user.id,
+        token=create_refresh_token(str(user.id), service.auth_session),
+        expires_at=None  # Will be set by the model defaults if needed
+    )
+    service.commit_all()
+    refresh_token = refresh_token_obj.token
 
     # Log successful login
     log_auth("User logged in", user_id=str(user.id), username=user.username, success=True)
@@ -370,14 +391,14 @@ class RefreshTokenRequest(BaseModel):
 @router.post("/refresh", response_model=LoginResponse)
 def refresh_access_token(
     request: RefreshTokenRequest,
-    db: Session = Depends(get_db_auth)
+    service: RepositoryService = Depends(get_repository_service)
 ) -> LoginResponse:
     """
     Refresh an access token using a valid refresh token.
 
     Args:
         request: RefreshTokenRequest with refresh_token
-        db: Database session
+        service: Repository service with database access
 
     Returns:
         LoginResponse with new access_token and refresh_token
@@ -402,28 +423,46 @@ def refresh_access_token(
             "surname": "Doe"
         }
     """
-    # Validate the refresh token
-    user = validate_refresh_token(request.refresh_token, db)
+    try:
+        # Validate the refresh token using repository
+        user = validate_refresh_token(request.refresh_token, service.auth_session)
 
-    # Create new access token
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    new_access_token = create_access_token(
-        data={"sub": str(user.id)},
-        expires_delta=access_token_expires
-    )
+        # Create new access token
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        new_access_token = create_access_token(
+            data={"sub": str(user.id)},
+            expires_delta=access_token_expires
+        )
 
-    # Create new refresh token
-    new_refresh_token = create_refresh_token(str(user.id), db)
+        # Create new refresh token
+        new_refresh_token_obj = service.refresh_tokens.create(
+            user_id=user.id,
+            token=create_refresh_token(str(user.id), service.auth_session),
+            expires_at=None
+        )
+        service.commit_all()
+        new_refresh_token = new_refresh_token_obj.token
 
-    # Log token refresh
-    log_auth("Token refreshed", user_id=str(user.id), username=user.username, success=True)
+        # Log token refresh
+        log_auth("Token refreshed", user_id=str(user.id), username=user.username, success=True)
 
-    return LoginResponse(
-        access_token=new_access_token,
-        refresh_token=new_refresh_token,
-        token_type="bearer",
-        user_id=str(user.id),
-        username=user.username,
-        name=user.name,
-        surname=user.surname
-    )
+        return LoginResponse(
+            access_token=new_access_token,
+            refresh_token=new_refresh_token,
+            token_type="bearer",
+            user_id=str(user.id),
+            username=user.username,
+            name=user.name,
+            surname=user.surname
+        )
+
+    except HTTPException:
+        service.rollback_all()
+        raise
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from e
