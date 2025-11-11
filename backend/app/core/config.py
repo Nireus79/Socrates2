@@ -44,6 +44,13 @@ class Settings(BaseSettings):
     SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 0-1: percentage of transactions to trace (10% default)
     SENTRY_PROFILES_SAMPLE_RATE: float = 0.1  # 0-1: percentage of transactions to profile (10% default)
 
+    # ===== STRIPE PAYMENT INTEGRATION =====
+    STRIPE_SECRET_KEY: Optional[str] = None  # Stripe API secret key (leave blank to disable payments)
+    STRIPE_PUBLISHABLE_KEY: Optional[str] = None  # Stripe publishable key for frontend
+    STRIPE_WEBHOOK_SECRET: Optional[str] = None  # Stripe webhook signing secret
+    STRIPE_PRICE_PRO_MONTHLY: Optional[str] = None  # Stripe price ID for Pro tier
+    STRIPE_PRICE_TEAM_MONTHLY: Optional[str] = None  # Stripe price ID for Team tier
+
     model_config = ConfigDict(
         env_file=".env",
         case_sensitive=True,

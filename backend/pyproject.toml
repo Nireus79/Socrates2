@@ -27,7 +27,12 @@ dependencies = [
     "python-jose[cryptography]==3.3.0",
     "python-multipart==0.0.20",
     "anthropic==0.43.0",
+    "click==8.1.7",
+    "httpx==0.28.1",
 ]
+
+[project.scripts]
+socrates = "app.cli:main"
 
 [project.optional-dependencies]
 dev = [

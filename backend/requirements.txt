@@ -33,3 +33,35 @@ python-dotenv==1.0.1
 # ===== LLM INTEGRATION =====
 anthropic==0.43.0
 httpx==0.28.1
+
+# ===== ERROR TRACKING & MONITORING =====
+sentry-sdk==1.40.0
+
+# ===== BACKGROUND JOBS & SCHEDULING =====
+APScheduler==3.10.4
+
+# ===== FILE PROCESSING =====
+pypdf2==4.0.1
+pdfplumber==0.11.0
+python-docx==0.8.11
+markdown==3.5.2
+chardet==5.2.0
+
+# ===== VECTOR DATABASE =====
+pgvector==0.3.0
+
+# ===== OPENAI EMBEDDINGS =====
+openai>=1.0.0
+
+# ===== LOGGING & UTILITIES =====
+rich==13.7.0
+python-dateutil==2.8.2
+
+# ===== STRIPE PAYMENT INTEGRATION =====
+stripe==8.10.0
+
+# ===== EMAIL SENDING =====
+sendgrid==6.11.0
+
+# ===== RATE LIMITING & CACHING =====
+redis==5.0.0
