@@ -3,10 +3,40 @@ Analytics metrics models for dashboard.
 
 Tracks business metrics: DAU, MRR, churn, funnel, etc.
 """
-from sqlalchemy import Column, Date, Index, Integer, Numeric, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Date, Index, Integer, JSON, Numeric, String, Text
+
 
 from .base import BaseModel
+
+
+class AnalyticsMetrics(BaseModel):
+    """Generic analytics metrics aggregation table."""
+
+    __tablename__ = "analytics_metrics"
+
+    metric_type = Column(String(100), nullable=False, index=True)
+    metric_name = Column(String(100), nullable=False)
+    value = Column(Numeric(20, 4), nullable=False, default=0)
+    date = Column(Date, nullable=False, index=True)
+    tags = Column(JSON, nullable=True)
+    metadata = Column(Text, nullable=True)
+
+    __table_args__ = (
+        Index("idx_metrics_type_date", "metric_type", "date"),
+        Index("idx_metrics_name", "metric_name"),
+    )
+
+    def to_dict(self):
+        """Convert to dictionary."""
+        return {
+            "id": str(self.id),
+            "metric_type": self.metric_type,
+            "metric_name": self.metric_name,
+            "value": float(self.value or 0),
+            "date": self.date.isoformat(),
+            "tags": self.tags or {},
+            "metadata": self.metadata or "",
+        }
 
 
 class DailyActiveUsers(BaseModel):
@@ -18,7 +48,7 @@ class DailyActiveUsers(BaseModel):
     count = Column(Integer, nullable=False, default=0)
     new_users = Column(Integer, nullable=False, default=0)
     returning_users = Column(Integer, nullable=False, default=0)
-    breakdown = Column(JSONB, nullable=True)  # By tier, region, etc.
+    breakdown = Column(JSON, nullable=True)  # By tier, region, etc.
 
     __table_args__ = (
         Index("idx_dau_date", "date"),
@@ -45,7 +75,7 @@ class MonthlyRecurringRevenue(BaseModel):
     total_mrr = Column(Numeric(12, 2), nullable=False, default=0)
     new_mrr = Column(Numeric(12, 2), nullable=False, default=0)
     churned_mrr = Column(Numeric(12, 2), nullable=False, default=0)
-    by_tier = Column(JSONB, nullable=True)  # MRR breakdown by subscription tier
+    by_tier = Column(JSON, nullable=True)  # MRR breakdown by subscription tier
 
     __table_args__ = (
         Index("idx_mrr_month", "month_start"),
@@ -71,9 +101,9 @@ class ChurnAnalysis(BaseModel):
     date = Column(Date, nullable=False, unique=True, index=True)
     churned_users = Column(Integer, nullable=False, default=0)
     churn_rate_percent = Column(Numeric(5, 2), nullable=False, default=0)
-    by_tier = Column(JSONB, nullable=True)  # Churn rate by tier
-    by_region = Column(JSONB, nullable=True)  # Churn rate by region
-    reasons = Column(JSONB, nullable=True)  # Top churn reasons
+    by_tier = Column(JSON, nullable=True)  # Churn rate by tier
+    by_region = Column(JSON, nullable=True)  # Churn rate by region
+    reasons = Column(JSON, nullable=True)  # Top churn reasons
 
     __table_args__ = (
         Index("idx_churn_date", "date"),

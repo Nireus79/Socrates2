@@ -1,8 +1,8 @@
 """
 ConversationHistory model for storing complete conversation history.
 """
-from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Index, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Index, JSON, String, Text, func
+
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 
@@ -59,7 +59,7 @@ class ConversationHistory(Base):
     )
 
     message_metadata = Column(
-        JSONB,
+        JSON,
         nullable=True,
         comment="Additional metadata as JSON"
     )

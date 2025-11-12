@@ -4,7 +4,11 @@ Subscription model for Stripe billing integration.
 Tracks active subscriptions and their status.
 """
 
+<<<<<<< HEAD
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, JSON
+=======
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Index, String
+>>>>>>> e5e9caf (fix: Replace JSONB with JSON and ARRAY with JSON for SQLite compatibility)
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from .base import BaseModel
@@ -23,7 +27,11 @@ class Subscription(BaseModel):
     cancel_at_period_end = Column(Boolean, default=False)
     tier = Column(String(20), nullable=False)  # pro, team, enterprise
     billing_cycle_anchor = Column(DateTime(timezone=True), nullable=True)
+<<<<<<< HEAD
     subscription_metadata = Column(JSON, nullable=True)  # Store custom metadata
+=======
+    metadata = Column(JSON, nullable=True)  # Store custom metadata
+>>>>>>> e5e9caf (fix: Replace JSONB with JSON and ARRAY with JSON for SQLite compatibility)
     price_id = Column(String(255), nullable=True)  # Stripe price ID
 
     # Timestamps
