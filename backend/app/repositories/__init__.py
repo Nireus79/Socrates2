@@ -35,6 +35,7 @@ Example usage:
 
 # Base
 from .base_repository import BaseRepository
+from .repository_service import RepositoryService, RepositoryServiceFactory
 
 # AUTH Database Repositories
 from .user_repository import (
@@ -54,6 +55,8 @@ from .team_repository import TeamRepository, TeamMemberRepository
 __all__ = [
     # Base
     'BaseRepository',
+    'RepositoryService',
+    'RepositoryServiceFactory',
 
     # AUTH Database
     'UserRepository',
