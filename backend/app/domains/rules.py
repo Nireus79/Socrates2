@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .base import ConflictRule
+from app.base import ConflictRule
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class ConflictRuleEngine:
         for item in data:
             try:
                 # Import here to avoid circular imports
-                from .base import SeverityLevel
+                from app.base import SeverityLevel
 
                 severity_str = item.get("severity", "error").upper()
                 severity = SeverityLevel[severity_str]
@@ -115,7 +115,7 @@ class ConflictRuleEngine:
         Returns:
             Filtered rules
         """
-        from .base import SeverityLevel
+        from app.base import SeverityLevel
 
         try:
             severity_level = SeverityLevel[severity.upper()]

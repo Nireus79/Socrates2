@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .base import QualityAnalyzer
+from app.base import QualityAnalyzer
 
 logger = logging.getLogger(__name__)
 
