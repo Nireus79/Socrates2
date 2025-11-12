@@ -64,22 +64,24 @@ class RegisterRequest(BaseModel):
 
 class RegisterResponse(BaseModel):
     """User registration response"""
-    message: str
     user_id: str
     username: str
-    name: str
-    surname: str
     email: Optional[str] = None
+    access_token: str
+    token_type: str = "bearer"
+    name: Optional[str] = None
+    surname: Optional[str] = None
 
     class Config:
         json_schema_extra = {
             "example": {
-                "message": "User registered successfully",
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
                 "username": "johndoe",
+                "email": "john@example.com",
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "token_type": "bearer",
                 "name": "John",
-                "surname": "Doe",
-                "email": "john@example.com"
+                "surname": "Doe"
             }
         }
 
@@ -199,13 +201,19 @@ def register(
         # Log the successful registration
         log_auth("User registered", user_id=str(user.id), username=user.username, success=True)
 
+        # Create access token for the newly registered user
+        access_token = create_access_token(
+            data={"sub": str(user.id)},
+            expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        )
+
         return RegisterResponse(
-            message="User registered successfully",
             user_id=str(user.id),
             username=user.username,
             name=user.name,
             surname=user.surname,
-            email=user.email
+            email=user.email,
+            access_token=access_token
         )
 
     except HTTPException:
