@@ -10,11 +10,19 @@ This module manages scheduled tasks like:
 import logging
 from typing import Any, Callable, Dict, Optional
 
-from apscheduler.job import Job
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-
 logger = logging.getLogger(__name__)
+
+# Try to import APScheduler, but make it optional
+try:
+    from apscheduler.job import Job
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    APSCHEDULER_AVAILABLE = True
+except ImportError:
+    APSCHEDULER_AVAILABLE = False
+    Job = None  # type: ignore
+    AsyncIOScheduler = None  # type: ignore
+    CronTrigger = None  # type: ignore
 
 
 class JobScheduler:
@@ -22,11 +30,17 @@ class JobScheduler:
 
     def __init__(self):
         """Initialize the job scheduler."""
+        if not APSCHEDULER_AVAILABLE:
+            logger.warning("APScheduler not installed. Job scheduling disabled.")
         self.scheduler: Optional[AsyncIOScheduler] = None
         self.jobs: Dict[str, Job] = {}
 
     def start(self) -> None:
         """Start the scheduler."""
+        if not APSCHEDULER_AVAILABLE:
+            logger.warning("APScheduler not available. Skipping scheduler startup.")
+            return
+
         if self.scheduler is None:
             self.scheduler = AsyncIOScheduler()
 
@@ -77,6 +91,10 @@ class JobScheduler:
                 minutes=5
             )
         """
+        if not APSCHEDULER_AVAILABLE:
+            logger.warning(f"APScheduler not available. Job '{job_id}' will not be scheduled.")
+            return
+
         if not self.scheduler:
             raise RuntimeError("Scheduler not started. Call start() first.")
 

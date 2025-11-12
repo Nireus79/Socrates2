@@ -74,37 +74,50 @@ def _initialize_job_scheduler():
     """
     Initialize the background job scheduler.
     Registers all scheduled tasks.
+
+    If APScheduler is not installed, logs a warning and continues without scheduling.
     """
-    from .jobs import aggregate_daily_analytics, cleanup_old_sessions
-    from .services.job_scheduler import get_scheduler
+    try:
+        from .jobs import aggregate_daily_analytics, cleanup_old_sessions
+        from .services.job_scheduler import get_scheduler, APSCHEDULER_AVAILABLE
 
-    scheduler = get_scheduler()
-    scheduler.start()
+        if not APSCHEDULER_AVAILABLE:
+            logger.warning(
+                "APScheduler not installed. Background job scheduling disabled. "
+                "Install with: pip install apscheduler"
+            )
+            return
 
-    # Register jobs
-    # Daily analytics aggregation at 2 AM UTC
-    scheduler.add_job(
-        aggregate_daily_analytics,
-        trigger="cron",
-        job_id="daily_analytics_aggregation",
-        name="Daily Analytics Aggregation",
-        hour=2,
-        minute=0,
-        timezone="UTC"
-    )
+        scheduler = get_scheduler()
+        scheduler.start()
 
-    # Session cleanup at 3 AM UTC
-    scheduler.add_job(
-        cleanup_old_sessions,
-        trigger="cron",
-        job_id="cleanup_old_sessions",
-        name="Clean Up Old Sessions",
-        hour=3,
-        minute=0,
-        timezone="UTC"
-    )
+        # Register jobs
+        # Daily analytics aggregation at 2 AM UTC
+        scheduler.add_job(
+            aggregate_daily_analytics,
+            trigger="cron",
+            job_id="daily_analytics_aggregation",
+            name="Daily Analytics Aggregation",
+            hour=2,
+            minute=0,
+            timezone="UTC"
+        )
 
-    logger.info("Background job scheduler initialized with registered jobs")
+        # Session cleanup at 3 AM UTC
+        scheduler.add_job(
+            cleanup_old_sessions,
+            trigger="cron",
+            job_id="cleanup_old_sessions",
+            name="Clean Up Old Sessions",
+            hour=3,
+            minute=0,
+            timezone="UTC"
+        )
+
+        logger.info("Background job scheduler initialized with registered jobs")
+    except Exception as e:
+        logger.error(f"Failed to initialize job scheduler: {e}", exc_info=True)
+        logger.warning("Continuing without background job scheduling")
 
 
 def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
