@@ -33,9 +33,11 @@ from .api import (
     notifications,
     projects,
     quality,
+    questions,
     resources,
     search,
     sessions,
+    specifications,
     teams,
     templates,
     workflows,
@@ -189,6 +191,8 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(admin.router)
     app.include_router(projects.router)
     app.include_router(sessions.router)
+    app.include_router(questions.router)
+    app.include_router(specifications.router)
     app.include_router(conflicts.router)
     app.include_router(code_generation.router)
     app.include_router(quality.router)
