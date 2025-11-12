@@ -2,7 +2,7 @@
 
 import pytest
 
-from ..programming import ProgrammingDomain
+from app.programming import ProgrammingDomain
 
 
 class TestProgrammingDomain:

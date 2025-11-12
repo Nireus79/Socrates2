@@ -1,6 +1,6 @@
 """Tests for BaseDomain abstract class."""
 
-from ..base import BaseDomain, ConflictRule, ExportFormat, Question, SeverityLevel
+from app.base import BaseDomain, ConflictRule, ExportFormat, Question, SeverityLevel
 
 
 class TestDomain(BaseDomain):

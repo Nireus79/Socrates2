@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from ..analyzers import QualityAnalyzerEngine, get_analyzer_engine
-from ..base import QualityAnalyzer
+from app.analyzers import QualityAnalyzerEngine, get_analyzer_engine
+from app.base import QualityAnalyzer
 
 
 class TestQualityAnalyzerEngine:
@@ -319,7 +319,7 @@ class TestProgrammingDomainAnalyzers:
     def test_programming_analyzers_load(self):
         """Test that programming analyzers load correctly."""
         engine = QualityAnalyzerEngine()
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         analyzers = domain.get_quality_analyzers()
@@ -329,7 +329,7 @@ class TestProgrammingDomainAnalyzers:
 
     def test_programming_analyzers_configuration(self):
         """Test that programming domain uses configuration."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         analyzers = domain.get_quality_analyzers()

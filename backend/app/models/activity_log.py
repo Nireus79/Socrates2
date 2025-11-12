@@ -3,8 +3,8 @@ Activity log model for tracking user actions on projects.
 
 Records all significant user activities for audit trails, activity feeds, and analytics.
 """
-from sqlalchemy import Column, ForeignKey, Index, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, ForeignKey, Index, JSON, String, Text
+
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 
@@ -103,7 +103,7 @@ class ActivityLog(BaseModel):
     )
 
     metadata = Column(
-        JSONB,
+        JSON,
         nullable=True,
         comment="""Additional context as JSON. Examples:
                    - before/after values for updates

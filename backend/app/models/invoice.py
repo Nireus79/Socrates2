@@ -4,7 +4,7 @@ Invoice model for billing records.
 Tracks all invoices from Stripe.
 """
 
-from sqlalchemy import JSONB, Column, DateTime, ForeignKey, Index, Numeric, String
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from .base import BaseModel
@@ -26,7 +26,7 @@ class Invoice(BaseModel):
     paid_at = Column(DateTime(timezone=True), nullable=True)
     hosted_invoice_url = Column(String(500), nullable=True)
     pdf_url = Column(String(500), nullable=True)
-    metadata = Column(JSONB, nullable=True)
+    metadata = Column(JSON, nullable=True)
 
     # Timestamps
     invoice_date = Column(DateTime(timezone=True), nullable=True)

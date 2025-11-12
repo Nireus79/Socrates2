@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from ..base import ExportFormat
-from ..exporters import ExportTemplateEngine, get_exporter_engine
+from app.base import ExportFormat
+from app.exporters import ExportTemplateEngine, get_exporter_engine
 
 
 class TestExportTemplateEngine:
@@ -367,7 +367,7 @@ class TestProgrammingDomainExporters:
     def test_programming_exporters_load(self):
         """Test that programming exporters load correctly."""
         engine = ExportTemplateEngine()
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         exporters = domain.get_export_formats()
@@ -377,7 +377,7 @@ class TestProgrammingDomainExporters:
 
     def test_programming_exporters_have_all_languages(self):
         """Test that all expected languages are available."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         exporters = domain.get_export_formats()
@@ -388,7 +388,7 @@ class TestProgrammingDomainExporters:
 
     def test_programming_exporters_template_ids(self):
         """Test that template IDs are properly defined."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         exporters = domain.get_export_formats()
@@ -399,7 +399,7 @@ class TestProgrammingDomainExporters:
 
     def test_programming_exporters_file_extensions(self):
         """Test that file extensions are correct."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         exporters = domain.get_export_formats()
@@ -416,7 +416,7 @@ class TestProgrammingDomainExporters:
 
     def test_programming_exporters_mime_types(self):
         """Test that MIME types are valid."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         exporters = domain.get_export_formats()
@@ -431,7 +431,7 @@ class TestProgrammingDomainExporters:
 
     def test_programming_exporters_descriptions(self):
         """Test that all exporters have descriptions."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         exporters = domain.get_export_formats()
@@ -444,7 +444,7 @@ class TestProgrammingDomainExporters:
     def test_programming_exporters_validation(self):
         """Test that exported configuration validates correctly."""
         engine = ExportTemplateEngine()
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         exporters = domain.get_export_formats()

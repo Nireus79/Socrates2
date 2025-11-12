@@ -2,8 +2,8 @@
 
 import pytest
 
-from ..base import BaseDomain
-from ..registry import DomainRegistry, get_domain_registry, register_domain
+from app.base import BaseDomain
+from app.registry import DomainRegistry, get_domain_registry, register_domain
 
 
 class SimpleDomain(BaseDomain):

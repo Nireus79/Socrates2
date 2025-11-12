@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from ..base import Question
-from ..questions import QuestionTemplateEngine, get_question_engine
+from app.base import Question
+from app.questions import QuestionTemplateEngine, get_question_engine
 
 
 class TestQuestionTemplateEngine:
@@ -227,7 +227,7 @@ class TestProgrammingDomainQuestions:
     def test_programming_questions_load(self):
         """Test that programming questions load correctly."""
         engine = QuestionTemplateEngine()
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         questions = domain.get_questions()
@@ -237,7 +237,7 @@ class TestProgrammingDomainQuestions:
 
     def test_programming_questions_have_dependencies(self):
         """Test that programming questions have proper dependencies."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         questions = domain.get_questions()
@@ -248,7 +248,7 @@ class TestProgrammingDomainQuestions:
 
     def test_programming_questions_categories_match(self):
         """Test that question categories match domain categories."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         categories = set(domain.get_categories())

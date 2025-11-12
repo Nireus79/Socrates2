@@ -1,8 +1,8 @@
 """
 Specification model for extracted project specifications.
 """
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Numeric, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, JSON, Numeric, String, Text
+
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 
@@ -113,7 +113,7 @@ class Specification(BaseModel):
     )
 
     spec_metadata = Column(
-        JSONB,
+        JSON,
         nullable=True,
         comment="Additional metadata as JSON"
     )

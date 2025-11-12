@@ -4,8 +4,8 @@ UserBehaviorPattern model for learned user behavior patterns.
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import CheckConstraint, Column, DateTime, Index, Numeric, String
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy import CheckConstraint, Column, DateTime, Index, JSON, Numeric, String
+
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from ..core.database import Base
@@ -56,7 +56,7 @@ class UserBehaviorPattern(Base):
     )
 
     pattern_data = Column(
-        JSONB,
+        JSON,
         nullable=False,
         comment="Pattern data as JSON"
     )
@@ -68,9 +68,9 @@ class UserBehaviorPattern(Base):
     )
 
     learned_from_projects = Column(
-        ARRAY(PG_UUID(as_uuid=True)),
+        JSON,
         nullable=True,
-        comment="Array of project UUIDs where pattern was learned"
+        comment="Array of project UUIDs where pattern was learned (stored as JSON)"
     )
 
     learned_at = Column(

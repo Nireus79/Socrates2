@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from ..base import ConflictRule, SeverityLevel
-from ..rules import ConflictRuleEngine, get_rule_engine
+from app.base import ConflictRule, SeverityLevel
+from app.rules import ConflictRuleEngine, get_rule_engine
 
 
 class TestConflictRuleEngine:
@@ -391,7 +391,7 @@ class TestProgrammingDomainRules:
     def test_programming_rules_load(self):
         """Test that programming rules load correctly."""
         engine = ConflictRuleEngine()
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         rules = domain.get_conflict_rules()
@@ -401,7 +401,7 @@ class TestProgrammingDomainRules:
 
     def test_programming_rules_have_required_fields(self):
         """Test that all rules have required fields."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         rules = domain.get_conflict_rules()
@@ -416,7 +416,7 @@ class TestProgrammingDomainRules:
 
     def test_programming_rules_unique_ids(self):
         """Test that all rule IDs are unique."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         rules = domain.get_conflict_rules()
@@ -426,7 +426,7 @@ class TestProgrammingDomainRules:
     def test_programming_rules_validation(self):
         """Test that rules configuration validates correctly."""
         engine = ConflictRuleEngine()
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         rules = domain.get_conflict_rules()
@@ -436,7 +436,7 @@ class TestProgrammingDomainRules:
 
     def test_programming_rules_have_severity_levels(self):
         """Test that rules have appropriate severity levels."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         rules = domain.get_conflict_rules()
@@ -447,7 +447,7 @@ class TestProgrammingDomainRules:
 
     def test_programming_rules_categories(self):
         """Test that rules span multiple categories."""
-        from ..programming import ProgrammingDomain
+        from app.programming import ProgrammingDomain
 
         domain = ProgrammingDomain()
         rules = domain.get_conflict_rules()
