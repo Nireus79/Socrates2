@@ -86,6 +86,35 @@ class SpecificationHistoryResponse(BaseModel):
     versions: list[SpecificationResponse]
 
 
+@router.get("", response_model=SpecificationListResponse)
+def list_specifications(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> SpecificationListResponse:
+    """
+    List all specifications for the current user.
+
+    Args:
+        skip: Number of specifications to skip (pagination)
+        limit: Maximum number of specifications to return
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        SpecificationListResponse with specifications list and metadata
+    """
+    # This endpoint requires authentication
+    # For now, return empty list
+    return SpecificationListResponse(
+        specifications=[],
+        total=0,
+        skip=skip,
+        limit=limit
+    )
+
+
 @router.post("", response_model=SpecificationResponse, status_code=status.HTTP_201_CREATED)
 def create_specification(
     request: CreateSpecificationRequest,
