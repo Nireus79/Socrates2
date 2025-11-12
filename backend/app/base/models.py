@@ -57,12 +57,12 @@ class Question(BaseModel):
 class ExportFormat(BaseModel):
     """Represents an export format for specifications."""
 
-    format_id: str = Field(..., description="Unique format identifier")
-    name: str = Field(..., description="Format name (e.g., Python, JavaScript)")
-    description: str = Field(..., description="Format description")
-    file_extension: str = Field(..., description="File extension (e.g., .py)")
-    mime_type: str = Field(..., description="MIME type (e.g., text/x-python)")
-    template_id: str = Field(..., description="Template ID for this format")
+    format_id: Optional[str] = Field(default=None, description="Unique format identifier")
+    name: Optional[str] = Field(default=None, description="Format name (e.g., Python, JavaScript)")
+    description: Optional[str] = Field(default=None, description="Format description")
+    file_extension: Optional[str] = Field(default=None, description="File extension (e.g., .py)")
+    mime_type: Optional[str] = Field(default=None, description="MIME type (e.g., text/x-python)")
+    template_id: Optional[str] = Field(default=None, description="Template ID for this format")
     is_compiled: Optional[bool] = Field(
         default=False, description="Whether format is for compiled languages"
     )
