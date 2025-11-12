@@ -11,7 +11,7 @@ Provides:
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -22,6 +22,8 @@ from ..core.security import get_current_active_user
 from ..models.user import User
 
 router = APIRouter(prefix="/api/v1/sessions", tags=["sessions"])
+# Nested router for sessions under projects
+project_sessions_router = APIRouter(prefix="/api/v1/projects/{project_id}/sessions", tags=["project-sessions"])
 
 
 class StartSessionRequest(BaseModel):
@@ -988,4 +990,257 @@ def list_user_sessions(
             for session in sessions
         ],
         'total': total
+    }
+
+
+# ============================================================================
+# Nested Endpoints: Sessions under Projects
+# ============================================================================
+
+
+class CreateProjectSessionRequest(BaseModel):
+    """Request model for creating a session under a project."""
+    name: str
+    description: str
+    status: str = "active"
+
+
+class UpdateProjectSessionRequest(BaseModel):
+    """Request model for updating a session under a project."""
+    status: str = None
+    name: str = None
+    description: str = None
+
+
+@project_sessions_router.get("")
+def list_project_sessions(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> list:
+    """
+    List all sessions for a project.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        List of session objects
+    """
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    # Verify project exists and user has access
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    # Get sessions for this project
+    sessions = db.query(SessionModel).filter(
+        SessionModel.project_id == project_id
+    ).all()
+
+    return [
+        {
+            "id": str(s.id),
+            "project_id": str(s.project_id),
+            "status": s.status,
+            "created_at": s.created_at.isoformat() if s.created_at else None
+        }
+        for s in sessions
+    ]
+
+
+@project_sessions_router.post("", status_code=status.HTTP_201_CREATED)
+def create_project_session(
+    project_id: str,
+    request: CreateProjectSessionRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Create a new session for a project.
+
+    Args:
+        project_id: Project UUID
+        request: Session details
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        Created session details
+    """
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    # Verify project exists and user has access
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    # Create session
+    session = SessionModel(
+        project_id=project_id,
+        name=request.name,
+        description=request.description,
+        status=request.status,
+        started_at=datetime.now(timezone.utc)
+    )
+
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+
+    return {
+        "id": str(session.id),
+        "project_id": str(session.project_id),
+        "name": request.name,
+        "description": request.description,
+        "status": request.status,
+        "created_at": session.created_at.isoformat() if session.created_at else None
+    }
+
+
+@project_sessions_router.get("/{session_id}")
+def get_project_session(
+    project_id: str,
+    session_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Get details of a session in a project.
+
+    Args:
+        project_id: Project UUID
+        session_id: Session UUID
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        Session details
+    """
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    # Verify project exists and user has access
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    # Get session
+    session = db.query(SessionModel).filter(
+        SessionModel.id == session_id,
+        SessionModel.project_id == project_id
+    ).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session not found: {session_id}"
+        )
+
+    return {
+        "id": str(session.id),
+        "project_id": str(session.project_id),
+        "status": session.status,
+        "created_at": session.created_at.isoformat() if session.created_at else None
+    }
+
+
+@project_sessions_router.patch("/{session_id}")
+def update_project_session(
+    project_id: str,
+    session_id: str,
+    request: UpdateProjectSessionRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Update a session in a project.
+
+    Args:
+        project_id: Project UUID
+        session_id: Session UUID
+        request: Fields to update
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        Updated session details
+    """
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    # Verify project exists and user has access
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    # Get session
+    session = db.query(SessionModel).filter(
+        SessionModel.id == session_id,
+        SessionModel.project_id == project_id
+    ).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session not found: {session_id}"
+        )
+
+    # Update fields if provided
+    if request.status is not None:
+        session.status = request.status
+    if request.name is not None:
+        session.name = request.name
+    if request.description is not None:
+        session.description = request.description
+
+    db.commit()
+    db.refresh(session)
+
+    return {
+        "id": str(session.id),
+        "project_id": str(session.project_id),
+        "status": session.status,
+        "created_at": session.created_at.isoformat() if session.created_at else None
     }
