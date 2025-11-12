@@ -14,7 +14,13 @@ from typing import Any, Dict, Optional
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlAlchemyIntegration
+
+# Try to import SqlAlchemyIntegration, but it may not be available in all versions
+try:
+    from sentry_sdk.integrations.sqlalchemy import SqlAlchemyIntegration
+    HAS_SQLALCHEMY_INTEGRATION = True
+except ImportError:
+    HAS_SQLALCHEMY_INTEGRATION = False
 
 from ..core.config import settings
 
@@ -176,6 +182,19 @@ def init_sentry() -> None:
         return
 
     try:
+        # Build integrations list
+        integrations = [
+            FastApiIntegration(),
+            LoggingIntegration(
+                level=getattr(logging, settings.LOG_LEVEL, logging.INFO),
+                event_level=logging.ERROR
+            ),
+        ]
+
+        # Add SqlAlchemy integration if available
+        if HAS_SQLALCHEMY_INTEGRATION:
+            integrations.append(SqlAlchemyIntegration())
+
         sentry_sdk.init(
             # Core configuration
             dsn=settings.SENTRY_DSN,
@@ -183,14 +202,7 @@ def init_sentry() -> None:
             release=settings.APP_VERSION,
 
             # Integrations
-            integrations=[
-                FastApiIntegration(),
-                SqlAlchemyIntegration(),
-                LoggingIntegration(
-                    level=getattr(logging, settings.LOG_LEVEL, logging.INFO),
-                    event_level=logging.ERROR
-                ),
-            ],
+            integrations=integrations,
 
             # Performance monitoring
             traces_sample_rate=settings.SENTRY_TRACES_SAMPLE_RATE,
