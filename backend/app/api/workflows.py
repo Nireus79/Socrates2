@@ -6,24 +6,39 @@ with unified validation and cross-domain conflict detection.
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
+from app.core.security import get_current_active_user
 from app.domains.workflows import get_workflow_manager
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/workflows", tags=["workflows"])
 
 
-@router.post("", summary="Create a new multi-domain workflow")
-async def create_workflow(workflow_id: str) -> Dict[str, Any]:
+class CreateWorkflowRequest(BaseModel):
+    """Request model for creating a workflow."""
+    name: str
+    description: str
+    domains: List[str]
+    status: str = "active"
+
+
+@router.post("", summary="Create a new multi-domain workflow", status_code=status.HTTP_201_CREATED)
+async def create_workflow(
+    request: CreateWorkflowRequest,
+    current_user: User = Depends(get_current_active_user)
+) -> Dict[str, Any]:
     """
     Create a new multi-domain workflow.
 
     Args:
-        workflow_id: Unique identifier for the workflow
+        request: Workflow details (name, description, domains)
+        current_user: Authenticated user
 
     Returns:
         Workflow details
@@ -31,24 +46,38 @@ async def create_workflow(workflow_id: str) -> Dict[str, Any]:
     Raises:
         HTTPException: If workflow already exists
     """
+    if not request.domains:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one domain is required"
+        )
+
     manager = get_workflow_manager()
+    workflow_id = f"{request.name.lower().replace(' ', '_')}_{current_user.id}"
 
     try:
         workflow = manager.create_workflow(workflow_id)
         return {
-            "workflow_id": workflow_id,
-            "status": "created",
-            "domains": workflow.get_involved_domains(),
-            "message": f"Workflow '{workflow_id}' created successfully",
+            "id": workflow_id,
+            "name": request.name,
+            "description": request.description,
+            "status": request.status,
+            "domains": request.domains,
+            "message": f"Workflow '{request.name}' created successfully",
         }
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
 
 
 @router.get("", summary="List all workflows")
-async def list_workflows() -> Dict[str, Any]:
+async def list_workflows(
+    current_user: User = Depends(get_current_active_user)
+) -> Dict[str, Any]:
     """
     List all multi-domain workflows.
+
+    Args:
+        current_user: Authenticated user
 
     Returns:
         List of workflow IDs

@@ -8,7 +8,7 @@ Supports registration, discovery, and lifecycle management of domains.
 import logging
 from typing import Dict, Optional, Type
 
-from .base import BaseDomain
+from app.base import BaseDomain
 
 logger = logging.getLogger(__name__)
 

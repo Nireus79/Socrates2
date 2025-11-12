@@ -1,0 +1,17 @@
+anthropic
+apscheduler
+chardet
+click
+email_validator
+fastapi
+httpx
+jose
+passlib
+pydantic
+pydantic_settings
+pytest
+sentry_sdk
+socrates
+sqlalchemy
+starlette
+stripe

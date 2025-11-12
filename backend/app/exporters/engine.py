@@ -5,7 +5,9 @@ Manages loading, filtering, validating, and executing export templates
 for generating code and documentation from specifications.
 """
 
-from typing import Dict, List, Optional
+import json
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from ..base import ExportFormat
 
@@ -36,7 +38,15 @@ class ExportTemplateEngine:
         exporters = []
         for item in data:
             try:
-                exporter = ExportFormat(**item)
+                exporter = ExportFormat(
+                    format_id=item.get("format_id"),
+                    name=item.get("name"),
+                    description=item.get("description"),
+                    file_extension=item.get("file_extension"),
+                    mime_type=item.get("mime_type"),
+                    template_id=item.get("template_id"),
+                    is_compiled=item.get("is_compiled", False),
+                )
                 exporters.append(exporter)
             except Exception as e:
                 # Log error but continue processing
@@ -46,6 +56,28 @@ class ExportTemplateEngine:
         self.exporters = exporters
         self._rebuild_cache()
         return exporters
+
+    def load_exporters_from_json(self, filepath: str) -> List[ExportFormat]:
+        """
+        Load exporters from a JSON file.
+
+        Args:
+            filepath: Path to the JSON file containing exporter configurations
+
+        Returns:
+            List of ExportFormat instances
+        """
+        path = Path(filepath)
+        if not path.exists():
+            raise FileNotFoundError(f"Exporters file not found: {filepath}")
+
+        with open(path, "r") as f:
+            data = json.load(f)
+
+        if not isinstance(data, list):
+            raise ValueError("Exporters file must contain a JSON array")
+
+        return self.load_exporters_from_dict(data)
 
     def _rebuild_cache(self) -> None:
         """Rebuild the exporter cache."""
@@ -62,6 +94,18 @@ class ExportTemplateEngine:
             List of validation error messages (empty if valid)
         """
         errors = []
+
+        # Check for duplicate format IDs
+        format_ids = [e.format_id for e in exporters]
+        duplicates = [id for id in format_ids if format_ids.count(id) > 1]
+        if duplicates:
+            errors.append(f"Duplicate format IDs: {set(duplicates)}")
+
+        # Check for duplicate template IDs
+        template_ids = [e.template_id for e in exporters]
+        template_duplicates = [id for id in template_ids if template_ids.count(id) > 1]
+        if template_duplicates:
+            errors.append(f"Duplicate template IDs: {set(template_duplicates)}")
 
         for exporter in exporters:
             # Check required fields
@@ -85,6 +129,18 @@ class ExportTemplateEngine:
                 errors.append(
                     f"Exporter {exporter.format_id} missing template_id"
                 )
+
+            # Validate file extensions start with dot
+            if exporter.file_extension and not exporter.file_extension.startswith("."):
+                errors.append(
+                    f"Exporter {exporter.format_id} file_extension must start with dot: {exporter.file_extension}"
+                )
+
+            # Validate MIME types follow standard format
+            valid_mime_patterns = ["text/", "application/", "image/", "audio/", "video/"]
+            if exporter.mime_type:
+                if not any(exporter.mime_type.startswith(p) for p in valid_mime_patterns):
+                    errors.append(f"Exporter {exporter.format_id} has invalid MIME type: {exporter.mime_type}")
 
         return errors
 
@@ -141,19 +197,44 @@ class ExportTemplateEngine:
         return [e for e in exporters if e.mime_type == mime_type]
 
     def filter_by_category(
-        self, exporters: List[ExportFormat], compiled: bool
+        self, exporters: List[ExportFormat], category: str
     ) -> List[ExportFormat]:
         """
-        Filter exporters by compiled language category.
+        Filter exporters by language family category.
 
         Args:
             exporters: List of exporters to filter
-            compiled: True for compiled languages, False for interpreted
+            category: Category to filter by (compiled, scripted, static, dynamic, etc.)
 
         Returns:
             Exporters in the specified category
+
+        Categories:
+        - compiled: Java, Go, Rust, C#, Kotlin
+        - scripted: Python, JavaScript
+        - typed: TypeScript, Java, Go, Rust, C#, Kotlin
+        - static: Go, Rust, TypeScript, Java, C#, Kotlin
+        - dynamic: Python, JavaScript
+        - web: JavaScript, TypeScript
+        - systems: Rust, Go, C#
+        - jvm: Java, Kotlin
         """
-        return [e for e in exporters if e.is_compiled == compiled]
+        categories = {
+            "compiled": ["java", "go", "rust", "csharp", "kotlin"],
+            "scripted": ["python", "javascript"],
+            "typed": ["typescript", "csharp", "kotlin", "java", "rust", "go"],
+            "static": ["java", "go", "rust", "csharp", "kotlin", "typescript"],
+            "dynamic": ["python", "javascript"],
+            "web": ["javascript", "typescript"],
+            "systems": ["rust", "go", "csharp"],
+            "jvm": ["java", "kotlin"],
+        }
+
+        if category not in categories:
+            return []
+
+        format_ids = categories[category]
+        return [e for e in exporters if e.format_id in format_ids]
 
     def get_exporter(self, format_id: str) -> Optional[ExportFormat]:
         """
@@ -182,6 +263,27 @@ class ExportTemplateEngine:
                 return exporter
         return None
 
+    def get_exporters_by_language_family(
+        self, exporters: List[ExportFormat]
+    ) -> Dict[str, List[ExportFormat]]:
+        """
+        Group exporters by language family.
+
+        Args:
+            exporters: List of exporters to group
+
+        Returns:
+            Dictionary mapping language family names to lists of exporters
+        """
+        families = {}
+        for exporter in exporters:
+            # Extract family from format_id (e.g., "python" from "python_class")
+            family = exporter.format_id.split("_")[0] if "_" in exporter.format_id else exporter.format_id
+            if family not in families:
+                families[family] = []
+            families[family].append(exporter)
+        return families
+
     def export_specification(
         self, format_id: str, specification: Dict
     ) -> Dict:
@@ -207,6 +309,44 @@ class ExportTemplateEngine:
             "mime_type": exporter.mime_type,
             "content": "",  # Would contain actual exported content
         }
+
+    def to_dict(self, exporters: List[ExportFormat]) -> List[Dict[str, Any]]:
+        """
+        Convert exporters to dictionary representation.
+
+        Args:
+            exporters: List of exporters to convert
+
+        Returns:
+            List of dictionaries representing exporters
+        """
+        return [exporter.to_dict() for exporter in exporters]
+
+    def to_json(self, exporters: List[ExportFormat]) -> str:
+        """
+        Convert exporters to JSON string.
+
+        Args:
+            exporters: List of exporters to convert
+
+        Returns:
+            JSON string representation of exporters
+        """
+        return json.dumps(self.to_dict(exporters), indent=2)
+
+    def save_to_json(self, exporters: List[ExportFormat], filepath: str) -> None:
+        """
+        Save exporters to a JSON file.
+
+        Args:
+            exporters: List of exporters to save
+            filepath: Path to save the JSON file
+        """
+        path = Path(filepath)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(path, "w") as f:
+            f.write(self.to_json(exporters))
 
 
 # Global exporter engine instance

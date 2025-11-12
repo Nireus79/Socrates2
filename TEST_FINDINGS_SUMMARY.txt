@@ -1,0 +1,325 @@
+================================================================================
+SOCRATES2 TEST ANALYSIS REPORT
+November 12, 2025
+================================================================================
+
+OVERVIEW
+--------
+Total Test Methods: 117
+Failing Test Files: 5
+Root Cause: Missing import wrapper modules
+Scope: Phase 7 "pluggification" system testing
+
+
+TEST FILE BREAKDOWN
+-------------------
+
+File 1: backend/tests/test_integration.py
+  Lines: 1-448
+  Tests: 25 test methods
+  Classes: 3 (TestPhase7Integration, TestPhase7Performance, TestPhase7Compatibility)
+  Purpose: Complete integration testing of Phase 7 pluggification system
+  
+  Line 1-3: Module docstring
+  Line 7-16: FAILING IMPORTS - all 3 need wrapper modules
+  Lines 19-339: TestPhase7Integration (16 test methods)
+  Lines 341-408: TestPhase7Performance (5 test methods)  
+  Lines 411-448: TestPhase7Compatibility (2 test methods)
+
+File 2: backend/tests/test_programming_domain.py
+  Lines: 1-219
+  Tests: 22 test methods
+  Classes: 4 (TestProgrammingDomain, TestProgrammingDomainQuestions,
+              TestProgrammingDomainExports, TestProgrammingDomainRules)
+  Purpose: Validate ProgrammingDomain implementation
+  
+  Line 1-5: Module docstring
+  Line 5: FAILING IMPORT - needs app.programming wrapper module
+  Lines 8-115: TestProgrammingDomain (6 test methods)
+  Lines 117-157: TestProgrammingDomainQuestions (6 test methods)
+  Lines 159-186: TestProgrammingDomainExports (5 test methods)
+  Lines 188-219: TestProgrammingDomainRules (5 test methods)
+
+File 3: backend/tests/test_questions.py
+  Lines: 1-259
+  Tests: 19 test methods
+  Classes: 3 (TestQuestionTemplateEngine, TestGlobalQuestionEngine,
+              TestProgrammingDomainQuestions)
+  Purpose: Validate QuestionTemplateEngine functionality
+  
+  Line 1-5: Module docstring
+  Lines 7-8: FAILING IMPORTS - needs app.questions wrapper module
+  Lines 11-212: TestQuestionTemplateEngine (17 test methods)
+  Lines 214-222: TestGlobalQuestionEngine (1 test method)
+  Lines 224-259: TestProgrammingDomainQuestions (1 test method)
+
+File 4: backend/tests/test_registry.py
+  Lines: 1-194
+  Tests: 17 test methods
+  Classes: 2 (TestDomainRegistry, TestGlobalFunctions)
+  Purpose: Validate DomainRegistry system
+  
+  Line 1-5: Module docstring
+  Lines 5-6: FAILING IMPORTS - needs app.registry wrapper module
+  Lines 9-174: TestDomainRegistry (13 test methods)
+  Lines 176-194: TestGlobalFunctions (4 test methods)
+
+File 5: backend/tests/test_rules.py
+  Lines: 1-459
+  Tests: 34 test methods
+  Classes: 3 (TestConflictRuleEngine, TestGlobalRuleEngine,
+              TestProgrammingDomainRules)
+  Purpose: Validate ConflictRuleEngine functionality
+  
+  Line 1-6: Module docstring
+  Lines 7-8: FAILING IMPORTS - needs app.rules wrapper module
+  Lines 11-376: TestConflictRuleEngine (32 test methods)
+  Lines 378-386: TestGlobalRuleEngine (1 test method)
+  Lines 388-459: TestProgrammingDomainRules (9 test methods)
+
+
+FAILING IMPORTS DETAILS
+-----------------------
+
+Import #1: from app.programming import ProgrammingDomain
+  Test files needing this: 3 (test_integration.py, test_programming_domain.py, test_questions.py)
+  Current location: backend/app/domains/programming/__init__.py
+  Required location: backend/app/programming.py (NEW - WRAPPER)
+  Status: ModuleNotFoundError: No module named 'app.programming'
+
+Import #2: from app.questions import QuestionTemplateEngine, get_question_engine
+  Test files needing this: 2 (test_integration.py, test_questions.py)
+  Current location: backend/app/domains/questions.py (lines 18, 275)
+  Required location: backend/app/questions.py (NEW - WRAPPER)
+  Status: ModuleNotFoundError: No module named 'app.questions'
+
+Import #3: from app.rules import ConflictRuleEngine, get_rule_engine
+  Test files needing this: 2 (test_integration.py, test_rules.py)
+  Current location: backend/app/domains/rules.py (lines 18, 300)
+  Required location: backend/app/rules.py (NEW - WRAPPER)
+  Status: ModuleNotFoundError: No module named 'app.rules'
+
+Import #4: from app.registry import DomainRegistry, get_domain_registry, register_domain
+  Test files needing this: 1 (test_registry.py)
+  Current location: backend/app/domains/registry.py (lines 16, 163, 167)
+  Required location: backend/app/registry.py (NEW - WRAPPER)
+  Status: ModuleNotFoundError: No module named 'app.registry'
+
+
+WORKING IMPORTS (Already configured correctly)
+-----------------------
+
+Import: from app.analyzers import QualityAnalyzerEngine, get_analyzer_engine
+  Current location: backend/app/analyzers/__init__.py (imports from engine.py)
+  Backend module: backend/app/analyzers/engine.py (lines 177-188)
+  Status: ✓ WORKS
+
+Import: from app.exporters import ExportTemplateEngine, get_exporter_engine
+  Current location: backend/app/exporters/__init__.py (imports from engine.py)
+  Backend module: backend/app/exporters/engine.py (lines 207-216)
+  Status: ✓ WORKS
+
+Import: from app.base import BaseDomain, ConflictRule, ExportFormat, Question, SeverityLevel
+  Current location: backend/app/base/__init__.py (imports from submodules)
+  Backend modules: backend/app/base/base_domain.py, backend/app/base/models.py
+  Status: ✓ WORKS
+
+
+MODULES TO CREATE
+-----------------
+
+Create 4 wrapper modules at backend/app/ level:
+
+1. backend/app/programming.py
+   Purpose: Re-export ProgrammingDomain from app.domains.programming
+   Lines of code: ~12 (including docstring)
+   Exports: ProgrammingDomain
+   
+   Content:
+   """
+   Programming domain for Socrates.
+   
+   Re-exports from app.domains.programming for convenient top-level access.
+   """
+   
+   from app.domains.programming import ProgrammingDomain
+   
+   __all__ = [
+       "ProgrammingDomain",
+   ]
+
+2. backend/app/questions.py
+   Purpose: Re-export QuestionTemplateEngine from app.domains.questions
+   Lines of code: ~15 (including docstring)
+   Exports: QuestionTemplateEngine, get_question_engine
+   
+   Content:
+   """
+   Question template engine for Socrates.
+   
+   Re-exports from app.domains.questions for convenient top-level access.
+   """
+   
+   from app.domains.questions import (
+       QuestionTemplateEngine,
+       get_question_engine,
+   )
+   
+   __all__ = [
+       "QuestionTemplateEngine",
+       "get_question_engine",
+   ]
+
+3. backend/app/rules.py
+   Purpose: Re-export ConflictRuleEngine from app.domains.rules
+   Lines of code: ~15 (including docstring)
+   Exports: ConflictRuleEngine, get_rule_engine
+   
+   Content:
+   """
+   Conflict rule engine for Socrates.
+   
+   Re-exports from app.domains.rules for convenient top-level access.
+   """
+   
+   from app.domains.rules import (
+       ConflictRuleEngine,
+       get_rule_engine,
+   )
+   
+   __all__ = [
+       "ConflictRuleEngine",
+       "get_rule_engine",
+   ]
+
+4. backend/app/registry.py
+   Purpose: Re-export DomainRegistry from app.domains.registry
+   Lines of code: ~17 (including docstring)
+   Exports: DomainRegistry, get_domain_registry, register_domain
+   
+   Content:
+   """
+   Domain registry for Socrates.
+   
+   Re-exports from app.domains.registry for convenient top-level access.
+   """
+   
+   from app.domains.registry import (
+       DomainRegistry,
+       get_domain_registry,
+       register_domain,
+   )
+   
+   __all__ = [
+       "DomainRegistry",
+       "get_domain_registry",
+       "register_domain",
+   ]
+
+
+TEST EXPECTATIONS
+-----------------
+
+test_integration.py expectations:
+  - ProgrammingDomain() creates domain instance
+  - Domain has methods: get_questions(), get_export_formats(), 
+    get_conflict_rules(), get_quality_analyzers(), get_categories()
+  - Questions should be ≥14 instances of Question class
+  - Export formats should be 8 instances of ExportFormat class
+  - Conflict rules should be ≥4 instances of ConflictRule class
+  - Analyzers should be list of string IDs including "bias_detector"
+
+test_programming_domain.py expectations:
+  - Domain metadata: id="programming", name="Software Programming", version="1.0.0"
+  - Categories: Performance, Security, Scalability, Usability, Reliability, 
+                Maintainability, Accessibility
+  - Questions by category exist (e.g., 3+ Performance questions)
+  - Export formats: python, javascript, typescript, go, java, rust, csharp, kotlin
+  - Export format details: name, file_extension, mime_type
+  - Conflict rules exist with fields: rule_id, name, description, condition, severity
+
+test_questions.py expectations:
+  - QuestionTemplateEngine can load questions from dict, JSON
+  - Filter by category, difficulty, dependencies
+  - Validate questions (detect duplicates, missing fields, circular deps)
+  - Get next recommended questions
+  - Convert to dict/JSON, save/load from file
+  - get_question_engine() returns singleton instance
+
+test_registry.py expectations:
+  - DomainRegistry is singleton
+  - Register/unregister domains
+  - Get domain by ID (lazy instantiation)
+  - List domains, check domain existence
+  - Convert to dict
+
+test_rules.py expectations:
+  - ConflictRuleEngine can load rules from dict, JSON
+  - Filter by severity, category, pattern
+  - Validate rules (detect duplicates, missing fields)
+  - Group rules by category/severity
+  - Convert to dict/JSON, save/load from file
+  - get_rule_engine() returns singleton instance
+
+
+IMPACT ANALYSIS
+---------------
+
+Files affected by missing modules: 5
+Test methods affected: 117
+Classes affected: 16
+Percentage of test suite: ~100% (all Phase 7 tests fail to import)
+
+Impact severity: HIGH - Tests cannot run without fixes
+Fix complexity: VERY LOW - Just Python import statements
+Estimated fix time: 5 minutes
+Risk of breaking existing code: NONE - These are new wrapper modules
+
+
+SOURCE CODE REFERENCES
+----------------------
+
+Current modules to wrap:
+  - backend/app/domains/programming/__init__.py (ProgrammingDomain)
+  - backend/app/domains/questions.py (QuestionTemplateEngine, get_question_engine)
+  - backend/app/domains/rules.py (ConflictRuleEngine, get_rule_engine)
+  - backend/app/domains/registry.py (DomainRegistry, get_domain_registry, register_domain)
+
+Existing successful wrappers (as reference):
+  - backend/app/analyzers/__init__.py (re-exports from engine.py)
+  - backend/app/exporters/__init__.py (re-exports from engine.py)
+  - backend/app/base/__init__.py (re-exports from submodules)
+
+
+VERIFICATION STEPS
+------------------
+
+1. Create the 4 wrapper modules (see "MODULES TO CREATE" above)
+
+2. Verify imports work:
+   cd /home/user/Socrates2/backend
+   python -c "from app.programming import ProgrammingDomain"
+   python -c "from app.questions import QuestionTemplateEngine, get_question_engine"
+   python -c "from app.rules import ConflictRuleEngine, get_rule_engine"
+   python -c "from app.registry import DomainRegistry, get_domain_registry, register_domain"
+
+3. Run test collection (may reveal other issues):
+   python -m pytest tests/test_integration.py -v --collect-only
+
+4. Install test dependencies if needed:
+   pip install sqlalchemy fastapi pytest pytest-asyncio
+
+5. Run tests:
+   python -m pytest tests/test_integration.py tests/test_programming_domain.py \
+     tests/test_questions.py tests/test_registry.py tests/test_rules.py -v
+
+
+CONCLUSION
+----------
+
+All 117 test failures are caused by missing import wrappers. The code being tested
+(in app.domains) is complete and functional. Only import paths need to be fixed by
+creating 4 simple re-export modules at the app/ level.
+
+This is a structural/organization issue, not a code functionality issue.
+

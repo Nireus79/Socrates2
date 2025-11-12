@@ -4,8 +4,8 @@ QualityMetric model for quality control metrics and validation results.
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Numeric, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, JSON, Numeric, String
+
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 
@@ -77,7 +77,7 @@ class QualityMetric(Base):
     )
 
     details = Column(
-        JSONB,
+        JSON,
         nullable=True,
         comment="Additional details as JSON (e.g., coverage gaps, bias patterns)"
     )

@@ -2,8 +2,10 @@
 Security utilities for JWT token creation and validation.
 """
 import secrets
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -120,7 +122,13 @@ def get_current_user(
 
     # Query user from database by ID
     # Note: user_id comes from the JWT 'sub' claim (stored during login)
-    user = db.query(User).filter(User.id == user_id).first()
+    # Convert string user_id to UUID for database query
+    try:
+        user_uuid = UUID(user_id)
+    except (ValueError, TypeError):
+        raise credentials_exception
+
+    user = db.query(User).filter(User.id == user_uuid).first()
 
     if user is None:
         raise credentials_exception
@@ -206,6 +214,10 @@ def create_refresh_token(user_id: str, db: Session) -> str:
         expires_at = datetime.now(timezone.utc) + timedelta(days=7)
 
         # Create refresh token record in database
+        # Convert user_id string to UUID if it's a string
+        if isinstance(user_id, str):
+            user_id = uuid.UUID(user_id)
+
         refresh_token = RefreshToken(
             user_id=user_id,
             token=token,

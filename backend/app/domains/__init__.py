@@ -20,7 +20,7 @@ Core components:
 """
 
 from .architecture import ArchitectureDomain
-from .base import BaseDomain
+from app.base import BaseDomain
 from .business import BusinessDomain
 from .data_engineering import DataEngineeringDomain
 from .devops import DevOpsDomain

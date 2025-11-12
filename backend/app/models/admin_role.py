@@ -3,7 +3,7 @@ Admin role definition model.
 
 Defines admin roles and their associated permissions.
 """
-from sqlalchemy import ARRAY, Boolean, Column, Index, String, Text
+from sqlalchemy import Boolean, Column, Index, JSON, String, Text
 
 from .base import BaseModel
 
@@ -15,7 +15,7 @@ class AdminRole(BaseModel):
 
     name = Column(String(50), unique=True, nullable=False, index=True)
     description = Column(Text, nullable=True)
-    permissions = Column(ARRAY(String(50)), nullable=False, default=list)
+    permissions = Column(JSON, nullable=False, default=list)
     is_system_role = Column(Boolean, default=False)
 
     __table_args__ = (

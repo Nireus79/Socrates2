@@ -95,6 +95,7 @@ class LoginResponse(BaseModel):
     username: str
     name: str
     surname: str
+    email: Optional[str] = None
 
     class Config:
         json_schema_extra = {
@@ -105,7 +106,8 @@ class LoginResponse(BaseModel):
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
                 "username": "johndoe",
                 "name": "John",
-                "surname": "Doe"
+                "surname": "Doe",
+                "email": "john@example.com"
             }
         }
 
@@ -288,14 +290,8 @@ def login(
         expires_delta=access_token_expires
     )
 
-    # Create refresh token using repository
-    refresh_token_obj = service.refresh_tokens.create(
-        user_id=user.id,
-        token=create_refresh_token(str(user.id), service.auth_session),
-        expires_at=None  # Will be set by the model defaults if needed
-    )
-    service.commit_all()
-    refresh_token = refresh_token_obj.token
+    # Create refresh token (create_refresh_token already commits to DB)
+    refresh_token = create_refresh_token(str(user.id), service.auth_session)
 
     # Log successful login
     log_auth("User logged in", user_id=str(user.id), username=user.username, success=True)
@@ -307,7 +303,8 @@ def login(
         user_id=str(user.id),
         username=user.username,
         name=user.name,
-        surname=user.surname
+        surname=user.surname,
+        email=user.email
     )
 
 
@@ -442,14 +439,8 @@ def refresh_access_token(
             expires_delta=access_token_expires
         )
 
-        # Create new refresh token
-        new_refresh_token_obj = service.refresh_tokens.create(
-            user_id=user.id,
-            token=create_refresh_token(str(user.id), service.auth_session),
-            expires_at=None
-        )
-        service.commit_all()
-        new_refresh_token = new_refresh_token_obj.token
+        # Create new refresh token (create_refresh_token already commits to DB)
+        new_refresh_token = create_refresh_token(str(user.id), service.auth_session)
 
         # Log token refresh
         log_auth("Token refreshed", user_id=str(user.id), username=user.username, success=True)

@@ -1,7 +1,7 @@
 """
 GeneratedFile model for storing individual generated files.
 """
-from sqlalchemy import ARRAY, Column, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import relationship
 
 from ..models.base import BaseModel
@@ -20,7 +20,7 @@ class GeneratedFile(BaseModel):
     file_path = Column(String(500), nullable=False, index=True)
     file_content = Column(Text, nullable=True)
     file_size = Column(Integer, nullable=True)
-    spec_ids = Column(ARRAY(String(36)), nullable=True)  # Specifications that led to this file
+    spec_ids = Column(JSON, nullable=True)  # Specifications that led to this file
 
     # Relationships
     generated_project = relationship("GeneratedProject", back_populates="files")

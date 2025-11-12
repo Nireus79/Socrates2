@@ -10,7 +10,9 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .base import ExportFormat
+from pydantic import ValidationError
+
+from app.base import ExportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +72,7 @@ class ExportTemplateEngine:
                 )
                 exporters.append(exporter)
                 logger.debug(f"Loaded exporter: {exporter.format_id}")
-            except (KeyError, ValueError) as e:
+            except (KeyError, ValueError, ValidationError) as e:
                 logger.error(f"Error loading exporter {item.get('format_id', '?')}: {e}")
                 raise ValueError(f"Invalid exporter configuration: {e}")
 

@@ -70,19 +70,25 @@ class ProjectRepository(BaseRepository[Project]):
         Returns:
             Created Project instance
         """
+        # Ensure user_id is a UUID
+        if isinstance(user_id, str):
+            user_id = UUID(user_id)
+
         return self.create(
             user_id=user_id,
+            creator_id=user_id,  # Creator is the same as initial owner
+            owner_id=user_id,    # Initial owner is the creator
             name=name,
             description=description,
-            phase='discovery',
+            current_phase='discovery',  # Use correct field name
             status='active',
-            maturity_level=0,
+            maturity_score=0,  # Use correct field name
             **kwargs
         )
 
     def update_project_phase(self, project_id: UUID, phase: str) -> Optional[Project]:
         """Update project to new phase."""
-        return self.update(project_id, phase=phase)
+        return self.update(project_id, current_phase=phase)
 
     def update_project_status(self, project_id: UUID, status: str) -> Optional[Project]:
         """Update project status."""
@@ -96,7 +102,7 @@ class ProjectRepository(BaseRepository[Project]):
         """Update project maturity score."""
         if level < 0 or level > 100:
             raise ValueError('Maturity level must be between 0 and 100')
-        return self.update(project_id, maturity_level=level)
+        return self.update(project_id, maturity_score=level)
 
     def archive_project(self, project_id: UUID) -> Optional[Project]:
         """Archive a project."""

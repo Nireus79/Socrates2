@@ -10,7 +10,9 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .base import Question
+from pydantic import ValidationError
+
+from app.base import Question
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +72,7 @@ class QuestionTemplateEngine:
                 )
                 questions.append(question)
                 logger.debug(f"Loaded question: {question.question_id}")
-            except (KeyError, ValueError) as e:
+            except (KeyError, ValueError, ValidationError) as e:
                 logger.error(f"Error loading question {item.get('question_id', '?')}: {e}")
                 raise ValueError(f"Invalid question configuration: {e}")
 

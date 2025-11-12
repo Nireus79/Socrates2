@@ -3,8 +3,8 @@ Admin audit log model.
 
 Tracks all admin actions for compliance and debugging.
 """
-from sqlalchemy import Column, ForeignKey, Index, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, ForeignKey, Index, JSON, String
+
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from .base import BaseModel
@@ -19,7 +19,7 @@ class AdminAuditLog(BaseModel):
     action = Column(String(50), nullable=False)
     resource_type = Column(String(50), nullable=False)
     resource_id = Column(String(255), nullable=False)
-    details = Column(JSONB, nullable=True)
+    details = Column(JSON, nullable=True)
     ip_address = Column(String(50), nullable=True)
     user_agent = Column(String(500), nullable=True)
 
