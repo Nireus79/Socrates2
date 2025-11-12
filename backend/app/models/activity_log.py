@@ -102,7 +102,7 @@ class ActivityLog(BaseModel):
         comment="Human-readable description of the action"
     )
 
-    metadata = Column(
+    action_metadata = Column(
         JSON,
         nullable=True,
         comment="""Additional context as JSON. Examples:

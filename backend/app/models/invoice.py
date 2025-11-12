@@ -26,7 +26,7 @@ class Invoice(BaseModel):
     paid_at = Column(DateTime(timezone=True), nullable=True)
     hosted_invoice_url = Column(String(500), nullable=True)
     pdf_url = Column(String(500), nullable=True)
-    metadata = Column(JSON, nullable=True)
+    invoice_metadata = Column(JSON, nullable=True)
 
     # Timestamps
     invoice_date = Column(DateTime(timezone=True), nullable=True)

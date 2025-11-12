@@ -23,7 +23,7 @@ class Subscription(BaseModel):
     cancel_at_period_end = Column(Boolean, default=False)
     tier = Column(String(20), nullable=False)  # pro, team, enterprise
     billing_cycle_anchor = Column(DateTime(timezone=True), nullable=True)
-    metadata = Column(JSON, nullable=True)  # Store custom metadata
+    stripe_metadata = Column(JSON, nullable=True)  # Store Stripe custom metadata
     price_id = Column(String(255), nullable=True)  # Stripe price ID
 
     # Timestamps

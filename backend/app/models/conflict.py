@@ -3,7 +3,7 @@ Conflict model for detecting and resolving specification conflicts.
 """
 import enum
 
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, Enum, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Enum, JSON, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from ..models.base import BaseModel
@@ -36,7 +36,7 @@ class Conflict(BaseModel):
     """
     Model for specification conflicts.
 
-    Tracks when new specifications conflict with existing ones,
+    Tracks when new specifications conflict with existing ones
     allowing users to resolve contradictions in requirements.
     """
     __tablename__ = "conflicts"
@@ -44,7 +44,7 @@ class Conflict(BaseModel):
     project_id = Column(PG_UUID(as_uuid=True), nullable=False, index=True)
     type = Column(Enum(ConflictType), nullable=False)
     description = Column(Text, nullable=False)
-    spec_ids = Column(ARRAY(String(36)), nullable=False)  # Array of conflicting spec IDs
+    spec_ids = Column(JSON, nullable=False)  # Array of conflicting spec IDs
     severity = Column(Enum(ConflictSeverity), nullable=False, index=True)
     status = Column(Enum(ConflictStatus), nullable=False, default=ConflictStatus.OPEN, index=True)
     resolution = Column(Text, nullable=True)

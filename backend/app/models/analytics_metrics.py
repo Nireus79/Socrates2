@@ -19,7 +19,7 @@ class AnalyticsMetrics(BaseModel):
     value = Column(Numeric(20, 4), nullable=False, default=0)
     date = Column(Date, nullable=False, index=True)
     tags = Column(JSON, nullable=True)
-    metadata = Column(Text, nullable=True)
+    metrics_metadata = Column(Text, nullable=True)
 
     __table_args__ = (
         Index("idx_metrics_type_date", "metric_type", "date"),
