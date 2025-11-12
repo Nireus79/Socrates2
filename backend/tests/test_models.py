@@ -18,7 +18,8 @@ class TestUserModel:
         """Test that user can be created with valid data."""
         assert test_user_data["email"] == "test@example.com"
         assert test_user_data["password"] == "SecurePassword123!"
-        assert test_user_data["full_name"] == "Test User"
+        assert test_user_data["name"] == "Test"
+        assert test_user_data["surname"] == "User"
 
     def test_user_email_format(self, test_user_data):
         """Test email validation."""
