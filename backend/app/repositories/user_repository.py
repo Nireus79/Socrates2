@@ -37,22 +37,22 @@ class UserRepository(BaseRepository[User]):
 
     def create_user(
         self,
-        email: str,
         username: str,
         hashed_password: str,
         name: str = '',
         surname: str = '',
+        email: Optional[str] = None,
         **kwargs
     ) -> User:
         """
         Create new user with required fields.
 
         Args:
-            email: User email (unique)
             username: User username (unique)
             hashed_password: Bcrypt hashed password
             name: First name
             surname: Last name
+            email: User email (unique, optional)
             **kwargs: Additional fields
 
         Returns:
