@@ -2,6 +2,7 @@
 Security utilities for JWT token creation and validation.
 """
 import secrets
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
@@ -206,6 +207,10 @@ def create_refresh_token(user_id: str, db: Session) -> str:
         expires_at = datetime.now(timezone.utc) + timedelta(days=7)
 
         # Create refresh token record in database
+        # Convert user_id string to UUID if it's a string
+        if isinstance(user_id, str):
+            user_id = uuid.UUID(user_id)
+
         refresh_token = RefreshToken(
             user_id=user_id,
             token=token,
