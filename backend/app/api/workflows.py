@@ -8,9 +8,11 @@ with unified validation and cross-domain conflict detection.
 import logging
 from typing import Any, Dict
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.core.security import get_current_active_user
 from app.domains.workflows import get_workflow_manager
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +48,14 @@ async def create_workflow(workflow_id: str) -> Dict[str, Any]:
 
 
 @router.get("", summary="List all workflows")
-async def list_workflows() -> Dict[str, Any]:
+async def list_workflows(
+    current_user: User = Depends(get_current_active_user)
+) -> Dict[str, Any]:
     """
     List all multi-domain workflows.
+
+    Args:
+        current_user: Authenticated user
 
     Returns:
         List of workflow IDs

@@ -64,8 +64,9 @@ def test_list_projects_with_auth(test_client, db_auth, db_specs):
 
     assert response.status_code == 200
     data = response.json()
-    assert "items" in data or isinstance(data, list)
-    print(f"✓ Successfully listed {len(data) if isinstance(data, list) else len(data.get('items', []))} projects")
+    assert "projects" in data or isinstance(data, list)
+    projects = data if isinstance(data, list) else data.get('projects', [])
+    print(f"✓ Successfully listed {len(projects)} projects")
 
 
 @pytest.mark.api
