@@ -26,9 +26,9 @@ class SeverityLevel(str, Enum):
 class Question(BaseModel):
     """Represents a question in a domain."""
 
-    question_id: str = Field(..., description="Unique question identifier")
-    text: str = Field(..., description="Question text")
-    category: str = Field(..., description="Question category")
+    question_id: Optional[str] = Field(default=None, description="Unique question identifier")
+    text: Optional[str] = Field(default=None, description="Question text")
+    category: Optional[str] = Field(default=None, description="Question category")
     difficulty: str = Field(
         default="medium", description="Question difficulty level"
     )
@@ -75,9 +75,9 @@ class ExportFormat(BaseModel):
 class ConflictRule(BaseModel):
     """Represents a rule for detecting specification conflicts."""
 
-    rule_id: str = Field(..., description="Unique rule identifier")
-    name: str = Field(..., description="Rule name")
-    description: str = Field(..., description="Rule description")
+    rule_id: Optional[str] = Field(default=None, description="Unique rule identifier")
+    name: Optional[str] = Field(default=None, description="Rule name")
+    description: Optional[str] = Field(default=None, description="Rule description")
     severity: SeverityLevel = Field(
         default=SeverityLevel.MEDIUM, description="Conflict severity level"
     )
