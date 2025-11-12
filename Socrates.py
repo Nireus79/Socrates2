@@ -1009,10 +1009,19 @@ No session required.
                 return
 
             try:
+                if self.debug:
+                    self.console.print(f"[dim]DEBUG: Sending registration request for username='{data['username']}'[/dim]")
+
                 with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Creating account...", total=None)
                     result = self.api.register(data['username'], data['name'], data['surname'], data['email'], data['password'])
+
+                if self.debug:
+                    if result.get("user_id"):
+                        self.console.print(f"[dim]DEBUG: Registration successful - user_id={result.get('user_id')}[/dim]")
+                    else:
+                        self.console.print(f"[dim]DEBUG: Registration failed - response: {result}[/dim]")
 
                 # Backend returns user_id on success (no "success" field)
                 if result.get("user_id"):
@@ -1076,10 +1085,19 @@ No session required.
                 self.console.print("[yellow]Password is required[/yellow]")
 
             try:
+                if self.debug:
+                    self.console.print(f"[dim]DEBUG: Sending login request for username='{data['username']}'[/dim]")
+
                 with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Logging in...", total=None)
                     result = self.api.login(data['username'], data['password'])
+
+                if self.debug:
+                    if result.get("access_token"):
+                        self.console.print(f"[dim]DEBUG: Login successful[/dim]")
+                    else:
+                        self.console.print(f"[dim]DEBUG: Login failed - response: {result}[/dim]")
 
                 if result.get("access_token"):
                     self.config.set("access_token", result["access_token"])
@@ -1094,7 +1112,8 @@ No session required.
                     self.cli_logger.log_login(data['username'], result.get("username", ""))
                     self.console.print(f"\n[green]✓ Logged in successfully as {user_display}[/green]")
                 else:
-                    self.console.print(f"\n[red]✗ Login failed: {result.get('message', 'Invalid credentials')}[/red]")
+                    error_detail = result.get('message', result.get('detail', 'Invalid credentials'))
+                    self.console.print(f"\n[red]✗ Login failed: {error_detail}[/red]")
             except requests.exceptions.ConnectionError:
                 self.console.print(f"\n[red]✗ Cannot connect to Socrates backend[/red]")
                 self.console.print(f"[yellow]The server is not running at http://localhost:8000[/yellow]")
