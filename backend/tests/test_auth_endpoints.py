@@ -109,15 +109,15 @@ class TestUserLogin:
         # Login
         response = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data["email"],
+            data={
+                "username": test_user_data["username"],
                 "password": test_user_data["password"]
             }
         )
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "access_token" in data
-        assert data["email"] == test_user_data["email"]
+        assert data["username"] == test_user_data["username"]
 
     def test_login_wrong_password(self, test_client, test_user_data):
         """Test login fails with wrong password."""
@@ -127,7 +127,7 @@ class TestUserLogin:
         # Login with wrong password
         response = test_client.post(
             "/api/v1/auth/login",
-            json={"email": test_user_data["email"], "password": "WrongPassword123!"}
+            data={"username": test_user_data["username"], "password": "WrongPassword123!"}
         )
         assert response.status_code in [
             status.HTTP_401_UNAUTHORIZED,
@@ -138,7 +138,7 @@ class TestUserLogin:
         """Test login fails for nonexistent user."""
         response = test_client.post(
             "/api/v1/auth/login",
-            json={"email": "nonexistent@example.com", "password": "Password123!"}
+            data={"username": "nonexistent_user", "password": "Password123!"}
         )
         assert response.status_code in [
             status.HTTP_401_UNAUTHORIZED,
@@ -146,10 +146,10 @@ class TestUserLogin:
         ]
 
     def test_login_missing_email(self, test_client):
-        """Test login fails without email."""
+        """Test login fails without username."""
         response = test_client.post(
             "/api/v1/auth/login",
-            json={"password": "Password123!"}
+            data={"password": "Password123!"}
         )
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -157,23 +157,23 @@ class TestUserLogin:
         """Test login fails without password."""
         response = test_client.post(
             "/api/v1/auth/login",
-            json={"email": "test@example.com"}
+            data={"username": "testuser"}
         )
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-    def test_login_returns_correct_email(self, test_client, test_user_data):
-        """Test login response contains correct email."""
+    def test_login_returns_correct_username(self, test_client, test_user_data):
+        """Test login response contains correct username."""
         test_client.post("/api/v1/auth/register", json=test_user_data)
 
         response = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data["email"],
+            data={
+                "username": test_user_data["username"],
                 "password": test_user_data["password"]
             }
         )
         data = response.json()
-        assert data["email"] == test_user_data["email"]
+        assert data["username"] == test_user_data["username"]
 
 
 @pytest.mark.api
@@ -274,8 +274,8 @@ class TestMultipleUsers:
         test_client.post("/api/v1/auth/register", json=test_user_data)
         response1 = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data["email"],
+            data={
+                "username": test_user_data["username"],
                 "password": test_user_data["password"]
             }
         )
@@ -285,8 +285,8 @@ class TestMultipleUsers:
         test_client.post("/api/v1/auth/register", json=test_user_data_alt)
         response2 = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data_alt["email"],
+            data={
+                "username": test_user_data_alt["username"],
                 "password": test_user_data_alt["password"]
             }
         )
@@ -304,8 +304,8 @@ class TestMultipleUsers:
         # Login as first user
         response1 = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data["email"],
+            data={
+                "username": test_user_data["username"],
                 "password": test_user_data["password"]
             }
         )
@@ -314,8 +314,8 @@ class TestMultipleUsers:
         # Login as second user
         response2 = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data_alt["email"],
+            data={
+                "username": test_user_data_alt["username"],
                 "password": test_user_data_alt["password"]
             }
         )

@@ -1,82 +1,132 @@
-#!/usr/bin/env python3
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent / "backend"))
+"""
 
-from app.agents.orchestrator import AgentOrchestrator, initialize_default_agents
-from app.core.dependencies import ServiceContainer
-from app.core.database import SessionLocalSpecs
-from app.models.project import Project
-from app.models.session import Session as SessionModel
-from app.models.question import Question
+Debug test for context analyzer agent.
+
+
+
+Tests the context extraction functionality with proper database fixtures.
+
+"""
+
+import pytest
+
 from datetime import datetime, timezone
 
-services = ServiceContainer()
-orchestrator = AgentOrchestrator(services)
-initialize_default_agents(orchestrator)
+from uuid import uuid4
 
-db = SessionLocalSpecs()
+from app.models import Project, Session as SessionModel, Question
 
-# Create test project and session
-test_user_id = "00000000-0000-0000-0000-000000000001"
-project = Project(
-    name="Test Project",
-    description="For testing",
-    creator_id=test_user_id,
-    owner_id=test_user_id,
-    user_id=test_user_id,
-    current_phase="discovery"
-)
-db.add(project)
-db.commit()
-db.refresh(project)
 
-# Create a session
-session = SessionModel(
-    project_id=project.id,
-    status='active',
-    started_at=datetime.now(timezone.utc)
-)
-db.add(session)
-db.commit()
-db.refresh(session)
+@pytest.mark.e2e
+def test_context_analyzer_with_proper_data(db_specs):
+    """Test context analyzer agent with proper database setup."""
 
-# Create a question
-question = Question(
-    project_id=project.id,
-    session_id=session.id,
-    text="What are the main goals of your application?",
-    category="goals"
-)
-db.add(question)
-db.commit()
-db.refresh(question)
+    from app.agents.orchestrator import AgentOrchestrator, initialize_default_agents
 
-# Test context analyzer with proper data
-print(f"Testing ContextAnalyzerAgent...")
-print(f"Session ID: {session.id}")
-print(f"Question ID: {question.id}")
+    from app.core.dependencies import ServiceContainer
 
-result = orchestrator.route_request(
-    'context',
-    'extract_specifications',
-    {
-        'session_id': str(session.id),
-        'question_id': str(question.id),
-        'answer': "Build a scalable web application for e-commerce with real-time notifications",
-        'user_id': test_user_id
-    }
-)
+    # Create service container and orchestrator
 
-print(f"Result: {result}")
+    services = ServiceContainer()
 
-# Cleanup
-try:
-    db.query(Question).filter(Question.id == question.id).delete()
-    db.query(SessionModel).filter(SessionModel.id == session.id).delete()
-    db.query(Project).filter(Project.id == project.id).delete()
-    db.commit()
-except:
-    pass
-finally:
-    db.close()
+    orchestrator = AgentOrchestrator(services)
+
+    initialize_default_agents(orchestrator)
+
+    # Create test project with proper UUID
+
+    test_user_id = str(uuid4())
+
+    project = Project(
+
+        name="Test Project",
+
+        description="For testing",
+
+        creator_id=test_user_id,
+
+        owner_id=test_user_id,
+
+        user_id=test_user_id,
+
+        current_phase="discovery"
+
+    )
+
+    db_specs.add(project)
+
+    db_specs.commit()
+
+    db_specs.refresh(project)
+
+    # Create a session
+
+    session = SessionModel(
+
+        project_id=project.id,
+
+        status='active',
+
+        started_at=datetime.now(timezone.utc)
+
+    )
+
+    db_specs.add(session)
+
+    db_specs.commit()
+
+    db_specs.refresh(session)
+
+    # Create a question
+
+    question = Question(
+
+        project_id=project.id,
+
+        session_id=session.id,
+
+        text="What are the main goals of your application?",
+
+        category="goals"
+
+    )
+
+    db_specs.add(question)
+
+    db_specs.commit()
+
+    db_specs.refresh(question)
+
+    # Test context analyzer with proper data
+
+    print(f"Testing ContextAnalyzerAgent...")
+
+    print(f"Session ID: {session.id}")
+
+    print(f"Question ID: {question.id}")
+
+    result = orchestrator.route_request(
+
+        'context',
+
+        'extract_specifications',
+
+        {
+
+            'session_id': str(session.id),
+
+            'question_id': str(question.id),
+
+            'answer': "Build a scalable web application for e-commerce with real-time notifications",
+
+            'user_id': test_user_id
+
+        }
+
+    )
+
+    print(f"Result: {result}")
+
+    assert result is not None
+
+    assert isinstance(result, dict)
