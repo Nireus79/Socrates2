@@ -62,9 +62,13 @@ def test_db_specs():
 def session_factory_auth(test_db_auth):
     """Create session factory for auth database."""
     # Import here to ensure environment variables are set
-    from app.models.user import Base as AuthBase
+    from app.core.database import Base
+    # Import all auth models to register them with Base.metadata
+    from app.models import (
+        User, RefreshToken, AdminUser, AdminRole, AdminAuditLog
+    )
 
-    AuthBase.metadata.create_all(bind=test_db_auth)
+    Base.metadata.create_all(bind=test_db_auth)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_db_auth)
     return SessionLocal
 
@@ -72,9 +76,19 @@ def session_factory_auth(test_db_auth):
 @pytest.fixture(scope="session")
 def session_factory_specs(test_db_specs):
     """Create session factory for specs database."""
-    from app.models.project import Base as SpecsBase
+    from app.core.database import Base
+    # Import all specs models to register them with Base.metadata
+    # Use alias for Session model to avoid conflict with sqlalchemy.orm.Session
+    from app.models import (
+        Project, Session as SessionModel, Question, Specification, ConversationHistory,
+        Conflict, GeneratedProject, GeneratedFile, QualityMetric,
+        UserBehaviorPattern, QuestionEffectiveness, KnowledgeBaseDocument,
+        Team, TeamMember, ProjectShare, APIKey, LLMUsageTracking,
+        Subscription, Invoice, AnalyticsMetrics, DocumentChunk,
+        NotificationPreferences, ActivityLog, ProjectInvitation
+    )
 
-    SpecsBase.metadata.create_all(bind=test_db_specs)
+    Base.metadata.create_all(bind=test_db_specs)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_db_specs)
     return SessionLocal
 
