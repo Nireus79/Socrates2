@@ -109,6 +109,36 @@ def db_specs(session_factory_specs) -> Generator[Session, None, None]:
     session.close()
 
 
+@pytest.fixture(autouse=True)
+def cleanup_databases(session_factory_auth, session_factory_specs):
+    """Clean up databases before each test."""
+    from app.models import User, RefreshToken, Project, Session as SessionModel
+
+    # Clear auth database tables before test
+    session_auth = session_factory_auth()
+    try:
+        session_auth.query(RefreshToken).delete()
+        session_auth.query(User).delete()
+        session_auth.commit()
+    except Exception:
+        session_auth.rollback()
+    finally:
+        session_auth.close()
+
+    # Clear specs database tables before test
+    session_specs = session_factory_specs()
+    try:
+        session_specs.query(SessionModel).delete()
+        session_specs.query(Project).delete()
+        session_specs.commit()
+    except Exception:
+        session_specs.rollback()
+    finally:
+        session_specs.close()
+
+    yield
+
+
 @pytest.fixture
 def test_client(session_factory_auth, session_factory_specs):
     """Create FastAPI test client with overridden database dependencies."""
