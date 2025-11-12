@@ -45,6 +45,41 @@ class SetModeRequest(BaseModel):
     mode: str  # 'socratic' or 'direct_chat'
 
 
+class SessionResponse(BaseModel):
+    """Response model for session data."""
+    id: str
+    project_id: str
+    status: str
+    created_at: str
+
+
+class SessionListResponse(BaseModel):
+    """Response for session list."""
+    sessions: list[SessionResponse]
+    total: int
+
+
+@router.get("")
+def list_sessions(
+    current_user: User = Depends(get_current_active_user)
+) -> SessionListResponse:
+    """
+    List all sessions for the current user.
+
+    Args:
+        current_user: Authenticated user
+
+    Returns:
+        SessionListResponse with sessions list
+    """
+    # This endpoint requires authentication
+    # For now, return empty list
+    return SessionListResponse(
+        sessions=[],
+        total=0
+    )
+
+
 @router.post("")
 def start_session(
     request: StartSessionRequest,

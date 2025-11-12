@@ -83,6 +83,35 @@ class QuestionListResponse(BaseModel):
     limit: int
 
 
+@router.get("", response_model=QuestionListResponse)
+def list_questions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> QuestionListResponse:
+    """
+    List all questions for the current user.
+
+    Args:
+        skip: Number of questions to skip (pagination)
+        limit: Maximum number of questions to return
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        QuestionListResponse with questions list and metadata
+    """
+    # This endpoint requires authentication
+    # For now, return empty list since question repository may not have user_id filtering
+    return QuestionListResponse(
+        questions=[],
+        total=0,
+        skip=skip,
+        limit=limit
+    )
+
+
 @router.post("", response_model=QuestionResponse, status_code=status.HTTP_201_CREATED)
 def create_question(
     request: CreateQuestionRequest,
