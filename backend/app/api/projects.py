@@ -388,6 +388,86 @@ def update_project(
         ) from e
 
 
+@router.patch("/{project_id}", response_model=ProjectResponse)
+def partial_update_project(
+    project_id: str,
+    request: UpdateProjectRequest,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> ProjectResponse:
+    """
+    Partially update project details (same as PUT, for convenience).
+
+    Args:
+        project_id: Project UUID
+        request: Fields to update (name, description, status, phase, maturity_level)
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        ProjectResponse with updated project
+    """
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    # Get project first
+    project = service.projects.get_by_id(project_uuid)
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    # Validate permissions
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied: only project owner can update project"
+        )
+
+    try:
+        # Update fields if provided
+        if request.name is not None:
+            project = service.projects.update(project_uuid, name=request.name)
+        if request.description is not None:
+            project = service.projects.update(project_uuid, description=request.description)
+        if request.status is not None:
+            project = service.projects.update_project_status(project_uuid, request.status)
+        if request.phase is not None:
+            project = service.projects.update_project_phase(project_uuid, request.phase)
+        if request.maturity_level is not None:
+            project = service.projects.update_maturity_level(project_uuid, request.maturity_level)
+
+        # Commit transaction
+        service.commit_all()
+
+        return ProjectResponse(
+            id=str(project.id),
+            user_id=str(project.user_id),
+            name=project.name,
+            description=project.description,
+            status=project.status,
+            phase=project.current_phase,
+            maturity_level=project.maturity_score or 0,
+            created_at=project.created_at.isoformat(),
+            updated_at=project.updated_at.isoformat() if project.updated_at else None
+        )
+
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update project"
+        ) from e
+
+
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_project(
     project_id: str,

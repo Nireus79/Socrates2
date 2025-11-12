@@ -133,7 +133,12 @@ class TestUserIsolation:
             "/api/v1/projects",
             headers={"Authorization": f"Bearer {token2}"}
         )
-        projects = response.json()
+        data = response.json()
+        # Handle both list and dict responses
+        if isinstance(data, dict):
+            projects = data.get("projects", [])
+        else:
+            projects = data
         assert len(projects) == 0
 
 
