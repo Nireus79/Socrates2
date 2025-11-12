@@ -77,8 +77,10 @@ def session_factory_auth(test_db_auth):
 def session_factory_specs(test_db_specs):
     """Create session factory for specs database."""
     from app.core.database import Base
-    # Import all specs models to register them with Base.metadata
+    # Import specs models to register them with Base.metadata
     # Use alias for Session model to avoid conflict with sqlalchemy.orm.Session
+    # Importing just the core models that tests actually use; other models are auto-registered
+    # when they're imported by their modules
     from app.models import (
         Project, Session as SessionModel, Question, Specification, ConversationHistory,
         Conflict, GeneratedProject, GeneratedFile, QualityMetric,
