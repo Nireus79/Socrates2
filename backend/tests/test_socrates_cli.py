@@ -241,8 +241,14 @@ class TestSocratesCLIPrompts:
         """Test that prompt session can be initialized."""
         try:
             from prompt_toolkit import PromptSession
-            session = PromptSession()
-            assert session is not None
+            try:
+                session = PromptSession()
+                assert session is not None
+            except Exception as e:
+                # Skip on Windows without console (NoConsoleScreenBufferError)
+                if "NoConsoleScreenBufferError" in str(type(e).__name__):
+                    pytest.skip("No Windows console available (expected in IDE/PowerShell ISE)")
+                raise
         except ImportError:
             pytest.skip("prompt_toolkit not available")
 
