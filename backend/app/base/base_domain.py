@@ -6,7 +6,7 @@ should inherit from BaseDomain.
 """
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Any, Dict, List
 
 from .models import ConflictRule, ExportFormat, Question
 
@@ -47,10 +47,20 @@ class BaseDomain(ABC):
         """Get all conflict detection rules for this domain."""
         pass
 
+    @abstractmethod
+    def get_quality_analyzers(self) -> List[str]:
+        """Get IDs of quality analyzers enabled for this domain."""
+        pass
+
     def get_questions_by_category(self, category: str) -> List[Question]:
         """Get questions filtered by category."""
         all_questions = self.get_questions()
         return [q for q in all_questions if q.category == category]
+
+    def get_questions_by_difficulty(self, difficulty: str) -> List[Question]:
+        """Get questions filtered by difficulty level."""
+        all_questions = self.get_questions()
+        return [q for q in all_questions if q.difficulty == difficulty]
 
     def get_export_format(self, format_id: str) -> ExportFormat | None:
         """Get a specific export format by ID."""
@@ -59,6 +69,20 @@ class BaseDomain(ABC):
             if fmt.format_id == format_id:
                 return fmt
         return None
+
+    def get_metadata(self) -> Dict[str, Any]:
+        """Get comprehensive domain metadata."""
+        return {
+            "domain_id": self.domain_id,
+            "name": self.name,
+            "version": self.version,
+            "description": self.description,
+            "categories": self.get_categories(),
+            "question_count": len(self.get_questions()),
+            "export_formats": len(self.get_export_formats()),
+            "conflict_rules": len(self.get_conflict_rules()),
+            "analyzers": self.get_quality_analyzers(),
+        }
 
     def to_dict(self) -> dict:
         """Convert domain to dictionary representation."""
