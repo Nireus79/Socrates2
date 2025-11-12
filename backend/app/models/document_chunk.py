@@ -5,8 +5,7 @@ for semantic search and RAG operations.
 """
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import ARRAY, FLOAT
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from .base import BaseModel
@@ -37,7 +36,7 @@ class DocumentChunk(BaseModel):
     )
     chunk_index = Column(Integer, nullable=False, index=True)
     content = Column(Text, nullable=False)
-    embedding_vector = Column(ARRAY(FLOAT), nullable=True)
+    embedding_vector = Column(JSON, nullable=True)
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

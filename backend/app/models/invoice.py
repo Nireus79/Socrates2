@@ -26,11 +26,7 @@ class Invoice(BaseModel):
     paid_at = Column(DateTime(timezone=True), nullable=True)
     hosted_invoice_url = Column(String(500), nullable=True)
     pdf_url = Column(String(500), nullable=True)
-<<<<<<< HEAD
     invoice_metadata = Column(JSON, nullable=True)
-=======
-    metadata = Column(JSON, nullable=True)
->>>>>>> e5e9caf (fix: Replace JSONB with JSON and ARRAY with JSON for SQLite compatibility)
 
     # Timestamps
     invoice_date = Column(DateTime(timezone=True), nullable=True)
