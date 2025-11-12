@@ -275,8 +275,8 @@ class TestMultipleUsers:
         test_client.post("/api/v1/auth/register", json=test_user_data)
         response1 = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data["email"],
+            data={
+                "username": test_user_data["username"],
                 "password": test_user_data["password"]
             }
         )
@@ -286,8 +286,8 @@ class TestMultipleUsers:
         test_client.post("/api/v1/auth/register", json=test_user_data_alt)
         response2 = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data_alt["email"],
+            data={
+                "username": test_user_data_alt["username"],
                 "password": test_user_data_alt["password"]
             }
         )
@@ -305,8 +305,8 @@ class TestMultipleUsers:
         # Login as first user
         response1 = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data["email"],
+            data={
+                "username": test_user_data["username"],
                 "password": test_user_data["password"]
             }
         )
@@ -315,8 +315,8 @@ class TestMultipleUsers:
         # Login as second user
         response2 = test_client.post(
             "/api/v1/auth/login",
-            json={
-                "email": test_user_data_alt["email"],
+            data={
+                "username": test_user_data_alt["username"],
                 "password": test_user_data_alt["password"]
             }
         )
