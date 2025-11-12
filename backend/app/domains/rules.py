@@ -207,7 +207,7 @@ class ConflictRuleEngine:
                 errors.append(f"Rule {r.rule_id} missing message")
 
         # Validate severity is set
-        from .base import SeverityLevel
+        from app.base import SeverityLevel
 
         for r in rules:
             if not isinstance(r.severity, SeverityLevel):
