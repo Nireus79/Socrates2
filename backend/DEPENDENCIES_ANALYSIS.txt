@@ -1,0 +1,63 @@
+COMPREHENSIVE LIST OF ALL EXTERNAL PACKAGES IMPORTED IN /home/user/Socrates2/backend/app
+====================================================================================
+
+EXTERNAL PACKAGES (Non-Standard Library, Non-Internal App Imports)
+==================================================================
+
+1. anthropic              - LLM API integration (Anthropic Claude API)
+2. apscheduler           - Background job scheduling and task management
+3. chardet               - Character encoding detection for document processing
+4. click                 - Command-line interface creation (for CLI commands)
+5. email_validator       - Email validation library
+6. fastapi               - Web framework for building REST APIs
+7. httpx                 - Async HTTP client library
+8. jose                  - JWT token handling (from python-jose package)
+9. passlib               - Password hashing and verification
+10. pydantic             - Data validation and settings management
+11. pydantic_settings    - Settings management for Pydantic
+12. pytest               - Testing framework (dev dependency)
+13. sentry_sdk           - Error tracking and monitoring
+14. socrates             - Local Socrates AI library (internal package)
+15. sqlalchemy           - SQL toolkit and Object-Relational Mapping (ORM)
+16. starlette            - ASGI framework (FastAPI dependency)
+17. stripe               - Payment processing integration
+
+PACKAGES IN REQUIREMENTS BUT NOT DIRECTLY IMPORTED IN CODE
+===========================================================
+
+These are used indirectly or via CLI:
+- alembic               - Database migration tool (used via CLI for migrations)
+- black                 - Code formatter (dev tool)
+- factory-boy           - Test data factory (dev dependency)
+- faker                 - Fake data generation (dev dependency)
+- mypy                  - Type checker (dev tool)
+- psycopg2-binary       - PostgreSQL database driver (used by SQLAlchemy)
+- python-dotenv         - Environment variables loader (used at startup)
+- python-multipart      - Multipart form data parser (used by FastAPI)
+- ruff                  - Fast Python linter (dev tool)
+- uvicorn               - ASGI server (used to run FastAPI app)
+- pytest-asyncio        - Async testing support (dev dependency)
+- pytest-cov            - Coverage reporting (dev dependency)
+- pytest-mock           - Mocking support (dev dependency)
+
+MISSING DEPENDENCIES
+====================
+
+Packages imported in code but NOT in requirements files:
+- apscheduler          - Should be added to requirements.txt
+- chardet              - Should be added to requirements.txt  
+- sentry_sdk           - Should be added to requirements.txt
+- stripe               - Should be added to requirements.txt
+
+Note: email_validator, starlette, socrates are typically available through:
+- email_validator: Optional dependency of Pydantic (used with pydantic[email])
+- starlette: Dependency of FastAPI
+- socrates: Local package installed via "-e ." in requirements.txt
+
+SUMMARY COUNT
+=============
+
+Total external packages found: 17
+- In requirements.txt: 13
+- Missing from requirements.txt: 4 (apscheduler, chardet, sentry_sdk, stripe)
+- Transitive dependencies: 2 (email_validator, starlette)

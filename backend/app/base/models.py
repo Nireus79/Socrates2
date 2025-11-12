@@ -13,6 +13,10 @@ from pydantic import BaseModel, Field
 class SeverityLevel(str, Enum):
     """Severity levels for quality issues and conflicts."""
 
+    ERROR = "error"
+    WARNING = "warning"
+    INFO = "info"
+    # Also support alternate names
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -35,6 +39,19 @@ class Question(BaseModel):
     examples: List[str] = Field(
         default_factory=list, description="Examples for this question"
     )
+    help_text: Optional[str] = Field(
+        default=None, description="Additional help text for the question"
+    )
+    example_answer: Optional[str] = Field(
+        default=None, description="Example answer for this question"
+    )
+    dependencies: List[str] = Field(
+        default_factory=list, description="Questions that must be answered first"
+    )
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary representation."""
+        return self.model_dump()
 
 
 class ExportFormat(BaseModel):
@@ -49,6 +66,10 @@ class ExportFormat(BaseModel):
     is_compiled: Optional[bool] = Field(
         default=False, description="Whether format is for compiled languages"
     )
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary representation."""
+        return self.model_dump()
 
 
 class ConflictRule(BaseModel):
@@ -66,9 +87,23 @@ class ConflictRule(BaseModel):
     pattern: str = Field(
         default="", description="Pattern or condition for detecting this conflict"
     )
+    condition: Optional[str] = Field(
+        default=None, description="Condition for detecting this conflict"
+    )
     remediation: str = Field(
         default="", description="Suggested remediation for this conflict"
     )
+    message: Optional[str] = Field(
+        default=None, description="Message to display when conflict is detected"
+    )
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary representation."""
+        data = self.model_dump()
+        # Convert enum to string if present
+        if "severity" in data and isinstance(data["severity"], SeverityLevel):
+            data["severity"] = data["severity"].value
+        return data
 
 
 class QualityAnalyzer(BaseModel):
@@ -86,3 +121,7 @@ class QualityAnalyzer(BaseModel):
         default_factory=list, description="Tags for categorizing analyzer"
     )
     config: dict = Field(default_factory=dict, description="Analyzer configuration")
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary representation."""
+        return self.model_dump()
