@@ -1,15 +1,33 @@
 #!/usr/bin/env python3
 """
 Simple test to debug refresh token issue
+
+⚠️ This test requires a running backend server on localhost:8000
+It will be skipped if the server is not available.
 """
 
 import requests
 import json
 import time
+import pytest
+import socket
 
 BASE_URL = "http://localhost:8000"
 API_V1 = f"{BASE_URL}/api/v1"
 
+def is_server_available():
+    """Check if server is running on localhost:8000"""
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex(('127.0.0.1', 8000))
+        sock.close()
+        return result == 0
+    except Exception:
+        return False
+
+@pytest.mark.integration
+@pytest.mark.skipif(not is_server_available(), reason="Server not running on localhost:8000")
 def test_flow():
     print("\n=== Testing Token Refresh ===\n")
 
