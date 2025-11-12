@@ -5,7 +5,9 @@ Manages loading, filtering, validating, and executing quality analyzers
 for specifications and requirements.
 """
 
-from typing import Dict, List, Optional
+import json
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from ..base import QualityAnalyzer
 
@@ -36,7 +38,16 @@ class QualityAnalyzerEngine:
         analyzers = []
         for item in data:
             try:
-                analyzer = QualityAnalyzer(**item)
+                analyzer = QualityAnalyzer(
+                    analyzer_id=item.get("analyzer_id"),
+                    name=item.get("name"),
+                    description=item.get("description"),
+                    analyzer_type=item.get("analyzer_type"),
+                    enabled=item.get("enabled", True),
+                    required=item.get("required", False),
+                    tags=item.get("tags", []),
+                    config=item.get("config", {}),
+                )
                 analyzers.append(analyzer)
             except Exception as e:
                 # Log error but continue processing
@@ -46,6 +57,28 @@ class QualityAnalyzerEngine:
         self.analyzers = analyzers
         self._rebuild_cache()
         return analyzers
+
+    def load_analyzers_from_json(self, filepath: str) -> List[QualityAnalyzer]:
+        """
+        Load analyzers from a JSON file.
+
+        Args:
+            filepath: Path to the JSON file containing analyzer configurations
+
+        Returns:
+            List of QualityAnalyzer instances
+        """
+        path = Path(filepath)
+        if not path.exists():
+            raise FileNotFoundError(f"Analyzers file not found: {filepath}")
+
+        with open(path, "r") as f:
+            data = json.load(f)
+
+        if not isinstance(data, list):
+            raise ValueError("Analyzers file must contain a JSON array")
+
+        return self.load_analyzers_from_dict(data)
 
     def _rebuild_cache(self) -> None:
         """Rebuild the analyzer cache."""
@@ -63,10 +96,16 @@ class QualityAnalyzerEngine:
         """
         errors = []
 
+        # Check for duplicate analyzer IDs
+        analyzer_ids = [a.analyzer_id for a in analyzers]
+        duplicates = [id for id in analyzer_ids if analyzer_ids.count(id) > 1]
+        if duplicates:
+            errors.append(f"Duplicate analyzer IDs: {set(duplicates)}")
+
         for analyzer in analyzers:
             # Check required fields
             if not analyzer.analyzer_id:
-                errors.append(f"Analyzer missing analyzer_id")
+                errors.append("Analyzer missing analyzer_id")
             if not analyzer.name:
                 errors.append(f"Analyzer {analyzer.analyzer_id} missing name")
             if not analyzer.description:
@@ -140,6 +179,74 @@ class QualityAnalyzerEngine:
         """
         return [a for a in analyzers if a.analyzer_type == analyzer_type]
 
+    def get_required_analyzers(self, analyzers: List[QualityAnalyzer]) -> List[QualityAnalyzer]:
+        """
+        Get all required analyzers.
+
+        Args:
+            analyzers: List of analyzers
+
+        Returns:
+            List of required analyzers
+        """
+        return self.filter_by_required(analyzers, True)
+
+    def get_optional_analyzers(self, analyzers: List[QualityAnalyzer]) -> List[QualityAnalyzer]:
+        """
+        Get all optional analyzers.
+
+        Args:
+            analyzers: List of analyzers
+
+        Returns:
+            List of optional analyzers
+        """
+        return self.filter_by_required(analyzers, False)
+
+    def get_enabled_analyzers(self, analyzers: List[QualityAnalyzer]) -> List[QualityAnalyzer]:
+        """
+        Get all enabled analyzers.
+
+        Args:
+            analyzers: List of analyzers
+
+        Returns:
+            List of enabled analyzers
+        """
+        return self.filter_by_enabled(analyzers, True)
+
+    def get_disabled_analyzers(self, analyzers: List[QualityAnalyzer]) -> List[QualityAnalyzer]:
+        """
+        Get all disabled analyzers.
+
+        Args:
+            analyzers: List of analyzers
+
+        Returns:
+            List of disabled analyzers
+        """
+        return self.filter_by_enabled(analyzers, False)
+
+    def get_analyzers_by_tag(
+        self, analyzers: List[QualityAnalyzer]
+    ) -> Dict[str, List[QualityAnalyzer]]:
+        """
+        Group analyzers by tag.
+
+        Args:
+            analyzers: List of analyzers
+
+        Returns:
+            Dictionary mapping tags to lists of analyzers
+        """
+        tags_map = {}
+        for analyzer in analyzers:
+            for tag in analyzer.tags:
+                if tag not in tags_map:
+                    tags_map[tag] = []
+                tags_map[tag].append(analyzer)
+        return tags_map
+
     def get_analyzer(self, analyzer_id: str) -> Optional[QualityAnalyzer]:
         """
         Get a specific analyzer by ID.
@@ -179,6 +286,44 @@ class QualityAnalyzerEngine:
             "issues": [],
             "confidence": 1.0,
         }
+
+    def to_dict(self, analyzers: List[QualityAnalyzer]) -> List[Dict[str, Any]]:
+        """
+        Convert analyzers to dictionary representation.
+
+        Args:
+            analyzers: List of analyzers to convert
+
+        Returns:
+            List of dictionaries representing analyzers
+        """
+        return [analyzer.to_dict() for analyzer in analyzers]
+
+    def to_json(self, analyzers: List[QualityAnalyzer]) -> str:
+        """
+        Convert analyzers to JSON string.
+
+        Args:
+            analyzers: List of analyzers to convert
+
+        Returns:
+            JSON string representation of analyzers
+        """
+        return json.dumps(self.to_dict(analyzers), indent=2)
+
+    def save_to_json(self, analyzers: List[QualityAnalyzer], filepath: str) -> None:
+        """
+        Save analyzers to a JSON file.
+
+        Args:
+            analyzers: List of analyzers to save
+            filepath: Path to save the JSON file
+        """
+        path = Path(filepath)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(path, "w") as f:
+            f.write(self.to_json(analyzers))
 
 
 # Global analyzer engine instance

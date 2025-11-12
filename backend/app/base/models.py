@@ -109,10 +109,10 @@ class ConflictRule(BaseModel):
 class QualityAnalyzer(BaseModel):
     """Represents a quality analyzer for specifications."""
 
-    analyzer_id: str = Field(..., description="Unique analyzer identifier")
-    name: str = Field(..., description="Analyzer name")
-    description: str = Field(..., description="Analyzer description")
-    analyzer_type: str = Field(..., description="Type of analyzer")
+    analyzer_id: Optional[str] = Field(default=None, description="Unique analyzer identifier")
+    name: Optional[str] = Field(default=None, description="Analyzer name")
+    description: Optional[str] = Field(default=None, description="Analyzer description")
+    analyzer_type: Optional[str] = Field(default=None, description="Type of analyzer")
     enabled: bool = Field(default=True, description="Whether analyzer is enabled")
     required: bool = Field(
         default=False, description="Whether analyzer is required"
