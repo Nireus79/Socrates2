@@ -25,11 +25,13 @@ def test_registration():
         return False
 
     # Test registration data
+    # Username must match pattern: ^[a-zA-Z0-9_-]+$ (no dots allowed!)
+    import random
     test_user = {
-        "username": f"testuser_{datetime.now().timestamp()}",
+        "username": f"testuser_{random.randint(10000, 99999)}",
         "name": "Test",
         "surname": "User",
-        "email": f"test_{datetime.now().timestamp()}@example.com",
+        "email": f"test_{random.randint(10000, 99999)}@example.com",
         "password": "TestPassword123!"
     }
 
@@ -84,6 +86,7 @@ def test_required_fields():
     print("FIELD VALIDATION TEST")
     print("=" * 70)
 
+    import random
     test_cases = [
         {
             "name": "Missing username",
@@ -91,15 +94,15 @@ def test_required_fields():
         },
         {
             "name": "Missing email",
-            "data": {"username": "testuser", "name": "Test", "surname": "User", "password": "Pass123!"}
+            "data": {"username": "testuser123", "name": "Test", "surname": "User", "password": "Pass123!"}
         },
         {
             "name": "Missing password",
-            "data": {"username": "testuser", "name": "Test", "surname": "User", "email": "test@example.com"}
+            "data": {"username": "testuser456", "name": "Test", "surname": "User", "email": "test@example.com"}
         },
         {
-            "name": "All fields",
-            "data": {"username": f"test_{datetime.now().timestamp()}", "name": "Test", "surname": "User", "email": f"test_{datetime.now().timestamp()}@example.com", "password": "TestPass123!"}
+            "name": "All fields (valid)",
+            "data": {"username": f"test{random.randint(10000, 99999)}", "name": "Test", "surname": "User", "email": f"test{random.randint(10000, 99999)}@example.com", "password": "TestPass123!"}
         }
     ]
 
