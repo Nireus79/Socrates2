@@ -95,6 +95,7 @@ class LoginResponse(BaseModel):
     username: str
     name: str
     surname: str
+    email: Optional[str] = None
 
     class Config:
         json_schema_extra = {
@@ -105,7 +106,8 @@ class LoginResponse(BaseModel):
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
                 "username": "johndoe",
                 "name": "John",
-                "surname": "Doe"
+                "surname": "Doe",
+                "email": "john@example.com"
             }
         }
 
@@ -301,7 +303,8 @@ def login(
         user_id=str(user.id),
         username=user.username,
         name=user.name,
-        surname=user.surname
+        surname=user.surname,
+        email=user.email
     )
 
 
