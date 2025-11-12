@@ -12,7 +12,7 @@ Provides:
 
 Uses repository pattern for efficient data access.
 """
-from typing import Optional
+from typing import Any, Dict, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -25,6 +25,8 @@ from ..models.user import User
 from ..repositories import RepositoryService
 
 router = APIRouter(prefix="/api/v1/specifications", tags=["specifications"])
+# Nested router for specifications under projects
+project_specifications_router = APIRouter(prefix="/api/v1/projects/{project_id}/specifications", tags=["project-specifications"])
 
 
 # Dependency for repository service
@@ -779,3 +781,243 @@ def delete_specification(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete specification"
         ) from e
+
+
+# ============================================================================
+# Nested Endpoints: Specifications under Projects
+# ============================================================================
+
+
+@project_specifications_router.get("")
+def list_project_specifications(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> list:
+    """
+    List all specifications for a project.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        List of specification objects
+    """
+    from ..models.project import Project
+
+    # Verify project exists and user has access
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    project = service.projects.get_by_id(project_uuid)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    # Get specifications for this project
+    specifications = service.specifications.get_by_project(project_uuid)
+
+    return [
+        {
+            "id": str(s.id),
+            "project_id": str(s.project_id),
+            "key": s.key,
+            "value": s.value,
+            "spec_type": s.spec_type,
+            "status": s.status,
+            "created_at": s.created_at.isoformat() if s.created_at else None
+        }
+        for s in specifications
+    ] if specifications else []
+
+
+@project_specifications_router.post("", status_code=status.HTTP_201_CREATED)
+def create_project_specification(
+    project_id: str,
+    request: CreateSpecificationRequest,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Create a new specification for a project.
+
+    Args:
+        project_id: Project UUID
+        request: Specification details
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Created specification details
+    """
+    # Verify project exists and user has access
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    project = service.projects.get_by_id(project_uuid)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    # Create specification
+    spec = service.specifications.create(
+        project_id=project_uuid,
+        key=request.key,
+        value=request.value,
+        spec_type=request.spec_type
+    )
+    service.commit_all()
+
+    return {
+        "id": str(spec.id),
+        "project_id": str(spec.project_id),
+        "key": spec.key,
+        "value": spec.value,
+        "spec_type": spec.spec_type,
+        "status": spec.status,
+        "created_at": spec.created_at.isoformat() if spec.created_at else None
+    }
+
+
+@project_specifications_router.get("/{spec_id}")
+def get_project_specification(
+    project_id: str,
+    spec_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Get details of a specification in a project.
+
+    Args:
+        project_id: Project UUID
+        spec_id: Specification UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Specification details
+    """
+    # Verify project exists and user has access
+    try:
+        project_uuid = UUID(project_id)
+        spec_uuid = UUID(spec_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid UUID format"
+        )
+
+    project = service.projects.get_by_id(project_uuid)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    # Get specification
+    spec = service.specifications.get_by_id(spec_uuid)
+    if not spec or spec.project_id != project_uuid:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Specification not found: {spec_id}"
+        )
+
+    return {
+        "id": str(spec.id),
+        "project_id": str(spec.project_id),
+        "key": spec.key,
+        "value": spec.value,
+        "spec_type": spec.spec_type,
+        "status": spec.status,
+        "created_at": spec.created_at.isoformat() if spec.created_at else None
+    }
+
+
+@project_specifications_router.delete("/{spec_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project_specification(
+    project_id: str,
+    spec_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> None:
+    """
+    Delete a specification in a project.
+
+    Args:
+        project_id: Project UUID
+        spec_id: Specification UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        No content (204 response)
+    """
+    # Verify project exists and user has access
+    try:
+        project_uuid = UUID(project_id)
+        spec_uuid = UUID(spec_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid UUID format"
+        )
+
+    project = service.projects.get_by_id(project_uuid)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    # Get specification
+    spec = service.specifications.get_by_id(spec_uuid)
+    if not spec or spec.project_id != project_uuid:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Specification not found: {spec_id}"
+        )
+
+    # Delete specification
+    service.specifications.deprecate_specification(spec_uuid)
+    service.commit_all()
