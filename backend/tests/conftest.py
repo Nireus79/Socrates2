@@ -110,11 +110,39 @@ def db_specs(session_factory_specs) -> Generator[Session, None, None]:
 
 
 @pytest.fixture
-def test_client():
-    """Create FastAPI test client."""
+def test_client(session_factory_auth, session_factory_specs):
+    """Create FastAPI test client with overridden database dependencies."""
     from app.main import create_app
+    from app.core.database import get_db_auth, get_db_specs
 
     app = create_app()
+
+    # Override database dependencies with test sessions
+    def override_get_db_auth():
+        db = session_factory_auth()
+        try:
+            yield db
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+        finally:
+            db.close()
+
+    def override_get_db_specs():
+        db = session_factory_specs()
+        try:
+            yield db
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db_auth] = override_get_db_auth
+    app.dependency_overrides[get_db_specs] = override_get_db_specs
+
     return TestClient(app)
 
 
@@ -132,9 +160,11 @@ def mock_anthropic_client():
 def test_user_data():
     """Provide test user data."""
     return {
+        "name": "Test",
+        "surname": "User",
+        "username": "testuser123",
         "email": "test@example.com",
         "password": "SecurePassword123!",
-        "full_name": "Test User",
     }
 
 
@@ -209,9 +239,11 @@ def pytest_collection_modifyitems(config, items):
 def test_user_data_alt():
     """Alternative test user data for multi-user scenarios."""
     return {
+        "name": "Another",
+        "surname": "User",
+        "username": "anotheruser456",
         "email": "user2@example.com",
         "password": "AnotherSecurePassword456!",
-        "full_name": "Another User",
     }
 
 
@@ -233,7 +265,9 @@ def authenticated_user(test_client, test_user_data):
             "email": test_user_data["email"],
             "token": data.get("access_token"),
             "user_id": data.get("user_id"),
-            "full_name": test_user_data["full_name"],
+            "name": test_user_data["name"],
+            "surname": test_user_data["surname"],
+            "username": test_user_data["username"],
         }
     return None
 
