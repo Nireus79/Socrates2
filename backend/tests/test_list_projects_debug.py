@@ -42,7 +42,8 @@ def test_list_projects_with_auth(test_client, db_auth, db_specs):
             owner_id=str(test_user.id),
             user_id=str(test_user.id),
             current_phase="discovery",
-            maturity_score=0.5 + (i * 0.1)
+            maturity_score=0.5 + (i * 0.1),
+            status="active"
         )
         db_specs.add(project)
     db_specs.commit()

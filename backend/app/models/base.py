@@ -7,6 +7,7 @@ All models inherit from BaseModel to get:
 """
 import uuid
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import Column, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
@@ -24,6 +25,7 @@ class BaseModel(Base):
     - Automatic created_at timestamp
     - Automatic updated_at timestamp (updates on modification)
     - to_dict() method for serialization
+    - Automatic string-to-UUID conversion for UUID fields
     """
     __abstract__ = True
 
@@ -54,6 +56,28 @@ class BaseModel(Base):
         onupdate=func.now(),
         comment="Timestamp when record was last updated"
     )
+
+    def __init__(self, **kwargs):
+        """
+        Initialize model instance, converting string UUIDs to UUID objects.
+
+        This allows models to accept both string and UUID objects for UUID fields,
+        making the API more flexible.
+        """
+        # Convert any string UUIDs to UUID objects
+        for key, value in kwargs.items():
+            if isinstance(value, str) and key.endswith('_id'):
+                # Check if the field is defined as a UUID column
+                if hasattr(self.__class__, key):
+                    col = getattr(self.__class__, key)
+                    # Try to convert to UUID if it looks like one
+                    try:
+                        kwargs[key] = uuid.UUID(value)
+                    except (ValueError, AttributeError):
+                        # If conversion fails, keep the original value
+                        pass
+
+        super().__init__(**kwargs)
 
     def to_dict(self, exclude_fields: set = None) -> dict:
         """
