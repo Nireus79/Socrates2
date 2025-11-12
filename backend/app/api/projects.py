@@ -128,8 +128,8 @@ def create_project(
             name=project.name,
             description=project.description,
             status=project.status,
-            phase=project.phase,
-            maturity_level=project.maturity_level or 0,
+            phase=project.current_phase,
+            maturity_level=project.maturity_score or 0,
             created_at=project.created_at.isoformat(),
             updated_at=project.updated_at.isoformat() if project.updated_at else None
         )
@@ -202,8 +202,8 @@ def list_projects(
                     name=p.name,
                     description=p.description,
                     status=p.status,
-                    phase=p.phase,
-                    maturity_level=p.maturity_level or 0,
+                    phase=p.current_phase,
+                    maturity_level=p.maturity_score or 0,
                     created_at=p.created_at.isoformat(),
                     updated_at=p.updated_at.isoformat() if p.updated_at else None
                 )
@@ -286,8 +286,8 @@ def get_project(
         name=project.name,
         description=project.description,
         status=project.status,
-        phase=project.phase,
-        maturity_level=project.maturity_level or 0,
+        phase=project.current_phase,
+        maturity_level=project.maturity_score or 0,
         created_at=project.created_at.isoformat(),
         updated_at=project.updated_at.isoformat() if project.updated_at else None
     )
@@ -374,8 +374,8 @@ def update_project(
             name=project.name,
             description=project.description,
             status=project.status,
-            phase=project.phase,
-            maturity_level=project.maturity_level or 0,
+            phase=project.current_phase,
+            maturity_level=project.maturity_score or 0,
             created_at=project.created_at.isoformat(),
             updated_at=project.updated_at.isoformat() if project.updated_at else None
         )
@@ -514,6 +514,6 @@ def get_project_status(
     return ProjectStatusResponse(
         project_id=project_id,
         status=project.status,
-        phase=project.phase,
-        maturity_level=project.maturity_level or 0
+        phase=project.current_phase,
+        maturity_level=project.maturity_score or 0
     )
