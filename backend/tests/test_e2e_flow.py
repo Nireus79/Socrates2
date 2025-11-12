@@ -13,10 +13,6 @@ from pathlib import Path
 # Add the project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from rich.console import Console
-
-console = Console()
-
 BASE_URL = "http://localhost:8000"
 API_V1 = f"{BASE_URL}/api/v1"
 

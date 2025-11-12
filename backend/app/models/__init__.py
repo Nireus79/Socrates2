@@ -42,6 +42,7 @@ from .subscription import Subscription
 from .invoice import Invoice
 
 # SPECS Database Models - Analytics & Search
+from .analytics_metrics import AnalyticsMetrics
 from .document_chunk import DocumentChunk
 from .notification_preferences import NotificationPreferences
 
@@ -93,6 +94,7 @@ __all__ = [
     'Invoice',
 
     # SPECS Database - Analytics & Search
+    'AnalyticsMetrics',
     'DocumentChunk',
     'NotificationPreferences',
 

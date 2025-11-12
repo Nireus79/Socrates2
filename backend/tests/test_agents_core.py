@@ -110,7 +110,7 @@ class TestQualityControllerAgent:
 
     def test_quality_agent_can_be_created(self):
         """Test that Quality Controller agent can be instantiated."""
-        from backend.app.agents.quality_controller import QualityControllerAgent
+        from app.agents.quality_controller import QualityControllerAgent
         from app.core.dependencies import ServiceContainer
 
         services = ServiceContainer()
@@ -120,7 +120,7 @@ class TestQualityControllerAgent:
 
     def test_quality_agent_inherits_from_base(self):
         """Test that Quality Controller agent is a BaseAgent."""
-        from backend.app.agents.quality_controller import QualityControllerAgent
+        from app.agents.quality_controller import QualityControllerAgent
         from app.agents.base import BaseAgent
         from app.core.dependencies import ServiceContainer
 
@@ -135,7 +135,7 @@ class TestUserLearningAgent:
 
     def test_learning_agent_can_be_created(self):
         """Test that User Learning agent can be instantiated."""
-        from backend.app.agents.user_learning import UserLearningAgent
+        from app.agents.user_learning import UserLearningAgent
         from app.core.dependencies import ServiceContainer
 
         services = ServiceContainer()
@@ -145,7 +145,7 @@ class TestUserLearningAgent:
 
     def test_learning_agent_inherits_from_base(self):
         """Test that User Learning agent is a BaseAgent."""
-        from backend.app.agents.user_learning import UserLearningAgent
+        from app.agents.user_learning import UserLearningAgent
         from app.agents.base import BaseAgent
         from app.core.dependencies import ServiceContainer
 
