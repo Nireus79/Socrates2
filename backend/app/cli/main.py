@@ -13,10 +13,10 @@ import json
 
 import click
 
-from app.domains import get_domain_registry
-from app.domains.analytics import get_domain_analytics
-from app.domains.registry import register_all_domains
-from app.domains.workflows import get_workflow_manager
+from ..domains import get_domain_registry
+from ..domains.analytics import get_domain_analytics
+from ..domains.registry import register_all_domains
+from ..domains.workflows import get_workflow_manager
 
 # Ensure domains are registered
 try:

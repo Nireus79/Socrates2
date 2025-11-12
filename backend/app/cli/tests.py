@@ -3,8 +3,8 @@
 import pytest
 from click.testing import CliRunner
 
-from app.cli.main import cli
-from app.domains.registry import register_all_domains
+from ..cli.main import cli
+from ..domains.registry import register_all_domains
 
 
 @pytest.fixture(scope="session", autouse=True)
