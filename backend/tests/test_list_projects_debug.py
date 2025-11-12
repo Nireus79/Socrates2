@@ -1,49 +1,77 @@
-#!/usr/bin/env python3
 """
-Debug script to test list_projects API endpoint directly using cached token.
+Debug test for list projects API endpoint.
+
+Tests the projects listing functionality using test client and fixtures.
 """
-import requests
-import json
-from pathlib import Path
+import pytest
+from uuid import uuid4
 
-BASE_URL = "http://localhost:8000"
 
-# Load cached token from config
-config_file = Path.home() / ".socrates" / "config.json"
-print(f"1. Loading token from {config_file}")
+@pytest.mark.api
+def test_list_projects_with_auth(test_client, db_auth, db_specs):
+    """Test list_projects API endpoint with proper authentication."""
+    from app.models import User, Project
+    from app.core.security import create_access_token
+    from datetime import timedelta
+    from app.core.config import settings
 
-if not config_file.exists():
-    print(f"   ERROR: Config file not found at {config_file}")
-    exit(1)
+    # Create a test user
+    test_user = User(
+        username="testuser",
+        name="Test",
+        surname="User",
+        email="test@example.com",
+        hashed_password="$2b$12$hashedpassword"  # Dummy hashed password
+    )
+    db_auth.add(test_user)
+    db_auth.commit()
+    db_auth.refresh(test_user)
 
-try:
-    with open(config_file, 'r') as f:
-        config = json.load(f)
-    token = config.get("access_token")
-    if not token:
-        print("   ERROR: No access_token in config")
-        exit(1)
-    print(f"   Token loaded: {token[:40]}...")
-except Exception as e:
-    print(f"   ERROR: {e}")
-    exit(1)
+    # Create access token
+    access_token = create_access_token(
+        data={"sub": str(test_user.id)},
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
 
-# Now call list_projects
-print("\n2. Calling list_projects...")
-headers = {
-    "Authorization": f"Bearer {token}",
-    "Content-Type": "application/json"
-}
+    # Create some test projects
+    for i in range(3):
+        project = Project(
+            name=f"Test Project {i}",
+            description=f"Test project {i} description",
+            creator_id=str(test_user.id),
+            owner_id=str(test_user.id),
+            user_id=str(test_user.id),
+            current_phase="discovery",
+            maturity_score=0.5 + (i * 0.1)
+        )
+        db_specs.add(project)
+    db_specs.commit()
 
-list_response = requests.get(
-    f"{BASE_URL}/api/v1/projects?skip=0&limit=100",
-    headers=headers
-)
+    # Call list_projects endpoint with authentication
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
 
-print(f"   Status: {list_response.status_code}")
-try:
-    list_data = list_response.json()
-    print(f"   Response: {json.dumps(list_data, indent=2)}")
-except Exception as e:
-    print(f"   ERROR: {e}")
-    print(f"   Raw response: {list_response.text}")
+    response = test_client.get(
+        "/api/v1/projects?skip=0&limit=100",
+        headers=headers
+    )
+
+    print(f"Status: {response.status_code}")
+    print(f"Response: {response.json()}")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "items" in data or isinstance(data, list)
+    print(f"✓ Successfully listed {len(data) if isinstance(data, list) else len(data.get('items', []))} projects")
+
+
+@pytest.mark.api
+def test_list_projects_without_auth(test_client):
+    """Test list_projects endpoint returns 401 without authentication."""
+    response = test_client.get("/api/v1/projects?skip=0&limit=100")
+
+    print(f"Status: {response.status_code}")
+    assert response.status_code == 401
+    print("✓ Correctly requires authentication")
