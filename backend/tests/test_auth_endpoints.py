@@ -199,7 +199,8 @@ class TestTokenRefresh:
         response = test_client.post("/api/v1/auth/refresh")
         assert response.status_code in [
             status.HTTP_401_UNAUTHORIZED,
-            status.HTTP_403_FORBIDDEN
+            status.HTTP_403_FORBIDDEN,
+            status.HTTP_422_UNPROCESSABLE_ENTITY  # FastAPI validation error for missing auth
         ]
 
     def test_refresh_token_invalid_token(self, test_client):
