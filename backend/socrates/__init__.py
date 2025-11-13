@@ -147,12 +147,15 @@ from app.domains import (
 )
 
 # Agent Framework (14 agents + orchestrator)
-from app.agents import (
-    ProjectManagerAgent, SocraticCounselorAgent, ContextAnalyzerAgent,
-    ConflictDetectorAgent, CodeGeneratorAgent, ExportAgent,
-    TeamCollaborationAgent, GitHubIntegrationAgent, BaseAgent,
-    AgentOrchestrator, get_orchestrator, reset_orchestrator, MultiLLMManager,
-)
+# NOTE: Agent imports are deferred to __getattr__ to avoid circular imports
+# Agents import from socrates package, creating circular dependency if imported here
+# See __getattr__ function at end of file for lazy loading implementation
+_agent_imports = {
+    'ProjectManagerAgent', 'SocraticCounselorAgent', 'ContextAnalyzerAgent',
+    'ConflictDetectorAgent', 'CodeGeneratorAgent', 'ExportAgent',
+    'TeamCollaborationAgent', 'GitHubIntegrationAgent', 'BaseAgent',
+    'AgentOrchestrator', 'get_orchestrator', 'reset_orchestrator', 'MultiLLMManager',
+}
 
 # Domain Base Models
 from app.base import (
@@ -381,3 +384,69 @@ __all__ = [
     # Database Models - Base
     "BaseModel",
 ]
+
+
+# ============================================================================
+# LAZY LOADING IMPLEMENTATION - Avoid Circular Imports
+# ============================================================================
+# Module-level __getattr__ to support lazy loading of agents
+# This prevents circular import: socrates/__init__.py <-> app/agents/*.py
+
+
+def __getattr__(name: str):
+    """
+    Lazy load agent and orchestrator imports to avoid circular dependency.
+
+    Agents import from socrates package (Phase 1a pure logic):
+        from socrates import ConflictDetectionEngine, SpecificationData, etc.
+
+    But socrates package exports agents (Phase 3 framework):
+        from socrates import ProjectManagerAgent, etc.
+
+    This creates a circular import when evaluated at module load time.
+
+    Solution: This __getattr__ function intercepts attribute access.
+    Agents are only imported when explicitly requested, not at module load.
+
+    This pattern is safe in Python 3.7+ and is documented in PEP 562.
+    """
+    if name in _agent_imports:
+        # Import all agents (this won't create circular import since
+        # the agents module won't try to import socrates until it's fully loaded)
+        from app.agents import (
+            ProjectManagerAgent,
+            SocraticCounselorAgent,
+            ContextAnalyzerAgent,
+            ConflictDetectorAgent,
+            CodeGeneratorAgent,
+            ExportAgent,
+            TeamCollaborationAgent,
+            GitHubIntegrationAgent,
+            BaseAgent,
+            AgentOrchestrator,
+            get_orchestrator,
+            reset_orchestrator,
+            MultiLLMManager,
+        )
+
+        # Map requested name to actual import
+        agents_map = {
+            "ProjectManagerAgent": ProjectManagerAgent,
+            "SocraticCounselorAgent": SocraticCounselorAgent,
+            "ContextAnalyzerAgent": ContextAnalyzerAgent,
+            "ConflictDetectorAgent": ConflictDetectorAgent,
+            "CodeGeneratorAgent": CodeGeneratorAgent,
+            "ExportAgent": ExportAgent,
+            "TeamCollaborationAgent": TeamCollaborationAgent,
+            "GitHubIntegrationAgent": GitHubIntegrationAgent,
+            "BaseAgent": BaseAgent,
+            "AgentOrchestrator": AgentOrchestrator,
+            "get_orchestrator": get_orchestrator,
+            "reset_orchestrator": reset_orchestrator,
+            "MultiLLMManager": MultiLLMManager,
+        }
+
+        return agents_map[name]
+
+    # If name not in _agent_imports, raise AttributeError
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

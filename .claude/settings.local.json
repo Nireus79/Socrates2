@@ -13,7 +13,11 @@
       "Bash(curl:*)",
       "Bash(python -m twine:*)",
       "Bash(python -m zipfile:*)",
-      "Bash(git tag:*)"
+      "Bash(git tag:*)",
+      "Bash(python scripts/run_migrations_safe.py:*)",
+      "Bash(timeout 5 python:*)",
+      "Bash(python -m app.cli:*)",
+      "Bash(python Socrates.py:*)"
     ],
     "deny": [],
     "ask": []
