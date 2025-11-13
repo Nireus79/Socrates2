@@ -1,6 +1,10 @@
 """
 Configuration management using Pydantic Settings.
 Loads configuration from .env file.
+
+For library usage, settings are loaded lazily to support import without requiring
+a configured environment. Applications can explicitly call get_settings() after
+setting up their environment.
 """
 from functools import lru_cache
 from typing import List, Optional
@@ -69,9 +73,42 @@ def get_settings() -> Settings:
     """
     Get cached settings instance.
     Using lru_cache ensures settings are loaded only once.
+
+    Note: For library usage, this is called lazily. Applications should call this
+    after configuring their environment (via .env file or environment variables).
     """
     return Settings()
 
 
-# Global settings instance
-settings = get_settings()
+# Global settings instance - created lazily to support library imports
+# If .env file doesn't exist or environment variables aren't set, this will be None
+# and only raise errors when settings are actually accessed
+_settings_instance: Optional[Settings] = None
+
+try:
+    _settings_instance = get_settings()
+except Exception:
+    # Settings will be loaded lazily when first accessed or when get_settings() is called
+    # This allows the library to be imported even without a configured environment
+    pass
+
+
+@property
+def settings_property() -> Settings:
+    """Lazy property to access settings, initializing if needed"""
+    global _settings_instance
+    if _settings_instance is None:
+        _settings_instance = get_settings()
+    return _settings_instance
+
+
+# For backwards compatibility, create a simple namespace that lazy-loads settings
+class _SettingsProxy:
+    def __getattr__(self, name):
+        global _settings_instance
+        if _settings_instance is None:
+            _settings_instance = get_settings()
+        return getattr(_settings_instance, name)
+
+
+settings = _SettingsProxy()
