@@ -18,7 +18,8 @@
       "Bash(timeout 5 python:*)",
       "Bash(python -m app.cli:*)",
       "Bash(python Socrates.py:*)",
-      "Bash(timeout 15 python:*)"
+      "Bash(timeout 15 python:*)",
+      "Bash(xargs cat:*)"
     ],
     "deny": [],
     "ask": []
