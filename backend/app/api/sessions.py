@@ -335,7 +335,7 @@ def submit_answer(
         session_id=session_id,
         role='user',
         content=request.answer,
-        metadata={'question_id': str(request.question_id)}
+        metadata_={'question_id': str(request.question_id)}
     )
     db.add(conversation)
     db.commit()

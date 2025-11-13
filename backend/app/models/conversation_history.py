@@ -1,7 +1,7 @@
 """
 ConversationHistory model for storing complete conversation history.
 """
-from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Index, JSON, String, Text, func
+from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Index, Integer, JSON, String, Text, func
 
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
@@ -68,7 +68,10 @@ class ConversationHistory(Base):
         comment="Number of tokens used in LLM response"
     )
 
-    metadata = Column(
+    # Note: Using 'metadata_' to avoid SQLAlchemy's reserved 'metadata' name
+    # The database column is still named 'metadata'
+    metadata_ = Column(
+        "metadata",  # Actual column name in database
         JSON,
         nullable=True,
         comment="Additional metadata as JSON"
