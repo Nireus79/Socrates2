@@ -136,41 +136,52 @@ from app.core.validators import (
 )
 
 # ============================================================================
-# Phase 3: FRAMEWORK EXPORTS (Requires configuration)
+# Phase 3: FRAMEWORK EXPORTS (Fully operational)
 # ============================================================================
 
-# Domain Framework (requires configuration)
-# from app.domains import (
-#     ProgrammingDomain, DataEngineeringDomain, ArchitectureDomain,
-#     TestingDomain, BusinessDomain, SecurityDomain, DevOpsDomain,
-#     BaseDomain, DomainRegistry, get_domain_registry,
-# )
+# Domain Framework
+from app.domains import (
+    ProgrammingDomain, DataEngineeringDomain, ArchitectureDomain,
+    TestingDomain, BusinessDomain, SecurityDomain, DevOpsDomain,
+    BaseDomain, DomainRegistry, get_domain_registry,
+)
 
-# Agent Framework (requires configuration)
-# from app.agents import (
-#     ProjectManagerAgent, SocraticCounselorAgent, ContextAnalyzerAgent,
-#     ConflictDetectorAgent, CodeGeneratorAgent, QualityControllerAgent,
-#     ExportAgent, TeamCollaborationAgent, UserLearningAgent,
-#     DirectChatAgent, GitHubIntegrationAgent, BaseAgent,
-#     AgentOrchestrator, get_orchestrator, reset_orchestrator, MultiLLMManager,
-# )
+# Agent Framework (14 agents + orchestrator)
+from app.agents import (
+    ProjectManagerAgent, SocraticCounselorAgent, ContextAnalyzerAgent,
+    ConflictDetectorAgent, CodeGeneratorAgent, ExportAgent,
+    TeamCollaborationAgent, GitHubIntegrationAgent, BaseAgent,
+    AgentOrchestrator, get_orchestrator, reset_orchestrator, MultiLLMManager,
+)
 
 # Domain Base Models
-# from app.base import (
-#     SeverityLevel, Question, ExportFormat, ConflictRule, QualityAnalyzer, QualityIssue,
-# )
+from app.base import (
+    SeverityLevel, Question, ExportFormat, ConflictRule, QualityAnalyzer,
+)
 
-# Database Models
-# from app.models import (
-#     User, RefreshToken, AdminRole, AdminUser, AdminAuditLog,
-#     Project, Session, Question as QuestionModel, Specification,
-#     ConversationHistory, Conflict, GeneratedProject, GeneratedFile,
-#     QualityMetric, UserBehaviorPattern, QuestionEffectiveness,
-#     KnowledgeBaseDocument, LLMUsageTracking, AnalyticsMetrics,
-#     Team, TeamMember, ProjectShare, ProjectCollaborator,
-#     ProjectInvitation, ProjectOwnershipHistory, APIKey, Subscription,
-#     Invoice, DocumentChunk, NotificationPreferences, ActivityLog,
-# )
+# Database Models (33 models across 2 databases)
+from app.models import (
+    # Auth Database Models
+    User, RefreshToken, AdminRole, AdminUser, AdminAuditLog,
+    # Core Specs Models
+    Project, Session, Question as QuestionModel, Specification,
+    ConversationHistory, Conflict,
+    # Generated Content
+    GeneratedProject, GeneratedFile,
+    # Analytics & Tracking
+    QualityMetric, UserBehaviorPattern, QuestionEffectiveness,
+    KnowledgeBaseDocument, LLMUsageTracking,
+    # Collaboration
+    Team, TeamMember, ProjectShare,
+    # API & Billing
+    APIKey, Subscription, Invoice,
+    # Analytics & Search
+    AnalyticsMetrics, DocumentChunk, NotificationPreferences,
+    # Activity Management
+    ActivityLog, ProjectInvitation,
+    # Base
+    BaseModel,
+)
 
 # ============================================================================
 # Public API - All Exports
@@ -286,17 +297,87 @@ __all__ = [
     "validate_project_name",
     "validate_team_name",
 
-    # ========== PHASE 3: FRAMEWORK (Requires configuration - commented out) ==========
-    # Uncomment and configure environment to use:
-    # "ProgrammingDomain", "DataEngineeringDomain", "ArchitectureDomain",
-    # "TestingDomain", "BusinessDomain", "SecurityDomain", "DevOpsDomain",
-    # "BaseDomain", "DomainRegistry", "get_domain_registry",
-    # "ProjectManagerAgent", "SocraticCounselorAgent", "ContextAnalyzerAgent",
-    # "ConflictDetectorAgent", "CodeGeneratorAgent", "QualityControllerAgent",
-    # "ExportAgent", "TeamCollaborationAgent", "UserLearningAgent",
-    # "DirectChatAgent", "GitHubIntegrationAgent", "BaseAgent", "AgentOrchestrator",
-    # "get_orchestrator", "reset_orchestrator", "MultiLLMManager",
-    # "SeverityLevel", "Question", "ExportFormat", "ConflictRule",
-    # "QualityAnalyzer", "QualityIssue",
-    # [All database models...]
+    # ========== PHASE 3: FRAMEWORK (Fully operational) ==========
+
+    # Domain Framework
+    "BaseDomain",
+    "DomainRegistry",
+    "get_domain_registry",
+    "ProgrammingDomain",
+    "DataEngineeringDomain",
+    "ArchitectureDomain",
+    "TestingDomain",
+    "BusinessDomain",
+    "SecurityDomain",
+    "DevOpsDomain",
+
+    # Agent Framework (13 specialized agents + orchestrator + multi-LLM)
+    "BaseAgent",
+    "ProjectManagerAgent",
+    "SocraticCounselorAgent",
+    "ContextAnalyzerAgent",
+    "ConflictDetectorAgent",
+    "CodeGeneratorAgent",
+    "ExportAgent",
+    "TeamCollaborationAgent",
+    "GitHubIntegrationAgent",
+    "MultiLLMManager",
+    "AgentOrchestrator",
+    "get_orchestrator",
+    "reset_orchestrator",
+
+    # Domain Base Models
+    "SeverityLevel",
+    "Question",
+    "ExportFormat",
+    "ConflictRule",
+    "QualityAnalyzer",
+
+    # Database Models - Auth (5)
+    "User",
+    "RefreshToken",
+    "AdminRole",
+    "AdminUser",
+    "AdminAuditLog",
+
+    # Database Models - Core (6)
+    "Project",
+    "Session",
+    "QuestionModel",
+    "Specification",
+    "ConversationHistory",
+    "Conflict",
+
+    # Database Models - Generated Content (2)
+    "GeneratedProject",
+    "GeneratedFile",
+
+    # Database Models - Analytics & Tracking (4)
+    "QualityMetric",
+    "UserBehaviorPattern",
+    "QuestionEffectiveness",
+    "KnowledgeBaseDocument",
+    "LLMUsageTracking",
+
+    # Database Models - Collaboration (3)
+    "Team",
+    "TeamMember",
+    "ProjectShare",
+
+    # Database Models - API & Billing (3)
+    "APIKey",
+    "Subscription",
+    "Invoice",
+
+    # Database Models - Analytics & Search (3)
+    "AnalyticsMetrics",
+    "DocumentChunk",
+    "NotificationPreferences",
+
+    # Database Models - Activity Management (2)
+    "ActivityLog",
+    "ProjectInvitation",
+
+    # Database Models - Base
+    "BaseModel",
 ]
