@@ -66,8 +66,9 @@ dependencies = [
     "reportlab==4.2.0",
 ]
 
-[project.scripts]
-socrates = "app.cli:main"
+# No package-level CLI entry points
+# Socrates.py is run directly for user interface
+# Admin CLI can be run with: python -m app.cli
 
 [project.optional-dependencies]
 dev = [
@@ -90,10 +91,11 @@ Issues = "https://github.com/socrates/socrates/issues"
 Changelog = "https://github.com/socrates/socrates/blob/main/backend/CHANGELOG.md"
 
 [tool.setuptools]
-packages = ["app"]
+packages = ["app", "socrates"]
 
 [tool.setuptools.package-dir]
 app = "app"
+socrates = "socrates"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
