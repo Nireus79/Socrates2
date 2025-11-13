@@ -1578,9 +1578,14 @@ No session required.
 
                         # Prompt user to select
                         choice = Prompt.ask(
-                            "Select session by number or enter session ID",
+                            "Select session by number or enter session ID (or 'back')",
                             default="1"
                         )
+
+                        # Check for back command
+                        if choice.lower() in ["/back", "back"]:
+                            self.console.print("[yellow]Going back...[/yellow]")
+                            return
 
                         try:
                             choice_num = int(choice)
