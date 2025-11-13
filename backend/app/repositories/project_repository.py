@@ -105,8 +105,32 @@ class ProjectRepository(BaseRepository[Project]):
         return self.update(project_id, maturity_score=level)
 
     def archive_project(self, project_id: UUID) -> Optional[Project]:
-        """Archive a project."""
+        """Archive a project (soft delete)."""
         return self.update_project_status(project_id, 'archived')
+
+    def delete_project(self, project_id: UUID) -> bool:
+        """
+        Hard delete an archived project from the database.
+
+        This is irreversible and only works on archived projects.
+
+        Args:
+            project_id: Project UUID to delete
+
+        Returns:
+            True if deleted successfully, False if not found or not archived
+        """
+        project = self.get_by_id(project_id)
+        if not project:
+            return False
+
+        # Only allow deletion of archived projects
+        if project.status != 'archived':
+            return False
+
+        # Delete the project (cascade will handle related tables)
+        self.session.delete(project)
+        return True
 
     def complete_project(self, project_id: UUID) -> Optional[Project]:
         """Mark project as completed."""

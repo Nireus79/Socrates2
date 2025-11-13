@@ -503,13 +503,13 @@ def partial_update_project(
 
 
 @router.delete("/{project_id}")
-def delete_project(
+def archive_project(
     project_id: str,
     current_user: User = Depends(get_current_active_user),
     service: RepositoryService = Depends(get_repository_service)
 ) -> Dict[str, Any]:
     """
-    Delete (archive) a project.
+    Archive a project (soft delete - reversible).
 
     Args:
         project_id: Project UUID
@@ -526,7 +526,77 @@ def delete_project(
         Response 200:
         {
             "success": true,
-            "message": "Project deleted successfully",
+            "message": "Project archived successfully",
+            "data": {
+                "project_id": "550e8400-..."
+            }
+        }
+    """
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
+        return ResponseWrapper.validation_error(
+            field="project_id",
+            reason="Invalid UUID format",
+            value=project_id
+        )
+
+    try:
+        # Get project
+        project = service.projects.get_by_id(project_uuid)
+
+        if not project:
+            return ResponseWrapper.not_found("Project", project_id)
+
+        # Validate permissions
+        if str(project.user_id) != str(current_user.id):
+            return ResponseWrapper.forbidden("Only project owner can archive project")
+
+        # Archive project
+        service.projects.archive_project(project_uuid)
+        service.commit_all()
+
+        return ResponseWrapper.success(
+            data={"project_id": str(project_uuid)},
+            message="Project archived successfully"
+        )
+
+    except Exception as e:
+        service.rollback_all()
+        return ResponseWrapper.internal_error(
+            message="Failed to archive project",
+            exception=e
+        )
+
+
+@router.post("/{project_id}/destroy")
+def destroy_project(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Permanently delete an archived project (hard delete - irreversible).
+
+    WARNING: This operation cannot be undone. Only works on archived projects.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with success status
+
+    Example:
+        POST /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/destroy
+        Authorization: Bearer <token>
+
+        Response 200:
+        {
+            "success": true,
+            "message": "Project permanently deleted",
             "data": {
                 "project_id": "550e8400-..."
             }
@@ -553,19 +623,29 @@ def delete_project(
         if str(project.user_id) != str(current_user.id):
             return ResponseWrapper.forbidden("Only project owner can delete project")
 
-        # Archive project
-        service.projects.archive_project(project_uuid)
+        # Check if archived
+        if project.status != 'archived':
+            return ResponseWrapper.validation_error(
+                field="status",
+                reason="Only archived projects can be permanently deleted",
+                value=project.status
+            )
+
+        # Hard delete project
+        if not service.projects.delete_project(project_uuid):
+            return ResponseWrapper.internal_error(message="Failed to delete project")
+
         service.commit_all()
 
         return ResponseWrapper.success(
             data={"project_id": str(project_uuid)},
-            message="Project deleted successfully"
+            message="Project permanently deleted"
         )
 
     except Exception as e:
         service.rollback_all()
         return ResponseWrapper.internal_error(
-            message="Failed to delete project",
+            message="Failed to permanently delete project",
             exception=e
         )
 

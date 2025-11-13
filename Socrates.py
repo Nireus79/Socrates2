@@ -247,9 +247,14 @@ class SocratesAPI:
         response = self._request("PUT", f"/api/v1/projects/{project_id}", json=data)
         return response.json()
 
-    def delete_project(self, project_id: str) -> Dict[str, Any]:
-        """Delete project"""
+    def archive_project(self, project_id: str) -> Dict[str, Any]:
+        """Archive project (soft delete)"""
         response = self._request("DELETE", f"/api/v1/projects/{project_id}")
+        return response.json()
+
+    def destroy_project(self, project_id: str) -> Dict[str, Any]:
+        """Permanently delete an archived project (hard delete)"""
+        response = self._request("POST", f"/api/v1/projects/{project_id}/destroy")
         return response.json()
 
     def start_session(self, project_id: str) -> Dict[str, Any]:
@@ -744,7 +749,8 @@ class SocratesCLI:
   /project create        Create new project
   /project select <id>   Select project to work with
   /project info          Show current project details
-  /project delete <id>   Delete project
+  /project archive <id>  Archive project (soft delete - reversible)
+  /project destroy <id>  Permanently delete archived project (hard delete - irreversible)
 
 [bold yellow]Session Management:[/bold yellow]
   /session start         Start new Socratic questioning session
@@ -1230,7 +1236,7 @@ No session required.
             return
 
         if not args:
-            self.console.print("[yellow]Usage: /project <create|select|info|delete> [args][/yellow]")
+            self.console.print("[yellow]Usage: /project <create|select|info|archive|destroy> [args][/yellow]")
             return
 
         subcommand = args[0]
@@ -1407,9 +1413,9 @@ No session required.
 """
             self.console.print(Panel(info, border_style="cyan"))
 
-        elif subcommand == "delete":
+        elif subcommand == "archive":
             if len(args) < 2:
-                self.console.print("[yellow]Usage: /project delete <number|project_id>[/yellow]")
+                self.console.print("[yellow]Usage: /project archive <number|project_id>[/yellow]")
                 return
 
             project_input = args[1]
@@ -1429,7 +1435,7 @@ No session required.
                     return
 
                 all_projects = result.get("data", {}).get("projects", [])
-                # Only show active projects for deletion (archived are already "deleted")
+                # Only show active projects for archiving
                 projects = [p for p in all_projects if p.get("status") != "archived"]
 
                 # Check if input is a number
@@ -1446,13 +1452,13 @@ No session required.
                         if str(proj.get("id")).startswith(project_input):
                             project_id = str(proj.get("id"))
                             break
-                    # If no match found in active projects, try as full UUID (might be archived)
+                    # If no match found in active projects, try as full UUID
                     if not project_id:
                         project_id = project_input
 
                 # Confirmation with back support
                 confirm_response = Prompt.ask(
-                    f"[red]Delete project {project_id}?[/red]",
+                    f"[yellow]Archive project {project_id}? (This is reversible)[/yellow]",
                     choices=["y", "n", "back"],
                     default="n"
                 )
@@ -1461,9 +1467,84 @@ No session required.
                     self.console.print("[yellow]Going back...[/yellow]")
                     return
                 elif confirm_response.lower() == "y":
-                    result = self.api.delete_project(project_id)
+                    result = self.api.archive_project(project_id)
                     if result.get("success"):
-                        self.console.print(f"[green]✓ Project deleted[/green]")
+                        self.console.print(f"[green]✓ Project archived[/green]")
+                        if self.current_project and str(self.current_project.get("id")) == str(project_id):
+                            self.current_project = None
+                            self.current_session = None
+                    else:
+                        error_msg = result.get('message') or result.get('detail') or 'Unknown error'
+                        self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
+                else:
+                    self.console.print("[yellow]Cancelled[/yellow]")
+            except Exception as e:
+                self.console.print(f"[red]Error: {e}[/red]")
+
+        elif subcommand == "destroy":
+            if len(args) < 2:
+                self.console.print("[yellow]Usage: /project destroy <number|project_id>[/yellow]")
+                return
+
+            project_input = args[1]
+            project_id = None
+
+            # Try to resolve the input as a number or partial UUID
+            try:
+                # Load projects list once (filter to archived only)
+                response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
+                if response.status_code != 200:
+                    self.console.print("[red]✗ Failed to load projects[/red]")
+                    return
+
+                result = response.json()
+                if not result.get("success"):
+                    self.console.print("[red]✗ Failed to load projects[/red]")
+                    return
+
+                all_projects = result.get("data", {}).get("projects", [])
+                # Only show archived projects for destruction
+                projects = [p for p in all_projects if p.get("status") == "archived"]
+
+                if not projects:
+                    self.console.print("[yellow]No archived projects to destroy[/yellow]")
+                    return
+
+                # Check if input is a number
+                try:
+                    choice_num = int(project_input)
+                    if 1 <= choice_num <= len(projects):
+                        project_id = str(projects[choice_num - 1].get("id"))
+                    else:
+                        self.console.print(f"[red]✗ Invalid project number (must be 1-{len(projects)})[/red]")
+                        return
+                except ValueError:
+                    # Not a number, try to match as partial or full UUID
+                    for proj in projects:
+                        if str(proj.get("id")).startswith(project_input):
+                            project_id = str(proj.get("id"))
+                            break
+                    # If no match found in archived projects, try as full UUID
+                    if not project_id:
+                        project_id = project_input
+
+                # Strong confirmation for irreversible action
+                self.console.print("[red bold]⚠ WARNING: This will permanently delete the project![/red bold]")
+                self.console.print("[red]This action CANNOT be undone.[/red]")
+
+                confirm_response = Prompt.ask(
+                    f"[red bold]Permanently destroy project {project_id}?[/red bold]",
+                    choices=["y", "n", "back"],
+                    default="n"
+                )
+
+                if confirm_response.lower() == "back":
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    return
+                elif confirm_response.lower() == "y":
+                    result = self.api.destroy_project(project_id)
+                    if result.get("success"):
+                        self.console.print(f"[green]✓ Project permanently destroyed[/green]")
                         if self.current_project and str(self.current_project.get("id")) == str(project_id):
                             self.current_project = None
                             self.current_session = None
