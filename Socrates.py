@@ -1309,24 +1309,24 @@ No session required.
 
                     if result.get("success"):
                         data = result.get("data", {})
-                        all_projects = data.get("projects", [])
-
-                        # Filter to only active projects for selection
-                        projects = [p for p in all_projects if p.get("status") != "archived"]
+                        projects = data.get("projects", [])
 
                         if projects:
-                            # Display projects in a table
+                            # Display projects in a table (show all projects, mark archived)
                             table = Table(show_header=True, header_style="bold cyan")
                             table.add_column("#", style="dim")
                             table.add_column("Name", style="bold")
                             table.add_column("Project ID", style="cyan")
+                            table.add_column("Status", style="dim")
                             table.add_column("Description", style="dim")
 
                             for i, proj in enumerate(projects, 1):
                                 desc = proj.get("description", "")
                                 if len(desc) > 40:
                                     desc = desc[:37] + "..."
-                                table.add_row(str(i), proj.get("name", "Unnamed"), str(proj.get("id", ""))[:8], desc)
+                                status = proj.get("status", "unknown")
+                                status_display = f"[dim]{status}[/dim]" if status == "archived" else f"[green]{status}[/green]"
+                                table.add_row(str(i), proj.get("name", "Unnamed"), str(proj.get("id", ""))[:8], status_display, desc)
 
                             self.console.print("\n[bold cyan]Your Projects:[/bold cyan]\n")
                             self.console.print(table)
@@ -3217,3 +3217,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# cd backend
+#   python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+#   This will start the backend server on http://localhost:8000 with hot-reload enabled (automatically reloads
+#   when you save code changes).
+#
+#   To stop it, press Ctrl+C.
