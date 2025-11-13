@@ -14,29 +14,27 @@ class ConversationHistory(Base):
     ConversationHistory model - stores complete conversation history.
     Stored in socrates_specs database.
 
-    NOTE: This model does NOT inherit from BaseModel because:
-    - Uses BigInteger autoincrement ID instead of UUID
-    - Uses timestamp instead of created_at/updated_at
-
-    Fields:
-    - id: BigInteger primary key (autoincrement)
+    Fields match the database schema created in migration 003:
+    - id: UUID primary key
     - session_id: Foreign key to sessions table
     - role: Message role (user, assistant, system)
     - content: The message content
-    - message_metadata: Additional metadata as JSON
-    - timestamp: When the message was sent
+    - message_type: Type of message (question, answer, clarification, specification, error)
+    - tokens_used: Number of tokens used in LLM response
+    - metadata: Additional metadata as JSONB
+    - created_at: When the message was created
     """
     __tablename__ = "conversation_history"
     __table_args__ = (
         Index('idx_conversation_history_session_id', 'session_id'),
-        Index('idx_conversation_history_timestamp', 'timestamp'),
+        Index('idx_conversation_history_created_at', 'created_at'),
     )
 
     id = Column(
-        BigInteger,
+        PG_UUID(as_uuid=True),
         primary_key=True,
-        autoincrement=True,
-        comment="Primary key (autoincrement)"
+        server_default=func.text('gen_random_uuid()'),
+        comment="Unique message identifier (UUID)"
     )
 
     session_id = Column(
@@ -58,17 +56,29 @@ class ConversationHistory(Base):
         comment="The message content"
     )
 
-    message_metadata = Column(
+    message_type = Column(
+        String(50),
+        nullable=True,
+        comment="Message type (question, answer, clarification, specification, error)"
+    )
+
+    tokens_used = Column(
+        Integer,
+        nullable=True,
+        comment="Number of tokens used in LLM response"
+    )
+
+    metadata = Column(
         JSON,
         nullable=True,
         comment="Additional metadata as JSON"
     )
 
-    timestamp = Column(
+    created_at = Column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
-        comment="When the message was sent"
+        comment="When the message was created"
     )
 
     # Relationships
