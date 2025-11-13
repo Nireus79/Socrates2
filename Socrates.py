@@ -1407,7 +1407,8 @@ No session required.
                             self.current_project = None
                             self.current_session = None
                     else:
-                        self.console.print(f"[red]✗ Failed: {result.get('message')}[/red]")
+                        error_msg = result.get('message') or result.get('detail') or 'Unknown error'
+                        self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
                 except Exception as e:
                     self.console.print(f"[red]Error: {e}[/red]")
 
