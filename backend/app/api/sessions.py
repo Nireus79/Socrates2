@@ -612,7 +612,7 @@ def get_session_history(
     # Get conversation history with pagination
     query = db.query(ConversationHistory).filter(
         ConversationHistory.session_id == session_id
-    ).order_by(ConversationHistory.timestamp.asc())
+    ).order_by(ConversationHistory.created_at.asc())
 
     total = query.count()
     history = query.offset(skip).limit(limit).all()

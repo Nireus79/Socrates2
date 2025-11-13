@@ -292,7 +292,7 @@ Be conversational, helpful, and guide the user toward complete specifications.""
         # Get last 10 conversation turns
         messages = specs_session.query(ConversationHistory).filter_by(
             session_id=session_id
-        ).order_by(ConversationHistory.timestamp.desc()).limit(10).all()
+        ).order_by(ConversationHistory.created_at.desc()).limit(10).all()
 
         # Reverse to chronological order
         messages = list(reversed(messages))
@@ -412,8 +412,7 @@ Maturity: {project_context.get('maturity_score', 0)}%
         user_msg = ConversationHistory(
             session_id=session_id,
             role='user',
-            content=user_message,
-            timestamp=datetime.now(timezone.utc)
+            content=user_message
         )
         specs_session.add(user_msg)
 
@@ -421,8 +420,7 @@ Maturity: {project_context.get('maturity_score', 0)}%
         assistant_msg = ConversationHistory(
             session_id=session_id,
             role='assistant',
-            content=assistant_message,
-            timestamp=datetime.now(timezone.utc)
+            content=assistant_message
         )
         specs_session.add(assistant_msg)
 
