@@ -154,13 +154,13 @@ def create_project(
         )
 
 
-@router.get("", response_model=ProjectListResponse)
+@router.get("")
 def list_projects(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     current_user: User = Depends(get_current_active_user),
     service: RepositoryService = Depends(get_repository_service)
-) -> ProjectListResponse:
+) -> Dict[str, Any]:
     """
     List all projects for the current user.
 
@@ -171,7 +171,7 @@ def list_projects(
         service: Repository service
 
     Returns:
-        ProjectListResponse with projects list and metadata
+        Dict with success status and projects list
 
     Example:
         GET /api/v1/projects?skip=0&limit=10
@@ -179,20 +179,24 @@ def list_projects(
 
         Response:
         {
-            "projects": [
-                {
-                    "id": "550e8400-e29b-41d4-a716-446655440000",
-                    "user_id": "550e8400-e29b-41d4-a716-446655440001",
-                    "name": "My Web App",
-                    "phase": "discovery",
-                    "maturity_level": 45,
-                    "status": "active",
-                    ...
-                }
-            ],
-            "total": 5,
-            "skip": 0,
-            "limit": 10
+            "success": true,
+            "message": "Projects retrieved successfully",
+            "data": {
+                "projects": [
+                    {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "user_id": "550e8400-e29b-41d4-a716-446655440001",
+                        "name": "My Web App",
+                        "phase": "discovery",
+                        "maturity_level": 45,
+                        "status": "active",
+                        ...
+                    }
+                ],
+                "total": 5,
+                "skip": 0,
+                "limit": 10
+            }
         }
     """
     try:
@@ -206,34 +210,38 @@ def list_projects(
         # Get total count
         total = service.projects.count_user_projects(current_user.id)
 
-        return ProjectListResponse(
-            projects=[
-                ProjectResponse(
-                    id=str(p.id),
-                    user_id=str(p.user_id),
-                    name=p.name,
-                    description=p.description,
-                    status=p.status,
-                    phase=p.current_phase,
-                    maturity_level=int((p.maturity_score or 0) * 100),
-                    created_at=p.created_at.isoformat(),
-                    updated_at=p.updated_at.isoformat() if p.updated_at else None
-                )
-                for p in projects
-            ],
-            total=total,
-            skip=skip,
-            limit=limit
+        projects_data = [
+            {
+                "id": str(p.id),
+                "user_id": str(p.user_id),
+                "name": p.name,
+                "description": p.description,
+                "status": p.status,
+                "phase": p.current_phase,
+                "maturity_level": int((p.maturity_score or 0) * 100),
+                "created_at": p.created_at.isoformat(),
+                "updated_at": p.updated_at.isoformat() if p.updated_at else None
+            }
+            for p in projects
+        ]
+
+        response_data = {
+            "projects": projects_data,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
+
+        return ResponseWrapper.success(
+            data=response_data,
+            message="Projects retrieved successfully"
         )
 
     except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.exception(f"Error listing projects for user {current_user.id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to list projects"
-        ) from e
+        return ResponseWrapper.internal_error(
+            message="Failed to list projects",
+            exception=e
+        )
 
 
 @router.get("/{project_id}")

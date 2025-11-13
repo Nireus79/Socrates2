@@ -1301,55 +1301,60 @@ No session required.
                     # DEBUG: Print API response
                     self.console.print(f"[dim]DEBUG: API response = {result}[/dim]")
 
-                    if result.get("success") and result.get("projects"):
-                        projects = result.get("projects", [])
+                    if result.get("success"):
+                        data = result.get("data", {})
+                        projects = data.get("projects", [])
 
-                        # Display projects in a table
-                        table = Table(show_header=True, header_style="bold cyan")
-                        table.add_column("#", style="dim")
-                        table.add_column("Name", style="bold")
-                        table.add_column("Project ID", style="cyan")
-                        table.add_column("Description", style="dim")
+                        if projects:
+                            # Display projects in a table
+                            table = Table(show_header=True, header_style="bold cyan")
+                            table.add_column("#", style="dim")
+                            table.add_column("Name", style="bold")
+                            table.add_column("Project ID", style="cyan")
+                            table.add_column("Description", style="dim")
 
-                        for i, proj in enumerate(projects, 1):
-                            desc = proj.get("description", "")
-                            if len(desc) > 40:
-                                desc = desc[:37] + "..."
-                            table.add_row(str(i), proj.get("name", "Unnamed"), str(proj.get("id", ""))[:8], desc)
+                            for i, proj in enumerate(projects, 1):
+                                desc = proj.get("description", "")
+                                if len(desc) > 40:
+                                    desc = desc[:37] + "..."
+                                table.add_row(str(i), proj.get("name", "Unnamed"), str(proj.get("id", ""))[:8], desc)
 
-                        self.console.print("\n[bold cyan]Your Projects:[/bold cyan]\n")
-                        self.console.print(table)
-                        self.console.print()
+                            self.console.print("\n[bold cyan]Your Projects:[/bold cyan]\n")
+                            self.console.print(table)
+                            self.console.print()
 
-                        # Prompt user to select
-                        choice = Prompt.ask(
-                            "Select project by number or enter project ID",
-                            default="1"
-                        )
+                            # Prompt user to select
+                            choice = Prompt.ask(
+                                "Select project by number or enter project ID",
+                                default="1"
+                            )
 
-                        try:
-                            choice_num = int(choice)
-                            if 1 <= choice_num <= len(projects):
-                                project_id = str(projects[choice_num - 1].get("id"))
+                            try:
+                                choice_num = int(choice)
+                                if 1 <= choice_num <= len(projects):
+                                    project_id = str(projects[choice_num - 1].get("id"))
+                                else:
+                                    self.console.print("[red]Invalid selection[/red]")
+                                    return
+                            except ValueError:
+                                # Assume it's a project ID
+                                project_id = choice
+
+                            # Load and select the project
+                            proj_result = self.api.get_project(project_id)
+                            if proj_result.get("success"):
+                                self.current_project = proj_result.get("data")
+                                # Log the project selection
+                                self.cli_logger.log_project_select(self.current_project['name'], project_id)
+                                self.current_session = None
+                                self.console.print(f"\n[green]✓ Selected project: {self.current_project['name']}[/green]\n")
                             else:
-                                self.console.print("[red]Invalid selection[/red]")
-                                return
-                        except ValueError:
-                            # Assume it's a project ID
-                            project_id = choice
-
-                        # Load and select the project
-                        proj_result = self.api.get_project(project_id)
-                        if proj_result.get("success"):
-                            self.current_project = proj_result.get("project")
-                            # Log the project selection
-                            self.cli_logger.log_project_select(self.current_project['name'], project_id)
-                            self.current_session = None
-                            self.console.print(f"\n[green]✓ Selected project: {self.current_project['name']}[/green]\n")
+                                self.console.print(f"[red]✗ Project not found[/red]")
                         else:
-                            self.console.print(f"[red]✗ Project not found[/red]")
+                            self.console.print("[yellow]No projects found. Create one first with /project create[/yellow]")
                     else:
-                        self.console.print("[yellow]No projects found. Create one first with /project create[/yellow]")
+                        error_msg = result.get('message') or 'Failed to load projects'
+                        self.console.print(f"[red]✗ {error_msg}[/red]")
                 except Exception as e:
                     self.console.print(f"[red]Error: {e}[/red]")
             else:
@@ -1358,13 +1363,14 @@ No session required.
                 try:
                     result = self.api.get_project(project_id)
                     if result.get("success"):
-                        self.current_project = result.get("project")
+                        self.current_project = result.get("data")
                         # Log the project selection
                         self.cli_logger.log_project_select(self.current_project['name'], project_id)
                         self.current_session = None  # Clear session when switching projects
                         self.console.print(f"[green]✓ Selected project: {self.current_project['name']}[/green]")
                     else:
-                        self.console.print(f"[red]✗ Project not found[/red]")
+                        error_msg = result.get('message') or 'Project not found'
+                        self.console.print(f"[red]✗ {error_msg}[/red]")
                 except Exception as e:
                     self.console.print(f"[red]Error: {e}[/red]")
 
