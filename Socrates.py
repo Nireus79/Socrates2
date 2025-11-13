@@ -1303,7 +1303,10 @@ No session required.
 
                     if result.get("success"):
                         data = result.get("data", {})
-                        projects = data.get("projects", [])
+                        all_projects = data.get("projects", [])
+
+                        # Filter to only active projects for selection
+                        projects = [p for p in all_projects if p.get("status") != "archived"]
 
                         if projects:
                             # Display projects in a table
@@ -1325,9 +1328,14 @@ No session required.
 
                             # Prompt user to select
                             choice = Prompt.ask(
-                                "Select project by number or enter project ID",
+                                "Select project by number or enter project ID (or 'back')",
                                 default="1"
                             )
+
+                            # Check for /back or back command
+                            if choice.lower() in ["/back", "back"]:
+                                self.console.print("[yellow]Going back...[/yellow]")
+                                return
 
                             try:
                                 choice_num = int(choice)
