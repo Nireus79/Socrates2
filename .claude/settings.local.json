@@ -1,9 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(py --list-paths:*)",
-      "Bash(py:*)",
-      "Bash(py -3.12 -m pip install -e \"C:\\Users\\themi\\PycharmProjects\\Socrates\\backend\")"
+      "Bash(python -m pytest:*)",
+      "Bash(/tmp/analysis.md)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Expose Phase 3 framework with 13 agents, 8 domains, and 33 models\n\nPhase 3 adds complete agent-based framework to Socrates library with\nintelligent AI agents, pluggifiable domains, and comprehensive data models.\n\nWHAT''S NEW:\n\nAgent Framework (13 specialized agents):\n- Socratic Counselor: Question generation\n- Project Manager: Project coordination\n- Context Analyzer: Specification extraction\n- Conflict Detector: Conflict detection & validation\n- Quality Controller: Automated quality gates\n- Code Generator: Code generation from specs\n- Export Agent: Multi-format export\n- Team Collaboration: Team management\n- GitHub Integration: GitHub connectivity\n- Multi-LLM Manager: Multi-LLM coordination\n- Base Agent: Abstract foundation\n- Agent Orchestrator: Central routing & coordination\n- Direct Chat: User interaction interface\n\nDomain Framework (8 domains):\n- Programming Domain (15 questions, 8 exporters, 6 rules, 6 analyzers)\n- Data Engineering Domain\n- Architecture Domain\n- Testing Domain\n- Business Domain\n- Security Domain\n- DevOps Domain\n- BaseDomain (abstract)\n\nPluggifiable Architecture:\n- Zero-code domain extension via JSON\n- Question templates configurable\n- Export formats customizable\n- Conflict rules definable\n- Quality analyzers extensible\n\nDatabase Models (33 total):\n- Auth Database (5): User, RefreshToken, AdminRole, AdminUser, AdminAuditLog\n- Core Models (6): Project, Session, Question, Specification, ConversationHistory, Conflict\n- Generated Content (2): GeneratedProject, GeneratedFile\n- Analytics (5): QualityMetric, UserBehaviorPattern, QuestionEffectiveness, \n                  KnowledgeBaseDocument, LLMUsageTracking\n- Collaboration (3): Team, TeamMember, ProjectShare\n- Billing (3): APIKey, Subscription, Invoice\n- Search & Notifications (3): AnalyticsMetrics, DocumentChunk, NotificationPreferences\n- Activity (2): ActivityLog, ProjectInvitation\n- Base (1): BaseModel\n\nAPI Endpoints:\n- Domain management: /api/v1/domains\n- Agent operations: /api/v1/agents\n- Workflows: /api/v1/workflows\n- 100+ total endpoints across 25+ routers\n\nTesting Status:\n- 487 tests PASSING (100% pass rate)\n- 114 tests skipped (auth required)\n- Complete coverage of all components\n- Production-ready code quality\n\nTotal Socrates Library After Phase 3:\n- 82+ total exports (Phase 1a + 1b + 2 + 3)\n- 100+ REST API endpoints\n- 13 intelligent agents\n- 8 pluggifiable domains\n- 33 database models\n- 2-database architecture\n- Enterprise-ready framework\n\nStatus: PRODUCTION READY\n\nNext: Phase 4+ (API versioning, webhooks, advanced ML)\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(python -m pip install:*)",
+      "Bash(python -m build:*)",
+      "Bash(git commit:*)",
+      "Bash(python -m pip:*)",
+      "Bash(python -m twine upload:*)",
+      "Bash(pip install:*)",
+      "Bash(curl:*)",
+      "Bash(python -m twine:*)",
+      "Bash(python -m zipfile:*)"
     ],
     "deny": [],
     "ask": []

@@ -4,27 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="tests">
+    <list default="true" id="4e7b8ee0-782f-4404-bb0c-53b300d8f35e" name="Changes" comment="library">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ANALYSIS_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ANALYSIS_INDEX.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODEBASE_ANALYSIS_IMPORTS_DOMAINS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DEEP_INCONSISTENCY_REPORT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DETAILED_TEST_ANALYSIS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINDINGS_SUMMARY.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IMPLEMENTATION_PLAN.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IMPORT_ISSUES_DETAILED_FINDINGS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MERGE_BLOCKER_FIXED.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICK_FIX_GUIDE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/REGISTRATION_LOGIN_FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TEST_FINDINGS_SUMMARY.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TEST_SUITE_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/core/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/core/database.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pyproject.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/socrates/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/socrates/__init__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,11 +69,11 @@
       <recent name="C:\Users\themi\PycharmProjects\Socrates2" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\themi\PycharmProjects\Socrates\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\archive" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2\backend\tests" />
       <recent name="C:\Users\themi\PycharmProjects\Socrates2" />
-      <recent name="C:\Users\themi\PycharmProjects\Socrates2\implementation_documents" />
     </key>
   </component>
   <component name="RunManager" selected="Python.main">
@@ -419,7 +403,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762930447407</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="library">
+      <option name="closed" value="true" />
+      <created>1763015541666</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1763015541666</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -451,6 +443,7 @@
     <MESSAGE value="Extension, or extinction" />
     <MESSAGE value="rename" />
     <MESSAGE value="tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="tests" />
+    <MESSAGE value="library" />
+    <option name="LAST_COMMIT_MESSAGE" value="library" />
   </component>
 </project>

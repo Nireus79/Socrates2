@@ -1,0 +1,267 @@
+PUBLIC API ANALYSIS - EXECUTIVE SUMMARY
+=====================================
+
+ANALYSIS DATE: November 12, 2025
+SCOPE: All exportable classes, functions from backend/app/core, domains, agents
+TARGET: Identify what's missing from public socrates-ai library API
+
+---
+
+FINDINGS SUMMARY
+================
+
+Total Items Analyzed: 150+ classes/functions across 3 modules
+
+Currently Available in Public API:
+- 29+ SQLAlchemy database models (fully exported)
+- 7 domain implementations (fully exported)  
+- 9 agent implementations (fully exported)
+- BaseDomain abstract class (partially exported)
+- AgentOrchestrator (fully exported)
+
+CRITICALLY MISSING FROM PUBLIC API:
+- 47 essential classes/functions that enable library use
+
+---
+
+CRITICAL MISSING EXPORTS (MUST ADD)
+===================================
+
+1. DEPENDENCY INJECTION (Foundation)
+   Location: backend/app/core/dependencies.py
+   Missing: ServiceContainer class
+   Impact: BLOCKING - Cannot use agents without this
+   Status: CRITICAL
+
+2. CONFIGURATION
+   Location: backend/app/core/config.py
+   Missing: Settings class, get_settings(), settings instance
+   Impact: Cannot configure library
+   Status: CRITICAL
+
+3. DATABASE CONNECTIONS
+   Location: backend/app/core/database.py
+   Missing: SessionLocalAuth, SessionLocalSpecs, get_db_auth(), get_db_specs(), engine_auth, engine_specs, Base
+   Impact: Cannot access databases
+   Status: CRITICAL
+
+4. SECURITY & JWT
+   Location: backend/app/core/security.py
+   Missing: create_access_token(), decode_access_token(), auth dependencies, refresh token functions
+   Impact: Cannot implement authentication
+   Status: CRITICAL
+
+5. PURE BUSINESS LOGIC ENGINES (Database-Free)
+   Missing from: core/question_engine.py, core/conflict_engine.py, core/quality_engine.py, core/learning_engine.py
+   Exports Missing:
+   - QuestionGenerator class
+   - ConflictDetectionEngine class
+   - BiasDetectionEngine class
+   - LearningEngine class
+   Impact: Cannot use core Socratic AI logic standalone
+   Status: CRITICAL (These are library-ready!)
+
+6. DATA MODELS (Plain Dataclasses)
+   Location: backend/app/core/models.py
+   Missing: ProjectData, SpecificationData, QuestionData, ConflictData, BiasAnalysisResult, etc.
+   Impact: Cannot work with typed business objects
+   Status: CRITICAL
+
+7. CONVERSION FUNCTIONS
+   Location: backend/app/core/models.py
+   Missing: project_db_to_data(), spec_db_to_data(), question_db_to_data(), etc.
+   Impact: Cannot convert between DB models and plain data
+   Status: HIGH
+
+8. NLU SERVICE
+   Location: backend/app/core/nlu_service.py
+   Missing: NLUService, Intent dataclass, create_nlu_service()
+   Impact: Cannot parse user intent
+   Status: HIGH
+
+9. SUBSCRIPTION & USAGE MANAGEMENT
+   Location: backend/app/core/subscription_tiers.py, usage_limits.py
+   Missing: SubscriptionTier enum, TIER_LIMITS dict, UsageLimitError, UsageLimiter
+   Impact: Cannot enforce usage limits
+   Status: HIGH
+
+10. RATE LIMITING
+    Location: backend/app/core/rate_limiting.py
+    Missing: RateLimiter, get_rate_limiter()
+    Impact: Cannot enforce API rate limits
+    Status: MEDIUM
+
+11. ACTION LOGGING
+    Location: backend/app/core/action_logger.py
+    Missing: ActionLogger, initialize_action_logger(), toggle_action_logging(), all log_* functions
+    Impact: Cannot monitor workflow
+    Status: MEDIUM
+
+12. VALIDATORS
+    Location: backend/app/core/validators.py
+    Missing: validate_email()
+    Impact: Cannot validate user input
+    Status: MEDIUM
+
+13. DOMAIN BASE CLASSES
+    Location: backend/app/base/models.py
+    Missing: SeverityLevel, ConflictRule, QualityIssue, QualityAnalyzer, ExportFormat, Question
+    Impact: Cannot extend or understand domain system
+    Status: MEDIUM
+
+14. AGENT CONTEXT
+    Location: backend/app/agents/context.py
+    Missing: AgentContext, ConversationContext classes
+    Impact: Cannot manage agent execution context
+    Status: MEDIUM
+
+---
+
+SUMMARY BY PRIORITY
+===================
+
+🔴 CRITICAL (Must implement for library to function):
+   Count: 8 major exports
+   Impact: Foundation for library use
+   Effort: High
+   Examples: ServiceContainer, Settings, SessionLocal*, JWT functions, all dataclasses
+
+🟠 HIGH (Important for core features):
+   Count: 5 major exports
+   Impact: Enable core business logic
+   Effort: Medium
+   Examples: All 4 pure engines, NLUService, conversion functions
+
+🟡 MEDIUM (Nice to have):
+   Count: 12+ exports
+   Impact: Enable advanced features
+   Effort: Low
+   Examples: Logging, rate limiting, validators
+
+---
+
+KEY INSIGHT: PURE ENGINES ARE LIBRARY-READY
+===========================================
+
+These components have ZERO database dependencies:
+- QuestionGenerator - Pure logic for question generation
+- ConflictDetectionEngine - Conflict detection patterns
+- BiasDetectionEngine - Bias detection logic
+- LearningEngine - User behavior analysis
+
+They're ready for extraction to separate "socrates-core" package that doesn't require:
+- PostgreSQL setup
+- FastAPI
+- SQLAlchemy
+- Any backend infrastructure
+
+These could be used standalone in:
+- CLI applications
+- Desktop applications
+- Web frontends
+- Testing tools
+- Custom integrations
+
+---
+
+WHAT'S ALREADY GOOD
+===================
+
+✅ Database Models - All 29+ exported
+✅ Domains - All 7 concrete domains exported
+✅ Agents - All 9 agent implementations exported
+✅ AgentOrchestrator - Central coordinator
+✅ Domain Registry - Domain lookup
+✅ Base classes - BaseDomain, BaseAgent
+
+The framework is solid! Just need to expose the internal utilities.
+
+---
+
+ESTIMATED EFFORT TO FIX
+=======================
+
+Phase 1 (Critical - 2 hours):
+- Create socrates/__init__.py
+- Export all CRITICAL items
+- Verify imports work
+
+Phase 2 (High - 3 hours):
+- Export pure engines
+- Export NLUService
+- Export conversions
+
+Phase 3 (Medium - 2 hours):
+- Export subscription/logging/validators
+- Export agent context
+- Export domain base classes
+
+Phase 4 (Documentation - 4 hours):
+- API reference
+- Architecture guide
+- Usage examples
+- Test suite
+
+Total: ~11 hours for complete public API
+
+---
+
+RECOMMENDED NEXT STEPS
+======================
+
+1. Create socrates/__init__.py with CRITICAL exports
+2. Test that all imports work (no circular deps)
+3. Write basic documentation
+4. Create usage examples
+5. Publish to PyPI
+
+This would enable:
+- Users to pip install socrates-ai
+- Use QuestionGenerator without database
+- Build custom domains and agents
+- Integrate pure engines into their apps
+
+---
+
+FILES TO CREATE
+===============
+
+socrates/__init__.py - Main public API (150+ exports)
+docs/API_REFERENCE.md - What each export does
+docs/ARCHITECTURE.md - How components work
+docs/EXAMPLES.md - How to use them
+examples/basic_usage.py - Working examples
+tests/test_pure_engines.py - Tests without database
+
+---
+
+BLOCKERS TO RESOLUTION
+=====================
+
+None! All code already exists. Just needs to be:
+1. Imported and re-exported
+2. Documented
+3. Tested
+4. Published
+
+---
+
+CONCLUSION
+==========
+
+The Socrates codebase is well-structured and ready for library extraction.
+The missing public API is simply a matter of creating one __init__.py file
+that exports the ~47 missing items currently buried in backend code.
+
+Effort: LOW
+Complexity: LOW
+Impact: HIGH
+
+Pure engines are particularly valuable as standalone components:
+- Question generation without database
+- Conflict detection without database
+- Bias detection without database
+- Could be published separately as "socrates-core"
+
+Recommend starting with Phase 1 (CRITICAL exports) immediately.
+This would unblock library development within 2 hours.

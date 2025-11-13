@@ -1,0 +1,41 @@
+COMPLETE EXPORT LIST SUMMARY
+=============================
+
+CRITICAL (MUST ADD - 35 items):
+- ServiceContainer, Settings, get_settings, settings
+- engine_auth, engine_specs, SessionLocalAuth, SessionLocalSpecs, ScopedSessionAuth, ScopedSessionSpecs, Base, get_db_auth, get_db_specs
+- create_access_token, decode_access_token, get_current_user, get_current_active_user, get_current_admin_user, create_refresh_token, validate_refresh_token, oauth2_scheme
+- QuestionGenerator, ConflictDetectionEngine, BiasDetectionEngine, LearningEngine
+- ProjectData, SpecificationData, QuestionData, ConflictData, BiasAnalysisResult, CoverageAnalysisResult, MaturityScore, UserBehaviorData
+- All conversion functions (project_db_to_data, spec_db_to_data, etc.)
+
+HIGH (SHOULD ADD - 20 items):
+- NLUService, Intent, create_nlu_service
+- SubscriptionTier, TIER_LIMITS, UsageLimitError, UsageLimiter
+- RateLimiter, get_rate_limiter
+- QUESTION_CATEGORIES, CATEGORY_TARGETS
+- ConflictType, ConflictSeverity enums
+- init_db, close_db_connections
+
+MEDIUM (NICE TO HAVE - 20+ items):
+- ActionLogger and all log_* functions
+- validate_email
+- SeverityLevel, ConflictRule, QualityIssue, QualityAnalyzer, ExportFormat, Question (domain base)
+- AgentContext, ConversationContext
+
+ALREADY AVAILABLE (52 items):
+- All 7 domains (ProgrammingDomain, DataEngineeringDomain, etc.)
+- All 9 agents (ProjectManagerAgent, SocraticCounselorAgent, etc.)
+- AgentOrchestrator, BaseAgent, BaseDomain
+- All 29+ SQLAlchemy models
+
+TOTAL: 150+ items to export
+
+EFFORT: ~7-11 hours for complete library API
+
+KEY FILES CREATED:
+1. PUBLIC_API_GAPS_SUMMARY.txt - Executive summary
+2. PUBLIC_API_ANALYSIS_SUMMARY.md - Detailed analysis
+3. LIBRARY_IMPL_PLAN.md - Implementation roadmap
+4. COMPLETE_EXPORT_LIST.txt - This file
+

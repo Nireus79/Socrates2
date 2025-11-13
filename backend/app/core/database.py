@@ -18,6 +18,11 @@ from .config import settings
 
 logger = logging.getLogger(__name__)
 
+# Global engine caches - lazily initialized on first access
+_engine_auth = None
+_engine_specs = None
+
+
 # Create two engines for two-database architecture
 # SQLite doesn't support pool_size/max_overflow, so detect and configure appropriately
 def _create_engine(url: str):
@@ -43,9 +48,55 @@ def _create_engine(url: str):
 
     return create_engine(url, **engine_kwargs)
 
-engine_auth = _create_engine(settings.DATABASE_URL_AUTH)
 
-engine_specs = _create_engine(settings.DATABASE_URL_SPECS)
+def _get_engine_auth():
+    """Get or create auth engine (lazy initialization)."""
+    global _engine_auth
+    if _engine_auth is None:
+        try:
+            _engine_auth = _create_engine(settings.DATABASE_URL_AUTH)
+            _register_event_listeners(_engine_auth, "Auth")
+        except Exception as e:
+            logger.warning(f"Failed to create auth engine: {e}. You may need Phase 1b configuration.")
+            _engine_auth = None
+    return _engine_auth
+
+
+def _get_engine_specs():
+    """Get or create specs engine (lazy initialization)."""
+    global _engine_specs
+    if _engine_specs is None:
+        try:
+            _engine_specs = _create_engine(settings.DATABASE_URL_SPECS)
+            _register_event_listeners(_engine_specs, "Specs")
+        except Exception as e:
+            logger.warning(f"Failed to create specs engine: {e}. You may need Phase 1b configuration.")
+            _engine_specs = None
+    return _engine_specs
+
+
+# Create property-like access to engines
+class _LazyEngineProxy:
+    """Proxy that defers engine creation until first use."""
+
+    def __init__(self, getter_func):
+        self._getter = getter_func
+        self._engine = None
+
+    def __getattr__(self, name):
+        if self._engine is None:
+            self._engine = self._getter()
+        if self._engine is None:
+            raise RuntimeError(
+                "Database engine not initialized. "
+                "Phase 1b requires DATABASE_URL configuration. "
+                "See Phase 1b documentation for setup."
+            )
+        return getattr(self._engine, name)
+
+
+engine_auth = _LazyEngineProxy(_get_engine_auth)
+engine_specs = _LazyEngineProxy(_get_engine_specs)
 
 # Create session factories
 SessionLocalAuth = sessionmaker(
@@ -118,17 +169,16 @@ def get_db_specs() -> Generator[Session, None, None]:
         db.close()
 
 
-# Event listeners for connection pool debugging
-@event.listens_for(engine_auth, "connect")
-def receive_connect_auth(dbapi_conn, connection_record):
-    """Log when new auth database connection is created"""
-    logger.debug("Auth database connection established")
+# Event listeners for connection pool debugging (registered lazily when engines are created)
+def _register_event_listeners(engine, engine_name: str):
+    """Register event listeners for an engine (called when engine is first created)."""
+    try:
+        def on_connect(dbapi_conn, connection_record):
+            logger.debug(f"{engine_name} database connection established")
 
-
-@event.listens_for(engine_specs, "connect")
-def receive_connect_specs(dbapi_conn, connection_record):
-    """Log when new specs database connection is created"""
-    logger.debug("Specs database connection established")
+        event.listens_for(engine, "connect")(on_connect)
+    except Exception as e:
+        logger.debug(f"Could not register event listener for {engine_name}: {e}")
 
 
 def init_db():
