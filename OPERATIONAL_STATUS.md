@@ -56,29 +56,44 @@ Socrates is now **fully operational and tested**. All critical issues have been 
 
 ## Critical Fixes Applied
 
-### Fix #0: Database Schema Mismatch (refresh_tokens.updated_at) ✅
+### Fix #0a: Database Schema - refresh_tokens.updated_at Column Missing ✅
 
 **Problem:**
 - Login failed: `column refresh_tokens.updated_at does not exist`
 - RefreshToken model inherits `updated_at` from BaseModel
 - Initial migration (001) didn't include this column
-- **Impact:** All login attempts failed with database error
+- **Impact:** All login attempts failed
 
-**Solution Implemented:**
-- Created Migration 010 (auth branch) to add missing `updated_at` column
-- Adds index on `updated_at` for query efficiency
-- Schema now consistent with model definition
-
-**Migration Details:**
-- Revision: 010
-- Down Revision: 002
-- Adds: `updated_at` column (timestamp with timezone)
+**Solution:**
+- Created Migration 010 to add missing `updated_at` column
 - Applied successfully: auth v002 → v010
 
+### Fix #0b: Database Schema - Projects Table Column Mismatches ✅
+
+**Problem:**
+- Project creation failing: `"Failed: None"`
+- Project model expects: `current_phase`, `maturity_score`, `creator_id`, `owner_id`
+- Database had: `phase`, `maturity_level` (no creator_id, no owner_id)
+- **Impact:** All project creation attempts failed silently
+
+**Solution Implemented:**
+- Created Migration 011 (specs branch) to fix schema
+- Renamed `phase` → `current_phase`
+- Renamed `maturity_level` → `maturity_score`
+- Added `creator_id` and `owner_id` columns
+- Populated new columns from existing `user_id` values
+
+**Migration Details:**
+- Revision: 011
+- Down Revision: 009
+- Renamed 2 columns, added 2 columns, added 4 indexes
+- Applied successfully: specs v009 → v011
+
 **Verification:**
-- Database schema verified: `updated_at` now exists in `refresh_tokens` table
-- 8 columns confirmed: id, user_id, token, expires_at, is_revoked, created_at, revoked_at, updated_at
-- Login flow now functional
+- Database schema verified: 12 columns total
+- Column names now match Project model expectations
+- creator_id and owner_id properly populated
+- Project creation now functional
 
 ### Fix #1: Circular Import Resolution ✅
 
@@ -117,11 +132,13 @@ from socrates import QuestionGenerator    # Phase 1a still works
 - Specs Database: `socrates_specs` (connected)
 
 **Migrations Applied:**
-- Auth DB: Version 010 (head) - Fixed schema mismatch
-- Specs DB: Version 009 (head)
+- Auth DB: Version 010 (head) - Fixed refresh_tokens schema
+- Specs DB: Version 011 (head) - Fixed projects table schema
 - Tables: 31 total across both databases
 - Status: All current schema is at HEAD
-- Latest Fix: Added missing `updated_at` column to refresh_tokens (Migration 010)
+- Latest Fixes:
+  - Migration 010: Added missing `updated_at` to refresh_tokens
+  - Migration 011: Fixed projects table column names and added audit fields
 
 ---
 
@@ -393,14 +410,16 @@ db_specs = SessionLocalSpecs()
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| Schema Mismatch | ✅ Fixed | Added updated_at to refresh_tokens (Migration 010) |
+| Schema (refresh_tokens) | ✅ Fixed | Added updated_at column (Migration 010) |
+| Schema (projects) | ✅ Fixed | Renamed columns, added creator/owner (Migration 011) |
 | Circular Import | ✅ Fixed | Lazy loading implemented |
 | Dependencies | ✅ Complete | 40 packages installed |
 | PostgreSQL | ✅ Running | Both databases connected |
-| Migrations | ✅ Applied | Auth v010, Specs v009 (both at HEAD) |
+| Migrations | ✅ Applied | Auth v010, Specs v011 (both at HEAD) |
 | API | ✅ Ready | 159 routes, FastAPI |
 | CLI | ✅ Working | Both admin and user CLI |
-| Login Flow | ✅ Working | Schema fixed, refresh tokens operational |
+| Login Flow | ✅ Working | Schema fixed, tokens operational |
+| Project Creation | ✅ Working | Schema fixed, projects operational |
 | Tests | ✅ Passing | 487/487 (114 skipped expected) |
 | Package | ✅ Published | socrates-ai v0.4.1 on PyPI |
 
