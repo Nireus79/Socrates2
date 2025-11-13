@@ -108,6 +108,10 @@ class ProjectRepository(BaseRepository[Project]):
         """Archive a project (soft delete)."""
         return self.update_project_status(project_id, 'archived')
 
+    def restore_project(self, project_id: UUID) -> Optional[Project]:
+        """Restore an archived project back to active status."""
+        return self.update_project_status(project_id, 'active')
+
     def delete_project(self, project_id: UUID) -> bool:
         """
         Hard delete an archived project from the database.

@@ -252,6 +252,11 @@ class SocratesAPI:
         response = self._request("DELETE", f"/api/v1/projects/{project_id}")
         return response.json()
 
+    def restore_project(self, project_id: str) -> Dict[str, Any]:
+        """Restore an archived project back to active status"""
+        response = self._request("POST", f"/api/v1/projects/{project_id}/restore")
+        return response.json()
+
     def destroy_project(self, project_id: str) -> Dict[str, Any]:
         """Permanently delete an archived project (hard delete)"""
         response = self._request("POST", f"/api/v1/projects/{project_id}/destroy")
@@ -750,6 +755,7 @@ class SocratesCLI:
   /project select <id>   Select project to work with
   /project info          Show current project details
   /project archive <id>  Archive project (soft delete - reversible)
+  /project restore <id>  Restore archived project back to active
   /project destroy <id>  Permanently delete archived project (hard delete - irreversible)
 
 [bold yellow]Session Management:[/bold yellow]
@@ -1236,7 +1242,7 @@ No session required.
             return
 
         if not args:
-            self.console.print("[yellow]Usage: /project <create|select|info|archive|destroy> [args][/yellow]")
+            self.console.print("[yellow]Usage: /project <create|select|info|archive|restore|destroy> [args][/yellow]")
             return
 
         subcommand = args[0]
@@ -1473,6 +1479,75 @@ No session required.
                         if self.current_project and str(self.current_project.get("id")) == str(project_id):
                             self.current_project = None
                             self.current_session = None
+                    else:
+                        error_msg = result.get('message') or result.get('detail') or 'Unknown error'
+                        self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
+                else:
+                    self.console.print("[yellow]Cancelled[/yellow]")
+            except Exception as e:
+                self.console.print(f"[red]Error: {e}[/red]")
+
+        elif subcommand == "restore":
+            if len(args) < 2:
+                self.console.print("[yellow]Usage: /project restore <number|project_id>[/yellow]")
+                return
+
+            project_input = args[1]
+            project_id = None
+
+            # Try to resolve the input as a number or partial UUID
+            try:
+                # Load projects list once (filter to archived only)
+                response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
+                if response.status_code != 200:
+                    self.console.print("[red]✗ Failed to load projects[/red]")
+                    return
+
+                result = response.json()
+                if not result.get("success"):
+                    self.console.print("[red]✗ Failed to load projects[/red]")
+                    return
+
+                all_projects = result.get("data", {}).get("projects", [])
+                # Only show archived projects for restoration
+                projects = [p for p in all_projects if p.get("status") == "archived"]
+
+                if not projects:
+                    self.console.print("[yellow]No archived projects to restore[/yellow]")
+                    return
+
+                # Check if input is a number
+                try:
+                    choice_num = int(project_input)
+                    if 1 <= choice_num <= len(projects):
+                        project_id = str(projects[choice_num - 1].get("id"))
+                    else:
+                        self.console.print(f"[red]✗ Invalid project number (must be 1-{len(projects)})[/red]")
+                        return
+                except ValueError:
+                    # Not a number, try to match as partial or full UUID
+                    for proj in projects:
+                        if str(proj.get("id")).startswith(project_input):
+                            project_id = str(proj.get("id"))
+                            break
+                    # If no match found in archived projects, try as full UUID
+                    if not project_id:
+                        project_id = project_input
+
+                # Confirmation
+                confirm_response = Prompt.ask(
+                    f"[yellow]Restore project {project_id}?[/yellow]",
+                    choices=["y", "n", "back"],
+                    default="n"
+                )
+
+                if confirm_response.lower() == "back":
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    return
+                elif confirm_response.lower() == "y":
+                    result = self.api.restore_project(project_id)
+                    if result.get("success"):
+                        self.console.print(f"[green]✓ Project restored[/green]")
                     else:
                         error_msg = result.get('message') or result.get('detail') or 'Unknown error'
                         self.console.print(f"[red]✗ Failed: {error_msg}[/red]")

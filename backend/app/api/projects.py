@@ -570,6 +570,82 @@ def archive_project(
         )
 
 
+@router.post("/{project_id}/restore")
+def restore_project(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Restore an archived project back to active status.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with success status
+
+    Example:
+        POST /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/restore
+        Authorization: Bearer <token>
+
+        Response 200:
+        {
+            "success": true,
+            "message": "Project restored successfully",
+            "data": {
+                "project_id": "550e8400-..."
+            }
+        }
+    """
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
+        return ResponseWrapper.validation_error(
+            field="project_id",
+            reason="Invalid UUID format",
+            value=project_id
+        )
+
+    try:
+        # Get project
+        project = service.projects.get_by_id(project_uuid)
+
+        if not project:
+            return ResponseWrapper.not_found("Project", project_id)
+
+        # Validate permissions
+        if str(project.user_id) != str(current_user.id):
+            return ResponseWrapper.forbidden("Only project owner can restore project")
+
+        # Check if archived
+        if project.status != 'archived':
+            return ResponseWrapper.validation_error(
+                field="status",
+                reason="Only archived projects can be restored",
+                value=project.status
+            )
+
+        # Restore project
+        service.projects.restore_project(project_uuid)
+        service.commit_all()
+
+        return ResponseWrapper.success(
+            data={"project_id": str(project_uuid)},
+            message="Project restored successfully"
+        )
+
+    except Exception as e:
+        service.rollback_all()
+        return ResponseWrapper.internal_error(
+            message="Failed to restore project",
+            exception=e
+        )
+
+
 @router.post("/{project_id}/destroy")
 def destroy_project(
     project_id: str,
