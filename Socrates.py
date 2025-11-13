@@ -1417,41 +1417,50 @@ No session required.
 
             # Try to resolve the input as a number or partial UUID
             try:
-                # First, check if it's a number
+                # Load projects list once (filter to active only)
+                response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
+                if response.status_code != 200:
+                    self.console.print("[red]✗ Failed to load projects[/red]")
+                    return
+
+                result = response.json()
+                if not result.get("success"):
+                    self.console.print("[red]✗ Failed to load projects[/red]")
+                    return
+
+                all_projects = result.get("data", {}).get("projects", [])
+                # Only show active projects for deletion (archived are already "deleted")
+                projects = [p for p in all_projects if p.get("status") != "archived"]
+
+                # Check if input is a number
                 try:
                     choice_num = int(project_input)
-                    # Load projects list
-                    response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
-                    if response.status_code == 200:
-                        result = response.json()
-                        if result.get("success"):
-                            projects = result.get("data", {}).get("projects", [])
-                            if 1 <= choice_num <= len(projects):
-                                project_id = str(projects[choice_num - 1].get("id"))
-                            else:
-                                self.console.print(f"[red]✗ Invalid project number (must be 1-{len(projects)})[/red]")
-                                return
+                    if 1 <= choice_num <= len(projects):
+                        project_id = str(projects[choice_num - 1].get("id"))
                     else:
-                        self.console.print("[red]✗ Failed to load projects[/red]")
+                        self.console.print(f"[red]✗ Invalid project number (must be 1-{len(projects)})[/red]")
                         return
                 except ValueError:
-                    # Not a number, try to use as UUID or partial UUID
-                    # First check if it matches a partial UUID in projects list
-                    response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
-                    if response.status_code == 200:
-                        result = response.json()
-                        if result.get("success"):
-                            projects = result.get("data", {}).get("projects", [])
-                            # Try to match partial UUID
-                            for proj in projects:
-                                if str(proj.get("id")).startswith(project_input):
-                                    project_id = str(proj.get("id"))
-                                    break
-                            # If no partial match found, try as full UUID
-                            if not project_id:
-                                project_id = project_input
+                    # Not a number, try to match as partial or full UUID
+                    for proj in projects:
+                        if str(proj.get("id")).startswith(project_input):
+                            project_id = str(proj.get("id"))
+                            break
+                    # If no match found in active projects, try as full UUID (might be archived)
+                    if not project_id:
+                        project_id = project_input
 
-                if Confirm.ask(f"[red]Are you sure you want to delete project {project_id}?[/red]"):
+                # Confirmation with back support
+                confirm_response = Prompt.ask(
+                    f"[red]Delete project {project_id}?[/red]",
+                    choices=["y", "n", "back"],
+                    default="n"
+                )
+
+                if confirm_response.lower() == "back":
+                    self.console.print("[yellow]Going back...[/yellow]")
+                    return
+                elif confirm_response.lower() == "y":
                     result = self.api.delete_project(project_id)
                     if result.get("success"):
                         self.console.print(f"[green]✓ Project deleted[/green]")
@@ -1461,6 +1470,8 @@ No session required.
                     else:
                         error_msg = result.get('message') or result.get('detail') or 'Unknown error'
                         self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
+                else:
+                    self.console.print("[yellow]Cancelled[/yellow]")
             except Exception as e:
                 self.console.print(f"[red]Error: {e}[/red]")
 
