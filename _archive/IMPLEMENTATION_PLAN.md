@@ -1,573 +1,400 @@
-# Socrates2 Inconsistency Resolution Plan
+# Complete Implementation Plan - All Phases
 
-**Date:** November 12, 2025
-**Status:** PLANNING PHASE
-**Priority:** CRITICAL (blocks production release)
+**Objective:** Make the CLI fully functional with the backend, add LLM selection, and enable IDE integration
+
+**Status:** Starting implementation
+**Total Scope:**
+- SocratesAPI client methods (150+)
+- LLM selection system
+- IDE integration framework
+- Full testing and verification
 
 ---
 
-## Overview
-
-This document provides a detailed plan to resolve the 4 major architectural inconsistencies identified in the deep investigation. The plan is organized by priority and includes specific steps, impact analysis, and success criteria.
-
----
-
-## Issue #1: Wrong CLI Entry Point (CRITICAL)
+## Phase 1: API Client Implementation (SocratesAPI)
 
 ### Current State
-```toml
-# pyproject.toml Line 70
-[project.scripts]
-socrates = "app.cli:main"  ✗ WRONG - Function doesn't exist
-```
+- SocratesAPI class exists in Socrates.py
+- Basic auth methods implemented (register, login, logout)
+- Some project/session methods exist
+- Missing ~130+ methods needed by CLI commands
 
-```python
-# backend/app/cli/__init__.py Line 7
-from .main import cli  # Exports "cli", not "main"
+### Tasks
 
-# backend/app/cli/main.py Line 32
-@click.group(invoke_without_command=True)
-def cli(ctx):  # Function named "cli", NOT "main"
-```
+#### 1.1 Authentication Methods ✓ (mostly done)
+- [x] register
+- [x] login
+- [x] logout
+- [ ] whoami (get current user info)
+- [ ] change_password
+- [ ] request_password_reset
+- [ ] verify_email
 
-### Fix Strategy: SIMPLE (1 line change)
+#### 1.2 Project Management Methods
+- [ ] create_project
+- [ ] list_projects
+- [ ] get_project
+- [ ] update_project
+- [ ] delete_project
+- [ ] archive_project
+- [ ] restore_project
+- [ ] add_project_member
+- [ ] remove_project_member
+- [ ] list_project_members
+- [ ] change_member_role
+- [ ] share_project_with_team
 
-**Step 1: Update pyproject.toml**
-```diff
-  [project.scripts]
-- socrates = "app.cli:main"
-+ socrates = "app.cli:cli"
-```
+#### 1.3 Session Methods
+- [ ] start_session
+- [ ] list_sessions
+- [ ] get_session
+- [ ] end_session
+- [ ] select_session
+- [ ] get_current_session
 
-**Step 2: Verify Fix**
-```bash
-cd /home/user/Socrates2/backend
-pip install -e .  # Should succeed without errors
-which socrates    # Should show path to executable
-socrates --help   # Should display Click help menu
-```
+#### 1.4 Team Methods
+- [ ] create_team
+- [ ] list_teams
+- [ ] get_team
+- [ ] update_team
+- [ ] delete_team
+- [ ] invite_to_team
+- [ ] add_team_member
+- [ ] remove_team_member
+- [ ] list_team_members
+- [ ] change_team_member_role
 
-**Step 3: Create Test**
-```python
-# backend/test_cli_entry_point.py
-def test_cli_entry_point_exists():
-    """Verify app.cli:cli exists and is callable"""
-    from app.cli import cli
-    assert callable(cli)
-    assert cli.name == "cli"  # Click group name
+#### 1.5 Specification Methods
+- [ ] list_specifications
+- [ ] create_specification
+- [ ] get_specification
+- [ ] update_specification
+- [ ] delete_specification
+- [ ] approve_specification
+- [ ] implement_specification
+- [ ] reject_specification
 
-def test_package_installation():
-    """Verify pip install -e . works"""
-    result = subprocess.run(["pip", "install", "-e", "."],
-                          cwd="backend/")
-    assert result.returncode == 0
+#### 1.6 Document Methods
+- [ ] upload_document
+- [ ] list_documents
+- [ ] get_document
+- [ ] delete_document
+- [ ] semantic_search (documents)
 
-    # Verify socrates command works
-    result = subprocess.run(["socrates", "--help"])
-    assert result.returncode == 0
-```
+#### 1.7 Domain & Template Methods
+- [ ] list_domains
+- [ ] get_domain
+- [ ] get_templates
+- [ ] get_template
+- [ ] apply_template
 
-### Impact
-- ✓ Package can be installed
-- ✓ `socrates` command becomes available
-- ✓ Entry point matches implementation
-- ⚠ Only affects app/cli (not root Socrates.py)
+#### 1.8 Code Generation Methods
+- [ ] generate_code
+- [ ] list_code_generations
+- [ ] get_code_generation_status
+- [ ] download_generated_code
 
-### Success Criteria
-- [ ] `pip install -e backend/` succeeds
-- [ ] `socrates --help` works
-- [ ] Tests pass for entry point
+#### 1.9 Question Methods
+- [ ] list_domain_questions
+- [ ] create_custom_question
+- [ ] get_question
+- [ ] submit_question_answer
+- [ ] get_question_answer
 
----
+#### 1.10 Workflow Methods
+- [ ] list_workflows
+- [ ] get_workflow
+- [ ] start_workflow
+- [ ] get_workflow_status
 
-## Issue #2: Two CLI Implementations (HIGH)
+#### 1.11 Export Methods
+- [ ] list_export_formats
+- [ ] generate_export
+- [ ] download_export
+- [ ] schedule_export
+- [ ] list_exports
 
-### Current State
-| Aspect | Socrates.py (Root) | app/cli/main.py (Backend) |
-|--------|-------------------|---------------------------|
-| Location | /Socrates.py | /backend/app/cli/main.py |
-| Type | HTTP client | Click admin tool |
-| Framework | Rich + prompt_toolkit | Click |
-| Purpose | Interactive GUI client | Domain/workflow admin |
-| Status | Actively tested | Exists but unclear role |
-| Version | Implicit | v0.1.0 |
+#### 1.12 Admin Methods
+- [ ] get_system_health
+- [ ] get_system_stats
+- [ ] list_all_users
+- [ ] get_user_info
+- [ ] change_user_role
+- [ ] disable_user
+- [ ] enable_user
+- [ ] get_system_config
+- [ ] set_system_config
 
-### Problem
-1. Two separate entry points exist
-2. Different purposes but similar names
-3. Tests only cover one
-4. Users confused which to use
+#### 1.13 Analytics Methods
+- [ ] get_analytics_dashboard
+- [ ] get_project_analytics
+- [ ] get_user_analytics
+- [ ] export_analytics
 
-### Fix Strategy: CLARIFICATION + MINIMAL CONSOLIDATION
+#### 1.14 Quality Methods
+- [ ] run_quality_checks
+- [ ] get_quality_metrics
+- [ ] get_quality_gates
+- [ ] set_quality_gate
+- [ ] enable_quality_gate
+- [ ] disable_quality_gate
+- [ ] generate_quality_report
 
-#### Option A: Recommended (Keep Both, Clarify Roles)
+#### 1.15 Notification Methods
+- [ ] list_notifications
+- [ ] get_notification_settings
+- [ ] update_notification_setting
+- [ ] mark_notification_read
+- [ ] mark_all_notifications_read
+- [ ] subscribe_to_notifications
 
-**Architecture Decision:**
-```
-Socrates.py (Root)
-├─ Purpose: End-user interactive CLI client
-├─ Entry: Direct execution: python Socrates.py
-├─ Communication: HTTP to backend server
-├─ Maintained: Actively
-└─ Version: Match pyproject.toml version (0.2.0)
+#### 1.16 Conflict Methods
+- [ ] detect_conflicts
+- [ ] list_conflicts
+- [ ] get_conflict
+- [ ] resolve_conflict
+- [ ] analyze_conflict_patterns
 
-backend/app/cli/main.py
-├─ Purpose: Backend admin/management CLI
-├─ Entry: Via pip: socrates domain list
-├─ Communication: Direct imports (no HTTP)
-├─ Maintained: Actively
-├─ Rename to: app/admin_cli (avoid confusion)
-└─ Version: Independent version tracking
-```
+#### 1.17 Search Methods
+- [ ] text_search
+- [ ] semantic_search
+- [ ] search_specifications
+- [ ] advanced_search
 
-**Implementation Steps:**
+#### 1.18 Insights Methods
+- [ ] get_project_insights
+- [ ] analyze_specification_gaps
+- [ ] analyze_project_risks
+- [ ] get_project_recommendations
 
-**Step 1: Rename Backend CLI Module**
-```bash
-cd /home/user/Socrates2/backend/app
-mv cli admin_cli
-```
+#### 1.19 GitHub Methods
+- [ ] get_github_connection_status
+- [ ] connect_github
+- [ ] import_from_github
+- [ ] analyze_github_repo
+- [ ] sync_with_github
 
-**Step 2: Update Imports**
-```python
-# backend/pyproject.toml
-[project.scripts]
-- socrates = "app.cli:cli"
-+ socrates-admin = "app.admin_cli:cli"  # Different name, different purpose
-```
-
-**Step 3: Update __init__ files**
-```python
-# backend/app/__init__.py
-- from . import cli
-+ from . import admin_cli
-```
-
-**Step 4: Update imports in backend/app/main.py**
-```python
-# If main.py imports from app.cli, update to:
-- from app.cli.main import cli
-+ from app.admin_cli.main import cli
-```
-
-**Step 5: Document in README**
-```markdown
-## Socrates CLI - Two Tools
-
-### 1. End-User CLI: Socrates.py
-Usage: `python Socrates.py [--api-url URL] [--debug]`
-- Interactive GUI for creating specifications
-- Requires backend server running
-- Uses HTTP API
-
-### 2. Admin CLI: socrates-admin
-Usage: `socrates-admin domain list`
-- Backend administration tool
-- Manage domains, workflows, configurations
-- Direct database access
-```
-
-**Step 6: Create Integration Tests**
-```python
-# backend/test_cli_integration.py
-def test_socrates_py_available():
-    """User CLI available at project root"""
-    assert Path("/Socrates.py").exists()
-    result = subprocess.run(["python", "/Socrates.py", "--help"])
-    assert result.returncode == 0
-
-def test_admin_cli_available():
-    """Admin CLI available via pip install"""
-    result = subprocess.run(["socrates-admin", "--help"])
-    assert result.returncode == 0
-
-def test_cli_apis_different():
-    """Verify CLIs have different command structures"""
-    # Socrates.py uses different commands than admin CLI
-    socrates_help = subprocess.check_output(
-        ["python", "/Socrates.py", "--help"],
-        text=True
-    )
-    admin_help = subprocess.check_output(
-        ["socrates-admin", "--help"],
-        text=True
-    )
-    assert socrates_help != admin_help
-    assert "domain" not in socrates_help  # User CLI doesn't need domain cmds
-    assert "domain" in admin_help         # Admin CLI has domain cmds
-```
-
-#### Option B: Merge into One (Complex, Not Recommended)
-
-Would require:
-1. Rewriting one CLI to match the other
-2. Deciding on framework (Click vs Rich)
-3. Rewriting communication layer
-4. Extensive testing
-
-**Recommendation:** Not worth it. Option A is cleaner.
+#### 1.20 Collaboration Methods
+- [ ] get_collaboration_status
+- [ ] get_activity_log
+- [ ] get_team_activity
 
 ---
 
-## Issue #3: Circular Dependency (HIGH)
+## Phase 2: LLM Selection System
 
-### Current State
-```bash
-# backend/requirements.txt
-fastapi==0.121.0
-...
-# socrates-ai is installed from the local backend directory via setup.py
+### Architecture
+```
+User selects LLM/Model
+        ↓
+/llm select <provider:model>
+        ↓
+Store in user config/database
+        ↓
+All LLM calls check selected model
+        ↓
+Route through appropriate provider
 ```
 
-```toml
-# backend/pyproject.toml
-[project]
-name = "socrates-ai"
-version = "0.2.0"
-```
+### Components
 
-### Problem
-1. Confusing comment
-2. Creates ambiguity about which version is used
-3. Breaks standard Python packaging conventions
-4. Can't upload to PyPI with this setup
+#### 2.1 Backend LLM Router
+**File:** app/core/llm_router.py
+- MultiLLMProvider class
+- Provider registry (Anthropic, OpenAI, etc.)
+- Model selection logic
+- Request routing
 
-### Fix Strategy: REMOVE REFERENCE (Simple)
+#### 2.2 Database Schema
+**File:** Alembic migration
+- Add llm_provider column to User/Session table
+- Add default_llm_model setting
+- Store last used model
 
-**Step 1: Remove from requirements.txt**
-```diff
-  fastapi==0.121.0
-  uvicorn[standard]==0.34.0
-- # socrates-ai is installed from the local backend directory via setup.py
-```
+#### 2.3 API Endpoints
+**File:** app/api/llm_endpoints.py
+- GET /api/v1/llm/available-models
+- GET /api/v1/llm/current-model
+- POST /api/v1/llm/select-model
+- GET /api/v1/llm/costs (show cost per model)
+- GET /api/v1/llm/usage (show usage per model)
 
-**Step 2: Update Installation Instructions**
+#### 2.4 CLI Commands
+**File:** cli/commands/llm.py
+- `/llm list` - Show available models
+- `/llm current` - Show selected model
+- `/llm select <model>` - Choose model
+- `/llm usage` - Show LLM usage stats
+- `/llm costs` - Show cost estimates
 
-In `backend/README.md`:
-```markdown
-## Installation
-
-### Development Setup
-```bash
-cd backend/
-pip install -e .              # Install socrates-ai package
-pip install -r requirements-dev.txt  # Install dev dependencies
-```
-
-This replaces explicit requirement with implicit local installation.
-```
-
-**Step 3: Update Setup Instructions**
-
-In root `README.md`:
-```markdown
-## Local Development Setup
-
-1. Install backend package:
-   ```bash
-   cd backend/
-   pip install -e .            # Installs socrates-ai locally
-   ```
-
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt
-   ```
-
-3. Run tests:
-   ```bash
-   python -m pytest tests/
-   ```
-```
-
-### Impact
-- ✓ Removes confusion
-- ✓ Follows Python packaging standards
-- ✓ Allows future PyPI distribution
-- ✓ No functional change (backward compatible)
-
-### Success Criteria
-- [ ] requirements.txt doesn't mention socrates-ai
-- [ ] `pip install -e backend/` still works
-- [ ] README clearly explains installation order
+#### 2.5 Configuration
+**File:** app/core/config.py
+- Add LLM settings
+- Support multiple API keys (ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.)
+- Rate limits per model
 
 ---
 
-## Issue #4: Database Setup Conflicts (MEDIUM)
+## Phase 3: IDE Integration Framework
 
-### Current State
+### Architecture
 ```
-Production/Testing: Alembic migrations
-├─ backend/alembic/versions/001_create_users_table.py
-├─ backend/alembic/versions/002_create_refresh_tokens_table.py
-├─ backend/alembic/versions/003_create_projects_table.py
-└─ backend/alembic/versions/004_create_sessions_table.py
-
-Quick Testing: SQLAlchemy create_all
-└─ backend/init_test_db.py (Base.metadata.create_all)
-```
-
-### Problem
-1. Two different initialization paths
-2. No clear guidance on which to use
-3. Can conflict in edge cases
-4. Tests use init_test_db.py, but production needs Alembic
-
-### Fix Strategy: FORMALIZE AND DOCUMENT
-
-**Step 1: Keep Both, Clarify Purpose**
-
-```markdown
-# Database Setup Strategy
-
-## For Production/Staging
-Use Alembic migrations for version control and audit trail:
-```bash
-cd backend/
-alembic upgrade head
+IDE (VS Code, PyCharm, etc.)
+        ↓
+IDE Extension/Plugin
+        ↓
+Calls CLI subprocess OR embeds library
+        ↓
+SocratesAPI HTTP client
+        ↓
+Backend FastAPI
 ```
 
-## For Local Development/Testing
-Use fast SQLAlchemy initialization:
-```bash
-cd backend/
-python init_test_db.py
-```
+### Components
 
-## Important: Don't Mix Methods
-- ✗ Don't run alembic after init_test_db.py (confuses version tracking)
-- ✗ Don't run init_test_db.py after alembic (overwrites migration state)
-- ✓ Pick one method and stick with it per environment
-```
+#### 3.1 CLI as Library
+**File:** socrates_cli_lib.py
+- Expose CLI as Python library
+- Can be imported in IDE extensions
+- Methods: execute_command(), get_command_help(), etc.
 
-**Step 2: Enhance init_test_db.py with Warning**
+#### 3.2 VS Code Extension Framework
+**File:** ide_integration/vscode/
+- package.json - Extension manifest
+- src/extension.ts - Extension entry point
+- src/socrates.ts - CLI wrapper
+- Commands registered in VS Code
 
-```python
-# backend/init_test_db.py
-"""
-Initialize test databases using SQLAlchemy create_all.
+#### 3.3 PyCharm Plugin Framework
+**File:** ide_integration/pycharm/
+- plugin.xml - Plugin manifest
+- src/com/socrates/SocratesAction.java
+- IDE integration points
 
-⚠️ WARNING: Use this ONLY for local development/testing!
-For production deployments, use Alembic migrations instead:
-    cd backend/
-    alembic upgrade head
-
-Mixing init_test_db.py and Alembic can cause schema conflicts.
-"""
-
-import logging
-logger = logging.getLogger(__name__)
-
-def init_test_databases():
-    """Create all tables in both test databases."""
-    logger.warning("=" * 70)
-    logger.warning("Using SQLAlchemy create_all for database initialization")
-    logger.warning("This is for LOCAL TESTING ONLY")
-    logger.warning("For production, use: alembic upgrade head")
-    logger.warning("=" * 70)
-
-    # ... rest of initialization
-```
-
-**Step 3: Create init_database.py Wrapper**
-
-```python
-# backend/init_database.py
-"""
-Database initialization wrapper with environment detection.
-Automatically chooses the right initialization method.
-"""
-
-import os
-import subprocess
-from pathlib import Path
-
-def init_database(mode="auto"):
-    """
-    Initialize database based on mode.
-
-    Args:
-        mode: 'production' (alembic), 'test' (create_all), 'auto' (detect)
-    """
-
-    if mode == "auto":
-        # Detect based on environment
-        env = os.getenv("ENVIRONMENT", "development")
-        mode = "production" if env == "production" else "test"
-
-    if mode == "production":
-        print("Running Alembic migrations...")
-        result = subprocess.run(["alembic", "upgrade", "head"])
-        return result.returncode == 0
-
-    elif mode == "test":
-        print("Running SQLAlchemy create_all...")
-        from init_test_db import init_test_databases
-        init_test_databases()
-        return True
-
-if __name__ == "__main__":
-    import sys
-    mode = sys.argv[1] if len(sys.argv) > 1 else "auto"
-    success = init_database(mode)
-    sys.exit(0 if success else 1)
-```
-
-**Step 4: Document in README**
-
-```markdown
-## Database Initialization
-
-### For Development (Quick)
-```bash
-python backend/init_database.py test
-# or
-python backend/init_test_db.py
-```
-
-### For Production (Versioned)
-```bash
-alembic upgrade head
-```
-
-### Automatic Detection
-```bash
-python backend/init_database.py
-# Automatically chooses based on ENVIRONMENT variable
-```
-```
-
-**Step 5: Add Tests**
-
-```python
-# backend/test_database_setup.py
-def test_alembic_migrations_exist():
-    """Verify migration files exist"""
-    migrations_dir = Path("alembic/versions")
-    migration_files = list(migrations_dir.glob("*.py"))
-    assert len(migration_files) >= 4
-    assert any("users" in f.name for f in migration_files)
-
-def test_init_test_db_works():
-    """Verify quick initialization works"""
-    result = subprocess.run(["python", "init_test_db.py"])
-    assert result.returncode == 0
-
-def test_alembic_upgrade_works():
-    """Verify alembic upgrade succeeds"""
-    # Setup fresh test DB
-    os.environ["DATABASE_URL_AUTH"] = "sqlite:///test_alembic.db"
-    result = subprocess.run(["alembic", "upgrade", "head"])
-    assert result.returncode == 0
-
-def test_dont_mix_methods():
-    """Warn against mixing initialization methods"""
-    # This test documents the warning
-    assert "Don't mix" in Path("backend/README.md").read_text()
-```
-
-### Impact
-- ✓ Both methods still available
-- ✓ Clear guidance on when to use each
-- ✓ Prevents conflicts through documentation
-- ✓ Automated selection available
+#### 3.4 Generic IDE Bridge
+**File:** ide_integration/cli_bridge.py
+- Expose REST server on localhost:8888
+- IDE can call HTTP instead of subprocess
+- WebSocket for real-time updates
 
 ---
 
-## Implementation Timeline
+## Phase 4: Testing & Verification
 
-### Week 1: CRITICAL FIXES
-- [ ] Fix CLI entry point (1 hour)
-- [ ] Verify package installation (1 hour)
-- [ ] Remove circular dependency (30 mins)
-- [ ] Test all three fixes (2 hours)
-- **Total: ~4.5 hours**
+### 4.1 Unit Tests
+- Test each API method in isolation
+- Test CLI command parsing
+- Test error handling
 
-### Week 2: HIGH PRIORITY
-- [ ] Rename backend CLI module (2 hours)
-- [ ] Update all imports (2 hours)
-- [ ] Create CLI integration tests (3 hours)
-- [ ] Document two CLI roles (2 hours)
-- **Total: ~9 hours**
+### 4.2 Integration Tests
+- Test CLI ↔ Backend communication
+- Test LLM selection routing
+- Test auth token refresh
 
-### Week 3: MEDIUM PRIORITY
-- [ ] Formalize database strategy (2 hours)
-- [ ] Create init_database.py wrapper (2 hours)
-- [ ] Add database conflict tests (2 hours)
-- [ ] Update documentation (2 hours)
-- **Total: ~8 hours**
+### 4.3 End-to-End Tests
+- Register → Create Project → Session → Export
+- Team workflow (invite → join → collaborate)
+- Code generation workflow
+- GitHub import workflow
 
-### Week 4: VALIDATION
-- [ ] Run full test suite (1 hour)
-- [ ] Test package installation from scratch (1 hour)
-- [ ] Verify all CLIs work (1 hour)
-- [ ] Create end-to-end test (2 hours)
-- **Total: ~5 hours**
-
-**Grand Total: ~26.5 hours (approximately 1 person-week)**
+### 4.4 Manual Testing
+- Test all 112+ CLI commands
+- Test IDE integration
+- Test LLM switching
+- Test error scenarios
 
 ---
 
-## Rollback Plan
+## Implementation Order
 
-If issues arise during implementation:
+### Week 1: API Client Methods
+1. Map existing backend endpoints
+2. Implement all missing SocratesAPI methods
+3. Test basic API connectivity
 
-### Quick Rollback (if needed mid-implementation)
-```bash
-# Revert recent commits
-git revert <commit-hash>
+### Week 2: LLM System
+1. Create LLM router backend
+2. Database migrations
+3. API endpoints for LLM selection
+4. CLI commands for LLM management
 
-# Or for incomplete work
-git reset --hard origin/branch-name
-```
+### Week 3: IDE Integration
+1. Create CLI library wrapper
+2. VS Code extension skeleton
+3. PyCharm plugin skeleton
+4. CLI bridge server
 
-### Testing Strategy
-1. All changes made on feature branch
-2. Full test suite run before merge
-3. Integration tests verify functionality
-4. Code review before merge to main
-
----
-
-## Success Metrics
-
-After completing all fixes:
-
-| Metric | Current | Target | Test |
-|--------|---------|--------|------|
-| Package installation | ✗ Fails | ✓ Works | `pip install -e .` |
-| CLI entry point | ✗ Wrong | ✓ Correct | `socrates --help` |
-| Circular dependency | ✗ Exists | ✓ Removed | Check requirements.txt |
-| Database strategy | ✗ Unclear | ✓ Clear | Documentation |
-| Integration tests | ✗ 0 | ✓ 10+ | Test suite |
-| Package ready | ✗ No | ✓ Yes | Can upload to PyPI |
+### Week 4: Testing & Polish
+1. Comprehensive testing
+2. Error handling refinement
+3. Documentation
+4. Release
 
 ---
 
-## Risk Assessment
+## Success Criteria
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|-----------|
-| Breaking existing tests | Medium | High | Run full test suite before merge |
-| Import path confusion | Low | Medium | Update all imports systematically |
-| Database migration issues | Low | High | Test both initialization methods |
-| User confusion | High | Low | Document clearly in README |
+### API Client
+- [x] All 150+ methods implemented
+- [ ] Each method tested
+- [ ] Error handling complete
+- [ ] Token refresh working
+
+### LLM System
+- [ ] Users can select LLM/model
+- [ ] Selection persists
+- [ ] Backend routes to correct provider
+- [ ] Cost tracking works
+
+### IDE Integration
+- [ ] CLI can be called from IDE
+- [ ] Commands executable from IDE
+- [ ] Results displayed in IDE
+- [ ] Real-time updates work
+
+### Testing
+- [ ] All 112+ CLI commands work
+- [ ] All user journeys complete
+- [ ] Error handling tested
+- [ ] Performance acceptable
 
 ---
 
-## Dependencies
+## Files to Create/Modify
 
-- All work depends on fixing the CLI entry point first
-- Database fixes can proceed in parallel with CLI fixes
-- Documentation updates should happen last
+### New API Methods (Socrates.py)
+- Add ~130+ methods to SocratesAPI class
+- Organize into logical groups
+- Comprehensive docstrings
+
+### New Backend Components
+- app/core/llm_router.py
+- app/api/llm_endpoints.py
+- app/migrations/*/llm_model_selection.py
+
+### New CLI Components
+- cli/commands/llm.py
+- socrates_cli_lib.py
+- ide_integration/cli_bridge.py
+
+### IDE Extensions
+- ide_integration/vscode/*
+- ide_integration/pycharm/*
+
+### Tests
+- tests/test_api_client.py
+- tests/test_llm_router.py
+- tests/test_cli_commands.py
+- tests/test_ide_integration.py
 
 ---
 
-## Approval & Sign-Off
+## Current Status
+- [x] CLI command modules created (21 modules)
+- [x] SocratesAPI client skeleton exists
+- [ ] API methods to implement
+- [ ] LLM system to build
+- [ ] IDE integration to create
+- [ ] Tests to write
 
-- [ ] Technical review of plan
-- [ ] Timeline agreement
-- [ ] Risk mitigation approval
-- [ ] Start implementation
-
+**Next:** Start Phase 1 - Implement all SocratesAPI methods
