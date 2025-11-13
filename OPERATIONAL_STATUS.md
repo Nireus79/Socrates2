@@ -56,6 +56,30 @@ Socrates is now **fully operational and tested**. All critical issues have been 
 
 ## Critical Fixes Applied
 
+### Fix #0: Database Schema Mismatch (refresh_tokens.updated_at) ✅
+
+**Problem:**
+- Login failed: `column refresh_tokens.updated_at does not exist`
+- RefreshToken model inherits `updated_at` from BaseModel
+- Initial migration (001) didn't include this column
+- **Impact:** All login attempts failed with database error
+
+**Solution Implemented:**
+- Created Migration 010 (auth branch) to add missing `updated_at` column
+- Adds index on `updated_at` for query efficiency
+- Schema now consistent with model definition
+
+**Migration Details:**
+- Revision: 010
+- Down Revision: 002
+- Adds: `updated_at` column (timestamp with timezone)
+- Applied successfully: auth v002 → v010
+
+**Verification:**
+- Database schema verified: `updated_at` now exists in `refresh_tokens` table
+- 8 columns confirmed: id, user_id, token, expires_at, is_revoked, created_at, revoked_at, updated_at
+- Login flow now functional
+
 ### Fix #1: Circular Import Resolution ✅
 
 **Problem:**
@@ -93,10 +117,11 @@ from socrates import QuestionGenerator    # Phase 1a still works
 - Specs Database: `socrates_specs` (connected)
 
 **Migrations Applied:**
-- Auth DB: Version 002 (head)
+- Auth DB: Version 010 (head) - Fixed schema mismatch
 - Specs DB: Version 009 (head)
 - Tables: 31 total across both databases
 - Status: All current schema is at HEAD
+- Latest Fix: Added missing `updated_at` column to refresh_tokens (Migration 010)
 
 ---
 
@@ -368,12 +393,14 @@ db_specs = SessionLocalSpecs()
 
 | Component | Status | Details |
 |-----------|--------|---------|
+| Schema Mismatch | ✅ Fixed | Added updated_at to refresh_tokens (Migration 010) |
 | Circular Import | ✅ Fixed | Lazy loading implemented |
 | Dependencies | ✅ Complete | 40 packages installed |
 | PostgreSQL | ✅ Running | Both databases connected |
-| Migrations | ✅ Applied | Auth v002, Specs v009 |
+| Migrations | ✅ Applied | Auth v010, Specs v009 (both at HEAD) |
 | API | ✅ Ready | 159 routes, FastAPI |
 | CLI | ✅ Working | Both admin and user CLI |
+| Login Flow | ✅ Working | Schema fixed, refresh tokens operational |
 | Tests | ✅ Passing | 487/487 (114 skipped expected) |
 | Package | ✅ Published | socrates-ai v0.4.1 on PyPI |
 
