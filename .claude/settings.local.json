@@ -12,7 +12,8 @@
       "Bash(pip install:*)",
       "Bash(curl:*)",
       "Bash(python -m twine:*)",
-      "Bash(python -m zipfile:*)"
+      "Bash(python -m zipfile:*)",
+      "Bash(git tag:*)"
     ],
     "deny": [],
     "ask": []

@@ -8,7 +8,7 @@ version = "0.4.1"
 description = "AI-Powered Specification Assistant - Complete Framework with Agents, Domains, and Multi-LLM Support"
 readme = "README.md"
 requires-python = ">=3.12"
-license = {text = "MIT"}
+license = {file = "LICENSE"}
 authors = [
     {name = "Socrates Team", email = "info@socrates.io"}
 ]
@@ -84,11 +84,12 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/socrates/socrates"
-Documentation = "https://github.com/socrates/socrates/blob/main/backend/README.md"
-Repository = "https://github.com/socrates/socrates"
-Issues = "https://github.com/socrates/socrates/issues"
-Changelog = "https://github.com/socrates/socrates/blob/main/backend/CHANGELOG.md"
+Homepage = "https://github.com/Nireus79/Socrates"
+Documentation = "https://github.com/Nireus79/Socrates/blob/master/backend/README.md"
+Repository = "https://github.com/Nireus79/Socrates"
+Issues = "https://github.com/Nireus79/Socrates/issues"
+Changelog = "https://github.com/Nireus79/Socrates/blob/master/CHANGELOG.md"
+"Security Advisory" = "https://github.com/Nireus79/Socrates/security/advisories"
 
 [tool.setuptools]
 packages = ["app", "socrates"]
