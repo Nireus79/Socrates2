@@ -1014,16 +1014,14 @@ def list_user_sessions(
 
 class CreateProjectSessionRequest(BaseModel):
     """Request model for creating a session under a project."""
-    name: str
-    description: str
-    status: str = "active"
+    mode: str = "socratic"  # 'socratic' or 'direct_chat'
 
 
 class UpdateProjectSessionRequest(BaseModel):
     """Request model for updating a session under a project."""
-    status: str = None
-    name: str = None
-    description: str = None
+    status: Optional[str] = None  # 'active', 'paused', 'completed'
+    mode: Optional[str] = None  # 'socratic' or 'direct_chat'
+    ended_at: Optional[str] = None  # ISO format timestamp
 
 
 @project_sessions_router.get("")
@@ -1114,10 +1112,9 @@ def create_project_session(
 
     # Create session
     session = SessionModel(
-        project_id=project_id,
-        name=request.name,
-        description=request.description,
-        status=request.status,
+        project_id=UUID(project_id),
+        mode=request.mode,
+        status='active',  # default status
         started_at=datetime.now(timezone.utc)
     )
 
@@ -1128,9 +1125,9 @@ def create_project_session(
     return {
         "id": str(session.id),
         "project_id": str(session.project_id),
-        "name": request.name,
-        "description": request.description,
-        "status": request.status,
+        "mode": session.mode,
+        "status": session.status,
+        "started_at": session.started_at.isoformat() if session.started_at else None,
         "created_at": session.created_at.isoformat() if session.created_at else None
     }
 
@@ -1244,10 +1241,12 @@ def update_project_session(
     # Update fields if provided
     if request.status is not None:
         session.status = request.status
-    if request.name is not None:
-        session.name = request.name
-    if request.description is not None:
-        session.description = request.description
+    if request.mode is not None:
+        session.mode = request.mode
+    if request.ended_at is not None:
+        # Parse ISO format timestamp
+        from datetime import datetime
+        session.ended_at = datetime.fromisoformat(request.ended_at.replace('Z', '+00:00'))
 
     db.commit()
     db.refresh(session)
@@ -1255,6 +1254,9 @@ def update_project_session(
     return {
         "id": str(session.id),
         "project_id": str(session.project_id),
+        "mode": session.mode,
         "status": session.status,
+        "started_at": session.started_at.isoformat() if session.started_at else None,
+        "ended_at": session.ended_at.isoformat() if session.ended_at else None,
         "created_at": session.created_at.isoformat() if session.created_at else None
     }
