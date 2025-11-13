@@ -91,29 +91,25 @@ from app.core.models import (
 # See Phase 1b documentation for details.
 
 # Configuration & Dependency Injection
-# Commented out - requires environment configuration
-# from app.core.config import Settings, get_settings
-# from app.core.dependencies import ServiceContainer
+from app.core.config import Settings, get_settings
+from app.core.dependencies import ServiceContainer
 
 # Database connections
-# Commented out - requires environment configuration
-# from app.core.database import (
-#     engine_auth, engine_specs, SessionLocalAuth, SessionLocalSpecs,
-#     ScopedSessionAuth, ScopedSessionSpecs, Base, get_db_auth, get_db_specs,
-#     init_db, close_db_connections,
-# )
+from app.core.database import (
+    engine_auth, engine_specs, SessionLocalAuth, SessionLocalSpecs,
+    ScopedSessionAuth, ScopedSessionSpecs, Base, get_db_auth, get_db_specs,
+    init_db, close_db_connections,
+)
 
 # Security & JWT
-# Commented out - requires environment configuration
-# from app.core.security import (
-#     create_access_token, decode_access_token, create_refresh_token,
-#     validate_refresh_token, get_current_user, get_current_active_user,
-#     get_current_admin_user, oauth2_scheme,
-# )
+from app.core.security import (
+    create_access_token, decode_access_token, create_refresh_token,
+    validate_refresh_token, get_current_user, get_current_active_user,
+    get_current_admin_user, oauth2_scheme,
+)
 
 # NLU Service
-# Commented out - requires environment configuration
-# from app.core.nlu_service import NLUService, Intent, create_nlu_service
+from app.core.nlu_service import NLUService, Intent, create_nlu_service
 
 # ============================================================================
 # Phase 2: ADVANCED FEATURES EXPORTS (Some require configuration)
@@ -217,22 +213,40 @@ __all__ = [
     "questions_db_to_data",
     "conflicts_db_to_data",
 
-    # ========== PHASE 1b: INFRASTRUCTURE (Requires configuration - commented out) ==========
-    # To use Phase 1b exports, configure environment variables and uncomment imports above:
-    # - DATABASE_URL_AUTH
-    # - DATABASE_URL_SPECS
-    # - SECRET_KEY
-    # - ANTHROPIC_API_KEY
-    #
-    # Uncomment imports and add these to __all__:
-    # "Settings", "get_settings", "ServiceContainer",
-    # "engine_auth", "engine_specs", "SessionLocalAuth", "SessionLocalSpecs",
-    # "ScopedSessionAuth", "ScopedSessionSpecs", "Base", "get_db_auth", "get_db_specs",
-    # "init_db", "close_db_connections",
-    # "create_access_token", "decode_access_token", "create_refresh_token",
-    # "validate_refresh_token", "get_current_user", "get_current_active_user",
-    # "get_current_admin_user", "oauth2_scheme",
-    # "NLUService", "Intent", "create_nlu_service",
+    # ========== PHASE 1b: INFRASTRUCTURE (Requires configuration) ==========
+
+    # Configuration
+    "Settings",
+    "get_settings",
+    "ServiceContainer",
+
+    # Database
+    "engine_auth",
+    "engine_specs",
+    "SessionLocalAuth",
+    "SessionLocalSpecs",
+    "ScopedSessionAuth",
+    "ScopedSessionSpecs",
+    "Base",
+    "get_db_auth",
+    "get_db_specs",
+    "init_db",
+    "close_db_connections",
+
+    # Security
+    "create_access_token",
+    "decode_access_token",
+    "create_refresh_token",
+    "validate_refresh_token",
+    "get_current_user",
+    "get_current_active_user",
+    "get_current_admin_user",
+    "oauth2_scheme",
+
+    # NLU Service
+    "NLUService",
+    "Intent",
+    "create_nlu_service",
 
     # ========== PHASE 2: ADVANCED FEATURES (Requires configuration - commented out) ==========
     # Uncomment and configure environment to use:
