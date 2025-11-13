@@ -2,9 +2,11 @@
 LLM API endpoints.
 
 Provides:
-- List LLM providers
+- List available LLM models
+- Get/set current LLM selection
 - Manage API keys
 - Get usage statistics
+- Get cost information
 """
 from typing import Any, Dict, Optional
 
@@ -12,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ..agents.orchestrator import get_orchestrator
+from ..core.llm_router import get_llm_router
 from ..core.database import get_db_auth, get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
@@ -26,50 +28,162 @@ class AddAPIKeyRequest(BaseModel):
     api_key: str
 
 
-@router.get("/providers")
-def list_providers(
+@router.get("/available")
+def list_available_models(
     current_user: User = Depends(get_current_active_user)
 ) -> Dict[str, Any]:
     """
-    List available LLM providers.
+    List all available LLM models grouped by provider.
 
-    Args:
-        current_user: Authenticated user
-
-    Returns:
-        {
-            'success': bool,
-            'providers': List[dict]
-        }
+    Returns all available LLM providers and their models with pricing and capabilities.
 
     Example:
-        GET /api/v1/llm/providers
+        GET /api/v1/llm/available
         Authorization: Bearer <token>
 
         Response:
         {
             "success": true,
-            "providers": [
-                {
-                    "id": "claude",
-                    "name": "Anthropic Claude",
-                    "models": [...],
-                    "requires_api_key": false,
+            "data": {
+                "providers": {
+                    "anthropic": [
+                        {
+                            "name": "claude-3.5-sonnet",
+                            "description": "Latest Claude model",
+                            "context_window": 200000,
+                            "max_output_tokens": 4096,
+                            "cost_per_1k_input": 0.003,
+                            "cost_per_1k_output": 0.015,
+                            "capabilities": ["text", "vision", "code", "analysis"]
+                        },
+                        ...
+                    ],
+                    "openai": [...],
                     ...
-                },
-                ...
-            ]
+                }
+            }
         }
     """
-    orchestrator = get_orchestrator()
+    llm_router = get_llm_router()
+    models = llm_router.get_available_models()
 
-    result = orchestrator.route_request(
-        agent_id='llm',
-        action='list_providers',
-        data={}
-    )
+    return {
+        "success": True,
+        "data": {
+            "providers": models
+        }
+    }
 
-    return result
+
+@router.get("/current")
+def get_current_model(
+    current_user: User = Depends(get_current_active_user)
+) -> Dict[str, Any]:
+    """
+    Get currently selected LLM model for the user.
+
+    Returns the user's currently selected LLM provider and model.
+
+    Example:
+        GET /api/v1/llm/current
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "provider": "anthropic",
+                "model": "claude-3.5-sonnet",
+                "description": "Latest Claude model",
+                "context_window": 200000,
+                "cost_per_1k_input": 0.003,
+                "cost_per_1k_output": 0.015,
+                "selected_at": "2025-11-13T12:00:00Z"
+            }
+        }
+    """
+    llm_router = get_llm_router()
+    return llm_router.get_user_model(current_user.id)
+
+
+class SelectLLMRequest(BaseModel):
+    """Request model for selecting LLM provider and model"""
+    provider: str
+    model: str
+
+
+@router.post("/select")
+def select_model(
+    request: SelectLLMRequest,
+    current_user: User = Depends(get_current_active_user)
+) -> Dict[str, Any]:
+    """
+    Select LLM provider and model for the user.
+
+    Allows user to choose which LLM provider and model to use for future interactions.
+
+    Example:
+        POST /api/v1/llm/select
+        Authorization: Bearer <token>
+        {
+            "provider": "anthropic",
+            "model": "claude-3.5-sonnet"
+        }
+
+        Response:
+        {
+            "success": true,
+            "message": "Selected anthropic claude-3.5-sonnet",
+            "data": {
+                "provider": "anthropic",
+                "model": "claude-3.5-sonnet",
+                "selected_at": "2025-11-13T12:00:00Z"
+            }
+        }
+    """
+    llm_router = get_llm_router()
+    return llm_router.set_user_model(current_user.id, request.provider, request.model)
+
+
+@router.get("/costs")
+def get_llm_costs(
+    current_user: User = Depends(get_current_active_user)
+) -> Dict[str, Any]:
+    """
+    Get LLM pricing information.
+
+    Returns cost information for all available models.
+
+    Example:
+        GET /api/v1/llm/costs
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "providers": {
+                    "anthropic": [
+                        {
+                            "name": "claude-3.5-sonnet",
+                            "input_cost_per_1k": 0.003,
+                            "output_cost_per_1k": 0.015,
+                            "context_window": 200000
+                        },
+                        ...
+                    ],
+                    ...
+                },
+                "comparison": {
+                    "anthropic": 3.0,
+                    "openai": 4.5,
+                    "google": 0.075
+                }
+            }
+        }
+    """
+    llm_router = get_llm_router()
+    return llm_router.get_costs()
 
 
 @router.post("/api-keys")
@@ -133,68 +247,57 @@ def add_api_key(
 
 @router.get("/usage")
 def get_usage_stats(
-    project_id: Optional[str] = None,
+    period: str = "month",
     current_user: User = Depends(get_current_active_user),
     db_auth: Session = Depends(get_db_auth),
     db_specs: Session = Depends(get_db_specs)
 ) -> Dict[str, Any]:
     """
-    Get LLM usage statistics.
+    Get LLM usage statistics for the user.
+
+    Returns usage statistics including token counts, costs, and breakdown by model/provider.
 
     Args:
-        project_id: Optional project ID to filter by
+        period: Time period for statistics (month, week, day)
         current_user: Authenticated user
         db_auth: Auth database session
         db_specs: Specs database session
 
-    Returns:
-        {
-            'success': bool,
-            'total_tokens': int,
-            'total_cost': float,
-            'total_calls': int,
-            'usage_by_provider': dict
-        }
-
     Example:
         GET /api/v1/llm/usage
-        GET /api/v1/llm/usage?project_id=abc-123
+        GET /api/v1/llm/usage?period=week
         Authorization: Bearer <token>
 
         Response:
         {
             "success": true,
-            "total_tokens": 15000,
-            "total_cost": 0.45,
-            "total_calls": 10,
-            "usage_by_provider": {
-                "claude": {
-                    "tokens_input": 5000,
-                    "tokens_output": 10000,
-                    "tokens_total": 15000,
-                    "cost": 0.45,
-                    "calls": 10,
-                    "avg_latency_ms": 1500
+            "data": {
+                "period": "month",
+                "overall": {
+                    "total_tokens": 15000,
+                    "input_tokens": 5000,
+                    "output_tokens": 10000,
+                    "total_cost": 0.45,
+                    "request_count": 10
+                },
+                "by_model": {
+                    "anthropic/claude-3.5-sonnet": {
+                        "tokens": 15000,
+                        "input_tokens": 5000,
+                        "output_tokens": 10000,
+                        "cost": 0.45,
+                        "calls": 10
+                    }
+                },
+                "by_provider": {
+                    "anthropic": {
+                        "tokens": 15000,
+                        "cost": 0.45,
+                        "calls": 10
+                    }
                 }
             }
         }
     """
-    orchestrator = get_orchestrator()
-
-    data = {'user_id': current_user.id}
-    if project_id:
-        data['project_id'] = project_id
-
-    result = orchestrator.route_request(
-        agent_id='llm',
-        action='get_usage_stats',
-        data=data
-    )
-
-    if not result.get('success'):
-        raise HTTPException(
-            status_code=400,
-            detail=result.get('error', 'Failed to get usage stats')
-        )
-
-    return result
+    llm_router = get_llm_router()
+    return llm_router.get_usage_stats(current_user.id, period)
