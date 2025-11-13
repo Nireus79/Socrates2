@@ -38,6 +38,9 @@ if TYPE_CHECKING:
 # Import CLI logger
 from cli_logger import get_cli_logger
 
+# Import API extensions
+from api_client_extension import SocratesAPIExtension
+
 # Try to import CLI dependencies - defer error to runtime
 _cli_imports_available = True
 _cli_import_error = None
@@ -109,8 +112,8 @@ class SocratesConfig:
         self.set("cli_logging_enabled", enabled)
 
 
-class SocratesAPI:
-    """API client for Socrates backend"""
+class SocratesAPI(SocratesAPIExtension):
+    """API client for Socrates backend with 150+ extended methods"""
 
     def __init__(self, base_url: str, console: Console):
         self.base_url = base_url.rstrip('/')
@@ -514,21 +517,27 @@ class SocratesCLI:
         self.auto_start_server = auto_start_server
         self.server_url = api_url
 
-        # Command completer
-        self.commands = [
-            "/help", "/exit", "/quit", "/back",
-            "/register", "/login", "/logout", "/whoami",
-            "/projects", "/project", "/sessions", "/session",
-            "/history", "/clear", "/debug", "/mode", "/chat",
-            "/config", "/theme", "/format", "/save",
-            "/export", "/stats", "/template",
-            "/search", "/insights", "/filter", "/resume", "/wizard", "/status",
-            "/logging"
+        # Initialize modular command registry
+        try:
+            from cli.registry import CommandRegistry
+            self.registry = CommandRegistry(self.console, self.api, self._get_config_dict())
+            self.registry.load_all_commands()
+            registry_commands = list(self.registry.list_commands().keys())
+        except Exception as e:
+            self.console.print(f"[yellow]Warning: Could not load command registry: {e}[/yellow]")
+            self.registry = None
+            registry_commands = []
+
+        # Command completer - combine system commands with registry commands
+        self.system_commands = ["/help", "/exit", "/quit", "/back", "/clear", "/debug"]
+        self.commands = self.system_commands + [f"/{cmd}" for cmd in registry_commands] + [
+            "/chat",  # Legacy command
         ]
         self.completer = WordCompleter(self.commands, ignore_case=True)
 
         # Prompt session with history
         self.use_simple_input = False
+
         try:
             self.prompt_session = PromptSession(
                 history=FileHistory(str(self.config.history_file)),
@@ -825,6 +834,20 @@ No session required.
             return False
         self.api.set_token(token)
         return True
+
+    def _get_config_dict(self) -> Dict[str, Any]:
+        """Get full config as dictionary for command handlers."""
+        return {
+            "access_token": self.config.get("access_token"),
+            "refresh_token": self.config.get("refresh_token"),
+            "user": self.config.get("user"),
+            "user_email": self.config.get("user_email"),
+            "current_project": self.current_project,
+            "current_session": self.current_session,
+            "current_question": self.current_question,
+            "chat_mode": self.chat_mode,
+            "debug": self.debug,
+        }
 
     def ensure_project_selected(self) -> bool:
         """Check if project is selected"""
@@ -1242,7 +1265,7 @@ No session required.
             return
 
         if not args:
-            self.console.print("[yellow]Usage: /project <create|select|info|archive|restore|destroy> [args][/yellow]")
+            self.console.print("[yellow]Usage: /project <create|select|manage|info> [args][/yellow]")
             return
 
         subcommand = args[0]
@@ -1419,17 +1442,16 @@ No session required.
 """
             self.console.print(Panel(info, border_style="cyan"))
 
-        elif subcommand == "archive":
+        elif subcommand == "manage":
             if len(args) < 2:
-                self.console.print("[yellow]Usage: /project archive <number|project_id>[/yellow]")
+                self.console.print("[yellow]Usage: /project manage <number|project_id>[/yellow]")
                 return
 
             project_input = args[1]
             project_id = None
 
-            # Try to resolve the input as a number or partial UUID
             try:
-                # Load projects list once (filter to active only)
+                # Load all projects
                 response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
                 if response.status_code != 200:
                     self.console.print("[red]✗ Failed to load projects[/red]")
@@ -1441,185 +1463,77 @@ No session required.
                     return
 
                 all_projects = result.get("data", {}).get("projects", [])
-                # Only show active projects for archiving
-                projects = [p for p in all_projects if p.get("status") != "archived"]
 
-                # Check if input is a number
+                # Try to resolve input as number or partial UUID
                 try:
                     choice_num = int(project_input)
-                    if 1 <= choice_num <= len(projects):
-                        project_id = str(projects[choice_num - 1].get("id"))
+                    if 1 <= choice_num <= len(all_projects):
+                        project_id = str(all_projects[choice_num - 1].get("id"))
                     else:
-                        self.console.print(f"[red]✗ Invalid project number (must be 1-{len(projects)})[/red]")
+                        self.console.print(f"[red]✗ Invalid project number[/red]")
                         return
                 except ValueError:
-                    # Not a number, try to match as partial or full UUID
-                    for proj in projects:
+                    # Try partial or full UUID match
+                    for proj in all_projects:
                         if str(proj.get("id")).startswith(project_input):
                             project_id = str(proj.get("id"))
                             break
-                    # If no match found in active projects, try as full UUID
                     if not project_id:
                         project_id = project_input
 
-                # Confirmation with back support
-                confirm_response = Prompt.ask(
-                    f"[yellow]Archive project {project_id}? (This is reversible)[/yellow]",
-                    choices=["y", "n", "back"],
-                    default="n"
-                )
-
-                if confirm_response.lower() == "back":
-                    self.console.print("[yellow]Going back...[/yellow]")
+                # Get project details
+                proj_result = self.api.get_project(project_id)
+                if not proj_result.get("success"):
+                    self.console.print("[red]✗ Project not found[/red]")
                     return
-                elif confirm_response.lower() == "y":
-                    result = self.api.archive_project(project_id)
-                    if result.get("success"):
-                        self.console.print(f"[green]✓ Project archived[/green]")
-                        if self.current_project and str(self.current_project.get("id")) == str(project_id):
-                            self.current_project = None
-                            self.current_session = None
-                    else:
-                        error_msg = result.get('message') or result.get('detail') or 'Unknown error'
-                        self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
+
+                project = proj_result.get("data")
+                status = project.get("status", "unknown")
+
+                # Show project info
+                self.console.print(f"\n[bold cyan]Manage Project[/bold cyan]")
+                self.console.print(f"[bold]Name:[/bold] {project.get('name')}")
+                self.console.print(f"[bold]Status:[/bold] {status}")
+                self.console.print(f"[bold]ID:[/bold] {project_id}\n")
+
+                # Show context-based actions
+                if status == "active":
+                    actions = {"1": ("Archive (soft delete)", "archive_project")}
+                elif status == "archived":
+                    actions = {
+                        "1": ("Restore to active", "restore_project"),
+                        "2": ("Permanently destroy", "destroy_project")
+                    }
                 else:
+                    self.console.print(f"[yellow]No actions available for status: {status}[/yellow]")
+                    return
+
+                # Show menu
+                for key, (label, _) in actions.items():
+                    self.console.print(f"  [{key}] {label}")
+                self.console.print(f"  [back] Cancel\n")
+
+                choice = Prompt.ask("Choose action", choices=list(actions.keys()) + ["back"], default="back")
+
+                if choice == "back":
                     self.console.print("[yellow]Cancelled[/yellow]")
-            except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
-
-        elif subcommand == "restore":
-            if len(args) < 2:
-                self.console.print("[yellow]Usage: /project restore <number|project_id>[/yellow]")
-                return
-
-            project_input = args[1]
-            project_id = None
-
-            # Try to resolve the input as a number or partial UUID
-            try:
-                # Load projects list once (filter to archived only)
-                response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
-                if response.status_code != 200:
-                    self.console.print("[red]✗ Failed to load projects[/red]")
                     return
 
-                result = response.json()
-                if not result.get("success"):
-                    self.console.print("[red]✗ Failed to load projects[/red]")
-                    return
-
-                all_projects = result.get("data", {}).get("projects", [])
-                # Only show archived projects for restoration
-                projects = [p for p in all_projects if p.get("status") == "archived"]
-
-                if not projects:
-                    self.console.print("[yellow]No archived projects to restore[/yellow]")
-                    return
-
-                # Check if input is a number
-                try:
-                    choice_num = int(project_input)
-                    if 1 <= choice_num <= len(projects):
-                        project_id = str(projects[choice_num - 1].get("id"))
-                    else:
-                        self.console.print(f"[red]✗ Invalid project number (must be 1-{len(projects)})[/red]")
-                        return
-                except ValueError:
-                    # Not a number, try to match as partial or full UUID
-                    for proj in projects:
-                        if str(proj.get("id")).startswith(project_input):
-                            project_id = str(proj.get("id"))
-                            break
-                    # If no match found in archived projects, try as full UUID
-                    if not project_id:
-                        project_id = project_input
+                action_label, action_method = actions[choice]
 
                 # Confirmation
-                confirm_response = Prompt.ask(
-                    f"[yellow]Restore project {project_id}?[/yellow]",
-                    choices=["y", "n", "back"],
-                    default="n"
-                )
+                if action_method == "destroy_project":
+                    self.console.print("[red bold]⚠ WARNING: This will permanently delete the project![/red bold]")
+                    self.console.print("[red]This action CANNOT be undone.[/red]\n")
 
-                if confirm_response.lower() == "back":
-                    self.console.print("[yellow]Going back...[/yellow]")
-                    return
-                elif confirm_response.lower() == "y":
-                    result = self.api.restore_project(project_id)
+                confirm = Prompt.ask(f"[red bold]{action_label} project?[/red bold]" if action_method == "destroy_project" else f"[yellow]{action_label}?[/yellow]", choices=["y", "n"], default="n")
+
+                if confirm.lower() == "y":
+                    api_method = getattr(self.api, action_method)
+                    result = api_method(project_id)
+
                     if result.get("success"):
-                        self.console.print(f"[green]✓ Project restored[/green]")
-                    else:
-                        error_msg = result.get('message') or result.get('detail') or 'Unknown error'
-                        self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
-                else:
-                    self.console.print("[yellow]Cancelled[/yellow]")
-            except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
-
-        elif subcommand == "destroy":
-            if len(args) < 2:
-                self.console.print("[yellow]Usage: /project destroy <number|project_id>[/yellow]")
-                return
-
-            project_input = args[1]
-            project_id = None
-
-            # Try to resolve the input as a number or partial UUID
-            try:
-                # Load projects list once (filter to archived only)
-                response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
-                if response.status_code != 200:
-                    self.console.print("[red]✗ Failed to load projects[/red]")
-                    return
-
-                result = response.json()
-                if not result.get("success"):
-                    self.console.print("[red]✗ Failed to load projects[/red]")
-                    return
-
-                all_projects = result.get("data", {}).get("projects", [])
-                # Only show archived projects for destruction
-                projects = [p for p in all_projects if p.get("status") == "archived"]
-
-                if not projects:
-                    self.console.print("[yellow]No archived projects to destroy[/yellow]")
-                    return
-
-                # Check if input is a number
-                try:
-                    choice_num = int(project_input)
-                    if 1 <= choice_num <= len(projects):
-                        project_id = str(projects[choice_num - 1].get("id"))
-                    else:
-                        self.console.print(f"[red]✗ Invalid project number (must be 1-{len(projects)})[/red]")
-                        return
-                except ValueError:
-                    # Not a number, try to match as partial or full UUID
-                    for proj in projects:
-                        if str(proj.get("id")).startswith(project_input):
-                            project_id = str(proj.get("id"))
-                            break
-                    # If no match found in archived projects, try as full UUID
-                    if not project_id:
-                        project_id = project_input
-
-                # Strong confirmation for irreversible action
-                self.console.print("[red bold]⚠ WARNING: This will permanently delete the project![/red bold]")
-                self.console.print("[red]This action CANNOT be undone.[/red]")
-
-                confirm_response = Prompt.ask(
-                    f"[red bold]Permanently destroy project {project_id}?[/red bold]",
-                    choices=["y", "n", "back"],
-                    default="n"
-                )
-
-                if confirm_response.lower() == "back":
-                    self.console.print("[yellow]Going back...[/yellow]")
-                    return
-                elif confirm_response.lower() == "y":
-                    result = self.api.destroy_project(project_id)
-                    if result.get("success"):
-                        self.console.print(f"[green]✓ Project permanently destroyed[/green]")
+                        self.console.print(f"[green]✓ {action_label} successful[/green]")
                         if self.current_project and str(self.current_project.get("id")) == str(project_id):
                             self.current_project = None
                             self.current_session = None
@@ -1628,8 +1542,10 @@ No session required.
                         self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
                 else:
                     self.console.print("[yellow]Cancelled[/yellow]")
+
             except Exception as e:
                 self.console.print(f"[red]Error: {e}[/red]")
+
 
         else:
             self.console.print(f"[yellow]Unknown subcommand: {subcommand}[/yellow]")
@@ -3034,8 +2950,10 @@ No session required.
         command = parts[0].lower()
         args = parts[1:]
 
+        # Handle system commands locally
         if command in ["/help", "/h"]:
             self.print_help()
+            return
 
         elif command in ["/exit", "/quit", "/q"]:
             if self.current_session:
@@ -3044,19 +2962,35 @@ No session required.
             self.running = False
             self.console.print("\n[cyan]..τω Ασκληπιώ οφείλομεν αλετρυόνα, απόδοτε και μη αμελήσετε..[/cyan]\n")
             # Shutdown is called in run()'s finally block, but set running=False to exit the loop
+            return
 
         elif command == "/clear":
             self.console.clear()
             self.print_banner()
+            return
 
         elif command == "/back":
             self.cmd_back()
+            return
 
         elif command == "/debug":
             self.debug = not self.debug
             self.console.print(f"[cyan]Debug mode: {'ON' if self.debug else 'OFF'}[/cyan]")
+            return
 
-        elif command == "/register":
+        # Try to route through modular registry first
+        # Strip the leading slash to get command name
+        command_name = command.lstrip('/')
+
+        if self.registry and self.registry.command_exists(command_name):
+            # Update config dict before routing
+            self.registry.config = self._get_config_dict()
+            if self.registry.route_command(command_name, args):
+                # Command was handled successfully
+                return
+
+        # Fall back to legacy command methods for backwards compatibility
+        if command == "/register":
             self.cmd_register()
 
         elif command == "/login":
