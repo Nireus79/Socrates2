@@ -10,6 +10,7 @@ Provides:
 """
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -134,8 +135,9 @@ def start_session(
         # Create session
         # Note: user access is enforced via project ownership check above
         # Session doesn't have user_id field - it's tracked via project.user_id
+        # Convert project_id string to UUID (required by Session model)
         session = SessionModel(
-            project_id=request.project_id,
+            project_id=UUID(request.project_id),
             status='active',
             started_at=datetime.now(timezone.utc)
         )
