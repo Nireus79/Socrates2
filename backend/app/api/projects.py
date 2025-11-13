@@ -502,12 +502,12 @@ def partial_update_project(
         ) from e
 
 
-@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{project_id}")
 def delete_project(
     project_id: str,
     current_user: User = Depends(get_current_active_user),
     service: RepositoryService = Depends(get_repository_service)
-) -> None:
+) -> Dict[str, Any]:
     """
     Delete (archive) a project.
 
@@ -517,50 +517,57 @@ def delete_project(
         service: Repository service
 
     Returns:
-        No content (204 response)
+        Dict with success status
 
     Example:
         DELETE /api/v1/projects/550e8400-e29b-41d4-a716-446655440000
         Authorization: Bearer <token>
 
-        Response 204: No Content
+        Response 200:
+        {
+            "success": true,
+            "message": "Project deleted successfully",
+            "data": {
+                "project_id": "550e8400-..."
+            }
+        }
     """
     try:
         # Parse UUID
         project_uuid = UUID(project_id)
     except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid project ID format: {project_id}"
-        )
-
-    # Get project
-    project = service.projects.get_by_id(project_uuid)
-
-    if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project not found: {project_id}"
-        )
-
-    # Validate permissions
-    if str(project.user_id) != str(current_user.id):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Permission denied: only project owner can delete project"
+        return ResponseWrapper.validation_error(
+            field="project_id",
+            reason="Invalid UUID format",
+            value=project_id
         )
 
     try:
+        # Get project
+        project = service.projects.get_by_id(project_uuid)
+
+        if not project:
+            return ResponseWrapper.not_found("Project", project_id)
+
+        # Validate permissions
+        if str(project.user_id) != str(current_user.id):
+            return ResponseWrapper.forbidden("Only project owner can delete project")
+
         # Archive project
         service.projects.archive_project(project_uuid)
         service.commit_all()
 
+        return ResponseWrapper.success(
+            data={"project_id": str(project_uuid)},
+            message="Project deleted successfully"
+        )
+
     except Exception as e:
         service.rollback_all()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete project"
-        ) from e
+        return ResponseWrapper.internal_error(
+            message="Failed to delete project",
+            exception=e
+        )
 
 
 class ProjectStatusResponse(BaseModel):

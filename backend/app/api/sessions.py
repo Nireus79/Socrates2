@@ -20,6 +20,7 @@ from ..core.action_logger import log_session
 from ..core.database import get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
+from ..services.response_service import ResponseWrapper
 
 router = APIRouter(prefix="/api/v1/sessions", tags=["sessions"])
 # Nested router for sessions under projects
@@ -97,12 +98,7 @@ def start_session(
         db: Database session
 
     Returns:
-        {
-            'success': bool,
-            'session_id': str,
-            'project_id': str,
-            'status': str
-        }
+        Dict with success status and session details
 
     Example:
         POST /api/v1/sessions
@@ -114,60 +110,76 @@ def start_session(
         Response:
         {
             "success": true,
-            "session_id": "session-456",
-            "project_id": "abc-123",
-            "status": "active"
+            "message": "Session started successfully",
+            "data": {
+                "session_id": "session-456",
+                "project_id": "abc-123",
+                "status": "active",
+                "session": {...}
+            }
         }
     """
-    from ..models.project import Project
-    from ..models.session import Session as SessionModel
+    try:
+        from ..models.project import Project
+        from ..models.session import Session as SessionModel
 
-    # Verify project exists and user has access
-    project = db.query(Project).filter(Project.id == request.project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail=f"Project not found: {request.project_id}")
+        # Verify project exists and user has access
+        project = db.query(Project).filter(Project.id == request.project_id).first()
+        if not project:
+            return ResponseWrapper.not_found("Project", request.project_id)
 
-    if str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        if str(project.user_id) != str(current_user.id):
+            return ResponseWrapper.forbidden("You don't have access to this project")
 
-    # Create session
-    # Note: user access is enforced via project ownership check above
-    # Session doesn't have user_id field - it's tracked via project.user_id
-    session = SessionModel(
-        project_id=request.project_id,
-        status='active',
-        started_at=datetime.now(timezone.utc)
-    )
+        # Create session
+        # Note: user access is enforced via project ownership check above
+        # Session doesn't have user_id field - it's tracked via project.user_id
+        session = SessionModel(
+            project_id=request.project_id,
+            status='active',
+            started_at=datetime.now(timezone.utc)
+        )
 
-    db.add(session)
-    db.commit()
-    db.refresh(session)
+        db.add(session)
+        db.commit()
+        db.refresh(session)
 
-    # Log session start
-    log_session(
-        "Session started",
-        session_id=str(session.id),
-        mode="socratic",
-        success=True,
-        project_name=project.name if hasattr(project, 'name') else None
-    )
+        # Log session start
+        log_session(
+            "Session started",
+            session_id=str(session.id),
+            mode="socratic",
+            success=True,
+            project_name=project.name if hasattr(project, 'name') else None
+        )
 
-    return {
-        'success': True,
-        'session_id': str(session.id),
-        'project_id': str(session.project_id),
-        'status': session.status,
-        'session': {
-            'id': str(session.id),
+        session_data = {
+            'session_id': str(session.id),
             'project_id': str(session.project_id),
-            'mode': session.mode,
             'status': session.status,
-            'started_at': session.started_at.isoformat() if session.started_at else None,
-            'ended_at': session.ended_at.isoformat() if session.ended_at else None,
-            'created_at': session.created_at.isoformat() if session.created_at else None,
-            'updated_at': session.updated_at.isoformat() if session.updated_at else None
+            'session': {
+                'id': str(session.id),
+                'project_id': str(session.project_id),
+                'mode': session.mode,
+                'status': session.status,
+                'started_at': session.started_at.isoformat() if session.started_at else None,
+                'ended_at': session.ended_at.isoformat() if session.ended_at else None,
+                'created_at': session.created_at.isoformat() if session.created_at else None,
+                'updated_at': session.updated_at.isoformat() if session.updated_at else None
+            }
         }
-    }
+
+        return ResponseWrapper.success(
+            data=session_data,
+            message="Session started successfully"
+        )
+
+    except Exception as e:
+        db.rollback()
+        return ResponseWrapper.internal_error(
+            message="Failed to start session",
+            exception=e
+        )
 
 
 @router.post("/{session_id}/next-question")

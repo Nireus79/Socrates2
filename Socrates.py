@@ -1436,14 +1436,17 @@ No session required.
                     result = self.api.start_session(self.current_project["id"])
 
                 if result.get("success"):
+                    # Extract data from wrapped response
+                    data = result.get("data", {})
+
                     # Handle both response formats: session object or session_id
-                    session_data = result.get("session")
+                    session_data = data.get("session")
                     if not session_data:
                         # Fallback: construct session object from response fields
                         session_data = {
-                            "id": result.get("session_id"),
-                            "project_id": result.get("project_id"),
-                            "status": result.get("status"),
+                            "id": data.get("session_id"),
+                            "project_id": data.get("project_id"),
+                            "status": data.get("status"),
                             "mode": "socratic"
                         }
 
@@ -1463,7 +1466,8 @@ No session required.
                     # Get first question
                     self.get_next_question()
                 else:
-                    self.console.print(f"[red]✗ Failed: {result.get('message', 'Unknown error')}[/red]")
+                    error_msg = result.get('message') or result.get('detail') or 'Unknown error'
+                    self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
             except Exception as e:
                 self.console.print(f"[red]Error: {e}[/red]")
                 if self.debug:
