@@ -17,7 +17,8 @@
       "Bash(python scripts/run_migrations_safe.py:*)",
       "Bash(timeout 5 python:*)",
       "Bash(python -m app.cli:*)",
-      "Bash(python Socrates.py:*)"
+      "Bash(python Socrates.py:*)",
+      "Bash(timeout 15 python:*)"
     ],
     "deny": [],
     "ask": []
