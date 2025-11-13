@@ -22,6 +22,7 @@ from ..core.database import get_db_auth, get_db_specs
 from ..core.security import get_current_active_user
 from ..models.user import User
 from ..repositories import RepositoryService
+from ..services.response_service import ResponseWrapper
 
 router = APIRouter(prefix="/api/v1/projects", tags=["projects"])
 
@@ -74,12 +75,12 @@ class ProjectListResponse(BaseModel):
     limit: int
 
 
-@router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
+@router.post("")
 def create_project(
     request: CreateProjectRequest,
     current_user: User = Depends(get_current_active_user),
     service: RepositoryService = Depends(get_repository_service)
-) -> ProjectResponse:
+) -> Dict[str, Any]:
     """
     Create a new project.
 
@@ -89,7 +90,7 @@ def create_project(
         service: Repository service
 
     Returns:
-        ProjectResponse with created project details
+        Dict with success status and project data
 
     Example:
         POST /api/v1/projects
@@ -101,14 +102,19 @@ def create_project(
 
         Response 201:
         {
-            "id": "550e8400-e29b-41d4-a716-446655440000",
-            "user_id": "550e8400-e29b-41d4-a716-446655440001",
-            "name": "My Web App",
-            "description": "A FastAPI web application",
-            "phase": "discovery",
-            "maturity_level": 0,
-            "status": "active",
-            "created_at": "2025-11-11T12:00:00"
+            "success": true,
+            "message": "Project created successfully",
+            "data": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "user_id": "550e8400-e29b-41d4-a716-446655440001",
+                "name": "My Web App",
+                "description": "A FastAPI web application",
+                "phase": "discovery",
+                "maturity_level": 0,
+                "status": "active",
+                "created_at": "2025-11-11T12:00:00",
+                "project_id": "550e8400-e29b-41d4-a716-446655440000"
+            }
         }
     """
     try:
@@ -122,24 +128,30 @@ def create_project(
         # Commit transaction
         service.commit_all()
 
-        return ProjectResponse(
-            id=str(project.id),
-            user_id=str(project.user_id),
-            name=project.name,
-            description=project.description,
-            status=project.status,
-            phase=project.current_phase,
-            maturity_level=project.maturity_score or 0,
-            created_at=project.created_at.isoformat(),
-            updated_at=project.updated_at.isoformat() if project.updated_at else None
+        project_data = {
+            "id": str(project.id),
+            "project_id": str(project.id),  # For CLI compatibility
+            "user_id": str(project.user_id),
+            "name": project.name,
+            "description": project.description,
+            "status": project.status,
+            "phase": project.current_phase,
+            "maturity_level": project.maturity_score or 0,
+            "created_at": project.created_at.isoformat(),
+            "updated_at": project.updated_at.isoformat() if project.updated_at else None
+        }
+
+        return ResponseWrapper.success(
+            data=project_data,
+            message="Project created successfully"
         )
 
     except Exception as e:
         service.rollback_all()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create project"
-        ) from e
+        return ResponseWrapper.internal_error(
+            message="Failed to create project",
+            exception=e
+        )
 
 
 @router.get("", response_model=ProjectListResponse)
@@ -224,12 +236,12 @@ def list_projects(
         ) from e
 
 
-@router.get("/{project_id}", response_model=ProjectResponse)
+@router.get("/{project_id}")
 def get_project(
     project_id: str,
     current_user: User = Depends(get_current_active_user),
     service: RepositoryService = Depends(get_repository_service)
-) -> ProjectResponse:
+) -> Dict[str, Any]:
     """
     Get project details.
 
@@ -239,7 +251,7 @@ def get_project(
         service: Repository service
 
     Returns:
-        ProjectResponse with project details
+        Dict with success status and project data
 
     Example:
         GET /api/v1/projects/550e8400-e29b-41d4-a716-446655440000
@@ -247,53 +259,64 @@ def get_project(
 
         Response:
         {
-            "id": "550e8400-e29b-41d4-a716-446655440000",
-            "user_id": "550e8400-e29b-41d4-a716-446655440001",
-            "name": "My Web App",
-            "description": "A FastAPI web application",
-            "phase": "discovery",
-            "maturity_level": 45,
-            "status": "active",
-            "created_at": "2025-01-01T00:00:00"
+            "success": true,
+            "message": "Project retrieved successfully",
+            "data": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "user_id": "550e8400-e29b-41d4-a716-446655440001",
+                "name": "My Web App",
+                "description": "A FastAPI web application",
+                "phase": "discovery",
+                "maturity_level": 45,
+                "status": "active",
+                "created_at": "2025-01-01T00:00:00"
+            }
         }
     """
     try:
         # Parse UUID
         project_uuid = UUID(project_id)
     except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid project ID format: {project_id}"
+        return ResponseWrapper.validation_error(
+            field="project_id",
+            reason="Invalid UUID format",
+            value=project_id
         )
 
-    # Get project by ID
-    project = service.projects.get_by_id(project_uuid)
+    try:
+        # Get project by ID
+        project = service.projects.get_by_id(project_uuid)
 
-    # Validate project exists
-    if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project not found: {project_id}"
+        # Validate project exists
+        if not project:
+            return ResponseWrapper.not_found("Project", project_id)
+
+        # Validate permissions (user must be owner)
+        if str(project.user_id) != str(current_user.id):
+            return ResponseWrapper.forbidden("You don't have access to this project")
+
+        project_data = {
+            "id": str(project.id),
+            "user_id": str(project.user_id),
+            "name": project.name,
+            "description": project.description,
+            "status": project.status,
+            "phase": project.current_phase,
+            "maturity_level": int((project.maturity_score or 0) * 100),
+            "created_at": project.created_at.isoformat(),
+            "updated_at": project.updated_at.isoformat() if project.updated_at else None
+        }
+
+        return ResponseWrapper.success(
+            data=project_data,
+            message="Project retrieved successfully"
         )
 
-    # Validate permissions (user must be owner)
-    if str(project.user_id) != str(current_user.id):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Permission denied: you don't have access to this project"
+    except Exception as e:
+        return ResponseWrapper.internal_error(
+            message="Failed to retrieve project",
+            exception=e
         )
-
-    return ProjectResponse(
-        id=str(project.id),
-        user_id=str(project.user_id),
-        name=project.name,
-        description=project.description,
-        status=project.status,
-        phase=project.current_phase,
-        maturity_level=int((project.maturity_score or 0) * 100),
-        created_at=project.created_at.isoformat(),
-        updated_at=project.updated_at.isoformat() if project.updated_at else None
-    )
 
 
 @router.put("/{project_id}", response_model=ProjectResponse)

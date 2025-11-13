@@ -1265,7 +1265,7 @@ No session required.
                     result = self.api.create_project(name, description)
 
                 if result.get("success"):
-                    project_id = result.get("project_id")
+                    project_id = result.get("data", {}).get("project_id")
                     # Log the project creation
                     self.cli_logger.log_project_create(name, project_id)
                     self.console.print(f"\n[green]✓ Project created: {project_id}[/green]")
@@ -1273,10 +1273,11 @@ No session required.
                     # Auto-select the new project
                     project_result = self.api.get_project(project_id)
                     if project_result.get("success"):
-                        self.current_project = project_result.get("project")
+                        self.current_project = project_result.get("data")
                         self.console.print(f"[cyan]Selected project: {name}[/cyan]")
                 else:
-                    self.console.print(f"[red]✗ Failed: {result.get('message')}[/red]")
+                    error_msg = result.get('message') or result.get('detail') or 'Unknown error'
+                    self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
             except Exception as e:
                 self.console.print(f"[red]Error: {e}[/red]")
 
