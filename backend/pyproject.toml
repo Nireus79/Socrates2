@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "socrates-ai"
-version = "0.2.0"
-description = "AI-Powered Specification Assistant using Socratic Method"
+version = "0.4.0"
+description = "AI-Powered Specification Assistant - Complete Framework with Agents, Domains, and Multi-LLM Support"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
@@ -22,7 +22,7 @@ keywords = [
     "analytics"
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Web Environment",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
