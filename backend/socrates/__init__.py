@@ -112,25 +112,28 @@ from app.core.security import (
 from app.core.nlu_service import NLUService, Intent, create_nlu_service
 
 # ============================================================================
-# Phase 2: ADVANCED FEATURES EXPORTS (Some require configuration)
+# Phase 2: ADVANCED FEATURES EXPORTS (Requires configuration)
 # ============================================================================
 
-# Subscription & Usage Management (requires settings)
-# from app.core.subscription_tiers import SubscriptionTier, TIER_LIMITS
-# from app.core.usage_limits import UsageLimitError, UsageLimiter
+# Subscription & Usage Management
+from app.core.subscription_tiers import SubscriptionTier, TIER_LIMITS
+from app.core.usage_limits import UsageLimitError, UsageLimiter
 
 # Rate Limiting
-# from app.core.rate_limiting import RateLimiter, get_rate_limiter
+from app.core.rate_limiting import RateLimiter, get_rate_limiter
 
 # Action Logging
-# from app.core.action_logger import (
-#     ActionLogger, initialize_action_logger, toggle_action_logging,
-#     log_auth, log_project, log_session, log_specs, log_agent,
-#     log_llm, log_question, log_conflict, log_database, log_error, log_warning,
-# )
+from app.core.action_logger import (
+    ActionLogger, initialize_action_logger, toggle_action_logging,
+    log_auth, log_project, log_session, log_specs, log_agent,
+    log_llm, log_question, log_conflict, log_database, log_error, log_warning,
+)
 
 # Validators
-# from app.core.validators import validate_email
+from app.core.validators import (
+    validate_email, validate_password, validate_username,
+    validate_project_name, validate_team_name,
+)
 
 # ============================================================================
 # Phase 3: FRAMEWORK EXPORTS (Requires configuration)
@@ -248,14 +251,40 @@ __all__ = [
     "Intent",
     "create_nlu_service",
 
-    # ========== PHASE 2: ADVANCED FEATURES (Requires configuration - commented out) ==========
-    # Uncomment and configure environment to use:
-    # "SubscriptionTier", "TIER_LIMITS", "UsageLimitError", "UsageLimiter",
-    # "RateLimiter", "get_rate_limiter",
-    # "ActionLogger", "initialize_action_logger", "toggle_action_logging",
-    # "log_auth", "log_project", "log_session", "log_specs", "log_agent",
-    # "log_llm", "log_question", "log_conflict", "log_database", "log_error", "log_warning",
-    # "validate_email",
+    # ========== PHASE 2: ADVANCED FEATURES (Requires configuration) ==========
+
+    # Subscription & Usage Management
+    "SubscriptionTier",
+    "TIER_LIMITS",
+    "UsageLimitError",
+    "UsageLimiter",
+
+    # Rate Limiting
+    "RateLimiter",
+    "get_rate_limiter",
+
+    # Action Logging
+    "ActionLogger",
+    "initialize_action_logger",
+    "toggle_action_logging",
+    "log_auth",
+    "log_project",
+    "log_session",
+    "log_specs",
+    "log_agent",
+    "log_llm",
+    "log_question",
+    "log_conflict",
+    "log_database",
+    "log_error",
+    "log_warning",
+
+    # Validators
+    "validate_email",
+    "validate_password",
+    "validate_username",
+    "validate_project_name",
+    "validate_team_name",
 
     # ========== PHASE 3: FRAMEWORK (Requires configuration - commented out) ==========
     # Uncomment and configure environment to use:

@@ -31,6 +31,7 @@ from .api import (
     # jobs,  # TODO: Install apscheduler module
     llm_endpoints,
     notifications,
+    phase2,
     projects,
     quality,
     questions,
@@ -51,6 +52,7 @@ from .core.action_logger import initialize_action_logger
 from .core.config import settings
 from .core.database import close_db_connections
 from .core.sentry_config import init_sentry
+from .middleware.rate_limit_middleware import RateLimitMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -199,9 +201,13 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Add rate limiting middleware (Phase 2)
+    app.add_middleware(RateLimitMiddleware)
+
     # Include routers
     app.include_router(auth.router)
     app.include_router(admin.router)
+    app.include_router(phase2.router)  # Phase 2: Advanced Features
     app.include_router(projects.router)
     app.include_router(sessions.router)
     app.include_router(sessions.project_sessions_router)
