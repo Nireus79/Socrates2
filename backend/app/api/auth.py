@@ -465,3 +465,153 @@ def refresh_access_token(
             detail="Invalid refresh token",
             headers={"WWW-Authenticate": "Bearer"},
         ) from e
+
+
+# ============================================================================
+# ACCOUNT MANAGEMENT ENDPOINTS
+# ============================================================================
+
+
+class ChangePasswordRequest(BaseModel):
+    """Change password request"""
+    current_password: str = Field(..., min_length=8)
+    new_password: str = Field(..., min_length=8, max_length=100)
+
+
+class ChangePasswordResponse(BaseModel):
+    """Change password response"""
+    message: str
+    user_id: str
+
+
+@router.post("/change-password", response_model=ChangePasswordResponse)
+def change_password(
+    request: ChangePasswordRequest,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> ChangePasswordResponse:
+    """
+    Change user password.
+
+    Requires:
+    - Valid access token (current user)
+    - Current password for verification
+    - New password (min 8 characters)
+
+    Returns:
+        Success message with user_id
+
+    Raises:
+        HTTPException 401: If current password is incorrect
+        HTTPException 400: If new password doesn't meet requirements
+    """
+    try:
+        # Verify current password
+        if not current_user.verify_password(request.current_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Current password is incorrect"
+            )
+
+        # Update password
+        current_user.set_password(request.new_password)
+        service.auth_session.commit()
+
+        log_auth("Password changed", user_id=str(current_user.id), username=current_user.username, success=True)
+
+        return ChangePasswordResponse(
+            message="Password changed successfully",
+            user_id=str(current_user.id)
+        )
+
+    except HTTPException:
+        service.rollback_all()
+        raise
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to change password"
+        ) from e
+
+
+class DeleteAccountRequest(BaseModel):
+    """Delete account request"""
+    password: str = Field(..., description="Current password for verification")
+    confirmation: str = Field(..., description="Must be username to confirm deletion")
+
+
+class DeleteAccountResponse(BaseModel):
+    """Delete account response"""
+    message: str
+    user_id: str
+
+
+@router.post("/delete-account", response_model=DeleteAccountResponse)
+def delete_account(
+    request: DeleteAccountRequest,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> DeleteAccountResponse:
+    """
+    Permanently delete user account.
+
+    Requires:
+    - Valid access token (current user)
+    - Current password for verification
+    - Confirmation (must match username)
+
+    WARNING: This action is irreversible. All user data will be deleted.
+
+    Returns:
+        Success message with user_id
+
+    Raises:
+        HTTPException 401: If password is incorrect
+        HTTPException 400: If confirmation doesn't match username
+    """
+    try:
+        # Verify password
+        if not current_user.verify_password(request.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Password is incorrect"
+            )
+
+        # Verify confirmation
+        if request.confirmation != current_user.username:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Confirmation must match username: {current_user.username}"
+            )
+
+        user_id = str(current_user.id)
+        username = current_user.username
+
+        # Delete refresh tokens first (foreign key constraint)
+        service.auth_session.query(
+            service.auth_session.get_bind().execute(
+                f"DELETE FROM refresh_tokens WHERE user_id = '{user_id}'"
+            )
+        )
+
+        # Delete user
+        service.auth_session.delete(current_user)
+        service.auth_session.commit()
+
+        log_auth("Account deleted", user_id=user_id, username=username, success=True)
+
+        return DeleteAccountResponse(
+            message="Account permanently deleted",
+            user_id=user_id
+        )
+
+    except HTTPException:
+        service.rollback_all()
+        raise
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete account"
+        ) from e

@@ -93,38 +93,41 @@ class SessionCommandHandler(CommandHandler):
             )
 
             # Create session via API
-            self.console.print("\n[cyan]Starting session...[/cyan]")
+            self.console.print("Starting session...")
 
             result = self.api.start_session(
-                project_id=project.get("id"),
-                mode=mode,
-                domain=domain
+                project_id=project.get("id")
             )
 
             if result.get("success"):
                 session = result.get("data")
+                if not isinstance(session, dict):
+                    session = {}
+
+                # Store mode preference for this session
+                session["mode"] = mode
+                session["domain"] = domain
+
                 self.config["current_session"] = session
                 session_id = session.get("id")
 
                 self.print_success("Session started!")
-                self.console.print(f"[cyan]Session ID: {session_id}[/cyan]")
-
-                mode_emoji = "🤔" if mode == "socratic" else "💬"
-                self.console.print(f"\n[dim]Mode: {mode} {mode_emoji}[/dim]")
+                self.console.print(f"Session ID: {session_id}")
+                self.console.print(f"\nMode: {mode}")
 
                 if mode == "socratic":
-                    self.console.print("[dim]Socratic mode: I will ask thoughtful questions[/dim]")
+                    self.console.print("Socratic mode: I will ask thoughtful questions")
                 else:
-                    self.console.print("[dim]Direct mode: Ask me anything[/dim]")
+                    self.console.print("Direct mode: Ask me anything")
 
-                self.console.print(f"\n[yellow]Type your message or /session end to finish[/yellow]")
+                self.console.print(f"\nType your message or /session end to finish")
 
             else:
                 error = result.get("error") or result.get("detail") or "Unknown error"
                 self.print_error(f"Failed to start session: {error}")
 
         except KeyboardInterrupt:
-            self.console.print("[yellow]Session creation cancelled[/yellow]")
+            self.console.print("Session creation cancelled")
         except Exception as e:
             self.print_error(f"Error: {e}")
 

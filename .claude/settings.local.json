@@ -40,7 +40,13 @@
       "Bash(python -m py_compile:*)",
       "Bash(dir:*)",
       "Bash($null)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(python3:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(python test_project_select_fix.py:*)",
+      "Bash(python verify_fixes.py:*)",
+      "Bash(uvicorn:*)"
     ],
     "deny": [],
     "ask": []

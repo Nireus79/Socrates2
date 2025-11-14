@@ -285,10 +285,9 @@ def get_project(
         # Parse UUID
         project_uuid = UUID(project_id)
     except ValueError:
-        return ResponseWrapper.validation_error(
-            field="project_id",
-            reason="Invalid UUID format",
-            value=project_id
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid UUID format"
         )
 
     try:
@@ -297,11 +296,17 @@ def get_project(
 
         # Validate project exists
         if not project:
-            return ResponseWrapper.not_found("Project", project_id)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Project not found"
+            )
 
         # Validate permissions (user must be owner)
         if str(project.user_id) != str(current_user.id):
-            return ResponseWrapper.forbidden("You don't have access to this project")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have access to this project"
+            )
 
         project_data = {
             "id": str(project.id),
@@ -320,11 +325,13 @@ def get_project(
             message="Project retrieved successfully"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
-        return ResponseWrapper.internal_error(
-            message="Failed to retrieve project",
-            exception=e
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve project"
+        ) from e
 
 
 @router.put("/{project_id}", response_model=ProjectResponse)
@@ -536,10 +543,9 @@ def archive_project(
         # Parse UUID
         project_uuid = UUID(project_id)
     except ValueError:
-        return ResponseWrapper.validation_error(
-            field="project_id",
-            reason="Invalid UUID format",
-            value=project_id
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid UUID format"
         )
 
     try:
@@ -547,11 +553,17 @@ def archive_project(
         project = service.projects.get_by_id(project_uuid)
 
         if not project:
-            return ResponseWrapper.not_found("Project", project_id)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Project not found"
+            )
 
         # Validate permissions
         if str(project.user_id) != str(current_user.id):
-            return ResponseWrapper.forbidden("Only project owner can archive project")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only project owner can archive project"
+            )
 
         # Archive project
         service.projects.archive_project(project_uuid)
@@ -562,12 +574,14 @@ def archive_project(
             message="Project archived successfully"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         service.rollback_all()
-        return ResponseWrapper.internal_error(
-            message="Failed to archive project",
-            exception=e
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to archive project"
+        ) from e
 
 
 @router.post("/{project_id}/restore")

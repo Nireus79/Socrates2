@@ -39,6 +39,28 @@ class SocratesAPIExtension:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
+    def change_password(self, current_password: str, new_password: str) -> Dict[str, Any]:
+        """Change user password"""
+        try:
+            response = self._request("POST", "/api/v1/auth/change-password", json={
+                "current_password": current_password,
+                "new_password": new_password
+            })
+            return {"success": response.status_code == 200, "data": response.json()}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def delete_account(self, password: str, username: str) -> Dict[str, Any]:
+        """Delete user account (requires password and username confirmation)"""
+        try:
+            response = self._request("POST", "/api/v1/auth/delete-account", json={
+                "password": password,
+                "confirmation": username
+            })
+            return {"success": response.status_code == 200, "data": response.json()}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
     # ============================================================================
     # SPECIFICATION METHODS (enhanced)
     # ============================================================================

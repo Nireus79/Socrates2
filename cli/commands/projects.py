@@ -208,14 +208,10 @@ class ProjectCommandHandler(CommandHandler):
         if not self.ensure_authenticated():
             return
 
-        if not args:
-            self.console.print("[yellow]Usage: /project select <number|project_id>[/yellow]")
-            return
-
         self.console.print("[cyan]Loading projects...[/cyan]")
 
         try:
-            result = self.api.get_projects()
+            result = self.api.list_projects()
 
             if not result.get("success"):
                 self.print_error("Failed to load projects")
@@ -227,28 +223,42 @@ class ProjectCommandHandler(CommandHandler):
                 self.console.print("[yellow]No projects available[/yellow]")
                 return
 
-            # Try to parse input as number or UUID
-            user_input = args[0]
-
-            try:
-                # Try as number
-                num = int(user_input)
-                if 1 <= num <= len(projects):
-                    selected_project = projects[num - 1]
-                else:
-                    self.print_error(f"Invalid project number (1-{len(projects)})")
-                    return
-            except ValueError:
-                # Try as partial or full UUID
-                selected_project = None
-                for proj in projects:
-                    if str(proj.get("id")).startswith(user_input):
-                        selected_project = proj
-                        break
+            # If no args provided, show interactive selection
+            if not args:
+                selected_project = prompts.prompt_for_table_selection(
+                    self.console,
+                    projects,
+                    ["name", "domain", "status"],
+                    id_column="id",
+                    title="Select Project"
+                )
 
                 if not selected_project:
-                    self.print_error(f"Project not found: {user_input}")
+                    self.console.print("Project selection cancelled")
                     return
+            else:
+                # Try to parse input as number or UUID
+                user_input = args[0]
+
+                try:
+                    # Try as number
+                    num = int(user_input)
+                    if 1 <= num <= len(projects):
+                        selected_project = projects[num - 1]
+                    else:
+                        self.print_error(f"Invalid project number (1-{len(projects)})")
+                        return
+                except ValueError:
+                    # Try as partial or full UUID
+                    selected_project = None
+                    for proj in projects:
+                        if str(proj.get("id")).startswith(user_input):
+                            selected_project = proj
+                            break
+
+                    if not selected_project:
+                        self.print_error(f"Project not found: {user_input}")
+                        return
 
             # Select the project
             self.config["current_project"] = selected_project
@@ -260,7 +270,7 @@ class ProjectCommandHandler(CommandHandler):
             # Show brief info
             domain = selected_project.get("domain", "unknown")
             status = selected_project.get("status", "unknown")
-            self.console.print(f"[dim]Domain: {domain} | Status: {status}[/dim]")
+            self.console.print(f"Domain: {domain} | Status: {status}")
 
         except Exception as e:
             self.print_error(f"Error: {e}")

@@ -52,7 +52,8 @@ class TestUserIsolation:
             json=test_project_data,
             headers={"Authorization": f"Bearer {token1}"}
         )
-        project_id = create_response.json()["id"]
+        response_data = create_response.json()
+        project_id = response_data.get("data", response_data).get("id")
 
         # User 2 tries to access User 1's project
         response = test_client.get(
@@ -86,7 +87,8 @@ class TestUserIsolation:
             json=test_project_data,
             headers={"Authorization": f"Bearer {token}"}
         )
-        project_id = create_response.json()["id"]
+        response_data = create_response.json()
+        project_id = response_data.get("data", response_data).get("id")
 
         # User can access their own project
         response = test_client.get(
@@ -168,7 +170,8 @@ class TestOwnerPermissions:
             json=test_project_data,
             headers={"Authorization": f"Bearer {token}"}
         )
-        project_id = create_response.json()["id"]
+        response_data = create_response.json()
+        project_id = response_data.get("data", response_data).get("id")
 
         # Owner can delete
         response = test_client.delete(
@@ -201,7 +204,8 @@ class TestOwnerPermissions:
             json=test_project_data,
             headers={"Authorization": f"Bearer {token}"}
         )
-        project_id = create_response.json()["id"]
+        response_data = create_response.json()
+        project_id = response_data.get("data", response_data).get("id")
 
         # Owner can update
         response = test_client.patch(
@@ -237,7 +241,8 @@ class TestProjectAccessControl:
             json=test_project_data,
             headers={"Authorization": f"Bearer {token1}"}
         )
-        project_id = create_response.json()["id"]
+        response_data = create_response.json()
+        project_id = response_data.get("data", response_data).get("id")
 
         # User 2: register, login, try to delete User 1's project
         test_client.post("/api/v1/auth/register", json=test_user_data_alt)
@@ -280,7 +285,8 @@ class TestProjectAccessControl:
             json=test_project_data,
             headers={"Authorization": f"Bearer {token1}"}
         )
-        project_id = create_response.json()["id"]
+        response_data = create_response.json()
+        project_id = response_data.get("data", response_data).get("id")
 
         # User 2: try to update User 1's project
         test_client.post("/api/v1/auth/register", json=test_user_data_alt)
