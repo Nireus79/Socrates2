@@ -30,20 +30,20 @@ class ProjectCommandHandler(CommandHandler):
     help_text = """
 [bold cyan]Project Commands:[/bold cyan]
 
-  [yellow]/project create[/yellow]              Create new project (domain-aware)
-  [yellow]/project list[/yellow]                List all your projects
-  [yellow]/project select <id>[/yellow]         Select project to work with
-  [yellow]/project info[/yellow]                Show current project details
-  [yellow]/project manage <id>[/yellow]         Unified management (archive/restore/destroy)
+  /project create              Create new project (domain-aware)
+  /project list                List all your projects
+  /project select <id>         Select project to work with
+  /project info                Show current project details
+  /project manage <id>         Unified management (archive/restore/destroy)
 
 [bold cyan]Team & Collaboration:[/bold cyan]
 
-  [yellow]/project add-member <email>[/yellow]      Add team member
-  [yellow]/project remove-member <email>[/yellow]   Remove team member
-  [yellow]/project member-list[/yellow]             List team members
-  [yellow]/project share <team_id>[/yellow]         Share with team
+  /project add-member <email>      Add team member
+  /project remove-member <email>   Remove team member
+  /project member-list             List team members
+  /project share <team_id>         Share with team
 
-[bold]Examples:[/bold]
+Examples:
   /project create                       # Create new project
   /project list                         # Show all projects
   /project select 1                     # Select first project
@@ -90,7 +90,7 @@ class ProjectCommandHandler(CommandHandler):
 
         try:
             # Step 1: Select domain (for domain-awareness)
-            self.console.print("[bold]Step 1: Choose Project Domain[/bold]\n")
+            self.console.print("Step 1: Choose Project Domain\n")
 
             domain_list = []
             for domain_key, domain_info in sorted(constants.DOMAINS.items()):
@@ -109,14 +109,14 @@ class ProjectCommandHandler(CommandHandler):
             )
 
             if not selected_domain:
-                self.console.print("[yellow]Project creation cancelled[/yellow]")
+                self.console.print("Project creation cancelled")
                 return
 
             domain = selected_domain["id"]
-            self.console.print(f"[green]✓ Selected domain: {selected_domain['name']}[/green]\n")
+            self.console.print(f"✓ Selected domain: {selected_domain['name']}\n")
 
             # Step 2: Get project details
-            self.console.print("[bold]Step 2: Project Details[/bold]\n")
+            self.console.print("Step 2: Project Details\n")
 
             name = prompts.prompt_text(
                 self.console,
@@ -131,7 +131,7 @@ class ProjectCommandHandler(CommandHandler):
             )
 
             # Step 3: Solo or team?
-            self.console.print(f"\n[bold]Step 3: Working Arrangement[/bold]\n")
+            self.console.print(f"\nStep 3: Working Arrangement\n")
 
             solo_or_team = prompts.prompt_choice(
                 self.console,
@@ -147,7 +147,7 @@ class ProjectCommandHandler(CommandHandler):
                 self.print_info("You can add team members after project creation")
 
             # Create project via API
-            self.console.print("\n[cyan]Creating project...[/cyan]")
+            self.console.print("\nCreating project...")
 
             result = self.api.create_project(
                 name=name,
@@ -159,7 +159,7 @@ class ProjectCommandHandler(CommandHandler):
             if result.get("success"):
                 project = result.get("data")
                 self.print_success(f"Project created: {name}")
-                self.console.print(f"[cyan]Project ID: {project.get('id')}[/cyan]")
+                self.console.print(f"Project ID: {project.get('id')}")
 
                 # Auto-select the new project
                 self.config["current_project"] = project
@@ -169,7 +169,7 @@ class ProjectCommandHandler(CommandHandler):
                 self.print_error(f"Failed to create project: {error}")
 
         except KeyboardInterrupt:
-            self.console.print("[yellow]Project creation cancelled[/yellow]")
+            self.console.print("Project creation cancelled")
         except Exception as e:
             self.print_error(f"Error: {e}")
 
@@ -178,7 +178,7 @@ class ProjectCommandHandler(CommandHandler):
         if not self.ensure_authenticated():
             return
 
-        self.console.print("[cyan]Loading projects...[/cyan]")
+        self.console.print("Loading projects...")
 
         try:
             result = self.api.get_projects()
@@ -191,14 +191,14 @@ class ProjectCommandHandler(CommandHandler):
             projects = result.get("data", {}).get("projects", [])
 
             if not projects:
-                self.console.print("[yellow]No projects yet. Use /project create to start[/yellow]")
+                self.console.print("No projects yet. Use /project create to start")
                 return
 
             # Format and display projects
             table = table_formatter.format_project_table(projects)
             self.console.print(table)
 
-            self.console.print(f"\n[cyan]Total projects: {len(projects)}[/cyan]")
+            self.console.print(f"\nTotal projects: {len(projects)}")
 
         except Exception as e:
             self.print_error(f"Error loading projects: {e}")
@@ -208,7 +208,7 @@ class ProjectCommandHandler(CommandHandler):
         if not self.ensure_authenticated():
             return
 
-        self.console.print("[cyan]Loading projects...[/cyan]")
+        self.console.print("Loading projects...")
 
         try:
             result = self.api.list_projects()
@@ -220,7 +220,7 @@ class ProjectCommandHandler(CommandHandler):
             projects = result.get("data", {}).get("projects", [])
 
             if not projects:
-                self.console.print("[yellow]No projects available[/yellow]")
+                self.console.print("No projects available")
                 return
 
             # If no args provided, show interactive selection
@@ -228,7 +228,7 @@ class ProjectCommandHandler(CommandHandler):
                 selected_project = prompts.prompt_for_table_selection(
                     self.console,
                     projects,
-                    ["name", "domain", "status"],
+                    ["name", "phase", "status"],
                     id_column="id",
                     title="Select Project"
                 )
@@ -268,9 +268,9 @@ class ProjectCommandHandler(CommandHandler):
             self.print_success(f"Selected project: {project_name}")
 
             # Show brief info
-            domain = selected_project.get("domain", "unknown")
+            phase = selected_project.get("phase", "unknown")
             status = selected_project.get("status", "unknown")
-            self.console.print(f"Domain: {domain} | Status: {status}")
+            self.console.print(f"Phase: {phase} | Status: {status}")
 
         except Exception as e:
             self.print_error(f"Error: {e}")
@@ -325,9 +325,9 @@ class ProjectCommandHandler(CommandHandler):
             status = project.get("status", "unknown")
 
             self.console.print(f"\n[bold cyan]Manage Project[/bold cyan]")
-            self.console.print(f"[bold]Name:[/bold] {project.get('name')}")
-            self.console.print(f"[bold]Status:[/bold] {status}")
-            self.console.print(f"[bold]ID:[/bold] {project_id}\n")
+            self.console.print(f"Name: {project.get('name')}")
+            self.console.print(f"Status: {status}")
+            self.console.print(f"ID: {project_id}\n")
 
             # Determine available actions based on status
             if status == "active":
@@ -340,7 +340,7 @@ class ProjectCommandHandler(CommandHandler):
                     "2": ("Permanently destroy (irreversible)", "destroy_project")
                 }
             else:
-                self.console.print(f"[yellow]No actions available for status: {status}[/yellow]")
+                self.console.print(f"No actions available for status: {status}")
                 return
 
             # Show menu
@@ -355,7 +355,7 @@ class ProjectCommandHandler(CommandHandler):
             )
 
             if choice == "back":
-                self.console.print("[yellow]Cancelled[/yellow]")
+                self.console.print("Cancelled")
                 return
 
             action_label, action_method = actions[choice]
@@ -363,7 +363,7 @@ class ProjectCommandHandler(CommandHandler):
             # Confirmation
             if action_method == "destroy_project":
                 self.console.print("[red bold]⚠ WARNING: This will permanently delete the project![/red bold]")
-                self.console.print("[red]This action CANNOT be undone.[/red]\n")
+                self.console.print("This action CANNOT be undone.\n")
 
             confirm = prompts.prompt_confirm(
                 self.console,
@@ -372,7 +372,7 @@ class ProjectCommandHandler(CommandHandler):
             )
 
             if not confirm:
-                self.console.print("[yellow]Cancelled[/yellow]")
+                self.console.print("Cancelled")
                 return
 
             # Execute action
@@ -418,7 +418,7 @@ class ProjectCommandHandler(CommandHandler):
         )
 
         try:
-            self.console.print("[cyan]Adding member...[/cyan]")
+            self.console.print("Adding member...")
 
             result = self.api.add_project_member(
                 project.get("id"),
@@ -451,11 +451,11 @@ class ProjectCommandHandler(CommandHandler):
             f"Remove {email}?",
             default=False
         ):
-            self.console.print("[yellow]Cancelled[/yellow]")
+            self.console.print("Cancelled")
             return
 
         try:
-            self.console.print("[cyan]Removing member...[/cyan]")
+            self.console.print("Removing member...")
 
             result = self.api.remove_project_member(
                 project.get("id"),
@@ -487,7 +487,7 @@ class ProjectCommandHandler(CommandHandler):
             members = result.get("data", {}).get("members", [])
 
             if not members:
-                self.console.print("[yellow]No members in this project[/yellow]")
+                self.console.print("No members in this project")
                 return
 
             table = table_formatter.format_member_table(members)
@@ -503,13 +503,13 @@ class ProjectCommandHandler(CommandHandler):
             return
 
         if not args:
-            self.console.print("[yellow]Usage: /project share <team_id>[/yellow]")
+            self.console.print("Usage: /project share <team_id>")
             return
 
         team_id = args[0]
 
         try:
-            self.console.print("[cyan]Sharing project with team...[/cyan]")
+            self.console.print("Sharing project with team...")
 
             result = self.api.share_project_with_team(
                 project.get("id"),
