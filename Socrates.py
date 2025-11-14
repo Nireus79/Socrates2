@@ -524,12 +524,12 @@ class SocratesCLI:
             self.registry.load_all_commands()
             registry_commands = list(self.registry.list_commands().keys())
         except Exception as e:
-            self.console.print(f"[yellow]Warning: Could not load command registry: {e}[/yellow]")
+            self.console.print(f"Warning: Could not load command registry: {e}")
             self.registry = None
             registry_commands = []
 
         # Command completer - combine system commands with registry commands
-        self.system_commands = ["/help", "/exit", "/quit", "/back", "/clear", "/debug"]
+        self.system_commands = ["/help", "/exit", "/back", "/clear", "/debug"]
         self.commands = self.system_commands + [f"/{cmd}" for cmd in registry_commands] + [
             "/chat",  # Legacy command
         ]
@@ -562,7 +562,7 @@ class SocratesCLI:
 
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals (Ctrl+C, SIGTERM)"""
-        self.console.print("\n[yellow]Shutting down gracefully...[/yellow]")
+        self.console.print("\nShutting down gracefully...")
         self.running = False
         self.shutdown()
         sys.exit(0)
@@ -576,7 +576,7 @@ class SocratesCLI:
         try:
             response = requests.get(f"{self.server_url}/api/v1/admin/health", timeout=1)
             if response.status_code == 200:
-                self.console.print(f"[dim]✓ Backend server already running at {self.server_url}[/dim]")
+                self.console.print(f"[OK] Backend server already running at {self.server_url}")
                 return
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             pass
@@ -715,13 +715,13 @@ class SocratesCLI:
                         self.server_process.wait(timeout=2)
             except Exception as e:
                 if self.debug:
-                    self.console.print(f"[dim]Note: {e}[/dim]")
+                    self.console.print(f"Note: {e}")
 
     def shutdown(self):
         """Gracefully shutdown the application"""
         if self.auto_start_server and self.server_process is not None:
             try:
-                self.console.print("[dim]Stopping backend server...[/dim]")
+                self.console.print("Stopping backend server...")
             except Exception:
                 print("Stopping backend server...")
             self._stop_server()
@@ -731,12 +731,12 @@ class SocratesCLI:
         try:
             # Try to print fancy banner with Rich
             banner = """
-[bold cyan]╔═════════════════════════════════════════════════════════╗[/bold cyan]
-[bold cyan]║[/bold cyan]       [bold white]                 SOCRATES           [/bold white]              [bold cyan]║[/bold cyan]
-[bold cyan]║[/bold cyan][italic]     Ουδέν οίδα, ούτε διδάσκω τι, αλλά διαπορώ μόνον[/italic]  [bold cyan]   ║[/bold cyan]
-[bold cyan]╚═════════════════════════════════════════════════════════╝[/bold cyan]
+╔═════════════════════════════════════════════════════════╗
+║       [bold white]                 SOCRATES           [/bold white]              ║
+║[italic]     Ουδέν οίδα, ούτε διδάσκω τι, αλλά διαπορώ μόνον[/italic]     ║
+╚═════════════════════════════════════════════════════════╝
 
-[dim]Type /help for available commands or just start chatting![/dim]
+Type /help for available commands or just start chatting!
 """
             self.console.print(banner)
         except Exception:
@@ -750,36 +750,43 @@ class SocratesCLI:
     def print_help(self):
         """Print help message"""
         help_text = """
-[bold cyan]Available Commands:[/bold cyan]
+Available Commands:
 
-[bold yellow]Authentication:[/bold yellow]
+Authentication & Account:
   /register              Register new account
   /login                 Login to existing account
   /logout                Logout from current session
   /whoami                Show current user information
+  /account               Manage your account (show, change-password, delete)
+  /account show          Show account details
+  /account change-password  Change your password
+  /account delete        Delete your account (permanent)
 
-[bold yellow]Project Management:[/bold yellow]
+Project Management:
   /projects              List all your projects
+  /project                Show project menu
   /project create        Create new project
-  /project select <id>   Select project to work with
+  /project select        Show interactive project list to select from
+  /project select <id>   Select project directly by ID
   /project info          Show current project details
-  /project archive <id>  Archive project (soft delete - reversible)
-  /project restore <id>  Restore archived project back to active
-  /project destroy <id>  Permanently delete archived project (hard delete - irreversible)
+  /project manage        Manage project (archive, restore, destroy)
 
-[bold yellow]Session Management:[/bold yellow]
-  /session start         Start new Socratic questioning session
-  /session select        Select existing session to resume
-  /session end           End current session
+Session Management:
   /sessions              List all sessions for current project
+  /session               Show session menu
+  /session start         Start new Socratic questioning session
+  /session select        Show interactive session list to select from
+  /session end           End current session
+  /session delete <id>   Delete a session
+  /session note          Add note to current session
   /history               Show conversation history
 
-[bold yellow]Chat Modes:[/bold yellow]
+Chat Modes:
   /mode                  Toggle between Socratic and direct chat modes
   /mode socratic         Switch to Socratic questioning mode
   /mode direct           Switch to direct chat mode
 
-[bold yellow]Configuration & Export:[/bold yellow]
+Configuration & Export:
   /config                Show/manage configuration settings
   /config set <key> <val> Set configuration value
   /config get <key>      Get configuration value
@@ -789,50 +796,68 @@ class SocratesCLI:
   /export [format]       Export project (markdown, json, csv, pdf)
   /stats                 Show session statistics
 
-[bold yellow]Advanced Features:[/bold yellow]
+Advanced Features:
   /template              Manage project templates
   /template list         List available templates
   /template info <name>  Show template details
   /search <query>        Search projects, specs, and questions
-  /insights [<id>]       Analyze project gaps, risks, opportunities
+  /insights              Analyze project gaps, risks, opportunities
   /filter [type] [cat]   Filter specifications by category
-  /resume <id>           Resume a paused session
+  /resume                Resume a paused session
   /wizard                Interactive project setup with templates
   /status                Show current project and session status
 
-[bold yellow]System:[/bold yellow]
+System:
   /help                  Show this help message
   /back                  Go back (clear project/session selection)
   /clear                 Clear screen
   /debug                 Toggle debug mode
-  /exit, /quit           Exit Socrates CLI
+  /exit                  Exit Socrates CLI (aliases: /quit, /q)
 
-[bold cyan]Chat Modes:[/bold cyan]
+Quick Tips:
 
-[bold]Socratic Mode (default):[/bold]
+Getting Started:
+1. /register or /login to create/access your account
+2. /project create to start a new project
+3. /session start to begin a Socratic session
+4. Type your requirements and answer AI questions
+5. /save or /export to save your work
+
+Project Discovery:
+• /projects - View all projects
+• /project select - Interactive project selection
+• /status - Show current context
+
+Session Management:
+• /sessions - List sessions in current project
+• /session start - Create new session
+• /mode - Switch between Socratic and direct chat
+
+Chat Modes:
+
+Socratic Mode (default) :
 The AI uses Socratic questioning to help you think deeply about your
 requirements. It asks thoughtful questions to extract specifications.
 Requires an active session (/session start).
 
-[bold]Direct Mode:[/bold]
+Direct Mode :
 Chat directly with the AI assistant without structured questioning.
 Great for quick questions, clarifications, or general discussion.
 No session required.
-
-[bold cyan]Examples:[/bold cyan]
-  /project create
-  /session start
-  I want to build a REST API for managing tasks
 """
-        self.console.print(Panel(help_text, title="[bold]Socrates CLI Help[/bold]", border_style="cyan"))
+        self.console.print(Panel(help_text, title="Socrates CLI Help", border_style="cyan"))
 
     def ensure_authenticated(self) -> bool:
         """Check if user is authenticated"""
         token = self.config.get("access_token")
         if not token:
-            self.console.print("[yellow]You need to login first. Use /login or /register[/yellow]")
+            if self.debug:
+                self.console.print(f"DEBUG: No access_token in config. Available keys: {list(self.config.data.keys())}")
+            self.console.print("[ERROR] Not authenticated. Use /login or /register first")
             return False
         self.api.set_token(token)
+        if self.debug:
+            self.console.print(f"DEBUG: Token found in config, user: {self.config.get('user_email')}")
         return True
 
     def _get_config_dict(self) -> Dict[str, Any]:
@@ -852,14 +877,14 @@ No session required.
     def ensure_project_selected(self) -> bool:
         """Check if project is selected"""
         if not self.current_project:
-            self.console.print("[yellow]No project selected. Use /project select <id> or /project create[/yellow]")
+            self.console.print("No project selected. Use /project select <id> or /project create")
             return False
         return True
 
     def ensure_session_active(self) -> bool:
         """Check if session is active"""
         if not self.current_session:
-            self.console.print("[yellow]No active session. Use /session start[/yellow]")
+            self.console.print("No active session. Use /session start")
             return False
         return True
 
@@ -922,6 +947,12 @@ No session required.
         except Exception:
             return False
 
+    def getpass(self, prompt_text: str = "Password: ") -> str:
+        """
+        Get password input securely (masked input).
+        """
+        return self.prompt_with_password(prompt_text, is_password=True) or ""
+
     def get_prompt_input(self, prompt_text: str) -> str:
         """
         Get user input, handling both PromptSession and basic input() modes.
@@ -941,8 +972,8 @@ No session required.
 
     def cmd_register(self):
         """Handle /register command"""
-        self.console.print("\n[bold cyan]Register New Account[/bold cyan]\n")
-        self.console.print("[dim]Tip: Type 'back' at any step to go back[/dim]\n")
+        self.console.print("\nRegister New Account\n")
+        self.console.print("Tip: Type 'back' at any step to go back\n")
 
         try:
             data = {}
@@ -951,33 +982,33 @@ No session required.
             while True:
                 username = self.prompt_with_back("Username")
                 if username is None:
-                    self.console.print("[yellow]Registration cancelled[/yellow]")
+                    self.console.print("Registration cancelled")
                     return
                 if username:
                     data['username'] = username
                     break
-                self.console.print("[yellow]Username is required[/yellow]")
+                self.console.print("Username is required")
 
             # Step 2: Name
             while True:
                 name = self.prompt_with_back("First name")
                 if name is None:
                     # Go back to username
-                    self.console.print("[yellow]Going back...[/yellow]")
+                    self.console.print("Going back...")
                     data.pop('username', None)
                     self.cmd_register()
                     return
                 if name:
                     data['name'] = name
                     break
-                self.console.print("[yellow]First name is required[/yellow]")
+                self.console.print("First name is required")
 
             # Step 3: Surname
             while True:
                 surname = self.prompt_with_back("Last name")
                 if surname is None:
                     # Go back to name
-                    self.console.print("[yellow]Going back...[/yellow]")
+                    self.console.print("Going back...")
                     data.pop('name', None)
                     # Restart from Step 2
                     self.cmd_register()
@@ -985,111 +1016,111 @@ No session required.
                 if surname:
                     data['surname'] = surname
                     break
-                self.console.print("[yellow]Last name is required[/yellow]")
+                self.console.print("Last name is required")
 
             # Step 4: Email
             while True:
                 email = self.prompt_with_back("Email")
                 if email is None:
                     # Go back to surname
-                    self.console.print("[yellow]Going back...[/yellow]")
+                    self.console.print("Going back...")
                     data.pop('surname', None)
                     self.cmd_register()
                     return
                 if email:
                     data['email'] = email
                     break
-                self.console.print("[yellow]Email is required[/yellow]")
+                self.console.print("Email is required")
 
             # Step 5: Password
             while True:
                 password = self.prompt_with_back("Password", password=True)
                 if password is None:
                     # Go back to email
-                    self.console.print("[yellow]Going back...[/yellow]")
+                    self.console.print("Going back...")
                     data.pop('email', None)
                     self.cmd_register()
                     return
                 if password:
                     data['password'] = password
                     break
-                self.console.print("[yellow]Password is required[/yellow]")
+                self.console.print("Password is required")
 
             # Step 6: Confirm password
             while True:
                 password_confirm = self.prompt_with_back("Confirm password", password=True)
                 if password_confirm is None:
                     # Go back to password
-                    self.console.print("[yellow]Going back...[/yellow]")
+                    self.console.print("Going back...")
                     data.pop('password', None)
                     self.cmd_register()
                     return
                 if password_confirm:
                     break
-                self.console.print("[yellow]Please confirm your password[/yellow]")
+                self.console.print("Please confirm your password")
 
             if data['password'] != password_confirm:
-                self.console.print("[red]Passwords do not match![/red]")
+                self.console.print("Passwords do not match!")
                 return
 
             # Step 7: Review and confirm
-            self.console.print("\n[cyan]Review your information:[/cyan]")
+            self.console.print("\nReview your information:")
             self.console.print(f"  Username: {data['username']}")
             self.console.print(f"  Name: {data['name']} {data['surname']}")
             self.console.print(f"  Email: {data['email']}")
 
-            proceed = Confirm.ask("\n[cyan]Proceed with registration?[/cyan]")
+            proceed = Confirm.ask("\nProceed with registration?")
             if not proceed:
-                self.console.print("[yellow]Registration cancelled[/yellow]")
+                self.console.print("Registration cancelled")
                 return
 
             try:
                 if self.debug:
-                    self.console.print(f"[dim]DEBUG: Sending registration request for username='{data['username']}'[/dim]")
+                    self.console.print(f"DEBUG: Sending registration request for username='{data['username']}'")
 
-                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Creating account...", total=None)
                     result = self.api.register(data['username'], data['name'], data['surname'], data['email'], data['password'])
 
                 if self.debug:
                     if result.get("user_id"):
-                        self.console.print(f"[dim]DEBUG: Registration successful - user_id={result.get('user_id')}[/dim]")
+                        self.console.print(f"DEBUG: Registration successful - user_id={result.get('user_id')}")
                     else:
-                        self.console.print(f"[dim]DEBUG: Registration failed - response: {result}[/dim]")
+                        self.console.print(f"DEBUG: Registration failed - response: {result}")
 
                 # Backend returns user_id on success (no "success" field)
                 if result.get("user_id"):
                     # Log the registration action
                     self.cli_logger.log_register(data['username'], data['email'])
-                    self.console.print(f"\n[green]✓ Account created successfully![/green]")
-                    self.console.print(f"[dim]User ID: {result.get('user_id')}[/dim]")
-                    self.console.print(f"[dim]Username: {data['username']}[/dim]")
-                    self.console.print(f"[dim]Email: {data['email']}[/dim]")
-                    self.console.print("\n[yellow]Please login with /login[/yellow]")
+                    self.console.print(f"\n[OK] Account created successfully!")
+                    self.console.print(f"User ID: {result.get('user_id')}")
+                    self.console.print(f"Username: {data['username']}")
+                    self.console.print(f"Email: {data['email']}")
+                    self.console.print("\nPlease login with /login")
                 else:
-                    self.console.print(f"\n[red]✗ Registration failed: {result.get('message', 'Unknown error')}[/red]")
+                    self.console.print(f"\n[ERROR] Registration failed: {result.get('message', 'Unknown error')}")
             except requests.exceptions.ConnectionError:
-                self.console.print(f"\n[red]✗ Cannot connect to Socrates backend[/red]")
-                self.console.print(f"[yellow]The server is not running at http://localhost:8000[/yellow]")
-                self.console.print(f"[yellow]Please start the backend server first:[/yellow]")
-                self.console.print(f"[dim]  cd backend[/dim]")
-                self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
+                self.console.print(f"\n[ERROR] Cannot connect to Socrates backend")
+                self.console.print(f"The server is not running at http://localhost:8000")
+                self.console.print(f"Please start the backend server first:")
+                self.console.print(f"  cd backend")
+                self.console.print(f"  uvicorn app.main:app --reload")
             except Exception as e:
-                self.console.print(f"[red]✗ Registration error: {str(e)[:100]}[/red]")
+                self.console.print(f"[ERROR] Registration error: {str(e)[:100]}")
         except requests.exceptions.ConnectionError:
-            self.console.print(f"\n[red]✗ Cannot connect to Socrates backend[/red]")
-            self.console.print(f"[yellow]The server is not running at http://localhost:8000[/yellow]")
-            self.console.print(f"[yellow]Please start the backend server first:[/yellow]")
-            self.console.print(f"[dim]  cd backend[/dim]")
-            self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
+            self.console.print(f"\n[ERROR] Cannot connect to Socrates backend")
+            self.console.print(f"The server is not running at http://localhost:8000")
+            self.console.print(f"Please start the backend server first:")
+            self.console.print(f"  cd backend")
+            self.console.print(f"  uvicorn app.main:app --reload")
         except Exception as e:
-            self.console.print(f"[red]✗ Error: {str(e)[:100]}[/red]")
+            self.console.print(f"[ERROR] Error: {str(e)[:100]}")
 
     def cmd_login(self):
         """Handle /login command"""
-        self.console.print("\n[bold cyan]Login[/bold cyan]\n")
-        self.console.print("[dim]Tip: Type 'back' at any step to go back[/dim]\n")
+        self.console.print("\nLogin\n")
+        self.console.print("Tip: Type 'back' at any step to go back\n")
 
         try:
             data = {}
@@ -1098,46 +1129,48 @@ No session required.
             while True:
                 username = self.prompt_with_back("Username")
                 if username is None:
-                    self.console.print("[yellow]Login cancelled[/yellow]")
+                    self.console.print("Login cancelled")
                     return
                 if username:
                     data['username'] = username
                     break
-                self.console.print("[yellow]Username is required[/yellow]")
+                self.console.print("Username is required")
 
             # Step 2: Password
             while True:
                 password = self.prompt_with_back("Password", password=True)
                 if password is None:
                     # Go back to username
-                    self.console.print("[yellow]Going back...[/yellow]")
+                    self.console.print("Going back...")
                     data.pop('username', None)
                     self.cmd_login()
                     return
                 if password:
                     data['password'] = password
                     break
-                self.console.print("[yellow]Password is required[/yellow]")
+                self.console.print("Password is required")
 
             try:
                 if self.debug:
-                    self.console.print(f"[dim]DEBUG: Sending login request for username='{data['username']}'[/dim]")
+                    self.console.print(f"DEBUG: Sending login request for username='{data['username']}'")
 
-                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Logging in...", total=None)
                     result = self.api.login(data['username'], data['password'])
 
                 if self.debug:
                     if result.get("access_token"):
-                        self.console.print(f"[dim]DEBUG: Login successful[/dim]")
+                        self.console.print(f"DEBUG: Login successful")
                     else:
-                        self.console.print(f"[dim]DEBUG: Login failed - response: {result}[/dim]")
+                        self.console.print(f"DEBUG: Login failed - response: {result}")
 
                 if result.get("access_token"):
                     self.config.set("access_token", result["access_token"])
                     self.config.set("refresh_token", result.get("refresh_token"))
                     self.config.set("user_email", result.get("username"))
+                    self.config.set("username", result.get("username"))  # Store username for account mgmt
+                    self.config.set("user_id", result.get("user_id"))
                     self.config.set("user_name", result.get("name"))
                     self.api.set_token(result["access_token"])
                     if result.get("refresh_token"):
@@ -1145,27 +1178,27 @@ No session required.
                     user_display = result.get("name", data['username'])
                     # Log the login action
                     self.cli_logger.log_login(data['username'], result.get("username", ""))
-                    self.console.print(f"\n[green]✓ Logged in successfully as {user_display}[/green]")
+                    self.console.print(f"\n[OK] Logged in successfully as {user_display}")
                 else:
                     error_detail = result.get('message', result.get('detail', 'Invalid credentials'))
-                    self.console.print(f"\n[red]✗ Login failed: {error_detail}[/red]")
+                    self.console.print(f"\n[ERROR] Login failed: {error_detail}")
             except requests.exceptions.ConnectionError:
-                self.console.print(f"\n[red]✗ Cannot connect to Socrates backend[/red]")
-                self.console.print(f"[yellow]The server is not running at http://localhost:8000[/yellow]")
-                self.console.print(f"[yellow]Please start the backend server first:[/yellow]")
-                self.console.print(f"[dim]  cd backend[/dim]")
-                self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
+                self.console.print(f"\n[ERROR] Cannot connect to Socrates backend")
+                self.console.print(f"The server is not running at http://localhost:8000")
+                self.console.print(f"Please start the backend server first:")
+                self.console.print(f"  cd backend")
+                self.console.print(f"  uvicorn app.main:app --reload")
             except Exception as e:
-                self.console.print(f"[red]✗ Login error: {str(e)[:100]}[/red]")
+                self.console.print(f"[ERROR] Login error: {str(e)[:100]}")
 
         except requests.exceptions.ConnectionError:
-            self.console.print(f"\n[red]✗ Cannot connect to Socrates backend[/red]")
-            self.console.print(f"[yellow]The server is not running at http://localhost:8000[/yellow]")
-            self.console.print(f"[yellow]Please start the backend server first:[/yellow]")
-            self.console.print(f"[dim]  cd backend[/dim]")
-            self.console.print(f"[dim]  uvicorn app.main:app --reload[/dim]")
+            self.console.print(f"\n[ERROR] Cannot connect to Socrates backend")
+            self.console.print(f"The server is not running at http://localhost:8000")
+            self.console.print(f"Please start the backend server first:")
+            self.console.print(f"  cd backend")
+            self.console.print(f"  uvicorn app.main:app --reload")
         except Exception as e:
-            self.console.print(f"[red]✗ Error: {str(e)[:100]}[/red]")
+            self.console.print(f"[ERROR] Error: {str(e)[:100]}")
 
     def cmd_logout(self):
         """Handle /logout command"""
@@ -1180,9 +1213,9 @@ No session required.
             self.config.clear()
             self.current_project = None
             self.current_session = None
-            self.console.print("[green]✓ Logged out successfully[/green]")
+            self.console.print("[OK] Logged out successfully")
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_whoami(self):
         """Handle /whoami command"""
@@ -1190,14 +1223,123 @@ No session required.
             return
 
         email = self.config.get("user_email", "Unknown")
-        self.console.print(f"\n[cyan]Logged in as:[/cyan] [bold]{email}[/bold]")
+        self.console.print(f"\nLogged in as: {email}")
 
         if self.current_project:
             self.console.print(
-                f"[cyan]Current project:[/cyan] [bold]{self.current_project['name']}[/bold] ({self.current_project['id']})")
+                f"Current project: {self.current_project['name']} ({self.current_project['id']})")
 
         if self.current_session:
-            self.console.print(f"[cyan]Active session:[/cyan] [bold]{self.current_session['id']}[/bold]")
+            self.console.print(f"Active session: {self.current_session['id']}")
+
+    def cmd_account(self, args: List[str]):
+        """Handle /account command - manage user account"""
+        if not self.ensure_authenticated():
+            return
+
+        if not args:
+            self.console.print("\nAccount Management\n")
+            self.console.print("Usage: /account <command>\n")
+            self.console.print("Available commands:")
+            self.console.print("  show              Show account details")
+            self.console.print("  change-password   Change your password")
+            self.console.print("  delete            Delete your account (permanent)")
+            self.console.print()
+            return
+
+        subcommand = args[0].lower()
+
+        if subcommand == "show":
+            email = self.config.get("user_email", "Unknown")
+            username = self.config.get("username", "Unknown")
+            user_id = self.config.get("user_id", "Unknown")
+
+            info = f"""
+Account Information
+
+Username: {username}
+Email: {email}
+User ID: {user_id}
+"""
+            self.console.print(Panel(info, border_style="cyan"))
+
+        elif subcommand == "change-password":
+            self.console.print("\nChange Password\n")
+            try:
+                current_password = self.getpass("Current password: ")
+                if not current_password:
+                    self.console.print("Password change cancelled")
+                    return
+
+                # Confirm new password twice
+                while True:
+                    new_password = self.getpass("New password (min 8 characters): ")
+                    if not new_password or len(new_password) < 8:
+                        self.console.print("Password must be at least 8 characters")
+                        continue
+
+                    confirm_password = self.getpass("Confirm new password: ")
+                    if new_password == confirm_password:
+                        break
+                    self.console.print("Passwords do not match. Try again.")
+
+                with Progress(SpinnerColumn(), TextColumn("{task.description}"),
+                              console=self.console, transient=True) as progress:
+                    progress.add_task("Changing password...", total=None)
+                    result = self.api.change_password(current_password, new_password)
+
+                if result.get("success"):
+                    self.console.print("\n[OK] Password changed successfully!")
+                else:
+                    error = result.get("error") or result.get("data", {}).get("detail", "Unknown error")
+                    self.console.print(f"\n[ERROR] Failed: {error}")
+
+            except KeyboardInterrupt:
+                self.console.print("\nPassword change cancelled")
+            except Exception as e:
+                self.console.print(f"Error: {e}")
+
+        elif subcommand == "delete":
+            email = self.config.get("user_email", "Unknown")
+            username = self.config.get("username", "Unknown")
+
+            self.console.print("\n[WARNING] DELETE ACCOUNT\n")
+            self.console.print("This action is PERMANENT and CANNOT be undone!")
+            self.console.print(f"You are about to delete the account: {email}\n")
+
+            # Double confirmation
+            confirm1 = Confirm.ask("Are you sure you want to delete your account?", default=False)
+            if not confirm1:
+                self.console.print("Account deletion cancelled")
+                return
+
+            confirm2 = Confirm.ask("Type your username to confirm: ", choices=["yes", "no"], default="no")
+            if confirm2 != "yes":
+                # Actually, we need password verification
+                password = self.getpass("Enter your password to confirm deletion: ")
+                if not password:
+                    self.console.print("Account deletion cancelled")
+                    return
+
+                with Progress(SpinnerColumn(), TextColumn("{task.description}"),
+                              console=self.console, transient=True) as progress:
+                    progress.add_task("Deleting account...", total=None)
+                    result = self.api.delete_account(password, username)
+
+                if result.get("success"):
+                    self.console.print("\n[OK] Account deleted successfully")
+                    self.console.print("You have been logged out. Please close this application.")
+                    self.config.clear()
+                    self.running = False
+                else:
+                    error = result.get("error") or result.get("data", {}).get("detail", "Unknown error")
+                    self.console.print(f"\n[ERROR] Failed: {error}")
+            else:
+                self.console.print("Account deletion cancelled")
+
+        else:
+            self.console.print(f"Unknown subcommand: {subcommand}")
+            self.console.print("Use /account (with no args) to see available commands")
 
     def cmd_back(self):
         """Handle /back command - go back by clearing selections"""
@@ -1206,17 +1348,17 @@ No session required.
         if self.current_session:
             self.current_session = None
             self.current_question = None
-            self.console.print("[yellow]✓ Session cleared[/yellow]")
+            self.console.print("[OK] Session cleared")
             had_selection = True
 
         if self.current_project:
             self.current_project = None
-            self.console.print("[yellow]✓ Project cleared[/yellow]")
+            self.console.print("[OK] Project cleared")
             had_selection = True
 
         if not had_selection:
-            self.console.print("[dim]No project or session selected to clear[/dim]")
-            self.console.print("[cyan]Available commands:[/cyan]")
+            self.console.print("No project or session selected to clear")
+            self.console.print("Available commands:")
             self.console.print("  /project create  - Create a new project")
             self.console.print("  /projects        - List your projects")
             self.console.print("  /help            - Show all available commands")
@@ -1231,7 +1373,7 @@ No session required.
             projects = result.get("projects", [])
 
             if not projects:
-                self.console.print("\n[yellow]No projects yet. Create one with /project create[/yellow]")
+                self.console.print("\nNo projects yet. Create one with /project create")
                 return
 
             table = Table(title="Your Projects", show_header=True, header_style="bold cyan")
@@ -1257,7 +1399,7 @@ No session required.
             self.console.print(table)
             self.console.print()
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_project(self, args: List[str]):
         """Handle /project command"""
@@ -1265,36 +1407,57 @@ No session required.
             return
 
         if not args:
-            self.console.print("[yellow]Usage: /project <create|select|manage|info> [args][/yellow]")
+            # Show interactive menu
+            self.console.print("\nProject Management\n")
+            self.console.print("What would you like to do?")
+            self.console.print("  [1] Create a new project")
+            self.console.print("  [2] Select an existing project")
+            self.console.print("  [3] View current project info")
+            self.console.print("  [4] Manage a project (archive/restore/delete)")
+            self.console.print("  [back] Go back\n")
+
+            choice = Prompt.ask("Select option", choices=["1", "2", "3", "4", "back"], default="1")
+
+            if choice == "back":
+                return
+            elif choice == "1":
+                self.cmd_project(["create"])
+            elif choice == "2":
+                self.cmd_project(["select"])
+            elif choice == "3":
+                self.cmd_project(["info"])
+            elif choice == "4":
+                self.console.print("Use: /project manage <project_id> or /project manage")
+                self.cmd_project(["manage"])
             return
 
         subcommand = args[0]
 
         if subcommand == "create":
-            self.console.print("\n[bold cyan]Create New Project[/bold cyan]\n")
-            self.console.print("[dim]Tip: Type 'back' to cancel[/dim]\n")
+            self.console.print("\nCreate New Project\n")
+            self.console.print("Tip: Type 'back' to cancel\n")
 
             # Step 1: Project name
             while True:
                 name = self.prompt_with_back("Project name")
                 if name is None:
-                    self.console.print("[yellow]Project creation cancelled[/yellow]")
+                    self.console.print("Project creation cancelled")
                     return
                 if name:
                     break
-                self.console.print("[yellow]Project name is required[/yellow]")
+                self.console.print("Project name is required")
 
             # Step 2: Description (optional)
             description = self.prompt_with_back("Description (optional)", default="")
             if description is None:
-                self.console.print("[yellow]Going back...[/yellow]")
+                self.console.print("Going back...")
                 self.cmd_project(["create"])
                 return
 
             description = description or ""
 
             try:
-                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Creating project...", total=None)
                     result = self.api.create_project(name, description)
@@ -1303,126 +1466,94 @@ No session required.
                     project_id = result.get("data", {}).get("project_id")
                     # Log the project creation
                     self.cli_logger.log_project_create(name, project_id)
-                    self.console.print(f"\n[green]✓ Project created: {project_id}[/green]")
+                    self.console.print(f"\n[OK] Project created: {project_id}")
 
                     # Auto-select the new project
                     project_result = self.api.get_project(project_id)
                     if project_result.get("success"):
                         self.current_project = project_result.get("data")
-                        self.console.print(f"[cyan]Selected project: {name}[/cyan]")
+                        self.console.print(f"Selected project: {name}")
                 else:
                     error_msg = result.get('message') or result.get('detail') or 'Unknown error'
-                    self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
+                    self.console.print(f"[ERROR] Failed: {error_msg}")
             except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
+                self.console.print(f"Error: {e}")
 
         elif subcommand == "select":
-            # If no project ID provided, show interactive list
-            if len(args) < 2:
-                try:
-                    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
-                                  console=self.console, transient=True) as progress:
-                        progress.add_task("Loading projects...", total=None)
-                        response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
+            # Project selection: /project select [number|id]
+            try:
+                result = self.api.list_projects()
 
-                    # Check for authentication errors
-                    if response.status_code == 401:
-                        self.console.print("[red]✗ Your session has expired. Please log in again.[/red]")
-                        self.handle_command("/login")
+                if not result.get("success"):
+                    self.console.print("ERROR: Could not load projects")
+                    return
+
+                # Get projects from data wrapper
+                data = result.get("data", {})
+                projects = data.get("projects", []) if isinstance(data, dict) else []
+
+                if not projects:
+                    self.console.print("No projects found. Create one with /project create")
+                    return
+
+                # If number/id provided as argument, use it directly
+                if len(args) >= 2:
+                    choice = args[1]
+                else:
+                    # Show interactive list
+                    self.console.print("\nYour Projects:\n")
+
+                    for i, proj in enumerate(projects, 1):
+                        desc = proj.get("description", "")
+                        if len(desc) > 40:
+                            desc = desc[:37] + "..."
+                        status = proj.get("status", "unknown")
+                        proj_id = str(proj.get("id", ""))[:8]
+                        self.console.print(f"  [{i}] {proj.get('name', 'Unnamed')} ({proj_id}) - {status}")
+                        if desc:
+                            self.console.print(f"      {desc}")
+
+                    self.console.print()
+                    choice = Prompt.ask("Select project by number or enter project ID (or 'back')", default="1")
+
+                    if choice.lower() in ["/back", "back"]:
                         return
 
-                    result = response.json()
-
-                    # DEBUG: Print API response
-                    self.console.print(f"[dim]DEBUG: API response = {result}[/dim]")
-
-                    if result.get("success"):
-                        data = result.get("data", {})
-                        projects = data.get("projects", [])
-
-                        if projects:
-                            # Display projects in a table (show all projects, mark archived)
-                            table = Table(show_header=True, header_style="bold cyan")
-                            table.add_column("#", style="dim")
-                            table.add_column("Name", style="bold")
-                            table.add_column("Project ID", style="cyan")
-                            table.add_column("Status", style="dim")
-                            table.add_column("Description", style="dim")
-
-                            for i, proj in enumerate(projects, 1):
-                                desc = proj.get("description", "")
-                                if len(desc) > 40:
-                                    desc = desc[:37] + "..."
-                                status = proj.get("status", "unknown")
-                                status_display = f"[dim]{status}[/dim]" if status == "archived" else f"[green]{status}[/green]"
-                                table.add_row(str(i), proj.get("name", "Unnamed"), str(proj.get("id", ""))[:8], status_display, desc)
-
-                            self.console.print("\n[bold cyan]Your Projects:[/bold cyan]\n")
-                            self.console.print(table)
-                            self.console.print()
-
-                            # Prompt user to select
-                            choice = Prompt.ask(
-                                "Select project by number or enter project ID (or 'back')",
-                                default="1"
-                            )
-
-                            # Check for /back or back command
-                            if choice.lower() in ["/back", "back"]:
-                                self.console.print("[yellow]Going back...[/yellow]")
-                                return
-
-                            try:
-                                choice_num = int(choice)
-                                if 1 <= choice_num <= len(projects):
-                                    project_id = str(projects[choice_num - 1].get("id"))
-                                else:
-                                    self.console.print("[red]Invalid selection[/red]")
-                                    return
-                            except ValueError:
-                                # Not a number, try to match as partial or full UUID
-                                project_id = None
-                                for proj in projects:
-                                    if str(proj.get("id")).startswith(choice):
-                                        project_id = str(proj.get("id"))
-                                        break
-                                if not project_id:
-                                    # Use as-is (might be full UUID)
-                                    project_id = choice
-
-                            # Load and select the project
-                            proj_result = self.api.get_project(project_id)
-                            if proj_result.get("success"):
-                                self.current_project = proj_result.get("data")
-                                # Log the project selection
-                                self.cli_logger.log_project_select(self.current_project['name'], project_id)
-                                self.current_session = None
-                                self.console.print(f"\n[green]✓ Selected project: {self.current_project['name']}[/green]\n")
-                            else:
-                                self.console.print(f"[red]✗ Project not found[/red]")
-                        else:
-                            self.console.print("[yellow]No projects found. Create one first with /project create[/yellow]")
-                    else:
-                        error_msg = result.get('message') or 'Failed to load projects'
-                        self.console.print(f"[red]✗ {error_msg}[/red]")
-                except Exception as e:
-                    self.console.print(f"[red]Error: {e}[/red]")
-            else:
-                # Direct selection by project ID
-                project_id = args[1]
+                # Parse selection
                 try:
-                    result = self.api.get_project(project_id)
-                    if result.get("success"):
-                        self.current_project = result.get("data")
-                        # Log the project selection
-                        self.cli_logger.log_project_select(self.current_project['name'], project_id)
-                        self.current_session = None  # Clear session when switching projects
-                        self.console.print(f"[green]✓ Selected project: {self.current_project['name']}[/green]")
+                    choice_num = int(choice)
+                    if 1 <= choice_num <= len(projects):
+                        project_id = str(projects[choice_num - 1].get("id"))
                     else:
-                        error_msg = result.get('message') or 'Project not found'
-                        self.console.print(f"[red]✗ {error_msg}[/red]")
-                except Exception as e:
-                    self.console.print(f"[red]Error: {e}[/red]")
+                        self.console.print("ERROR: Invalid selection")
+                        return
+                except ValueError:
+                    # Not a number, try to match as partial or full UUID
+                    project_id = None
+                    for proj in projects:
+                        if str(proj.get("id")).startswith(choice):
+                            project_id = str(proj.get("id"))
+                            break
+                    if not project_id:
+                        project_id = choice
+
+                # Load and select the project
+                proj_result = self.api.get_project(project_id)
+                if proj_result.get("success"):
+                    # Get project data (handle wrapped response)
+                    proj_data = proj_result.get("data", {})
+                    self.current_project = proj_data
+                    self.cli_logger.log_project_select(self.current_project['name'], project_id)
+                    self.current_session = None
+                    self.console.print(f"\nSelected project: {self.current_project['name']}\n")
+                else:
+                    self.console.print("ERROR: Project not found")
+
+            except Exception as e:
+                self.console.print(f"ERROR: {e}")
+                if self.debug:
+                    import traceback
+                    self.console.print(traceback.format_exc())
 
         elif subcommand == "info":
             if not self.ensure_project_selected():
@@ -1430,21 +1561,21 @@ No session required.
 
             p = self.current_project
             info = f"""
-[bold cyan]Project Information[/bold cyan]
+Project Information
 
-[bold]Name:[/bold] {p['name']}
-[bold]ID:[/bold] {p['id']}
-[bold]Description:[/bold] {p.get('description', 'N/A')}
-[bold]Phase:[/bold] {p.get('current_phase', 'N/A')}
-[bold]Maturity Score:[/bold] {p.get('maturity_score', 0):.1f}%
-[bold]Created:[/bold] {p.get('created_at', 'N/A')}
-[bold]Updated:[/bold] {p.get('updated_at', 'N/A')}
+Name: {p['name']}
+ID: {p['id']}
+Description: {p.get('description', 'N/A')}
+Phase: {p.get('current_phase', 'N/A')}
+Maturity Score: {p.get('maturity_score', 0):.1f}%
+Created: {p.get('created_at', 'N/A')}
+Updated: {p.get('updated_at', 'N/A')}
 """
             self.console.print(Panel(info, border_style="cyan"))
 
         elif subcommand == "manage":
             if len(args) < 2:
-                self.console.print("[yellow]Usage: /project manage <number|project_id>[/yellow]")
+                self.console.print("Usage: /project manage <number|project_id>")
                 return
 
             project_input = args[1]
@@ -1454,12 +1585,12 @@ No session required.
                 # Load all projects
                 response = self.api._request("GET", f"/api/v1/projects?skip=0&limit=100")
                 if response.status_code != 200:
-                    self.console.print("[red]✗ Failed to load projects[/red]")
+                    self.console.print("[ERROR] Failed to load projects")
                     return
 
                 result = response.json()
                 if not result.get("success"):
-                    self.console.print("[red]✗ Failed to load projects[/red]")
+                    self.console.print("[ERROR] Failed to load projects")
                     return
 
                 all_projects = result.get("data", {}).get("projects", [])
@@ -1470,7 +1601,7 @@ No session required.
                     if 1 <= choice_num <= len(all_projects):
                         project_id = str(all_projects[choice_num - 1].get("id"))
                     else:
-                        self.console.print(f"[red]✗ Invalid project number[/red]")
+                        self.console.print(f"[ERROR] Invalid project number")
                         return
                 except ValueError:
                     # Try partial or full UUID match
@@ -1484,17 +1615,17 @@ No session required.
                 # Get project details
                 proj_result = self.api.get_project(project_id)
                 if not proj_result.get("success"):
-                    self.console.print("[red]✗ Project not found[/red]")
+                    self.console.print("[ERROR] Project not found")
                     return
 
                 project = proj_result.get("data")
                 status = project.get("status", "unknown")
 
                 # Show project info
-                self.console.print(f"\n[bold cyan]Manage Project[/bold cyan]")
-                self.console.print(f"[bold]Name:[/bold] {project.get('name')}")
-                self.console.print(f"[bold]Status:[/bold] {status}")
-                self.console.print(f"[bold]ID:[/bold] {project_id}\n")
+                self.console.print(f"\nManage Project")
+                self.console.print(f"Name: {project.get('name')}")
+                self.console.print(f"Status: {status}")
+                self.console.print(f"ID: {project_id}\n")
 
                 # Show context-based actions
                 if status == "active":
@@ -1505,7 +1636,7 @@ No session required.
                         "2": ("Permanently destroy", "destroy_project")
                     }
                 else:
-                    self.console.print(f"[yellow]No actions available for status: {status}[/yellow]")
+                    self.console.print(f"No actions available for status: {status}")
                     return
 
                 # Show menu
@@ -1516,39 +1647,39 @@ No session required.
                 choice = Prompt.ask("Choose action", choices=list(actions.keys()) + ["back"], default="back")
 
                 if choice == "back":
-                    self.console.print("[yellow]Cancelled[/yellow]")
+                    self.console.print("Cancelled")
                     return
 
                 action_label, action_method = actions[choice]
 
                 # Confirmation
                 if action_method == "destroy_project":
-                    self.console.print("[red bold]⚠ WARNING: This will permanently delete the project![/red bold]")
-                    self.console.print("[red]This action CANNOT be undone.[/red]\n")
+                    self.console.print("[red bold][WARNING] WARNING: This will permanently delete the project![/red bold]")
+                    self.console.print("This action CANNOT be undone.\n")
 
-                confirm = Prompt.ask(f"[red bold]{action_label} project?[/red bold]" if action_method == "destroy_project" else f"[yellow]{action_label}?[/yellow]", choices=["y", "n"], default="n")
+                confirm = Prompt.ask(f"[red bold]{action_label} project?[/red bold]" if action_method == "destroy_project" else f"{action_label}?", choices=["y", "n"], default="n")
 
                 if confirm.lower() == "y":
                     api_method = getattr(self.api, action_method)
                     result = api_method(project_id)
 
                     if result.get("success"):
-                        self.console.print(f"[green]✓ {action_label} successful[/green]")
+                        self.console.print(f"[OK] {action_label} successful")
                         if self.current_project and str(self.current_project.get("id")) == str(project_id):
                             self.current_project = None
                             self.current_session = None
                     else:
                         error_msg = result.get('message') or result.get('detail') or 'Unknown error'
-                        self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
+                        self.console.print(f"[ERROR] Failed: {error_msg}")
                 else:
-                    self.console.print("[yellow]Cancelled[/yellow]")
+                    self.console.print("Cancelled")
 
             except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
+                self.console.print(f"Error: {e}")
 
 
         else:
-            self.console.print(f"[yellow]Unknown subcommand: {subcommand}[/yellow]")
+            self.console.print(f"Unknown subcommand: {subcommand}")
 
     def cmd_session(self, args: List[str]):
         """Handle /session command"""
@@ -1556,7 +1687,35 @@ No session required.
             return
 
         if not args:
-            self.console.print("[yellow]Usage: /session <start|select|end|note|bookmark|branch>[/yellow]")
+            # Show interactive menu
+            self.console.print("\nSession Management\n")
+            self.console.print("What would you like to do?")
+            self.console.print("  [1] Start a new Socratic session")
+            self.console.print("  [2] Select an existing session")
+            self.console.print("  [3] End current session")
+            self.console.print("  [4] List all sessions")
+            self.console.print("  [5] Add note to current session")
+            self.console.print("  [back] Go back\n")
+
+            if not self.current_project:
+                self.console.print("[WARNING] You need to select a project first!")
+                self.console.print("Use: /project select\n")
+                return
+
+            choice = Prompt.ask("Select option", choices=["1", "2", "3", "4", "5", "back"], default="1")
+
+            if choice == "back":
+                return
+            elif choice == "1":
+                self.cmd_session(["start"])
+            elif choice == "2":
+                self.cmd_session(["select"])
+            elif choice == "3":
+                self.cmd_session(["end"])
+            elif choice == "4":
+                self.cmd_sessions()
+            elif choice == "5":
+                self.cmd_session(["note"])
             return
 
         subcommand = args[0]
@@ -1566,7 +1725,7 @@ No session required.
                 return
 
             try:
-                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Starting session...", total=None)
                     result = self.api.start_session(self.current_project["id"])
@@ -1587,25 +1746,25 @@ No session required.
                         }
 
                     if not session_data or not session_data.get("id"):
-                        self.console.print("[red]✗ Error: Invalid session data received[/red]")
+                        self.console.print("[ERROR] Error: Invalid session data received")
                         return
 
                     self.current_session = session_data
                     session_id = self.current_session["id"]
                     # Log the session start
                     self.cli_logger.log_session_start(session_id, "socratic", self.current_project["id"])
-                    self.console.print(f"[green]✓ Session started: {session_id}[/green]")
-                    self.console.print("\n[cyan]Ready to begin Socratic questioning![/cyan]")
+                    self.console.print(f"[OK] Session started: {session_id}")
+                    self.console.print("\nReady to begin Socratic questioning!")
                     self.console.print(
-                        "[dim]Just type your thoughts and press Enter to continue the conversation.[/dim]\n")
+                        "Just type your thoughts and press Enter to continue the conversation.\n")
 
                     # Get first question
                     self.get_next_question()
                 else:
                     error_msg = result.get('message') or result.get('detail') or 'Unknown error'
-                    self.console.print(f"[red]✗ Failed: {error_msg}[/red]")
+                    self.console.print(f"[ERROR] Failed: {error_msg}")
             except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
+                self.console.print(f"Error: {e}")
                 if self.debug:
                     import traceback
                     self.console.print(traceback.format_exc())
@@ -1617,7 +1776,7 @@ No session required.
                     return
 
                 try:
-                    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                    with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                                   console=self.console, transient=True) as progress:
                         progress.add_task("Loading sessions...", total=None)
                         result = self.api.list_sessions(self.current_project["id"])
@@ -1643,7 +1802,7 @@ No session required.
                                 sess.get("created_at", "")[:10]
                             )
 
-                        self.console.print("\n[bold cyan]Sessions for project '{}':[/bold cyan]\n".format(
+                        self.console.print("\nSessions for project '{}':\n".format(
                             self.current_project.get("name", "Unnamed")))
                         self.console.print(table)
                         self.console.print()
@@ -1656,7 +1815,7 @@ No session required.
 
                         # Check for back command
                         if choice.lower() in ["/back", "back"]:
-                            self.console.print("[yellow]Going back...[/yellow]")
+                            self.console.print("Going back...")
                             return
 
                         try:
@@ -1664,7 +1823,7 @@ No session required.
                             if 1 <= choice_num <= len(sessions):
                                 session_id = str(sessions[choice_num - 1].get("id"))
                             else:
-                                self.console.print("[red]Invalid selection[/red]")
+                                self.console.print("Invalid selection")
                                 return
                         except ValueError:
                             # Assume it's a session ID
@@ -1677,14 +1836,14 @@ No session required.
                             self.current_question = None
                             mode = self.current_session.get("mode", "socratic").replace("_chat", "")
                             self.chat_mode = mode
-                            self.console.print(f"\n[green]✓ Selected session[/green]")
-                            self.console.print(f"[dim]Status: {self.current_session.get('status')} | Mode: {mode}[/dim]\n")
+                            self.console.print(f"\n[OK] Selected session")
+                            self.console.print(f"Status: {self.current_session.get('status')} | Mode: {mode}\n")
                         else:
-                            self.console.print(f"[red]✗ Session not found[/red]")
+                            self.console.print(f"[ERROR] Session not found")
                     else:
-                        self.console.print("[yellow]No sessions found. Start one with /session start[/yellow]")
+                        self.console.print("No sessions found. Start one with /session start")
                 except Exception as e:
-                    self.console.print(f"[red]Error: {e}[/red]")
+                    self.console.print(f"Error: {e}")
             else:
                 # Direct selection by session ID
                 session_id = args[1]
@@ -1695,32 +1854,32 @@ No session required.
                         self.current_question = None
                         mode = self.current_session.get("mode", "socratic").replace("_chat", "")
                         self.chat_mode = mode
-                        self.console.print(f"[green]✓ Selected session[/green]")
-                        self.console.print(f"[dim]Status: {self.current_session.get('status')} | Mode: {mode}[/dim]")
+                        self.console.print(f"[OK] Selected session")
+                        self.console.print(f"Status: {self.current_session.get('status')} | Mode: {mode}")
                     else:
-                        self.console.print(f"[red]✗ Session not found[/red]")
+                        self.console.print(f"[ERROR] Session not found")
                 except Exception as e:
-                    self.console.print(f"[red]Error: {e}[/red]")
+                    self.console.print(f"Error: {e}")
 
         elif subcommand == "end":
             if not self.ensure_session_active():
                 return
 
-            if Confirm.ask("[yellow]End current session?[/yellow]"):
+            if Confirm.ask("End current session?"):
                 try:
                     session_id = self.current_session["id"]
                     result = self.api.end_session(session_id)
                     if result.get("success"):
                         # Log the session end
                         self.cli_logger.log_session_end(session_id)
-                        self.console.print(f"[green]✓ Session ended[/green]")
-                        self.console.print(f"[cyan]Specifications extracted: {result.get('specs_count', 0)}[/cyan]")
+                        self.console.print(f"[OK] Session ended")
+                        self.console.print(f"Specifications extracted: {result.get('specs_count', 0)}")
                         self.current_session = None
                         self.current_question = None
                     else:
-                        self.console.print(f"[red]✗ Failed: {result.get('message')}[/red]")
+                        self.console.print(f"[ERROR] Failed: {result.get('message')}")
                 except Exception as e:
-                    self.console.print(f"[red]Error: {e}[/red]")
+                    self.console.print(f"Error: {e}")
 
         elif subcommand == "note":
             self.cmd_session_note(args[1:])
@@ -1732,7 +1891,7 @@ No session required.
             self.cmd_session_branch(args[1:])
 
         else:
-            self.console.print(f"[yellow]Unknown subcommand: {subcommand}[/yellow]")
+            self.console.print(f"Unknown subcommand: {subcommand}")
 
     def cmd_sessions(self):
         """Handle /sessions command"""
@@ -1746,7 +1905,7 @@ No session required.
             sessions = result.get("sessions", [])
 
             if not sessions:
-                self.console.print("\n[yellow]No sessions yet. Start one with /session start[/yellow]")
+                self.console.print("\nNo sessions yet. Start one with /session start")
                 return
 
             table = Table(title="Sessions", show_header=True, header_style="bold cyan")
@@ -1771,7 +1930,7 @@ No session required.
             self.console.print(table)
             self.console.print()
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_history(self):
         """Handle /history command"""
@@ -1786,27 +1945,27 @@ No session required.
                 history = result.get("conversation_history", [])
 
                 if not history:
-                    self.console.print("[yellow]No conversation history yet[/yellow]")
+                    self.console.print("No conversation history yet")
                     return
 
-                self.console.print("\n[bold cyan]Conversation History[/bold cyan]\n")
+                self.console.print("\nConversation History\n")
 
                 for entry in history:
                     timestamp = entry.get("timestamp", "")[:16]
 
                     if entry.get("question"):
-                        self.console.print(f"[dim]{timestamp}[/dim] [bold cyan]Socrates:[/bold cyan]")
+                        self.console.print(f"{timestamp} Socrates:")
                         self.console.print(Panel(entry["question"], border_style="cyan", padding=(0, 2)))
 
                     if entry.get("answer"):
-                        self.console.print(f"[dim]{timestamp}[/dim] [bold green]You:[/bold green]")
+                        self.console.print(f"{timestamp} You:")
                         self.console.print(Panel(entry["answer"], border_style="green", padding=(0, 2)))
 
                     self.console.print()
             else:
-                self.console.print(f"[red]Failed to load history[/red]")
+                self.console.print(f"Failed to load history")
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def get_next_question(self):
         """Get next Socratic question"""
@@ -1814,7 +1973,7 @@ No session required.
             return
 
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Generating question...", total=None)
                 result = self.api.get_next_question(self.current_session["id"])
@@ -1832,7 +1991,7 @@ No session required.
                     question_id = result.get("id") or result.get("question_id")
 
                 if not question_text:
-                    self.console.print("[red]Error: No question text received[/red]")
+                    self.console.print("Error: No question text received")
                     return
 
                 # Store the full question object for later submission
@@ -1842,15 +2001,15 @@ No session required.
                     **result  # Include all other fields
                 }
 
-                self.console.print(f"[bold cyan]Socrates:[/bold cyan]")
+                self.console.print(f"Socrates:")
                 self.console.print(Panel(question_text, border_style="cyan", padding=(1, 2)))
                 self.console.print()
             else:
                 # Error getting question (result.get('success') is False)
                 error_msg = result.get("error") or result.get("detail", "Unknown error")
-                self.console.print(f"[red]Failed to get question: {error_msg}[/red]")
+                self.console.print(f"Failed to get question: {error_msg}")
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
             if self.debug:
                 import traceback
                 self.console.print(traceback.format_exc())
@@ -1865,11 +2024,11 @@ No session required.
     def handle_socratic_message(self, message: str):
         """Handle Socratic chat message"""
         if not self.ensure_session_active():
-            self.console.print("[yellow]Start a session with /session start to begin Socratic chat[/yellow]")
+            self.console.print("Start a session with /session start to begin Socratic chat")
             return
 
         if not self.current_question:
-            self.console.print("[yellow]No active question. Getting next question...[/yellow]")
+            self.console.print("No active question. Getting next question...")
             self.get_next_question()
             return
 
@@ -1878,7 +2037,7 @@ No session required.
             self.cli_logger.log_chat_message(self.current_session["id"], message, "socratic")
 
             # Submit answer
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Processing answer...", total=None)
                 result = self.api.submit_answer(
@@ -1891,20 +2050,20 @@ No session required.
                 specs_extracted = result.get("specs_extracted", 0)
 
                 if specs_extracted > 0:
-                    self.console.print(f"[green]✓ Extracted {specs_extracted} specification(s)[/green]")
+                    self.console.print(f"[OK] Extracted {specs_extracted} specification(s)")
                     self.console.print()
 
                 # Get next question
                 self.get_next_question()
             else:
-                self.console.print(f"[red]Failed to process answer: {result.get('message')}[/red]")
+                self.console.print(f"Failed to process answer: {result.get('message')}")
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def handle_direct_message(self, message: str):
         """Handle direct chat message (non-Socratic)"""
         if not self.ensure_session_active():
-            self.console.print("[yellow]Start a session with /session start to use direct chat[/yellow]")
+            self.console.print("Start a session with /session start to use direct chat")
             return
 
         try:
@@ -1913,7 +2072,7 @@ No session required.
 
             # First, ensure session is in direct_chat mode
             if self.chat_mode != "direct_chat":
-                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Switching to direct chat mode...", total=None)
                     mode_result = self.api.set_session_mode(
@@ -1922,41 +2081,41 @@ No session required.
                     )
 
                 if not mode_result.get("success"):
-                    self.console.print(f"[red]Failed to switch modes: {mode_result.get('error', 'Unknown error')}[/red]")
+                    self.console.print(f"Failed to switch modes: {mode_result.get('error', 'Unknown error')}")
                     return
 
                 self.chat_mode = "direct_chat"
 
             # Send direct chat message
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Thinking...", total=None)
                 result = self.api.send_chat_message(self.current_session["id"], message)
 
             if result.get("success"):
                 response_text = result.get("response", "")
-                self.console.print(f"\n[bold cyan]Socrates:[/bold cyan]")
+                self.console.print(f"\nSocrates:")
                 self.console.print(Panel(response_text, border_style="cyan", padding=(1, 2)))
                 self.console.print()
 
                 # Show any extracted specs (backend returns count as integer)
                 specs_extracted = result.get("specs_extracted", 0)
                 if specs_extracted > 0:
-                    self.console.print(f"[green]✓ Extracted {specs_extracted} specification(s)[/green]")
+                    self.console.print(f"[OK] Extracted {specs_extracted} specification(s)")
                     self.console.print()
             else:
-                self.console.print(f"[red]Failed: {result.get('error', 'Unknown error')}[/red]")
+                self.console.print(f"Failed: {result.get('error', 'Unknown error')}")
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_config(self, args: List[str]):
         """Manage CLI configuration settings"""
         if not args:
             # List all configuration
-            self.console.print("\n[bold cyan]Current Configuration:[/bold cyan]\n")
+            self.console.print("\nCurrent Configuration:\n")
             config_data = self.config.data
             if not config_data:
-                self.console.print("[dim]No custom settings configured[/dim]")
+                self.console.print("No custom settings configured")
                 return
 
             table = Table(show_header=True, header_style="bold cyan")
@@ -1981,7 +2140,7 @@ No session required.
 
         elif subcommand == "set":
             if len(args) < 3:
-                self.console.print("[yellow]Usage: /config set <key> <value>[/yellow]")
+                self.console.print("Usage: /config set <key> <value>")
                 return
 
             key = args[1]
@@ -1989,40 +2148,40 @@ No session required.
 
             # Basic validation for common keys
             if key == "theme" and value not in ["dark", "light", "colorblind", "monokai"]:
-                self.console.print(f"[yellow]Theme options: dark, light, colorblind, monokai[/yellow]")
+                self.console.print(f"Theme options: dark, light, colorblind, monokai")
                 return
 
             if key == "format" and value not in ["rich", "json", "table", "minimal"]:
-                self.console.print(f"[yellow]Format options: rich, json, table, minimal[/yellow]")
+                self.console.print(f"Format options: rich, json, table, minimal")
                 return
 
             self.config.set(key, value)
-            self.console.print(f"[green]✓ Set {key} = {value}[/green]")
+            self.console.print(f"[OK] Set {key} = {value}")
 
         elif subcommand == "get":
             if len(args) < 2:
-                self.console.print("[yellow]Usage: /config get <key>[/yellow]")
+                self.console.print("Usage: /config get <key>")
                 return
 
             key = args[1]
             value = self.config.get(key)
 
             if value is None:
-                self.console.print(f"[yellow]Setting '{key}' not found[/yellow]")
+                self.console.print(f"Setting '{key}' not found")
             else:
-                self.console.print(f"[cyan]{key}[/cyan] = [bold]{value}[/bold]")
+                self.console.print(f"{key} = {value}")
 
         elif subcommand == "reset":
             if len(args) > 1 and args[1] == "--all":
-                if Confirm.ask("[red]Reset all settings to defaults?[/red]"):
+                if Confirm.ask("Reset all settings to defaults?"):
                     self.config.clear()
-                    self.console.print("[green]✓ Configuration reset to defaults[/green]")
+                    self.console.print("[OK] Configuration reset to defaults")
             else:
-                self.console.print("[yellow]Usage: /config reset --all[/yellow]")
+                self.console.print("Usage: /config reset --all")
 
         else:
-            self.console.print(f"[yellow]Unknown subcommand: {subcommand}[/yellow]")
-            self.console.print("[dim]Use: /config [list|set|get|reset][/dim]")
+            self.console.print(f"Unknown subcommand: {subcommand}")
+            self.console.print("Use: /config [list|set|get|reset]")
 
     def cmd_logging(self, args: List[str]):
         """Manage centralized logging for CLI and backend"""
@@ -2046,12 +2205,12 @@ No session required.
                 )
 
                 if response.status_code == 200:
-                    self.console.print("[green][OK] CLI logging enabled[/green]")
-                    self.console.print("[green][OK] Backend logging enabled[/green]")
+                    self.console.print("[OK] CLI logging enabled")
+                    self.console.print("[OK] Backend logging enabled")
                 else:
-                    self.console.print("[yellow][WARN] Backend logging might not be enabled[/yellow]")
+                    self.console.print("[WARN] Backend logging might not be enabled")
             except Exception as e:
-                self.console.print(f"[red]Error enabling logging: {str(e)}[/red]")
+                self.console.print(f"Error enabling logging: {str(e)}")
 
         elif subcommand == "off":
             # Disable both CLI and backend logging
@@ -2068,29 +2227,29 @@ No session required.
                 )
 
                 if response.status_code == 200:
-                    self.console.print("[green][OK] CLI logging disabled[/green]")
-                    self.console.print("[green][OK] Backend logging disabled[/green]")
+                    self.console.print("[OK] CLI logging disabled")
+                    self.console.print("[OK] Backend logging disabled")
                 else:
-                    self.console.print("[yellow][WARN] Backend logging might not be disabled[/yellow]")
+                    self.console.print("[WARN] Backend logging might not be disabled")
             except Exception as e:
-                self.console.print(f"[red]Error disabling logging: {str(e)}[/red]")
+                self.console.print(f"Error disabling logging: {str(e)}")
 
         elif subcommand == "status":
             # Show logging status
             try:
                 cli_enabled = self.cli_logger.is_enabled()
-                cli_status = "[green]ENABLED[/green]" if cli_enabled else "[dim]DISABLED[/dim]"
+                cli_status = "ENABLED" if cli_enabled else "DISABLED"
 
                 # Get backend status
                 response = self.api._request("GET", "/api/v1/admin/logging/action")
                 if response.status_code == 200:
                     backend_data = response.json()
                     backend_enabled = backend_data.get("enabled", False)
-                    backend_status = "[green]ENABLED[/green]" if backend_enabled else "[dim]DISABLED[/dim]"
+                    backend_status = "ENABLED" if backend_enabled else "DISABLED"
                 else:
-                    backend_status = "[yellow]UNKNOWN[/yellow]"
+                    backend_status = "UNKNOWN"
 
-                self.console.print("\n[cyan]Logging Status:[/cyan]")
+                self.console.print("\nLogging Status:")
                 self.console.print(f"  CLI Logging:     {cli_status}")
                 self.console.print(f"  Backend Logging: {backend_status}")
                 self.console.print(f"  Log File:        {self.cli_logger.get_log_file_path()}")
@@ -2099,26 +2258,26 @@ No session required.
                 if cli_enabled:
                     recent = self.cli_logger.get_recent_logs(3)
                     if recent:
-                        self.console.print("\n[cyan]Recent logs:[/cyan]")
+                        self.console.print("\nRecent logs:")
                         for line in recent:
                             self.console.print(f"  {line}")
                 self.console.print()
 
             except Exception as e:
-                self.console.print(f"[red]Error getting logging status: {str(e)}[/red]")
+                self.console.print(f"Error getting logging status: {str(e)}")
 
         elif subcommand == "clear":
             # Clear log file
             try:
                 if self.cli_logger.clear_logs():
-                    self.console.print("[green][OK] Log file cleared[/green]")
+                    self.console.print("[OK] Log file cleared")
                 else:
-                    self.console.print("[red]Failed to clear log file[/red]")
+                    self.console.print("Failed to clear log file")
             except Exception as e:
-                self.console.print(f"[red]Error clearing logs: {str(e)}[/red]")
+                self.console.print(f"Error clearing logs: {str(e)}")
 
         else:
-            self.console.print("[yellow]Usage: /logging [on|off|status|clear][/yellow]")
+            self.console.print("Usage: /logging [on|off|status|clear]")
 
     def cmd_theme(self, args: List[str]):
         """Change CLI color theme"""
@@ -2131,30 +2290,30 @@ No session required.
 
         if not args:
             # List available themes
-            self.console.print("\n[bold cyan]Available Themes:[/bold cyan]\n")
+            self.console.print("\nAvailable Themes:\n")
             current = self.config.get("theme", "dark")
 
             for theme_name, description in themes.items():
                 marker = "→ " if theme_name == current else "  "
-                self.console.print(f"{marker}[bold]{theme_name}[/bold] - {description}")
+                self.console.print(f"{marker}{theme_name} - {description}")
 
-            self.console.print(f"\n[dim]Current theme: {current}[/dim]")
-            self.console.print("[dim]Use: /theme <name> to change[/dim]\n")
+            self.console.print(f"\nCurrent theme: {current}")
+            self.console.print("Use: /theme <name> to change\n")
             return
 
         theme_name = args[0].lower()
 
         if theme_name not in themes:
-            self.console.print(f"[red]Unknown theme: {theme_name}[/red]")
-            self.console.print(f"[yellow]Available: {', '.join(themes.keys())}[/yellow]")
+            self.console.print(f"Unknown theme: {theme_name}")
+            self.console.print(f"Available: {', '.join(themes.keys())}")
             return
 
         self.config.set("theme", theme_name)
-        self.console.print(f"[green]✓ Theme changed to: {theme_name}[/green]")
-        self.console.print(f"[dim]{themes[theme_name]}[/dim]")
+        self.console.print(f"[OK] Theme changed to: {theme_name}")
+        self.console.print(f"{themes[theme_name]}")
 
         # Note: Full theme implementation would require reloading console colors
-        self.console.print("[dim](Theme will apply on next session)[/dim]")
+        self.console.print("(Theme will apply on next session)")
 
     def cmd_format(self, args: List[str]):
         """Change output format"""
@@ -2167,32 +2326,32 @@ No session required.
 
         if not args:
             # List available formats
-            self.console.print("\n[bold cyan]Available Formats:[/bold cyan]\n")
+            self.console.print("\nAvailable Formats:\n")
             current = self.config.get("format", "rich")
 
             for fmt_name, description in formats.items():
                 marker = "→ " if fmt_name == current else "  "
-                self.console.print(f"{marker}[bold]{fmt_name}[/bold] - {description}")
+                self.console.print(f"{marker}{fmt_name} - {description}")
 
-            self.console.print(f"\n[dim]Current format: {current}[/dim]")
-            self.console.print("[dim]Use: /format <name> to change[/dim]\n")
+            self.console.print(f"\nCurrent format: {current}")
+            self.console.print("Use: /format <name> to change\n")
             return
 
         format_name = args[0].lower()
 
         if format_name not in formats:
-            self.console.print(f"[red]Unknown format: {format_name}[/red]")
-            self.console.print(f"[yellow]Available: {', '.join(formats.keys())}[/yellow]")
+            self.console.print(f"Unknown format: {format_name}")
+            self.console.print(f"Available: {', '.join(formats.keys())}")
             return
 
         self.config.set("format", format_name)
-        self.console.print(f"[green]✓ Format changed to: {format_name}[/green]")
-        self.console.print(f"[dim]{formats[format_name]}[/dim]")
+        self.console.print(f"[OK] Format changed to: {format_name}")
+        self.console.print(f"{formats[format_name]}")
 
     def cmd_save(self, args: List[str]):
         """Save current session or project to file"""
         if not self.current_session and not self.current_project:
-            self.console.print("[yellow]No active session or project to save[/yellow]")
+            self.console.print("No active session or project to save")
             return
 
         # Generate filename
@@ -2220,11 +2379,11 @@ No session required.
             with open(output_path, 'w') as f:
                 f.write(content)
 
-            self.console.print(f"[green]✓ Saved to: {output_path}[/green]")
-            self.console.print(f"[dim]File size: {output_path.stat().st_size} bytes[/dim]")
+            self.console.print(f"[OK] Saved to: {output_path}")
+            self.console.print(f"File size: {output_path.stat().st_size} bytes")
 
         except Exception as e:
-            self.console.print(f"[red]Error saving file: {e}[/red]")
+            self.console.print(f"Error saving file: {e}")
             if self.debug:
                 import traceback
                 self.console.print(traceback.format_exc())
@@ -2256,8 +2415,8 @@ No session required.
     def cmd_export(self, args: List[str]):
         """Export project or session to various formats"""
         if not args:
-            self.console.print("[yellow]Usage: /export <format> [<project_id>][/yellow]")
-            self.console.print("[dim]Formats: markdown, json, csv, pdf[/dim]")
+            self.console.print("Usage: /export <format> [<project_id>]")
+            self.console.print("Formats: markdown, json, csv, pdf")
             return
 
         format_type = args[0].lower()
@@ -2266,16 +2425,16 @@ No session required.
         )
 
         if not project_id:
-            self.console.print("[yellow]No project selected. Use /project select or specify project_id[/yellow]")
+            self.console.print("No project selected. Use /project select or specify project_id")
             return
 
         if format_type not in ["markdown", "json", "csv", "pdf"]:
-            self.console.print(f"[red]Unknown format: {format_type}[/red]")
-            self.console.print("[yellow]Available: markdown, json, csv, pdf[/yellow]")
+            self.console.print(f"Unknown format: {format_type}")
+            self.console.print("Available: markdown, json, csv, pdf")
             return
 
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task(f"Exporting to {format_type}...", total=None)
 
@@ -2290,21 +2449,21 @@ No session required.
 
             if result.get("success"):
                 filename = result.get("filename", f"export.{format_type}")
-                self.console.print(f"[green]✓ Export successful[/green]")
-                self.console.print(f"[cyan]Format:[/cyan] {format_type}")
-                self.console.print(f"[cyan]Filename:[/cyan] {filename}")
+                self.console.print(f"[OK] Export successful")
+                self.console.print(f"Format: {format_type}")
+                self.console.print(f"Filename: {filename}")
 
                 # Display content if available (for text formats)
                 if "content" in result and format_type in ["markdown", "json"]:
-                    self.console.print("\n[dim]Preview:[/dim]")
+                    self.console.print("\nPreview:")
                     content_preview = result["content"][:200] + "..." if len(result.get("content", "")) > 200 else result["content"]
                     self.console.print(content_preview)
             else:
                 error = result.get("error", "Unknown error")
-                self.console.print(f"[red]✗ Export failed: {error}[/red]")
+                self.console.print(f"[ERROR] Export failed: {error}")
 
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
             if self.debug:
                 import traceback
                 self.console.print(traceback.format_exc())
@@ -2315,27 +2474,27 @@ No session required.
             return
 
         if not args:
-            self.console.print("[yellow]Usage: /session note <your note text>[/yellow]")
+            self.console.print("Usage: /session note <your note text>")
             return
 
         note_text = " ".join(args)
 
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Adding note...", total=None)
                 result = self.api.add_session_note(self.current_session["id"], note_text)
 
             if result.get("success"):
-                self.console.print(f"[green]✓ Note added[/green]")
-                self.console.print(f"[dim]Note: {note_text}[/dim]")
+                self.console.print(f"[OK] Note added")
+                self.console.print(f"Note: {note_text}")
             else:
                 error = result.get("error", "Failed to add note")
-                self.console.print(f"[yellow]⚠ {error}[/yellow]")
-                self.console.print("[dim]Note saved locally: " + note_text + "[/dim]")
+                self.console.print(f"[WARNING] {error}")
+                self.console.print("Note saved locally: " + note_text + "")
 
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_session_bookmark(self):
         """Create a bookmark at current point in session"""
@@ -2343,22 +2502,22 @@ No session required.
             return
 
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Creating bookmark...", total=None)
                 result = self.api.bookmark_session(self.current_session["id"])
 
             if result.get("success"):
-                self.console.print(f"[green]✓ Bookmark created[/green]")
+                self.console.print(f"[OK] Bookmark created")
                 bookmark_id = result.get("bookmark_id", "")
                 if bookmark_id:
-                    self.console.print(f"[dim]ID: {bookmark_id}[/dim]")
+                    self.console.print(f"ID: {bookmark_id}")
             else:
-                self.console.print(f"[yellow]⚠ Bookmark not saved (backend unavailable)[/yellow]")
-                self.console.print("[green]✓ Mark saved locally[/green]")
+                self.console.print(f"[WARNING] Bookmark not saved (backend unavailable)")
+                self.console.print("[OK] Mark saved locally")
 
         except Exception as e:
-            self.console.print(f"[green]✓ Mark created at current position[/green]")
+            self.console.print(f"[OK] Mark created at current position")
 
     def cmd_session_branch(self, args: List[str]):
         """Create an alternative branch from current session"""
@@ -2368,22 +2527,22 @@ No session required.
         branch_name = args[0] if args else None
 
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Creating branch...", total=None)
                 result = self.api.branch_session(self.current_session["id"], branch_name)
 
             if result.get("success"):
-                self.console.print(f"[green]✓ Branch created[/green]")
+                self.console.print(f"[OK] Branch created")
                 new_session_id = result.get("session_id", "")
                 if new_session_id:
-                    self.console.print(f"[cyan]New session ID:[/cyan] {new_session_id}")
-                    self.console.print("[dim]You can resume this branch with: /session select " + new_session_id + "[/dim]")
+                    self.console.print(f"New session ID: {new_session_id}")
+                    self.console.print("You can resume this branch with: /session select " + new_session_id + "")
             else:
-                self.console.print(f"[yellow]⚠ {result.get('error', 'Could not create branch')}[/yellow]")
+                self.console.print(f"[WARNING] {result.get('error', 'Could not create branch')}")
 
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_stats(self, args: List[str]):
         """Show statistics for session or project"""
@@ -2391,13 +2550,13 @@ No session required.
             # Show current session stats if active
             if self.current_session:
                 try:
-                    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                    with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                                   console=self.console, transient=True) as progress:
                         progress.add_task("Loading stats...", total=None)
                         result = self.api.get_session_stats(self.current_session["id"])
 
                     if result.get("success"):
-                        self.console.print("\n[bold cyan]Session Statistics[/bold cyan]\n")
+                        self.console.print("\nSession Statistics\n")
                         stats = result.get("stats", {})
 
                         table = Table(show_header=True, header_style="bold cyan")
@@ -2410,35 +2569,35 @@ No session required.
                         self.console.print(table)
                         self.console.print()
                     else:
-                        self.console.print("[yellow]Stats not available[/yellow]")
+                        self.console.print("Stats not available")
 
                 except Exception as e:
-                    self.console.print(f"[red]Error loading stats: {e}[/red]")
+                    self.console.print(f"Error loading stats: {e}")
             else:
-                self.console.print("[yellow]No active session. Start a session first with /session start[/yellow]")
+                self.console.print("No active session. Start a session first with /session start")
             return
 
         subcommand = args[0].lower()
         if subcommand == "session" and len(args) > 1:
             session_id = args[1]
             # Load specific session stats
-            self.console.print(f"[dim]Stats for session {session_id}[/dim]")
+            self.console.print(f"Stats for session {session_id}")
         else:
-            self.console.print("[yellow]Usage: /stats [session <session_id>][/yellow]")
+            self.console.print("Usage: /stats [session <session_id>]")
 
     def cmd_template(self, args: List[str]):
         """Manage project templates"""
         if not args:
             # List available templates
             try:
-                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Loading templates...", total=None)
                     result = self.api.list_templates()
 
                 if result.get("success"):
                     templates = result.get("templates", [])
-                    self.console.print("\n[bold cyan]Available Templates[/bold cyan]\n")
+                    self.console.print("\nAvailable Templates\n")
 
                     table = Table(show_header=True, header_style="bold cyan")
                     table.add_column("Name", style="bold")
@@ -2453,9 +2612,9 @@ No session required.
                                 str(tmpl.get("spec_count", 0))
                             )
                         self.console.print(table)
-                        self.console.print("\n[dim]Use: /template info <name> for details[/dim]\n")
+                        self.console.print("\nUse: /template info <name> for details\n")
                     else:
-                        self.console.print("[dim]No templates available[/dim]")
+                        self.console.print("No templates available")
 
                 else:
                     self._show_builtin_templates()
@@ -2469,15 +2628,15 @@ No session required.
                 result = self.api.get_template_info(template_name)
                 if result.get("success"):
                     tmpl = result.get("template", {})
-                    self.console.print(f"\n[bold cyan]{tmpl.get('name', template_name)}[/bold cyan]")
+                    self.console.print(f"\n{tmpl.get('name', template_name)}")
                     self.console.print(f"\n{tmpl.get('description', 'No description')}\n")
                 else:
-                    self.console.print(f"[yellow]Template not found: {template_name}[/yellow]")
+                    self.console.print(f"Template not found: {template_name}")
             except Exception:
-                self.console.print(f"[yellow]Template not found: {template_name}[/yellow]")
+                self.console.print(f"Template not found: {template_name}")
 
         else:
-            self.console.print("[yellow]Usage: /template [list|info <name>][/yellow]")
+            self.console.print("Usage: /template [list|info <name>]")
 
     def _show_builtin_templates(self):
         """Show built-in templates"""
@@ -2490,7 +2649,7 @@ No session required.
             ("desktop-app", "Desktop application with UI"),
         ]
 
-        self.console.print("\n[bold cyan]Available Templates[/bold cyan]\n")
+        self.console.print("\nAvailable Templates\n")
         table = Table(show_header=True, header_style="bold cyan")
         table.add_column("Name", style="bold")
         table.add_column("Description")
@@ -2499,8 +2658,8 @@ No session required.
             table.add_row(name, desc)
 
         self.console.print(table)
-        self.console.print("\n[dim]Use: /template info <name> for details[/dim]")
-        self.console.print("[dim]Use: /project create --template <name> to create from template[/dim]\n")
+        self.console.print("\nUse: /template info <name> for details")
+        self.console.print("Use: /project create --template <name> to create from template\n")
 
     # ==================== PRIORITY 3 COMMANDS ====================
 
@@ -2510,8 +2669,8 @@ No session required.
             return
 
         if not args:
-            self.console.print("[yellow]Usage: /search <query> [resource_type] [category][/yellow]")
-            self.console.print("[dim]Resource types: projects, specifications, questions[/dim]")
+            self.console.print("Usage: /search <query> [resource_type] [category]")
+            self.console.print("Resource types: projects, specifications, questions")
             return
 
         query = args[0]
@@ -2521,12 +2680,12 @@ No session required.
         # Validate resource type
         valid_types = ["projects", "specifications", "questions"]
         if resource_type and resource_type not in valid_types:
-            self.console.print(f"[red]Invalid resource type: {resource_type}[/red]")
-            self.console.print(f"[dim]Valid types: {', '.join(valid_types)}[/dim]")
+            self.console.print(f"Invalid resource type: {resource_type}")
+            self.console.print(f"Valid types: {', '.join(valid_types)}")
             return
 
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Searching...", total=None)
                 result = self.api.search(query, resource_type=resource_type, category=category)
@@ -2535,10 +2694,10 @@ No session required.
                 self._display_search_results(result)
             else:
                 error = result.get("error", "Search failed")
-                self.console.print(f"[red]✗ Search failed: {error}[/red]")
+                self.console.print(f"[ERROR] Search failed: {error}")
 
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_status(self, args: List[str]):
         """Display current project and session status"""
@@ -2551,7 +2710,7 @@ No session required.
         if self.current_project:
             self._display_project_status(self.current_project)
         else:
-            self.console.print("[dim]No project selected. Use /project select <id> or /project create[/dim]")
+            self.console.print("No project selected. Use /project select <id> or /project create")
 
         self.console.print()
 
@@ -2559,7 +2718,7 @@ No session required.
         if self.current_session:
             self._display_session_status(self.current_session)
         else:
-            self.console.print("[dim]No active session. Use /session start to begin[/dim]")
+            self.console.print("No active session. Use /session start to begin")
 
         self.console.print()
 
@@ -2577,7 +2736,7 @@ No session required.
 
         # For now, use search with filters
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Filtering...", total=None)
 
@@ -2586,7 +2745,7 @@ No session required.
                     result = self.api.search("", resource_type="specifications", category=category)
                     if result.get("success"):
                         specs = result.get("results", [])
-                        self.console.print(f"\n[bold cyan]Specifications ({len(specs)} found)[/bold cyan]\n")
+                        self.console.print(f"\nSpecifications ({len(specs)} found)\n")
                         self._display_filtered_results(specs, is_spec=True)
 
                 # Search for questions
@@ -2594,11 +2753,11 @@ No session required.
                     result = self.api.search("", resource_type="questions", category=category)
                     if result.get("success"):
                         questions = result.get("results", [])
-                        self.console.print(f"\n[bold cyan]Questions ({len(questions)} found)[/bold cyan]\n")
+                        self.console.print(f"\nQuestions ({len(questions)} found)\n")
                         self._display_filtered_results(questions, is_spec=False)
 
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_insights(self, args: List[str]):
         """Get insights for project (gaps, risks, opportunities)"""
@@ -2610,12 +2769,12 @@ No session required.
         )
 
         if not project_id:
-            self.console.print("[yellow]Usage: /insights [project_id][/yellow]")
-            self.console.print("[dim]If no project_id provided, uses currently selected project[/dim]")
+            self.console.print("Usage: /insights [project_id]")
+            self.console.print("If no project_id provided, uses currently selected project")
             return
 
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Analyzing project...", total=None)
                 result = self.api.get_insights(project_id)
@@ -2624,10 +2783,10 @@ No session required.
                 self._display_insights(result)
             else:
                 error = result.get("error", "Failed to get insights")
-                self.console.print(f"[red]✗ {error}[/red]")
+                self.console.print(f"[ERROR] {error}")
 
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_resume(self, args: List[str]):
         """Resume a paused session"""
@@ -2642,7 +2801,7 @@ No session required.
         session_id = args[0]
 
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Loading session...", total=None)
                 result = self.api.get_session(session_id)
@@ -2650,40 +2809,40 @@ No session required.
             if result.get("success"):
                 session = result.get("session")
                 self.current_session = session
-                self.console.print(f"[green]✓ Session resumed: {session_id}[/green]")
+                self.console.print(f"[OK] Session resumed: {session_id}")
                 self._display_session_status(session)
-                self.console.print("\n[cyan]Type your next response to continue the session[/cyan]\n")
+                self.console.print("\nType your next response to continue the session\n")
             else:
                 error = result.get("error", "Session not found")
-                self.console.print(f"[red]✗ {error}[/red]")
-                self.console.print("[dim]Use /resume (without args) to see recent sessions[/dim]")
+                self.console.print(f"[ERROR] {error}")
+                self.console.print("Use /resume (without args) to see recent sessions")
 
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     def cmd_wizard(self, args: List[str]):
         """Interactive project setup wizard"""
         if not self.ensure_authenticated():
             return
 
-        self.console.print("\n[bold cyan]✨ Project Setup Wizard[/bold cyan]\n")
-        self.console.print("[dim]Let's create a new project with templates![/dim]")
-        self.console.print("[dim]Tip: Type 'back' at any step to go back[/dim]\n")
+        self.console.print("\n✨ Project Setup Wizard\n")
+        self.console.print("Let's create a new project with templates!")
+        self.console.print("Tip: Type 'back' at any step to go back\n")
 
         # Step 1: Get project name
         while True:
             project_name = self.prompt_with_back("Project name")
             if project_name is None:
-                self.console.print("[yellow]Wizard cancelled[/yellow]")
+                self.console.print("Wizard cancelled")
                 return
             if project_name:
                 break
-            self.console.print("[yellow]Project name is required[/yellow]")
+            self.console.print("Project name is required")
 
         # Step 2: Project description
         project_description = self.prompt_with_back("Project description (optional)", default="")
         if project_description is None:
-            self.console.print("[yellow]Going back...[/yellow]")
+            self.console.print("Going back...")
             self.cmd_wizard([])
             return
 
@@ -2692,42 +2851,42 @@ No session required.
         # Step 2: Select template
         template_id = self._wizard_select_template()
         if not template_id:
-            self.console.print("[yellow]Template selection cancelled[/yellow]")
+            self.console.print("Template selection cancelled")
             return
 
         # Step 3: Create project
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Creating project...", total=None)
                 create_result = self.api.create_project(project_name, project_description)
 
             if not create_result.get("success"):
-                self.console.print(f"[red]✗ Project creation failed: {create_result.get('error')}[/red]")
+                self.console.print(f"[ERROR] Project creation failed: {create_result.get('error')}")
                 return
 
             project = create_result.get("project")
             project_id = project["id"]
             self.current_project = project
 
-            self.console.print(f"[green]✓ Project created: {project_name}[/green]")
+            self.console.print(f"[OK] Project created: {project_name}")
 
             # Step 4: Apply template
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Applying template...", total=None)
                 template_result = self.api.apply_template(template_id, project_id)
 
             if template_result.get("success"):
                 specs_count = template_result.get("specs_created", 0)
-                self.console.print(f"[green]✓ Template applied: {specs_count} specifications created[/green]")
+                self.console.print(f"[OK] Template applied: {specs_count} specifications created")
                 self._display_project_created(project, template_id)
             else:
-                self.console.print(f"[yellow]⚠ Template application failed: {template_result.get('error')}[/yellow]")
+                self.console.print(f"[WARNING] Template application failed: {template_result.get('error')}")
                 self._display_project_created(project, None)
 
         except Exception as e:
-            self.console.print(f"[red]Error: {e}[/red]")
+            self.console.print(f"Error: {e}")
 
     # ==================== PRIORITY 3 HELPERS ====================
 
@@ -2737,10 +2896,10 @@ No session required.
         insights = result.get("insights", [])
         summary = result.get("summary", {})
 
-        self.console.print(f"\n[bold cyan]Project Insights: {project_name}[/bold cyan]\n")
+        self.console.print(f"\nProject Insights: {project_name}\n")
 
         if not insights:
-            self.console.print("[dim]No insights to display[/dim]\n")
+            self.console.print("No insights to display\n")
             return
 
         # Group insights by type
@@ -2750,7 +2909,7 @@ No session required.
 
         # Display Gaps
         if gaps:
-            self.console.print("[bold red]⚠ GAPS[/bold red]")
+            self.console.print("[WARNING] GAPS")
             for gap in gaps:
                 severity = gap.get("severity", "medium")
                 severity_icon = "🔴" if severity == "high" else "🟡"
@@ -2760,7 +2919,7 @@ No session required.
 
         # Display Risks
         if risks:
-            self.console.print("[bold yellow]⚡ RISKS[/bold yellow]")
+            self.console.print("⚡ RISKS")
             for risk in risks:
                 self.console.print(f"  🟡 {risk.get('title')}")
                 self.console.print(f"     {risk.get('description')}")
@@ -2768,14 +2927,14 @@ No session required.
 
         # Display Opportunities
         if opportunities:
-            self.console.print("[bold green]✨ OPPORTUNITIES[/bold green]")
+            self.console.print("✨ OPPORTUNITIES")
             for opp in opportunities:
                 self.console.print(f"  🟢 {opp.get('title')}")
                 self.console.print(f"     {opp.get('description')}")
             self.console.print()
 
         # Summary
-        self.console.print("[bold cyan]Summary[/bold cyan]")
+        self.console.print("Summary")
         coverage = summary.get("coverage_percentage", 0)
         coverage_bar = "█" * int(coverage / 10) + "░" * (10 - int(coverage / 10))
         self.console.print(f"  Coverage: [{coverage_bar}] {coverage:.0f}%")
@@ -2790,10 +2949,10 @@ No session required.
         results = result.get("results", [])
         resource_counts = result.get("resource_counts", {})
 
-        self.console.print(f"\n[bold cyan]Search Results for: {query}[/bold cyan]\n")
+        self.console.print(f"\nSearch Results for: {query}\n")
 
         if not results:
-            self.console.print("[dim]No results found[/dim]\n")
+            self.console.print("No results found\n")
             return
 
         table = Table(show_header=True, header_style="bold cyan")
@@ -2808,9 +2967,9 @@ No session required.
             table.add_row(res_type, title, preview)
 
         self.console.print(table)
-        self.console.print(f"\n[dim]Found {resource_counts.get('projects', 0)} projects, "
+        self.console.print(f"\nFound {resource_counts.get('projects', 0)} projects, "
                           f"{resource_counts.get('specifications', 0)} specifications, "
-                          f"{resource_counts.get('questions', 0)} questions[/dim]\n")
+                          f"{resource_counts.get('questions', 0)} questions\n")
 
     def _display_filtered_results(self, results: List[Dict[str, Any]], is_spec: bool):
         """Display filtered results"""
@@ -2836,7 +2995,7 @@ No session required.
 
     def _display_project_status(self, project: Dict[str, Any]):
         """Display project status"""
-        self.console.print("[bold cyan]📋 Project Status[/bold cyan]")
+        self.console.print("📋 Project Status")
         self.console.print(f"  Name: {project.get('name', 'Unknown')}")
         self.console.print(f"  ID: {project.get('id', 'Unknown')[:8]}")
         self.console.print(f"  Phase: {project.get('current_phase', 'phase_1')}")
@@ -2845,7 +3004,7 @@ No session required.
 
     def _display_session_status(self, session: Dict[str, Any]):
         """Display session status"""
-        self.console.print("[bold cyan]💬 Session Status[/bold cyan]")
+        self.console.print(" Session Status")
         self.console.print(f"  ID: {session.get('id', 'Unknown')[:8]}")
         self.console.print(f"  Mode: {session.get('mode', 'socratic')}")
         self.console.print(f"  Status: {session.get('status', 'active')}")
@@ -2854,7 +3013,7 @@ No session required.
 
     def _display_next_steps(self):
         """Display suggested next steps"""
-        self.console.print("[bold cyan]💡 Next Steps[/bold cyan]")
+        self.console.print("💡 Next Steps")
 
         if not self.current_project:
             self.console.print("  → Create a project with /project create")
@@ -2869,12 +3028,12 @@ No session required.
 
     def _display_project_created(self, project: Dict[str, Any], template_id: Optional[str]):
         """Display project creation confirmation"""
-        self.console.print(f"\n[bold green]✓ Project created successfully![/bold green]")
-        self.console.print(f"[cyan]Name:[/cyan] {project.get('name', 'Unknown')}")
-        self.console.print(f"[cyan]ID:[/cyan] {project.get('id', 'Unknown')[:8]}")
+        self.console.print(f"\n[OK] Project created successfully!")
+        self.console.print(f"Name: {project.get('name', 'Unknown')}")
+        self.console.print(f"ID: {project.get('id', 'Unknown')[:8]}")
         if template_id:
-            self.console.print(f"[cyan]Template:[/cyan] {template_id}")
-        self.console.print("\n[dim]You can now:[/dim]")
+            self.console.print(f"Template: {template_id}")
+        self.console.print("\nYou can now:")
         self.console.print("  • /session start - Begin gathering specifications")
         self.console.print("  • /insights - View project recommendations")
         self.console.print("  • /search - Search specifications")
@@ -2888,7 +3047,7 @@ No session required.
             ("template-mobile", "Mobile Application"),
         ]
 
-        self.console.print("\n[cyan]Choose a template:[/cyan]\n")
+        self.console.print("\nChoose a template:\n")
         for i, (template_id, template_name) in enumerate(templates, 1):
             self.console.print(f"  {i}. {template_name}")
 
@@ -2907,17 +3066,17 @@ No session required.
     def _show_recent_sessions(self):
         """Show list of recent sessions"""
         try:
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Loading recent sessions...", total=None)
                 result = self.api.list_recent_sessions()
 
             if result.get("success"):
                 sessions = result.get("sessions", [])
-                self.console.print(f"\n[bold cyan]Recent Sessions[/bold cyan]\n")
+                self.console.print(f"\nRecent Sessions\n")
 
                 if not sessions:
-                    self.console.print("[dim]No recent sessions[/dim]\n")
+                    self.console.print("No recent sessions\n")
                     return
 
                 table = Table(show_header=True, header_style="bold cyan")
@@ -2934,12 +3093,12 @@ No session required.
                     table.add_row(sess_id, project, status, mode)
 
                 self.console.print(table)
-                self.console.print(f"\n[dim]Use: /resume <session_id> to resume[/dim]\n")
+                self.console.print(f"\nUse: /resume <session_id> to resume\n")
             else:
-                self.console.print("[yellow]Could not load recent sessions[/yellow]\n")
+                self.console.print("Could not load recent sessions\n")
 
         except Exception as e:
-            self.console.print(f"[red]Error loading sessions: {e}[/red]\n")
+            self.console.print(f"Error loading sessions: {e}\n")
 
     def handle_command(self, user_input: str):
         """Parse and handle command"""
@@ -2957,10 +3116,10 @@ No session required.
 
         elif command in ["/exit", "/quit", "/q"]:
             if self.current_session:
-                if Confirm.ask("[yellow]You have an active session. End it before exiting?[/yellow]"):
+                if Confirm.ask("You have an active session. End it before exiting?"):
                     self.cmd_session(["end"])
             self.running = False
-            self.console.print("\n[cyan]..τω Ασκληπιώ οφείλομεν αλετρυόνα, απόδοτε και μη αμελήσετε..[/cyan]\n")
+            self.console.print("\n..τω Ασκληπιώ οφείλομεν αλετρυόνα, απόδοτε και μη αμελήσετε..\n")
             # Shutdown is called in run()'s finally block, but set running=False to exit the loop
             return
 
@@ -2975,7 +3134,7 @@ No session required.
 
         elif command == "/debug":
             self.debug = not self.debug
-            self.console.print(f"[cyan]Debug mode: {'ON' if self.debug else 'OFF'}[/cyan]")
+            self.console.print(f"Debug mode: {'ON' if self.debug else 'OFF'}")
             return
 
         # Try to route through modular registry first
@@ -3002,6 +3161,9 @@ No session required.
         elif command == "/whoami":
             self.cmd_whoami()
 
+        elif command == "/account":
+            self.cmd_account(args)
+
         elif command == "/projects":
             self.cmd_projects()
 
@@ -3019,7 +3181,7 @@ No session required.
 
         elif command == "/mode":
             if not self.ensure_session_active():
-                self.console.print("[yellow]Start a session first with /session start[/yellow]")
+                self.console.print("Start a session first with /session start")
                 return
 
             try:
@@ -3030,7 +3192,7 @@ No session required.
                 if args:
                     mode = args[0].lower()
                     if mode not in cli_mode_map:
-                        self.console.print("[red]Invalid mode. Use: socratic or direct[/red]")
+                        self.console.print("Invalid mode. Use: socratic or direct")
                         return
 
                     backend_mode = cli_mode_map[mode]
@@ -3041,7 +3203,7 @@ No session required.
                     backend_mode = new_backend_mode
 
                 # Switch mode on backend
-                with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Switching mode...", total=None)
                     result = self.api.set_session_mode(
@@ -3051,17 +3213,17 @@ No session required.
 
                 if result.get("success"):
                     self.chat_mode = mode
-                    mode_emoji = "🤔" if mode == "socratic" else "💬"
-                    self.console.print(f"[green]✓ Switched to {mode} mode {mode_emoji}[/green]")
+                    mode_emoji = "" if mode == "socratic" else ""
+                    self.console.print(f"[OK] Switched to {mode} mode {mode_emoji}")
 
                     if mode == "socratic":
-                        self.console.print("[dim]Socratic mode: Thoughtful questioning to extract specifications[/dim]")
+                        self.console.print("Socratic mode: Thoughtful questioning to extract specifications")
                     else:
-                        self.console.print("[dim]Direct mode: Direct conversation with AI assistant[/dim]")
+                        self.console.print("Direct mode: Direct conversation with AI assistant")
                 else:
-                    self.console.print(f"[red]Failed to switch modes: {result.get('error', 'Unknown error')}[/red]")
+                    self.console.print(f"Failed to switch modes: {result.get('error', 'Unknown error')}")
             except Exception as e:
-                self.console.print(f"[red]Error: {e}[/red]")
+                self.console.print(f"Error: {e}")
 
         elif command == "/config":
             self.cmd_config(args)
@@ -3106,8 +3268,8 @@ No session required.
             self.cmd_logging(args)
 
         else:
-            self.console.print(f"[red]Unknown command: {command}[/red]")
-            self.console.print("[yellow]Type /help for available commands[/yellow]")
+            self.console.print(f"Unknown command: {command}")
+            self.console.print("Type /help for available commands")
 
     def run(self):
         """Main CLI loop"""
@@ -3119,14 +3281,14 @@ No session required.
         # Check if user is logged in
         if self.config.get("access_token"):
             email = self.config.get("user_email", "User")
-            self.console.print(f"[green]Welcome back, {email}![/green]\n")
+            self.console.print(f"Welcome back, {email}!\n")
             self.api.set_token(self.config.get("access_token"))
             # Also set refresh token if available
             refresh_token = self.config.get("refresh_token")
             if refresh_token:
                 self.api.set_refresh_token(refresh_token)
         else:
-            self.console.print("[yellow]Please /login or /register to get started[/yellow]\n")
+            self.console.print("Please /login or /register to get started\n")
 
         # Main loop
         try:
@@ -3135,15 +3297,15 @@ No session required.
                     # Build prompt
                     prompt_parts = []
                     if self.current_project:
-                        prompt_parts.append(f"[cyan]{self.current_project['name'][:20]}[/cyan]")
+                        prompt_parts.append(f"{self.current_project['name'][:20]}")
                     if self.current_session:
-                        prompt_parts.append(f"[green]session[/green]")
+                        prompt_parts.append(f"session")
 
                     # Add mode indicator
-                    mode_emoji = "🤔" if self.chat_mode == "socratic" else "💬"
-                    prompt_parts.append(f"[dim]{mode_emoji}[/dim]")
+                    mode_emoji = "" if self.chat_mode == "socratic" else ""
+                    prompt_parts.append(f"{mode_emoji}")
 
-                    prompt_text = " ".join(prompt_parts) if prompt_parts else f"[dim]socrates {mode_emoji}[/dim]"
+                    prompt_text = " ".join(prompt_parts) if prompt_parts else f"socrates {mode_emoji}"
 
                     # Get user input
                     user_input = self.get_prompt_input(f"{prompt_text} > ")
@@ -3158,14 +3320,14 @@ No session required.
                         self.handle_chat_message(user_input)
 
                 except KeyboardInterrupt:
-                    self.console.print("\n[yellow]Use /exit to quit[/yellow]")
+                    self.console.print("\nUse /exit to quit")
                     continue
 
                 except EOFError:
                     break
 
                 except Exception as e:
-                    self.console.print(f"[red]Error: {e}[/red]")
+                    self.console.print(f"Error: {e}")
                     if self.debug:
                         import traceback
                         self.console.print(traceback.format_exc())
