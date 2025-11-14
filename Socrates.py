@@ -1370,7 +1370,9 @@ User ID: {user_id}
 
         try:
             result = self.api.list_projects()
-            projects = result.get("projects", [])
+            # Extract projects from data wrapper
+            data = result.get("data", {})
+            projects = data.get("projects", []) if isinstance(data, dict) else []
 
             if not projects:
                 self.console.print("\nNo projects yet. Create one with /project create")
@@ -1386,12 +1388,15 @@ User ID: {user_id}
 
             for project in projects:
                 selected = "→ " if self.current_project and project["id"] == self.current_project["id"] else ""
+                # Backend returns: id, name, description, status, phase, maturity_level, created_at
+                maturity = project.get("maturity_level", 0)
+                maturity_str = f"{maturity}%" if isinstance(maturity, (int, float)) else "0%"
                 table.add_row(
                     selected + project["id"][:8],
                     project["name"],
                     project.get("description", "")[:40],
-                    project.get("current_phase", "N/A"),
-                    f"{project.get('maturity_score', 0):.1f}%",
+                    project.get("phase", "N/A"),
+                    maturity_str,
                     project.get("created_at", "")[:10]
                 )
 
@@ -1781,6 +1786,7 @@ Updated: {p.get('updated_at', 'N/A')}
                         progress.add_task("Loading sessions...", total=None)
                         result = self.api.list_sessions(self.current_project["id"])
 
+                    # Note: list_sessions returns unwrapped response (not in "data" wrapper like projects)
                     sessions = result.get("sessions", [])
                     if sessions:
                         # Display sessions in a table
@@ -1902,6 +1908,7 @@ Updated: {p.get('updated_at', 'N/A')}
 
         try:
             result = self.api.list_sessions(self.current_project["id"])
+            # Note: list_sessions returns unwrapped response (not in "data" wrapper like projects)
             sessions = result.get("sessions", [])
 
             if not sessions:
@@ -1942,7 +1949,9 @@ Updated: {p.get('updated_at', 'N/A')}
         try:
             result = self.api.get_session_history(self.current_session["id"])
             if result.get("success"):
-                history = result.get("conversation_history", [])
+                # Extract from data wrapper
+                data = result.get("data", {})
+                history = data.get("conversation_history", []) if isinstance(data, dict) else []
 
                 if not history:
                     self.console.print("No conversation history yet")
@@ -1979,16 +1988,18 @@ Updated: {p.get('updated_at', 'N/A')}
                 result = self.api.get_next_question(self.current_session["id"])
 
             if result.get("success"):
+                # Extract from data wrapper
+                data = result.get("data", {})
                 # Handle both response formats
-                question_data = result.get("question")
+                question_data = data.get("question") if isinstance(data, dict) else None
                 if isinstance(question_data, dict):
                     # If question is an object, extract fields
                     question_text = question_data.get("text") or question_data.get("question")
                     question_id = question_data.get("id") or question_data.get("question_id")
                 else:
                     # If question is a string, assume it's the text
-                    question_text = result.get("text") or result.get("question") or question_data
-                    question_id = result.get("id") or result.get("question_id")
+                    question_text = data.get("text") or data.get("question") or question_data
+                    question_id = data.get("id") or data.get("question_id")
 
                 if not question_text:
                     self.console.print("Error: No question text received")
@@ -1998,7 +2009,7 @@ Updated: {p.get('updated_at', 'N/A')}
                 self.current_question = {
                     "question_id": question_id,
                     "text": question_text,
-                    **result  # Include all other fields
+                    **(data if isinstance(data, dict) else {})  # Include all other fields from data
                 }
 
                 self.console.print(f"Socrates:")
