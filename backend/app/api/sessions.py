@@ -675,7 +675,6 @@ def end_session(
     session.ended_at = datetime.now(timezone.utc)
     db.commit()
 
-    from app.services.response_service import ResponseWrapper
     return ResponseWrapper.success(
         data={
             'session_id': str(session.id),

@@ -22,7 +22,7 @@ from .api import (
     code_generation,
     collaboration,
     conflicts,
-    # documents,  # TODO: Install chardet module
+    documents,
     domains,
     export,
     export_endpoints,
@@ -227,7 +227,7 @@ def create_app(register_agents_fn: Optional[Callable] = None) -> FastAPI:
     app.include_router(resources.router)
     # app.include_router(jobs.router)  # TODO: Install apscheduler module
     # app.include_router(billing.router)  # TODO: Install stripe module
-    # app.include_router(documents.router)  # TODO: Install chardet module
+    app.include_router(documents.router)
     app.include_router(notifications.router)
     app.include_router(export.router)
     app.include_router(collaboration.router)

@@ -939,20 +939,16 @@ class SocratesAPIExtension:
     # ============================================================================
 
     def get_collaboration_status(self, project_id: str) -> Dict[str, Any]:
-        """Get collaboration status for a project"""
-        try:
-            response = self._request("GET", f"/api/v1/collaboration/projects/{project_id}/status")
-            return {"success": response.status_code == 200, "data": response.json()}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+        """Get collaboration status for a project (returns collaborators list)"""
+        # NOTE: /api/v1/collaboration/projects/{project_id}/status endpoint doesn't exist
+        # Using get_project_members() instead to get collaboration info
+        return self.get_project_members(project_id)
 
     def get_collaboration_activity(self, project_id: str) -> Dict[str, Any]:
-        """Get collaboration activity for a project"""
-        try:
-            response = self._request("GET", f"/api/v1/collaboration/projects/{project_id}/activity")
-            return {"success": response.status_code == 200, "data": response.json()}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+        """Get collaboration activity for a project (returns collaborators list)"""
+        # NOTE: /api/v1/collaboration/projects/{project_id}/activity endpoint doesn't exist
+        # Using get_project_members() instead to get collaboration info
+        return self.get_project_members(project_id)
 
     def get_project_members(self, project_id: str) -> Dict[str, Any]:
         """Get project members/collaborators"""

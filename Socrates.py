@@ -882,6 +882,23 @@ No session required.
             "debug": self.debug,
         }
 
+    def _sync_config_from_registry(self) -> None:
+        """Sync state changes from registry config back to instance variables."""
+        if not self.registry:
+            return
+        config = self.registry.config
+        # Pull changes from registry config back to instance variables
+        self.current_project = config.get("current_project")
+        self.current_session = config.get("current_session")
+        self.current_question = config.get("current_question")
+
+        # Extract mode from session if available, otherwise use config value
+        if self.current_session and isinstance(self.current_session, dict):
+            session_mode = self.current_session.get("mode", "socratic").replace("_chat", "")
+            self.chat_mode = session_mode
+        else:
+            self.chat_mode = config.get("chat_mode", "socratic")
+
     def ensure_project_selected(self) -> bool:
         """Check if project is selected"""
         if not self.current_project:
@@ -3167,7 +3184,8 @@ Updated: {p.get('updated_at', 'N/A')}
             # Update config dict before routing
             self.registry.config = self._get_config_dict()
             if self.registry.route_command(command_name, args):
-                # Command was handled successfully
+                # Command was handled successfully, sync any config changes back
+                self._sync_config_from_registry()
                 return
 
         # Fall back to legacy command methods for backwards compatibility
