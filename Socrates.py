@@ -277,6 +277,10 @@ class SocratesAPI(SocratesAPIExtension):
         response = self._request("GET", "/api/v1/sessions", params={"project_id": project_id})
         return response.json()
 
+    def get_sessions(self, project_id: str) -> Dict[str, Any]:
+        """Alias for list_sessions - get project sessions"""
+        return self.list_sessions(project_id)
+
     def get_next_question(self, session_id: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
         """Get next Socratic question"""
         response = self._request("POST", f"/api/v1/sessions/{session_id}/next-question",
