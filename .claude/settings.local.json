@@ -46,7 +46,10 @@
       "Bash(powershell -Command:*)",
       "Bash(python test_project_select_fix.py:*)",
       "Bash(python verify_fixes.py:*)",
-      "Bash(uvicorn:*)"
+      "Bash(uvicorn:*)",
+      "Bash($env:DATABASE_URL_SPECS='postgresql://postgres@localhost:5432/socrates_specs')",
+      "Bash(DATABASE_URL_SPECS='postgresql://postgres@localhost:5432/socrates_specs' python -m alembic:*)",
+      "Bash(python run_migration.py:*)"
     ],
     "deny": [],
     "ask": []
