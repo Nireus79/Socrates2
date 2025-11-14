@@ -906,3 +906,66 @@ class SocratesAPIExtension:
             return {"success": response.status_code == 200, "data": response.json()}
         except Exception as e:
             return {"success": False, "error": str(e)}
+
+    # ============================================================================
+    # NAMING ALIASES - For CLI compatibility
+    # ============================================================================
+    # These aliases map CLI method names to actual backend endpoint wrappers
+
+    def get_projects(self, skip: int = 0, limit: int = 100) -> Dict[str, Any]:
+        """Alias for list_projects() - get user's projects"""
+        # This method is called by CLI but we need to use list_projects internally
+        # Import here to access the parent class method
+        return self.list_projects(skip, limit)
+
+    def get_templates(self) -> Dict[str, Any]:
+        """Alias for list_templates() - get available templates"""
+        return self.list_templates()
+
+    def get_teams(self) -> Dict[str, Any]:
+        """Alias for list_teams() - get user's teams"""
+        return self.list_teams()
+
+    def get_team_members(self, team_id: str) -> Dict[str, Any]:
+        """Alias for list_team_members() - get team members"""
+        return self.list_team_members(team_id)
+
+    def invite_team_member(self, team_id: str, email: str, role: str = "member") -> Dict[str, Any]:
+        """Alias for invite_to_team() - invite user to team"""
+        return self.invite_to_team(team_id, email, role)
+
+    # ============================================================================
+    # NEW COLLABORATION METHODS - Missing implementations
+    # ============================================================================
+
+    def get_collaboration_status(self, project_id: str) -> Dict[str, Any]:
+        """Get collaboration status for a project"""
+        try:
+            response = self._request("GET", f"/api/v1/collaboration/projects/{project_id}/status")
+            return {"success": response.status_code == 200, "data": response.json()}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def get_collaboration_activity(self, project_id: str) -> Dict[str, Any]:
+        """Get collaboration activity for a project"""
+        try:
+            response = self._request("GET", f"/api/v1/collaboration/projects/{project_id}/activity")
+            return {"success": response.status_code == 200, "data": response.json()}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def get_project_members(self, project_id: str) -> Dict[str, Any]:
+        """Get project members/collaborators"""
+        try:
+            response = self._request("GET", f"/api/v1/collaboration/projects/{project_id}/collaborators")
+            return {"success": response.status_code == 200, "data": response.json()}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def semantic_search(self, project_id: str, query: str) -> Dict[str, Any]:
+        """Semantic search in project documents"""
+        try:
+            response = self._request("GET", f"/api/v1/documents/{project_id}/search?query={query}")
+            return {"success": response.status_code == 200, "data": response.json()}
+        except Exception as e:
+            return {"success": False, "error": str(e)}

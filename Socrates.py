@@ -3309,6 +3309,20 @@ Updated: {p.get('updated_at', 'N/A')}
             refresh_token = self.config.get("refresh_token")
             if refresh_token:
                 self.api.set_refresh_token(refresh_token)
+
+            # Restore active project from config
+            saved_project = self.config.get("current_project")
+            if saved_project:
+                self.current_project = saved_project
+                self.console.print(f"Restored project: {saved_project.get('name')}")
+
+            # Restore active session from config
+            saved_session = self.config.get("current_session")
+            if saved_session:
+                self.current_session = saved_session
+                self.console.print(f"Restored session: {saved_session.get('id', 'unknown')[:8]}...")
+
+            self.console.print()
         else:
             self.console.print("Please /login or /register to get started\n")
 

@@ -672,13 +672,18 @@ def end_session(
 
     # Update session status
     session.status = 'completed'
+    session.ended_at = datetime.now(timezone.utc)
     db.commit()
 
-    return {
-        'success': True,
-        'session_id': str(session.id),
-        'status': session.status
-    }
+    from app.services.response_service import ResponseWrapper
+    return ResponseWrapper.success(
+        data={
+            'session_id': str(session.id),
+            'status': session.status,
+            'ended_at': session.ended_at.isoformat() if session.ended_at else None
+        },
+        message="Session ended successfully"
+    )
 
 
 @router.get("/{session_id}/mode")
