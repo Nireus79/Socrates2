@@ -850,9 +850,13 @@ No session required.
     def ensure_authenticated(self) -> bool:
         """Check if user is authenticated"""
         token = self.config.get("access_token")
+        if self.debug:
+            self.console.print(f"DEBUG: ensure_authenticated() called")
+            self.console.print(f"DEBUG: Config data keys: {list(self.config.data.keys())}")
+            self.console.print(f"DEBUG: access_token value: {repr(token)}")
         if not token:
             if self.debug:
-                self.console.print(f"DEBUG: No access_token in config. Available keys: {list(self.config.data.keys())}")
+                self.console.print(f"DEBUG: No access_token in config. Config file: {self.config.config_file}")
             self.console.print("[ERROR] Not authenticated. Use /login or /register first")
             return False
         self.api.set_token(token)
@@ -1178,6 +1182,9 @@ No session required.
                     user_display = result.get("name", data['username'])
                     # Log the login action
                     self.cli_logger.log_login(data['username'], result.get("username", ""))
+                    if self.debug:
+                        self.console.print(f"DEBUG: Token saved to config. Config keys: {list(self.config.data.keys())}")
+                        self.console.print(f"DEBUG: Config file: {self.config.config_file}")
                     self.console.print(f"\n[OK] Logged in successfully as {user_display}")
                 else:
                     error_detail = result.get('message', result.get('detail', 'Invalid credentials'))
