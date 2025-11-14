@@ -28,27 +28,19 @@ class ProjectCommandHandler(CommandHandler):
     command_name = "project"
     description = "Project management: create, list, select, manage, archive, restore, destroy"
     help_text = """
-[bold cyan]Project Commands:[/bold cyan]
+Project Commands:
 
-  /project create              Create new project (domain-aware)
+  /project create              Create new project
   /project list                List all your projects
   /project select <id>         Select project to work with
   /project info                Show current project details
-  /project manage <id>         Unified management (archive/restore/destroy)
-
-[bold cyan]Team & Collaboration:[/bold cyan]
-
-  /project add-member <email>      Add team member
-  /project remove-member <email>   Remove team member
-  /project member-list             List team members
-  /project share <team_id>         Share with team
+  /project manage <id>         Archive/restore/destroy projects
 
 Examples:
-  /project create                       # Create new project
-  /project list                         # Show all projects
-  /project select 1                     # Select first project
-  /project manage 1                     # Open management interface
-  /project add-member alice@example.com # Add collaborator
+  /project create              # Create new project
+  /project list                # Show all projects
+  /project select 1            # Select first project
+  /project manage 1            # Open management interface
 """
 
     def handle(self, args: List[str]) -> None:
@@ -69,14 +61,7 @@ Examples:
             self.info()
         elif subcommand == "manage":
             self.manage(args[1:])
-        elif subcommand == "add-member":
-            self.add_member(args[1:])
-        elif subcommand == "remove-member":
-            self.remove_member(args[1:])
-        elif subcommand == "member-list":
-            self.member_list()
-        elif subcommand == "share":
-            self.share(args[1:])
+        # Team/member management not supported by backend - use separate /team commands instead
         else:
             self.print_error(f"Unknown subcommand: {subcommand}")
             self.show_help()
@@ -149,11 +134,11 @@ Examples:
             # Create project via API
             self.console.print("\nCreating project...")
 
+            # Backend API only supports name and description
+            # Domain and team features are for future implementation
             result = self.api.create_project(
                 name=name,
-                description=description,
-                domain=domain,
-                is_team_project=(solo_or_team == "team")
+                description=description
             )
 
             if result.get("success"):
@@ -398,129 +383,6 @@ Examples:
         except Exception as e:
             self.print_error(f"Error: {e}")
 
-    def add_member(self, args: List[str]) -> None:
-        """Add team member to project"""
-        project = self.ensure_project_selected()
-        if not project:
-            return
 
-        if not args:
-            email = prompts.prompt_email(self.console, "Member email")
-        else:
-            email = args[0]
 
-        # Get role
-        role = prompts.prompt_choice(
-            self.console,
-            "Member role",
-            ["contributor", "reviewer", "viewer"],
-            default="contributor"
-        )
 
-        try:
-            self.console.print("Adding member...")
-
-            result = self.api.add_project_member(
-                project.get("id"),
-                email,
-                role
-            )
-
-            if result.get("success"):
-                self.print_success(f"Added {email} as {role}")
-            else:
-                error = result.get("error") or "Unknown error"
-                self.print_error(f"Failed: {error}")
-
-        except Exception as e:
-            self.print_error(f"Error: {e}")
-
-    def remove_member(self, args: List[str]) -> None:
-        """Remove team member from project"""
-        project = self.ensure_project_selected()
-        if not project:
-            return
-
-        if not args:
-            email = prompts.prompt_email(self.console, "Member email")
-        else:
-            email = args[0]
-
-        if not prompts.prompt_confirm(
-            self.console,
-            f"Remove {email}?",
-            default=False
-        ):
-            self.console.print("Cancelled")
-            return
-
-        try:
-            self.console.print("Removing member...")
-
-            result = self.api.remove_project_member(
-                project.get("id"),
-                email
-            )
-
-            if result.get("success"):
-                self.print_success(f"Removed {email}")
-            else:
-                error = result.get("error") or "Unknown error"
-                self.print_error(f"Failed: {error}")
-
-        except Exception as e:
-            self.print_error(f"Error: {e}")
-
-    def member_list(self) -> None:
-        """List project members"""
-        project = self.ensure_project_selected()
-        if not project:
-            return
-
-        try:
-            result = self.api.get_project_members(project.get("id"))
-
-            if not result.get("success"):
-                self.print_error("Failed to load members")
-                return
-
-            members = result.get("data", {}).get("members", [])
-
-            if not members:
-                self.console.print("No members in this project")
-                return
-
-            table = table_formatter.format_member_table(members)
-            self.console.print(table)
-
-        except Exception as e:
-            self.print_error(f"Error: {e}")
-
-    def share(self, args: List[str]) -> None:
-        """Share project with team"""
-        project = self.ensure_project_selected()
-        if not project:
-            return
-
-        if not args:
-            self.console.print("Usage: /project share <team_id>")
-            return
-
-        team_id = args[0]
-
-        try:
-            self.console.print("Sharing project with team...")
-
-            result = self.api.share_project_with_team(
-                project.get("id"),
-                team_id
-            )
-
-            if result.get("success"):
-                self.print_success("Project shared with team")
-            else:
-                error = result.get("error") or "Unknown error"
-                self.print_error(f"Failed: {error}")
-
-        except Exception as e:
-            self.print_error(f"Error: {e}")
