@@ -109,7 +109,7 @@ class SessionCommandHandler(CommandHandler):
                 session["domain"] = domain
 
                 self.config["current_session"] = session
-                session_id = session.get("id")
+                session_id = session.get("session_id") or session.get("id")
 
                 self.print_success("Session started!")
                 self.console.print(f"Session ID: {session_id}")
