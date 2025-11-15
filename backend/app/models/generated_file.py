@@ -4,6 +4,7 @@ GeneratedFile model for storing individual generated files.
 from sqlalchemy import Column, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import relationship
 
+from ..core.database import PG_UUID
 from ..models.base import BaseModel
 
 
@@ -16,7 +17,12 @@ class GeneratedFile(BaseModel):
     """
     __tablename__ = "generated_files"
 
-    generated_project_id = Column(String(36), ForeignKey('generated_projects.id', ondelete='CASCADE'), nullable=False, index=True)
+    generated_project_id = Column(
+        PG_UUID(as_uuid=True),
+        ForeignKey('generated_projects.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True
+    )
     file_path = Column(String(500), nullable=False, index=True)
     file_content = Column(Text, nullable=True)
     file_size = Column(Integer, nullable=True)

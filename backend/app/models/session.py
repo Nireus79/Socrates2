@@ -68,7 +68,8 @@ class Session(BaseModel):
     # Relationships
     project = relationship("Project", back_populates="sessions")
     questions = relationship("Question", back_populates="session", cascade="all, delete-orphan")
-    specifications = relationship("Specification", back_populates="session")
+    # TODO: Enable when Specification.session_id column is created in database
+    # specifications = relationship("Specification", back_populates="session")
     conversation_history = relationship("ConversationHistory", back_populates="session", cascade="all, delete-orphan")
 
     def __repr__(self):

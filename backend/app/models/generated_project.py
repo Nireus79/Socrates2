@@ -3,7 +3,7 @@ GeneratedProject model for storing code generation metadata.
 """
 import enum
 
-from sqlalchemy import DECIMAL, Column, DateTime, Enum, Integer, Text
+from sqlalchemy import DECIMAL, Column, DateTime, Enum, ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 
@@ -27,7 +27,12 @@ class GeneratedProject(BaseModel):
     """
     __tablename__ = "generated_projects"
 
-    project_id = Column(PG_UUID(as_uuid=True), nullable=False, index=True)
+    project_id = Column(
+        PG_UUID(as_uuid=True),
+        ForeignKey('projects.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True
+    )
     generation_version = Column(Integer, nullable=False, default=1)
     total_files = Column(Integer, nullable=False)
     total_lines = Column(Integer, nullable=False)
