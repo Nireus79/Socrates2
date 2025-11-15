@@ -125,16 +125,24 @@ def create_project(
         }
     """
     try:
-        # Create project using repository
+        # PHASE 1: Create project using repository (minimal DB usage)
         project = service.projects.create_project(
             user_id=current_user.id,
             name=request.name,
             description=request.description or ""
         )
 
-        # Commit transaction
+        # PHASE 2: Commit transaction
         service.commit_all()
 
+        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # This prevents connection pool exhaustion
+        try:
+            service.specs_session.close()
+        except:
+            pass
+
+        # PHASE 4: Build response data from already-loaded project object
         project_data = {
             "id": str(project.id),
             "project_id": str(project.id),  # For CLI compatibility
@@ -148,13 +156,20 @@ def create_project(
             "updated_at": project.updated_at.isoformat() if project.updated_at else None
         }
 
+        # PHASE 5: Return response with released connection
         return ResponseWrapper.success(
             data=project_data,
             message="Project created successfully"
         )
 
     except Exception as e:
-        service.rollback_all()
+        try:
+            service.rollback_all()
+        except:
+            pass
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error creating project: {e}", exc_info=True)
         return ResponseWrapper.internal_error(
             message="Failed to create project",
             exception=e
@@ -207,7 +222,7 @@ def list_projects(
         }
     """
     try:
-        # Get user's projects
+        # PHASE 1: Load user's projects and count from DB
         projects = service.projects.get_user_projects(
             user_id=current_user.id,
             skip=skip,
@@ -217,6 +232,17 @@ def list_projects(
         # Get total count
         total = service.projects.count_user_projects(current_user.id)
 
+        # PHASE 2: Commit transaction
+        service.commit_all()
+
+        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # This prevents connection pool exhaustion
+        try:
+            service.specs_session.close()
+        except:
+            pass
+
+        # PHASE 4: Build response data from already-loaded project objects
         projects_data = [
             {
                 "id": str(p.id),
@@ -239,12 +265,17 @@ def list_projects(
             "limit": limit
         }
 
+        # PHASE 5: Return response with released connection
         return ResponseWrapper.success(
             data=response_data,
             message="Projects retrieved successfully"
         )
 
     except Exception as e:
+        try:
+            service.rollback_all()
+        except:
+            pass
         return ResponseWrapper.internal_error(
             message="Failed to list projects",
             exception=e
@@ -298,7 +329,7 @@ def get_project(
         )
 
     try:
-        # Get project by ID
+        # PHASE 1: Load project by ID
         project = service.projects.get_by_id(project_uuid)
 
         # Validate project exists
@@ -315,6 +346,17 @@ def get_project(
                 detail="You don't have access to this project"
             )
 
+        # PHASE 2: Commit transaction
+        service.commit_all()
+
+        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # This prevents connection pool exhaustion
+        try:
+            service.specs_session.close()
+        except:
+            pass
+
+        # PHASE 4: Build response data from already-loaded project object
         project_data = {
             "id": str(project.id),
             "user_id": str(project.user_id),
@@ -327,6 +369,7 @@ def get_project(
             "updated_at": project.updated_at.isoformat() if project.updated_at else None
         }
 
+        # PHASE 5: Return response with released connection
         return ResponseWrapper.success(
             data=project_data,
             message="Project retrieved successfully"
@@ -335,6 +378,10 @@ def get_project(
     except HTTPException:
         raise
     except Exception as e:
+        try:
+            service.rollback_all()
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve project"
@@ -384,7 +431,7 @@ def update_project(
             detail=f"Invalid project ID format: {project_id}"
         )
 
-    # Get project first
+    # PHASE 1: Get project and validate permissions
     project = service.projects.get_by_id(project_uuid)
 
     if not project:
@@ -413,10 +460,18 @@ def update_project(
         if request.maturity_level is not None:
             project = service.projects.update_maturity_level(project_uuid, request.maturity_level)
 
-        # Commit transaction with timeout handling
+        # PHASE 2: Commit transaction with timeout handling
         service.commit_all()
 
-        return ProjectResponse(
+        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # This prevents connection pool exhaustion
+        try:
+            service.specs_session.close()
+        except:
+            pass
+
+        # PHASE 4: Build response data from already-loaded project object
+        response_data = ProjectResponse(
             id=str(project.id),
             user_id=str(project.user_id),
             name=project.name,
@@ -428,8 +483,14 @@ def update_project(
             updated_at=project.updated_at.isoformat() if project.updated_at else None
         )
 
+        # PHASE 5: Return response with released connection
+        return response_data
+
     except Exception as e:
-        service.rollback_all()
+        try:
+            service.rollback_all()
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update project"
@@ -464,7 +525,7 @@ def partial_update_project(
             detail=f"Invalid project ID format: {project_id}"
         )
 
-    # Get project first
+    # PHASE 1: Get project and validate permissions
     project = service.projects.get_by_id(project_uuid)
 
     if not project:
@@ -493,10 +554,18 @@ def partial_update_project(
         if request.maturity_level is not None:
             project = service.projects.update_maturity_level(project_uuid, request.maturity_level)
 
-        # Commit transaction with timeout handling
+        # PHASE 2: Commit transaction with timeout handling
         service.commit_all()
 
-        return ProjectResponse(
+        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # This prevents connection pool exhaustion
+        try:
+            service.specs_session.close()
+        except:
+            pass
+
+        # PHASE 4: Build response data from already-loaded project object
+        response_data = ProjectResponse(
             id=str(project.id),
             user_id=str(project.user_id),
             name=project.name,
@@ -508,8 +577,14 @@ def partial_update_project(
             updated_at=project.updated_at.isoformat() if project.updated_at else None
         )
 
+        # PHASE 5: Return response with released connection
+        return response_data
+
     except Exception as e:
-        service.rollback_all()
+        try:
+            service.rollback_all()
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update project"
@@ -556,7 +631,7 @@ def archive_project(
         )
 
     try:
-        # Get project
+        # PHASE 1: Get project and validate permissions
         project = service.projects.get_by_id(project_uuid)
 
         if not project:
@@ -574,8 +649,18 @@ def archive_project(
 
         # Archive project
         service.projects.archive_project(project_uuid)
+
+        # PHASE 2: Commit transaction
         service.commit_all()
 
+        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # This prevents connection pool exhaustion
+        try:
+            service.specs_session.close()
+        except:
+            pass
+
+        # PHASE 4 & 5: Build response and return with released connection
         return ResponseWrapper.success(
             data={"project_id": str(project_uuid)},
             message="Project archived successfully"
@@ -584,7 +669,10 @@ def archive_project(
     except HTTPException:
         raise
     except Exception as e:
-        service.rollback_all()
+        try:
+            service.rollback_all()
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to archive project"
