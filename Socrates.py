@@ -162,6 +162,23 @@ class IntentParser:
             (r'(?:save|export)\s+(?:as\s+)?(?:markdown|json|csv|pdf)',
              lambda m: ("_get_export_command", [m.group(0)])),
 
+            # Document management
+            (r'(?:upload|add|import)\s+(?:document|doc|file)\s+(.+)',
+             lambda m: ("/doc upload", [m.group(1)])),
+
+            (r'(?:list|show|view)\s+(?:documents|docs)',
+             lambda m: ("/doc list", [])),
+
+            (r'(?:search|find)\s+(?:in\s+)?(?:documents|docs)\s+(?:for\s+)?(.+)',
+             lambda m: ("/doc search", [m.group(1)])),
+
+            # GitHub integration
+            (r'(?:import|fetch|download)\s+(?:from\s+)?github\s+(.+)',
+             lambda m: ("/fetch github", [m.group(1)])),
+
+            (r'(?:connect|setup)\s+github',
+             lambda m: ("/fetch github connect", [])),
+
             # Help - only at start of input
             (r'^help(?:\s+(.+))?$',
              lambda m: ("/help " + m.group(1).strip() if m.lastindex and m.group(1) else "/help", [])),
@@ -1076,6 +1093,17 @@ LLM Management:
   /llm update            Update deprecated models
   /llm costs             Show LLM pricing information
   /llm usage [period]    Show your usage and costs (day/week/month)
+
+Knowledge Base & Resources:
+  /doc                   Show document management help
+  /doc upload <path>     Upload a document to knowledge base
+  /doc list              List all documents in project
+  /doc search <query>    Semantic search within documents
+  /doc delete <id>       Delete a document
+  /fetch                 Show resource import help
+  /fetch github <url>    Import GitHub repository content
+  /fetch github status   Check GitHub connection status
+  /fetch github connect  Setup GitHub integration
 
 CLI Mode:
   /cmd <command> [args]  Execute traditional CLI commands (useful in chat mode)
@@ -3028,6 +3056,320 @@ Updated: {p.get('updated_at', 'N/A')}
         except Exception as e:
             self.console.print(f"[ERROR] {str(e)}\n")
 
+    def cmd_doc(self, args: List[str]):
+        """Manage knowledge base documents"""
+        if not self.ensure_project_active():
+            return
+
+        if not args:
+            # Show help for /doc command
+            self.console.print("\n[bold cyan]Document Management[/bold cyan]")
+            self.console.print("\nUsage: /doc <subcommand> [args]")
+            self.console.print("\nSubcommands:")
+            self.console.print("  /doc upload <filepath>     Upload a document to knowledge base")
+            self.console.print("  /doc list                  List all documents in project")
+            self.console.print("  /doc search <query>        Search documents with semantic search")
+            self.console.print("  /doc delete <doc_id>       Delete a document")
+            return
+
+        subcommand = args[0].lower()
+
+        if subcommand == "upload":
+            if len(args) < 2:
+                self.console.print("Usage: /doc upload <filepath>")
+                return
+            self.cmd_doc_upload(args[1])
+
+        elif subcommand == "list":
+            self.cmd_doc_list()
+
+        elif subcommand == "search":
+            if len(args) < 2:
+                self.console.print("Usage: /doc search <query>")
+                return
+            query = " ".join(args[1:])
+            self.cmd_doc_search(query)
+
+        elif subcommand == "delete":
+            if len(args) < 2:
+                self.console.print("Usage: /doc delete <doc_id>")
+                return
+            self.cmd_doc_delete(args[1])
+
+        else:
+            self.console.print(f"Unknown subcommand: {subcommand}")
+            self.console.print("Use: /doc for help")
+
+    def cmd_doc_upload(self, file_path: str):
+        """Upload a document to the knowledge base"""
+        try:
+            import os
+
+            if not os.path.exists(file_path):
+                self.console.print(f"[ERROR] File not found: {file_path}")
+                return
+
+            file_size = os.path.getsize(file_path)
+            file_size_mb = file_size / (1024 * 1024)
+
+            if file_size_mb > 50:
+                self.console.print(f"[ERROR] File too large: {file_size_mb:.2f}MB (max 50MB)")
+                return
+
+            self.console.print(f"[INFO] Uploading {os.path.basename(file_path)} ({file_size_mb:.2f}MB)...")
+
+            result = self.api.upload_document(self.current_project, file_path)
+
+            if result.get("success"):
+                doc_data = result.get("data", {})
+                self.console.print("[OK] Document uploaded successfully")
+                if doc_data.get("id"):
+                    self.console.print(f"    ID: {doc_data['id']}")
+                if doc_data.get("filename"):
+                    self.console.print(f"    File: {doc_data['filename']}")
+                if doc_data.get("size"):
+                    self.console.print(f"    Size: {doc_data['size']} bytes")
+            else:
+                self.console.print(f"[ERROR] Upload failed: {result.get('error', 'Unknown error')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_doc_list(self):
+        """List documents in the knowledge base"""
+        try:
+            self.console.print("\n[INFO] Fetching documents...")
+
+            result = self.api.list_documents(self.current_project)
+
+            if result.get("success"):
+                documents = result.get("data", [])
+
+                if not documents:
+                    self.console.print("No documents in knowledge base")
+                    return
+
+                self.console.print(f"\n[bold cyan]Documents ({len(documents)})[/bold cyan]\n")
+
+                for doc in documents:
+                    doc_id = doc.get("id", "?")
+                    filename = doc.get("filename", "Unknown")
+                    size = doc.get("size", 0)
+                    created = doc.get("created_at", "?")
+
+                    size_kb = size / 1024
+                    self.console.print(f"  [cyan]{doc_id}[/cyan]")
+                    self.console.print(f"    File: {filename}")
+                    self.console.print(f"    Size: {size_kb:.1f} KB")
+                    self.console.print(f"    Created: {created}")
+                    self.console.print()
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Failed to fetch documents')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_doc_search(self, query: str):
+        """Search documents with semantic search"""
+        try:
+            self.console.print(f"\n[INFO] Searching documents for: '{query}'...")
+
+            result = self.api.semantic_search(self.current_project, query)
+
+            if result.get("success"):
+                results = result.get("data", [])
+
+                if not results:
+                    self.console.print("No matching documents found")
+                    return
+
+                self.console.print(f"\n[bold cyan]Search Results ({len(results)})[/bold cyan]\n")
+
+                for i, res in enumerate(results, 1):
+                    filename = res.get("filename", "Unknown")
+                    similarity = res.get("similarity", 0)
+                    excerpt = res.get("excerpt", res.get("content", ""))[:200]
+
+                    self.console.print(f"  [{i}] {filename}")
+                    self.console.print(f"      Relevance: {similarity*100:.0f}%")
+                    self.console.print(f"      Excerpt: {excerpt}...")
+                    self.console.print()
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Search failed')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_doc_delete(self, doc_id: str):
+        """Delete a document from the knowledge base"""
+        try:
+            # Confirm deletion
+            self.console.print(f"[WARN] Deleting document: {doc_id}")
+            confirm = self.console.input("Type 'yes' to confirm: ").strip().lower()
+
+            if confirm != "yes":
+                self.console.print("Cancelled")
+                return
+
+            result = self.api.delete_document(doc_id)
+
+            if result.get("success"):
+                self.console.print("[OK] Document deleted successfully")
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Delete failed')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_fetch(self, args: List[str]):
+        """Fetch and import content from external sources"""
+        if not self.ensure_project_active():
+            return
+
+        if not args:
+            # Show help for /fetch command
+            self.console.print("\n[bold cyan]Import External Content[/bold cyan]")
+            self.console.print("\nUsage: /fetch <source> [args]")
+            self.console.print("\nSources:")
+            self.console.print("  /fetch github <repo_url>   Import from GitHub repository")
+            self.console.print("  /fetch github status       Check GitHub connection status")
+            self.console.print("  /fetch github connect      Setup GitHub integration")
+            return
+
+        source = args[0].lower()
+
+        if source == "github":
+            if len(args) < 2:
+                self.console.print("Usage: /fetch github <repo_url> or /fetch github status")
+                return
+
+            action = args[1].lower()
+
+            if action == "status":
+                self.cmd_fetch_github_status()
+            elif action == "connect":
+                self.cmd_fetch_github_connect()
+            else:
+                # Treat as repo URL
+                repo_url = args[1] if len(args) > 1 else None
+                if repo_url:
+                    self.cmd_fetch_github(repo_url)
+                else:
+                    self.console.print("Usage: /fetch github <repo_url>")
+
+        else:
+            self.console.print(f"Unknown source: {source}")
+            self.console.print("Available: github")
+
+    def cmd_fetch_github_status(self):
+        """Check GitHub connection status"""
+        try:
+            self.console.print("\n[INFO] Checking GitHub connection status...")
+
+            result = self.api.get_github_connection_status()
+
+            if result.get("success"):
+                data = result.get("data", {})
+                connected = data.get("connected", False)
+                username = data.get("username")
+
+                if connected:
+                    self.console.print(f"[OK] Connected to GitHub as [cyan]{username}[/cyan]")
+                else:
+                    self.console.print("[WARN] Not connected to GitHub")
+                    self.console.print("Run: /fetch github connect")
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Failed to check status')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_fetch_github_connect(self):
+        """Setup GitHub integration"""
+        self.console.print("\n[INFO] GitHub Integration Setup")
+        self.console.print("\nNote: GitHub integration requires authorization")
+        self.console.print("You will need a GitHub personal access token (PAT)")
+        self.console.print("\n1. Go to: https://github.com/settings/tokens/new")
+        self.console.print("2. Select scopes: repo, read:user")
+        self.console.print("3. Copy the token and paste here")
+
+        token = self.console.input("\nEnter GitHub token: ").strip()
+
+        if not token:
+            self.console.print("Cancelled")
+            return
+
+        try:
+            self.console.print("[INFO] Connecting to GitHub...")
+
+            result = self.api.connect_github(token)
+
+            if result.get("success"):
+                self.console.print("[OK] GitHub connected successfully")
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Connection failed')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_fetch_github(self, repo_url: str):
+        """Import content from GitHub repository"""
+        try:
+            # Validate URL
+            if not ("github.com" in repo_url or "github.com/" in repo_url):
+                self.console.print("[ERROR] Invalid GitHub URL")
+                return
+
+            self.console.print(f"\n[INFO] Analyzing GitHub repository...")
+            self.console.print(f"       URL: {repo_url}")
+
+            # Analyze repo
+            analyze_result = self.api.analyze_github_repo(repo_url)
+
+            if not analyze_result.get("success"):
+                self.console.print(f"[ERROR] {analyze_result.get('error', 'Analysis failed')}")
+                return
+
+            repo_data = analyze_result.get("data", {})
+
+            self.console.print(f"\n[OK] Repository analyzed successfully")
+            self.console.print(f"    Name: {repo_data.get('name')}")
+            self.console.print(f"    Description: {repo_data.get('description', 'N/A')}")
+            self.console.print(f"    Files: {repo_data.get('file_count', 0)}")
+            self.console.print(f"    Language: {repo_data.get('language', 'Unknown')}")
+
+            # Ask what to import
+            self.console.print("\nWhat would you like to import?")
+            self.console.print("  [1] README and documentation")
+            self.console.print("  [2] Code files")
+            self.console.print("  [3] Everything")
+            self.console.print("  [4] Cancel")
+
+            choice = self.console.input("\nSelect (1-4): ").strip()
+
+            import_map = {
+                "1": ["README", "docs"],
+                "2": ["code"],
+                "3": ["README", "docs", "code"],
+            }
+
+            if choice == "4" or choice not in import_map:
+                self.console.print("Cancelled")
+                return
+
+            import_items = import_map[choice]
+
+            self.console.print(f"\n[INFO] Importing {', '.join(import_items)}...")
+
+            result = self.api.import_from_github(self.current_project, repo_url, import_items)
+
+            if result.get("success"):
+                self.console.print("[OK] Repository imported successfully")
+                data = result.get("data", {})
+                if data.get("files_imported"):
+                    self.console.print(f"    Files imported: {data['files_imported']}")
+                if data.get("size_imported"):
+                    size_mb = data['size_imported'] / (1024 * 1024)
+                    self.console.print(f"    Size: {size_mb:.2f} MB")
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Import failed')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
     def cmd_theme(self, args: List[str]):
         """Change CLI color theme"""
         themes = {
@@ -4022,6 +4364,12 @@ Updated: {p.get('updated_at', 'N/A')}
 
         elif command == "/llm":
             self.cmd_llm(args)
+
+        elif command == "/doc":
+            self.cmd_doc(args)
+
+        elif command == "/fetch":
+            self.cmd_fetch(args)
 
         else:
             self.console.print(f"Unknown command: {command}")
