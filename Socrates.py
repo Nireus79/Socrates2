@@ -150,9 +150,9 @@ class IntentParser:
             (r'(?:switch|change|go to)\s+(?:socratic|direct)\s+(?:mode|chat)?',
              lambda m: ("/mode " + m.group(1) if m.lastindex else "/mode", [])),
 
-            # LLM model selection
-            (r'(?:use|switch to|select)\s+(?:model|llm)\s+(.+)',
-             lambda m: ("_parse_model_selection", [m.group(1)])),
+            # LLM model selection (with explicit "model/llm" keyword)
+            (r'(?:use|switch\s+to|select)\s+(?:model|llm)\s+(.+?)(?:\s*$|\s+)',
+             lambda m: ("_parse_model_selection", [m.group(1).strip()])),
 
             # List operations
             (r'(?:list|show|view)\s+(?:projects|sessions|models)',
@@ -162,9 +162,9 @@ class IntentParser:
             (r'(?:save|export)\s+(?:as\s+)?(?:markdown|json|csv|pdf)',
              lambda m: ("_get_export_command", [m.group(0)])),
 
-            # Help
-            (r'help\s+(.+)?',
-             lambda m: ("/help " + m.group(1) if m.lastindex else "/help", [])),
+            # Help - only at start of input
+            (r'^help(?:\s+(.+))?$',
+             lambda m: ("/help " + m.group(1).strip() if m.lastindex and m.group(1) else "/help", [])),
         ]
 
     def parse(self, user_input: str) -> Optional[Dict[str, Any]]:
