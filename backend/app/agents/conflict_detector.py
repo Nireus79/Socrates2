@@ -63,6 +63,9 @@ class ConflictDetectorAgent(BaseAgent):
         """
         Detect conflicts between new and existing specifications.
 
+        REFACTORED: Database connection released BEFORE Claude API call
+        to prevent connection pool exhaustion during 10-15 second conflict detection.
+
         Args:
             data: {
                 'project_id': str,
@@ -92,10 +95,9 @@ class ConflictDetectorAgent(BaseAgent):
             }
 
         db = None
-        conflicts_found = []
 
         try:
-            # Get database session
+            # PHASE 1: Load all data from database (quick operation)
             db = self.services.get_database_specs()
 
             # Load existing specifications
@@ -106,6 +108,7 @@ class ConflictDetectorAgent(BaseAgent):
             if not existing_specs:
                 # No existing specs, no conflicts possible
                 self.logger.debug(f"No existing specs for project {project_id}, no conflicts possible")
+                db.close()
                 return {
                     'success': True,
                     'conflicts_detected': False,
@@ -113,7 +116,7 @@ class ConflictDetectorAgent(BaseAgent):
                     'safe_to_save': True
                 }
 
-            # PHASE 1: Convert DB models to plain data models (for ConflictDetectionEngine)
+            # Convert DB models to plain data models (for ConflictDetectionEngine)
             # Convert new specs (dicts) to SpecificationData
             new_specs_data = []
             for spec_dict in new_specs:
@@ -129,16 +132,20 @@ class ConflictDetectorAgent(BaseAgent):
             # Convert existing specs to SpecificationData
             existing_specs_data = specs_db_to_data(existing_specs)
 
-            # PHASE 2: Use ConflictDetectionEngine for pure business logic
             # Build prompt using engine
             prompt = self.conflict_engine.build_conflict_detection_prompt(
                 new_specs_data,
                 existing_specs_data
             )
 
-            # PHASE 3: Call Claude API (Agent responsibility - not in core engine)
+            # CRITICAL: Close DB connection BEFORE Claude API call
+            db.close()
+            self.logger.debug(f"Database connection closed before Claude API call")
+
+            # PHASE 2: Call Claude API (NO DATABASE CONNECTION HELD!)
+            conflict_analysis = {}
             try:
-                self.logger.debug(f"Calling Claude API to detect conflicts for project {project_id}")
+                self.logger.debug(f"Calling Claude API to detect conflicts for project {project_id} (DB released)")
                 claude_client = self.services.get_claude_client()
                 response = claude_client.messages.create(
                     model="claude-sonnet-4-5-20250929",
@@ -148,7 +155,7 @@ class ConflictDetectorAgent(BaseAgent):
 
                 # Extract and parse response using ConflictDetectionEngine
                 response_text = response.content[0].text
-                self.logger.debug(f"Claude API response received: {len(response_text)} chars")
+                self.logger.debug(f"Claude API response received: {len(response_text)} chars (DB still released)")
 
                 # Use ConflictDetectionEngine to parse response
                 conflict_analysis = self.conflict_engine.parse_conflict_analysis(
@@ -179,8 +186,11 @@ class ConflictDetectorAgent(BaseAgent):
                     'error_code': 'API_ERROR'
                 }
 
-            # PHASE 4: Save conflicts to database if found
+            # PHASE 3: Save conflicts to database (new connection)
+            conflicts_found = []
             if conflict_analysis.get('conflicts_detected'):
+                db = self.services.get_database_specs()
+
                 for conflict_data in conflict_analysis.get('conflicts', []):
                     conflict = Conflict(
                         project_id=project_id,
@@ -200,9 +210,11 @@ class ConflictDetectorAgent(BaseAgent):
                 for conflict in conflicts_found:
                     db.refresh(conflict)
 
+                db.close()
+
             self.logger.info(
                 f"Conflict detection for project {project_id}: "
-                f"{len(conflicts_found)} conflicts found"
+                f"{len(conflicts_found)} conflicts found (DB connection now released)"
             )
 
             # Log conflict detection
@@ -229,8 +241,14 @@ class ConflictDetectorAgent(BaseAgent):
 
         except Exception as e:
             self.logger.error(f"Error detecting conflicts: {e}", exc_info=True)
-            if db:
-                db.rollback()
+            # Attempt to close DB if still open
+            try:
+                if db and hasattr(db, 'is_active') and db.is_active:
+                    db.rollback()
+                    db.close()
+            except Exception as cleanup_error:
+                self.logger.debug(f"Error during exception cleanup: {cleanup_error}")
+
             return {
                 'success': False,
                 'error': f'Conflict detection failed: {str(e)}',

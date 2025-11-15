@@ -45,6 +45,9 @@ class CodeGeneratorAgent(BaseAgent):
         """
         Generate complete codebase from specifications.
 
+        REFACTORED: Database connection released BEFORE Claude API call
+        to prevent connection pool exhaustion during 30-60 second code generation.
+
         Args:
             data: {
                 'project_id': str
@@ -77,17 +80,15 @@ class CodeGeneratorAgent(BaseAgent):
                 'error_code': 'VALIDATION_ERROR'
             }
 
-        db = None
-        generation = None
-
         try:
-            # Get database session
+            # PHASE 1: Load all data from database (quick operation)
             db = self.services.get_database_specs()
 
             # Load project
             project = db.query(Project).filter(Project.id == project_id).first()
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
+                db.close()
                 return {
                     'success': False,
                     'error': f'Project not found: {project_id}',
@@ -100,6 +101,7 @@ class CodeGeneratorAgent(BaseAgent):
                 self.logger.warning(
                     f"Project {project_id} maturity is {project.maturity_score}%, need 100%"
                 )
+                db.close()
                 return {
                     'success': False,
                     'error': f'Project maturity is {project.maturity_score}%. Need 100% to generate code.',
@@ -120,6 +122,7 @@ class CodeGeneratorAgent(BaseAgent):
                 self.logger.warning(
                     f"Project {project_id} has {unresolved_conflicts} unresolved conflicts"
                 )
+                db.close()
                 return {
                     'success': False,
                     'error': f'Project has {unresolved_conflicts} unresolved conflicts. Resolve them before generating code.',
@@ -127,7 +130,60 @@ class CodeGeneratorAgent(BaseAgent):
                     'unresolved_count': unresolved_conflicts
                 }
 
-            # GATE 3: Analyze specification coverage quality
+            # Load last generation version
+            last_generation = db.query(GeneratedProject).filter(
+                GeneratedProject.project_id == project_id
+            ).order_by(GeneratedProject.generation_version.desc()).first()
+
+            next_version = (last_generation.generation_version + 1) if last_generation else 1
+
+            # Load ALL specifications (with reasonable limit for memory safety)
+            specs = db.query(Specification).filter(
+                and_(
+                    Specification.project_id == project_id,
+                    Specification.is_current == True
+                )
+            ).limit(1000).all()
+
+            if not specs:
+                self.logger.warning(f"No specifications found for project {project_id}")
+                db.close()
+                return {
+                    'success': False,
+                    'error': 'No specifications found for project',
+                    'error_code': 'NO_SPECIFICATIONS'
+                }
+
+            # Convert project to dict for use after DB closes
+            project_data = {
+                'id': str(project.id),
+                'name': project.name,
+                'description': project.description,
+                'maturity_score': project.maturity_score
+            }
+
+            # Convert specs to dicts for use after DB closes
+            specs_data = [
+                {
+                    'id': str(spec.id),
+                    'content': spec.content,
+                    'category': spec.category,
+                    'source': spec.source
+                }
+                for spec in specs
+            ]
+
+            # Group specifications by category
+            grouped_specs = self._group_specs_by_category(specs)
+
+            # Build comprehensive code generation prompt
+            prompt = self._build_code_generation_prompt(project, grouped_specs)
+
+            # CRITICAL: Close DB connection BEFORE Claude API call
+            db.close()
+            self.logger.debug(f"Database connection closed before Claude API call")
+
+            # PHASE 2: Call GATE 3 (coverage check) with released DB connection
             coverage_check_passed = True
             coverage_details = {}
             try:
@@ -158,58 +214,12 @@ class CodeGeneratorAgent(BaseAgent):
                     'suggested_actions': coverage_details.get('suggested_actions', [])
                 }
 
-            # Calculate next generation version
-            last_generation = db.query(GeneratedProject).filter(
-                GeneratedProject.project_id == project_id
-            ).order_by(GeneratedProject.generation_version.desc()).first()
-
-            next_version = (last_generation.generation_version + 1) if last_generation else 1
-
-            # Create generation record
-            generation = GeneratedProject(
-                project_id=project_id,
-                generation_version=next_version,
-                total_files=0,
-                total_lines=0,
-                generation_started_at=datetime.now(timezone.utc),
-                generation_status=GenerationStatus.IN_PROGRESS
-            )
-            db.add(generation)
-            db.commit()
-            db.refresh(generation)
-
-            self.logger.info(f"Started code generation for project {project_id}, version {next_version}")
-
-            # Load ALL specifications (with reasonable limit for memory safety)
-            specs = db.query(Specification).filter(
-                and_(
-                    Specification.project_id == project_id,
-                    Specification.is_current == True
-                )
-            ).limit(1000).all()
-
-            if not specs:
-                self.logger.warning(f"No specifications found for project {project_id}")
-                generation.generation_status = GenerationStatus.FAILED
-                generation.error_message = "No specifications found"
-                db.commit()
-                return {
-                    'success': False,
-                    'error': 'No specifications found for project',
-                    'error_code': 'NO_SPECIFICATIONS'
-                }
-
-            # Group specifications by category
-            grouped_specs = self._group_specs_by_category(specs)
-
-            # Build comprehensive code generation prompt
-            prompt = self._build_code_generation_prompt(project, grouped_specs)
-
-            # Call Claude API (separate from DB transaction)
+            # PHASE 3: Call Claude API (NO DATABASE CONNECTION HELD!)
+            code_text = None
             try:
                 self.logger.debug(
                     f"Calling Claude API to generate code for project {project_id} "
-                    f"with {len(specs)} specifications"
+                    f"with {len(specs_data)} specifications (DB connection released)"
                 )
                 claude_client = self.services.get_claude_client()
                 response = claude_client.messages.create(
@@ -220,32 +230,44 @@ class CodeGeneratorAgent(BaseAgent):
 
                 # Extract generated code
                 code_text = response.content[0].text
-                self.logger.debug(f"Claude API response received: {len(code_text)} chars")
+                self.logger.debug(f"Claude API response received: {len(code_text)} chars (DB still released)")
 
             except Exception as e:
                 self.logger.error(f"Claude API error: {e}", exc_info=True)
-                generation.generation_status = GenerationStatus.FAILED
-                generation.error_message = f"Claude API error: {str(e)}"
-                db.commit()
                 return {
                     'success': False,
                     'error': f'Claude API error: {str(e)}',
                     'error_code': 'API_ERROR'
                 }
 
-            # Parse code into individual files
+            # PHASE 4: Process response (no DB needed)
             files = self._parse_generated_code(code_text)
 
             if not files:
                 self.logger.warning("Failed to parse generated code into files")
-                generation.generation_status = GenerationStatus.FAILED
-                generation.error_message = "Failed to parse generated code"
-                db.commit()
                 return {
                     'success': False,
                     'error': 'Failed to parse generated code',
                     'error_code': 'PARSE_ERROR'
                 }
+
+            # PHASE 5: Save to database (new connection, quick operation)
+            db = self.services.get_database_specs()
+
+            # Create generation record
+            generation = GeneratedProject(
+                project_id=project_id,
+                generation_version=next_version,
+                total_files=len(files),
+                total_lines=0,
+                generation_started_at=datetime.now(timezone.utc),
+                generation_status=GenerationStatus.IN_PROGRESS
+            )
+            db.add(generation)
+            db.commit()
+            db.refresh(generation)
+
+            self.logger.info(f"Started code generation for project {project_id}, version {next_version}")
 
             # Save files to database
             total_lines = 0
@@ -271,15 +293,16 @@ class CodeGeneratorAgent(BaseAgent):
 
             db.commit()
             db.refresh(generation)
+            db.close()
 
             self.logger.info(
                 f"Code generation completed for project {project_id}: "
-                f"{len(files)} files, {total_lines} lines"
+                f"{len(files)} files, {total_lines} lines (DB connection now released)"
             )
 
             return {
                 'success': True,
-                'generation_id': generation.id,
+                'generation_id': str(generation.id),
                 'total_files': generation.total_files,
                 'total_lines': generation.total_lines,
                 'generation_version': generation.generation_version
@@ -287,16 +310,13 @@ class CodeGeneratorAgent(BaseAgent):
 
         except Exception as e:
             self.logger.error(f"Error generating code for project {project_id}: {e}", exc_info=True)
-            if db and generation:
-                try:
-                    generation.generation_status = GenerationStatus.FAILED
-                    generation.error_message = str(e)
-                    db.commit()
-                except Exception as commit_error:
-                    self.logger.error(f"Failed to update generation status: {commit_error}", exc_info=True)
+            # Attempt to close DB if still open (from PHASE 5 save operation)
+            try:
+                if db and hasattr(db, 'is_active') and db.is_active:
                     db.rollback()
-            elif db:
-                db.rollback()
+                    db.close()
+            except Exception as cleanup_error:
+                self.logger.debug(f"Error during exception cleanup: {cleanup_error}")
 
             return {
                 'success': False,

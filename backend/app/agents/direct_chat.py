@@ -44,6 +44,9 @@ class DirectChatAgent(BaseAgent):
         """
         Process a direct chat message with full context awareness using NLU.
 
+        REFACTORED: Database connection released BEFORE NLU and orchestrator calls
+        to prevent connection pool exhaustion during API calls.
+
         Args:
             data: {
                 'session_id': UUID,
@@ -66,11 +69,14 @@ class DirectChatAgent(BaseAgent):
         user_id = data['user_id']
         message = data['message']
         project_id = data.get('project_id')  # Optional, will be loaded from session
+
+        # PHASE 1: Load all context from database (quick operation)
         specs_session = self.services.get_database_specs()
 
         # Verify session exists and get project_id from it
         session = specs_session.query(Session).get(session_id)
         if not session:
+            specs_session.close()
             return {'success': False, 'error': 'Session not found'}
 
         # Get project_id from session if not provided
@@ -78,12 +84,24 @@ class DirectChatAgent(BaseAgent):
             project_id = session.project_id
 
         if session.mode != 'direct_chat':
+            specs_session.close()
             return {
                 'success': False,
                 'error': f'Session is in {session.mode} mode, not direct_chat mode'
             }
 
-        # Get NLU service to interpret user message
+        # Load conversation context for history
+        context = self._load_conversation_context(session_id)
+        project_context = self._load_project_context(project_id)
+
+        # Store project info before closing DB
+        initial_maturity_score = project_context.get('maturity_score', 0)
+
+        # CRITICAL: Close DB connection BEFORE NLU and orchestrator calls
+        specs_session.close()
+        self.logger.debug(f"Database connection closed before NLU and orchestrator calls")
+
+        # PHASE 2: Get NLU service and parse intent (with released DB)
         nlu_service = self.services.get_nlu_service()
 
         # Prepare context for NLU intent parsing
@@ -93,18 +111,14 @@ class DirectChatAgent(BaseAgent):
             'current_session': str(session_id)
         }
 
-        # Parse user intent using NLU
+        # Parse user intent using NLU (no DB connection held)
         intent = nlu_service.parse_intent(message, nlu_context)
-
-        # Load conversation context for history
-        context = self._load_conversation_context(session_id)
-        project_context = self._load_project_context(project_id)
 
         # Determine response based on intent type
         chat_response = ""
 
         if intent.is_operation:
-            # Handle as operation request
+            # Handle as operation request (with released DB)
             self.logger.info(f"Direct chat detected operation request: {intent.operation}")
 
             # Execute the operation through orchestrator
@@ -126,14 +140,14 @@ class DirectChatAgent(BaseAgent):
             else:
                 chat_response = f"Could not complete that operation: {result.get('error', 'Unknown error')}"
         else:
-            # Handle as conversational chat using NLU chat method
+            # Handle as conversational chat using NLU chat method (with released DB)
             # Build system prompt with project context
             system_prompt = f"""You are Socrates, an AI assistant helping with specification gathering.
 
 Project context:
 - Project ID: {project_id}
 - Session ID: {session_id}
-- Current maturity: {project_context.get('maturity_score', 0)}%
+- Current maturity: {initial_maturity_score}%
 
 You help users refine their specifications through conversation. When you identify important requirements or design decisions, help extract them as specifications.
 
@@ -148,38 +162,57 @@ Be conversational, helpful, and guide the user toward complete specifications.""
                 conversation_context=conversation_messages if conversation_messages else None
             )
 
-        # Save conversation history (both user message and assistant response)
-        self._save_conversation_turn(session_id, message, chat_response)
+        # PHASE 3: Extract specifications from conversation (with released DB)
+        specs_extracted = 0
+        conflicts_detected = False
+        try:
+            from ..agents.orchestrator import get_orchestrator
+            orchestrator = get_orchestrator()
 
-        # Extract specifications from conversation (regardless of operation or conversation)
-        from ..agents.orchestrator import get_orchestrator
-        orchestrator = get_orchestrator()
+            extraction_result = orchestrator.route_request(
+                'context',
+                'extract_specifications',
+                {
+                    'session_id': session_id,
+                    'conversation_text': f"User: {message}\nAssistant: {chat_response}",
+                    'user_id': user_id,
+                    'project_id': project_id
+                }
+            )
 
-        extraction_result = orchestrator.route_request(
-            'context',
-            'extract_specifications',
-            {
-                'session_id': session_id,
-                'conversation_text': f"User: {message}\nAssistant: {chat_response}",
-                'user_id': user_id,
-                'project_id': project_id
-            }
-        )
+            specs_extracted = extraction_result.get('specs_extracted', 0) if extraction_result.get('success') else 0
+            conflicts_detected = extraction_result.get('conflicts_detected', False) if extraction_result.get('success') else False
+        except Exception as e:
+            self.logger.warning(f"Could not extract specifications: {e}")
 
-        specs_extracted = extraction_result.get('specs_extracted', 0) if extraction_result.get('success') else 0
-        conflicts_detected = extraction_result.get('conflicts_detected', False) if extraction_result.get('success') else False
+        # PHASE 4: Save conversation history and get updated maturity (new DB connection)
+        specs_session = self.services.get_database_specs()
+
+        try:
+            # Save conversation history (both user message and assistant response)
+            self._save_conversation_turn(session_id, message, chat_response)
+
+            # Get updated maturity score
+            project = specs_session.query(Project).get(project_id)
+            maturity_score = project.maturity_score if project else initial_maturity_score
+
+            specs_session.close()
+        except Exception as e:
+            self.logger.error(f"Error saving conversation turn: {e}", exc_info=True)
+            if specs_session:
+                try:
+                    specs_session.close()
+                except:
+                    pass
+            maturity_score = initial_maturity_score
 
         # Optionally suggest a clarifying question
         suggested_question = None
         if specs_extracted > 0:
             suggested_question = self._suggest_clarifying_question(
                 project_id,
-                extraction_result.get('specs', [])
+                [] # Simplified - extracting specs are already saved
             )
-
-        # Get updated maturity score
-        project = specs_session.query(Project).get(project_id)
-        maturity_score = project.maturity_score if project else 0
 
         return {
             'success': True,

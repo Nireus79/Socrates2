@@ -49,6 +49,9 @@ class ContextAnalyzerAgent(BaseAgent):
         """
         Extract specifications from user answer.
 
+        REFACTORED: Database connection released BEFORE Claude API calls
+        to prevent connection pool exhaustion during 10-20 second extraction.
+
         Args:
             data: {
                 'session_id': str (UUID),
@@ -79,15 +82,16 @@ class ContextAnalyzerAgent(BaseAgent):
             }
 
         db = None
-        saved_specs = []
 
         try:
+            # PHASE 1: Load all data from database (quick operation)
             db = self.services.get_database_specs()
 
             # Load context
             session = db.query(Session).filter(Session.id == session_id).first()
             if not session:
                 self.logger.warning(f"Session not found: {session_id}")
+                db.close()
                 return {
                     'success': False,
                     'error': f'Session not found: {session_id}',
@@ -97,6 +101,7 @@ class ContextAnalyzerAgent(BaseAgent):
             question = db.query(Question).filter(Question.id == question_id).first()
             if not question:
                 self.logger.warning(f"Question not found: {question_id}")
+                db.close()
                 return {
                     'success': False,
                     'error': f'Question not found: {question_id}',
@@ -106,6 +111,7 @@ class ContextAnalyzerAgent(BaseAgent):
             project = db.query(Project).filter(Project.id == session.project_id).first()
             if not project:
                 self.logger.warning(f"Project not found: {session.project_id}")
+                db.close()
                 return {
                     'success': False,
                     'error': f'Project not found: {session.project_id}',
@@ -120,10 +126,34 @@ class ContextAnalyzerAgent(BaseAgent):
                 )
             ).order_by(Specification.created_at.desc()).limit(100).all()
 
+            # Convert to dicts for use after DB closes
+            project_data = {
+                'id': str(project.id),
+                'name': project.name,
+                'maturity_score': project.maturity_score
+            }
+            question_data = {
+                'id': str(question.id),
+                'text': question.text,
+                'category': question.category
+            }
+            existing_specs_data = [
+                {
+                    'category': spec.category,
+                    'content': spec.content
+                }
+                for spec in existing_specs
+            ]
+
             # Build extraction prompt
             prompt = self._build_extraction_prompt(question, answer, existing_specs)
 
-            # Call Claude API (separate from DB transaction)
+            # CRITICAL: Close DB connection BEFORE Claude API call
+            db.close()
+            self.logger.debug(f"Database connection closed before Claude API call for extraction")
+
+            # PHASE 2: Call Claude API (NO DATABASE CONNECTION HELD!)
+            extracted_specs = []
             try:
                 self.logger.debug(f"Calling Claude API to extract specs from answer (question: {question_id})")
                 response = self.services.get_claude_client().messages.create(
@@ -134,7 +164,7 @@ class ContextAnalyzerAgent(BaseAgent):
 
                 # Extract text from response
                 response_text = response.content[0].text
-                self.logger.debug(f"Claude API response received: {len(response_text)} chars")
+                self.logger.debug(f"Claude API response received: {len(response_text)} chars (DB still released)")
 
                 # Handle markdown-wrapped JSON (Claude sometimes wraps JSON in ```json...``` blocks)
                 if response_text.startswith("```"):
@@ -177,7 +207,7 @@ class ContextAnalyzerAgent(BaseAgent):
                     'error_code': 'API_ERROR'
                 }
 
-            # Phase 3: Check for conflicts before saving
+            # PHASE 3: Check for conflicts (with released DB connection)
             # Convert extracted specs to format expected by conflict detector
             specs_for_conflict_check = []
             for spec_data in extracted_specs:
@@ -192,13 +222,15 @@ class ContextAnalyzerAgent(BaseAgent):
                     conflict_value = conflict_value or content
 
                 specs_for_conflict_check.append({
-                    'category': spec_data.get('category', question.category),
+                    'category': spec_data.get('category', question_data['category']),
                     'key': conflict_key,
                     'value': conflict_value,
                     'confidence': spec_data.get('confidence', 0.9)
                 })
 
-            # Get orchestrator and check for conflicts (separate from DB transaction)
+            # Get orchestrator and check for conflicts (no DB connection held)
+            conflicts_detected = False
+            conflicts_list = []
             try:
                 from .orchestrator import get_orchestrator
                 orchestrator = get_orchestrator()
@@ -206,7 +238,7 @@ class ContextAnalyzerAgent(BaseAgent):
                     agent_id='conflict',
                     action='detect_conflicts',
                     data={
-                        'project_id': str(project.id),
+                        'project_id': str(project_data['id']),
                         'new_specs': specs_for_conflict_check,
                         'source_id': str(question_id)
                     }
@@ -215,22 +247,28 @@ class ContextAnalyzerAgent(BaseAgent):
                 # If conflicts detected, return them without saving
                 if conflict_result.get('conflicts_detected'):
                     self.logger.warning(
-                        f"Conflicts detected for project {project.id}: "
+                        f"Conflicts detected for project {project_data['id']}: "
                         f"{len(conflict_result.get('conflicts', []))} conflicts"
                     )
-                    return {
-                        'success': False,
-                        'conflicts_detected': True,
-                        'conflicts': conflict_result.get('conflicts', []),
-                        'message': 'Specifications contain conflicts. Please resolve before proceeding.',
-                        'specs_extracted': 0
-                    }
+                    conflicts_detected = True
+                    conflicts_list = conflict_result.get('conflicts', [])
 
             except Exception as e:
                 # Conflict detection failed, but we can still proceed
                 self.logger.warning(f"Conflict detection failed, proceeding anyway: {e}")
 
-            # No conflicts, proceed with saving specifications
+            # If conflicts detected, return before saving
+            if conflicts_detected:
+                return {
+                    'success': False,
+                    'conflicts_detected': True,
+                    'conflicts': conflicts_list,
+                    'message': 'Specifications contain conflicts. Please resolve before proceeding.',
+                    'specs_extracted': 0
+                }
+
+            # PHASE 4: Process results (no DB needed)
+            processed_specs = []
             for spec_data in extracted_specs:
                 # Extract key and value with fallback for backward compatibility
                 spec_key = spec_data.get('key')
@@ -242,22 +280,36 @@ class ContextAnalyzerAgent(BaseAgent):
                     # Generate key from first few words
                     key_words = content[:50].lower().replace(' ', '_')
                     key_words = ''.join(c for c in key_words if c.isalnum() or c == '_')
-                    spec_key = spec_key or key_words or f"spec_{question.category}"
+                    spec_key = spec_key or key_words or f"spec_{question_data['category']}"
                     spec_value = spec_value or content or spec_key
 
+                processed_specs.append({
+                    'category': spec_data.get('category', question_data['category']),
+                    'key': spec_key,
+                    'value': spec_value,
+                    'content': spec_data.get('content'),
+                    'confidence': spec_data.get('confidence', 0.9),
+                    'reasoning': spec_data.get('reasoning')
+                })
+
+            # PHASE 5: Save to database (new connection)
+            db = self.services.get_database_specs()
+
+            saved_specs = []
+            for spec_data in processed_specs:
                 spec = Specification(
-                    project_id=project.id,
+                    project_id=project_data['id'],
                     session_id=session_id,
-                    category=spec_data.get('category', question.category),
-                    key=spec_key,
-                    value=spec_value,
-                    content=spec_data.get('content'),  # Make optional
+                    category=spec_data['category'],
+                    key=spec_data['key'],
+                    value=spec_data['value'],
+                    content=spec_data['content'],
                     source='extracted',
-                    confidence=Decimal(str(spec_data.get('confidence', 0.9))),
+                    confidence=Decimal(str(spec_data['confidence'])),
                     is_current=True,
                     spec_metadata={
                         'question_id': str(question_id),
-                        'reasoning': spec_data.get('reasoning')
+                        'reasoning': spec_data['reasoning']
                     }
                 )
                 db.add(spec)
@@ -272,22 +324,24 @@ class ContextAnalyzerAgent(BaseAgent):
                 "Specifications extracted and saved",
                 count=len(saved_specs),
                 success=True,
-                question_category=question.category if hasattr(question, 'category') else None
+                question_category=question_data['category']
             )
 
             # Refresh to get IDs
             for spec in saved_specs:
                 db.refresh(spec)
 
-            # Update maturity score
+            # Update maturity score (need fresh project query)
+            project = db.query(Project).filter(Project.id == project_data['id']).first()
             old_maturity = project.maturity_score
-            new_maturity = self._calculate_maturity(project.id, db)
+            new_maturity = self._calculate_maturity(project_data['id'], db)
             project.maturity_score = new_maturity
             db.commit()
+            db.close()
 
             self.logger.info(
                 f"Extracted {len(saved_specs)} specs from answer to question {question_id}. "
-                f"Maturity: {old_maturity}% -> {new_maturity}%"
+                f"Maturity: {old_maturity}% -> {new_maturity}% (DB connection now released)"
             )
 
             # Log maturity update
@@ -306,8 +360,14 @@ class ContextAnalyzerAgent(BaseAgent):
 
         except Exception as e:
             self.logger.error(f"Error extracting specifications: {e}", exc_info=True)
-            if db:
-                db.rollback()
+            # Attempt to close DB if still open
+            try:
+                if db and hasattr(db, 'is_active') and db.is_active:
+                    db.rollback()
+                    db.close()
+            except Exception as cleanup_error:
+                self.logger.debug(f"Error during exception cleanup: {cleanup_error}")
+
             return {
                 'success': False,
                 'error': f'Failed to extract specifications: {str(e)}',

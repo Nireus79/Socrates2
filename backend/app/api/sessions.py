@@ -193,6 +193,9 @@ def get_next_question(
     """
     Get the next Socratic question for the session.
 
+    REFACTORED: Database connection released BEFORE orchestrator call
+    to prevent connection pool exhaustion during question generation.
+
     Args:
         session_id: Session UUID
         current_user: Authenticated user
@@ -224,39 +227,59 @@ def get_next_question(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    # Verify session exists and user has access
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+    try:
+        # PHASE 1: Load and validate all necessary data from database
+        # Verify session exists and user has access
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    # Check project ownership
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
 
-    # Check session is active
-    if session.status != 'active':
-        raise HTTPException(status_code=400, detail=f"Session is not active (status: {session.status})")
+        # Check session is active
+        if session.status != 'active':
+            raise HTTPException(status_code=400, detail=f"Session is not active (status: {session.status})")
 
-    # Generate next question using SocraticCounselorAgent
-    orchestrator = get_orchestrator()
+        # Store IDs before closing DB
+        project_id = str(session.project_id)
 
-    result = orchestrator.route_request(
-        agent_id='socratic',
-        action='generate_question',
-        data={
-            'project_id': str(session.project_id),
-            'session_id': session_id
-        }
-    )
+        # CRITICAL: Close DB connection BEFORE orchestrator call
+        db.close()
 
-    if not result.get('success'):
-        raise HTTPException(
-            status_code=400,
-            detail=result.get('error', 'Failed to generate question')
+        # PHASE 2: Generate next question with released DB
+        # The refactored socratic agent now releases DB before Claude API calls
+        orchestrator = get_orchestrator()
+
+        result = orchestrator.route_request(
+            agent_id='socratic',
+            action='generate_question',
+            data={
+                'project_id': project_id,
+                'session_id': session_id
+            }
         )
 
-    return result
+        if not result.get('success'):
+            raise HTTPException(
+                status_code=400,
+                detail=result.get('error', 'Failed to generate question')
+            )
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_next_question: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal error generating question: {str(e)}"
+        )
 
 
 @router.post("/{session_id}/answer")
@@ -268,6 +291,9 @@ def submit_answer(
 ) -> Dict[str, Any]:
     """
     Submit answer to a question and extract specifications.
+
+    REFACTORED: Database connection released BEFORE orchestrator calls
+    to prevent connection pool exhaustion during cascading agent calls.
 
     Args:
         session_id: Session UUID
@@ -311,88 +337,109 @@ def submit_answer(
     from ..models.question import Question
     from ..models.session import Session as SessionModel
 
-    # Verify session exists and user has access
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
-
-    # Check project ownership
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
-
-    # Check session is active
-    if session.status != 'active':
-        raise HTTPException(status_code=400, detail=f"Session is not active (status: {session.status})")
-
-    # Verify question exists
-    question = db.query(Question).filter(Question.id == request.question_id).first()
-    if not question:
-        raise HTTPException(status_code=404, detail=f"Question not found: {request.question_id}")
-
-    # Save to conversation history
-    conversation = ConversationHistory(
-        session_id=session_id,
-        role='user',
-        content=request.answer,
-        metadata_={'question_id': str(request.question_id)}
-    )
-    db.add(conversation)
-    db.commit()
-
-    # Extract specifications using ContextAnalyzerAgent
-    orchestrator = get_orchestrator()
-
-    result = orchestrator.route_request(
-        agent_id='context',
-        action='extract_specifications',
-        data={
-            'session_id': session_id,
-            'question_id': request.question_id,
-            'answer': request.answer,
-            'user_id': current_user.id
-        }
-    )
-
-    if not result.get('success'):
-        raise HTTPException(
-            status_code=400,
-            detail=result.get('error', 'Failed to extract specifications')
-        )
-
-    # Track question effectiveness for user learning
     try:
-        specs_extracted = result.get('specs_extracted', 0)
-        answer_length = len(request.answer)
+        # PHASE 1: Load and validate all necessary data from database
+        # Verify session exists and user has access
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-        # Calculate answer quality (0-1): based on specs extracted and answer length
-        # Quality = 1.0 if specs_extracted > 0, scaled by answer detail
-        answer_quality = min(1.0, (specs_extracted / 5) + (min(answer_length, 500) / 500) * 0.5) if specs_extracted > 0 else 0.3
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
 
-        learning_result = orchestrator.route_request(
-            'learning',
-            'track_question_effectiveness',
-            {
-                'user_id': str(current_user.id),
-                'question_template_id': str(request.question_id),
-                'role': 'user',  # Default role, can be enhanced later
-                'answer_length': answer_length,
-                'specs_extracted': specs_extracted,
-                'answer_quality': answer_quality
+        # Check session is active
+        if session.status != 'active':
+            raise HTTPException(status_code=400, detail=f"Session is not active (status: {session.status})")
+
+        # Verify question exists
+        question = db.query(Question).filter(Question.id == request.question_id).first()
+        if not question:
+            raise HTTPException(status_code=404, detail=f"Question not found: {request.question_id}")
+
+        # Save to conversation history
+        conversation = ConversationHistory(
+            session_id=session_id,
+            role='user',
+            content=request.answer,
+            metadata_={'question_id': str(request.question_id)}
+        )
+        db.add(conversation)
+        db.commit()
+
+        # CRITICAL: Close DB connection BEFORE orchestrator calls
+        # The orchestrator will cascade to multiple agents, each making Claude API calls
+        # We must release this connection to prevent pool exhaustion
+        db.close()
+
+        # PHASE 2: Call orchestrator with released DB connection
+        # Extract specifications using ContextAnalyzerAgent (now releases DB before Claude API)
+        orchestrator = get_orchestrator()
+
+        result = orchestrator.route_request(
+            agent_id='context',
+            action='extract_specifications',
+            data={
+                'session_id': session_id,
+                'question_id': request.question_id,
+                'answer': request.answer,
+                'user_id': current_user.id
             }
         )
 
-        if learning_result.get('success'):
+        if not result.get('success'):
+            raise HTTPException(
+                status_code=400,
+                detail=result.get('error', 'Failed to extract specifications')
+            )
+
+        # PHASE 3: Track question effectiveness (still with released DB)
+        try:
+            specs_extracted = result.get('specs_extracted', 0)
+            answer_length = len(request.answer)
+
+            # Calculate answer quality (0-1): based on specs extracted and answer length
+            # Quality = 1.0 if specs_extracted > 0, scaled by answer detail
+            answer_quality = min(1.0, (specs_extracted / 5) + (min(answer_length, 500) / 500) * 0.5) if specs_extracted > 0 else 0.3
+
+            learning_result = orchestrator.route_request(
+                'learning',
+                'track_question_effectiveness',
+                {
+                    'user_id': str(current_user.id),
+                    'question_template_id': str(request.question_id),
+                    'role': 'user',  # Default role, can be enhanced later
+                    'answer_length': answer_length,
+                    'specs_extracted': specs_extracted,
+                    'answer_quality': answer_quality
+                }
+            )
+
+            if learning_result.get('success'):
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.debug(f"Tracked question effectiveness for question {request.question_id}: score={learning_result.get('effectiveness_score', 0):.2f}")
+        except Exception as e:
+            # Log but don't fail the request if learning tracking fails
             import logging
             logger = logging.getLogger(__name__)
-            logger.debug(f"Tracked question effectiveness for question {request.question_id}: score={learning_result.get('effectiveness_score', 0):.2f}")
+            logger.warning(f"Failed to track question effectiveness: {e}")
+
+        return result
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
-        # Log but don't fail the request if learning tracking fails
+        # Log unexpected errors
         import logging
         logger = logging.getLogger(__name__)
-        logger.warning(f"Failed to track question effectiveness: {e}")
-
-    return result
+        logger.error(f"Error in submit_answer: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal error processing answer: {str(e)}"
+        )
 
 
 @router.post("/{session_id}/chat")
@@ -404,6 +451,9 @@ def send_chat_message(
 ) -> Dict[str, Any]:
     """
     Send a message in direct chat mode.
+
+    REFACTORED: Database connection released BEFORE orchestrator calls
+    to prevent connection pool exhaustion during chat processing.
 
     Switches session to direct_chat mode if needed and processes the message.
 
@@ -439,57 +489,79 @@ def send_chat_message(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    # Verify session exists and user has access
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+    try:
+        # PHASE 1: Load and validate all necessary data from database
+        # Verify session exists and user has access
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
 
-    # If session is in socratic mode, switch to direct_chat
-    if session.mode != 'direct_chat':
+        # Store data before closing DB
+        current_mode = session.mode
+        project_id = str(session.project_id)
+        user_id = str(current_user.id)
+
+        # CRITICAL: Close DB connection BEFORE orchestrator calls
+        db.close()
+
+        # PHASE 2: Call orchestrator with released DB connection
         orchestrator = get_orchestrator()
-        toggle_result = orchestrator.route_request(
+
+        # If session is in socratic mode, switch to direct_chat
+        if current_mode != 'direct_chat':
+            toggle_result = orchestrator.route_request(
+                'direct_chat',
+                'toggle_mode',
+                {
+                    'session_id': session_id,
+                    'mode': 'direct_chat'
+                }
+            )
+            if not toggle_result.get('success'):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Failed to switch to direct chat mode: {toggle_result.get('error')}"
+                )
+
+        # Process chat message through DirectChatAgent
+        result = orchestrator.route_request(
             'direct_chat',
-            'toggle_mode',
+            'process_chat_message',
             {
                 'session_id': session_id,
-                'mode': 'direct_chat'
+                'user_id': user_id,
+                'message': request.message,
+                'project_id': project_id
             }
         )
-        if not toggle_result.get('success'):
+
+        if not result.get('success'):
             raise HTTPException(
                 status_code=400,
-                detail=f"Failed to switch to direct chat mode: {toggle_result.get('error')}"
+                detail=result.get('error', 'Failed to process chat message')
             )
 
-    # Process chat message through DirectChatAgent
-    orchestrator = get_orchestrator()
-    result = orchestrator.route_request(
-        'direct_chat',
-        'process_chat_message',
-        {
-            'session_id': session_id,
-            'user_id': str(current_user.id),
-            'message': request.message,
-            'project_id': str(session.project_id)
+        return {
+            'success': True,
+            'response': result.get('response', ''),
+            'specs_extracted': result.get('specs_extracted', 0),
+            'maturity_score': result.get('maturity_score', 0)
         }
-    )
 
-    if not result.get('success'):
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in send_chat_message: {e}", exc_info=True)
         raise HTTPException(
-            status_code=400,
-            detail=result.get('error', 'Failed to process chat message')
+            status_code=500,
+            detail=f"Internal error processing chat message: {str(e)}"
         )
-
-    return {
-        'success': True,
-        'response': result.get('response', ''),
-        'specs_extracted': result.get('specs_extracted', 0),
-        'maturity_score': result.get('maturity_score', 0)
-    }
 
 
 @router.get("/{session_id}")

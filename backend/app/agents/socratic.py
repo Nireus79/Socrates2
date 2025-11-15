@@ -64,6 +64,9 @@ class SocraticCounselorAgent(BaseAgent):
         """
         Generate next Socratic question based on project context.
 
+        REFACTORED: Database connection released BEFORE Claude API calls
+        to prevent connection pool exhaustion during 15-30 second question generation.
+
         Args:
             data: {
                 'project_id': str (UUID),
@@ -88,12 +91,14 @@ class SocraticCounselorAgent(BaseAgent):
         db = None
 
         try:
+            # PHASE 1: Load all data from database (quick operation)
             db = self.services.get_database_specs()
 
             # Load project context
             project = db.query(Project).filter(Project.id == project_id).first()
             if not project:
                 self.logger.warning(f"Project not found: {project_id}")
+                db.close()
                 return {
                     'success': False,
                     'error': f'Project not found: {project_id}',
@@ -104,6 +109,7 @@ class SocraticCounselorAgent(BaseAgent):
             session = db.query(Session).filter(Session.id == session_id).first()
             if not session:
                 self.logger.warning(f"Session not found: {session_id}")
+                db.close()
                 return {
                     'success': False,
                     'error': f'Session not found: {session_id}',
@@ -123,19 +129,28 @@ class SocraticCounselorAgent(BaseAgent):
                 Question.project_id == project_id
             ).order_by(Question.created_at.desc()).limit(10).all()
 
-            # PHASE 1: Convert DB models to plain data models (for QuestionGenerator)
+            # Convert DB models to plain data models (for QuestionGenerator)
             project_data = project_db_to_data(project)
+            project_user_id = str(project.user_id)  # Save before closing DB
             specs_data = specs_db_to_data(existing_specs)
             questions_data = questions_db_to_data(previous_questions)
 
-            # PHASE 2: Use QuestionGenerator for pure business logic
             # Calculate coverage per category
             coverage = self.question_generator.calculate_coverage(specs_data)
 
             # Identify next category to focus on (lowest coverage)
             next_category = self.question_generator.identify_next_category(coverage)
 
-            # Get user learning profile for personalization
+            # Build prompt for Claude using QuestionGenerator (no DB needed)
+            prompt = self.question_generator.build_question_generation_prompt(
+                project_data, specs_data, questions_data, next_category, None  # User behavior fetched after DB closes
+            )
+
+            # CRITICAL: Close DB connection BEFORE external API calls
+            db.close()
+            self.logger.debug(f"Database connection closed before external API calls")
+
+            # PHASE 2: Get user learning profile for personalization (with released DB)
             user_behavior = None
             try:
                 from .orchestrator import get_orchestrator
@@ -143,11 +158,11 @@ class SocraticCounselorAgent(BaseAgent):
                 learning_result = orchestrator.route_request(
                     'learning',
                     'get_user_profile',
-                    {'user_id': str(project.user_id)}
+                    {'user_id': project_user_id}
                 )
                 if learning_result.get('success'):
                     user_behavior = UserBehaviorData(
-                        user_id=str(project.user_id),
+                        user_id=project_user_id,
                         total_questions_asked=learning_result.get('total_questions_asked', 0),
                         overall_response_quality=learning_result.get('overall_response_quality', 0.5),
                         patterns=learning_result.get('behavior_patterns', {}),
@@ -158,14 +173,16 @@ class SocraticCounselorAgent(BaseAgent):
                 self.logger.warning(f"Could not retrieve user learning profile: {e}")
                 user_behavior = None
 
-            # Build prompt for Claude using QuestionGenerator
-            prompt = self.question_generator.build_question_generation_prompt(
-                project_data, specs_data, questions_data, next_category, user_behavior
-            )
+            # Rebuild prompt with user behavior (if available)
+            if user_behavior:
+                prompt = self.question_generator.build_question_generation_prompt(
+                    project_data, specs_data, questions_data, next_category, user_behavior
+                )
 
-            # PHASE 3: Call Claude API (Agent responsibility - not in core engine)
+            # PHASE 3: Call Claude API (NO DATABASE CONNECTION HELD!)
+            question_data = None
             try:
-                self.logger.debug(f"Calling Claude API to generate question for project {project_id}, category: {next_category}")
+                self.logger.debug(f"Calling Claude API to generate question for project {project_id}, category: {next_category} (DB released)")
                 model_name = "claude-sonnet-4-5-20250929"
                 response = self.services.get_claude_client().messages.create(
                     model=model_name,
@@ -175,8 +192,7 @@ class SocraticCounselorAgent(BaseAgent):
 
                 # Extract and parse response using QuestionGenerator
                 response_text = response.content[0].text
-                self.logger.debug(f"Claude API response received: {len(response_text)} chars")
-                self.logger.debug(f"Response text preview (first 200 chars): {response_text[:200]}")
+                self.logger.debug(f"Claude API response received: {len(response_text)} chars (DB still released)")
 
                 # Use QuestionGenerator to parse response (handles markdown stripping, JSON parsing)
                 question_data = self.question_generator.parse_question_response(response_text, next_category)
@@ -203,7 +219,7 @@ class SocraticCounselorAgent(BaseAgent):
                     'error_code': 'API_ERROR'
                 }
 
-            # Analyze question for bias before saving
+            # PHASE 4: Analyze question for bias (with released DB)
             quality_check_passed = True
             quality_score = Decimal('1.0')
             try:
@@ -237,7 +253,9 @@ class SocraticCounselorAgent(BaseAgent):
                     'suggested_alternatives': bias_check.get('suggested_alternatives', [])
                 }
 
-            # Save question
+            # PHASE 5: Save question (new database connection)
+            db = self.services.get_database_specs()
+
             question = Question(
                 project_id=project_id,
                 session_id=session_id,
@@ -250,8 +268,9 @@ class SocraticCounselorAgent(BaseAgent):
             db.add(question)
             db.commit()
             db.refresh(question)
+            db.close()
 
-            self.logger.info(f"Generated question {question.id} for project {project_id}, category: {question.category}, quality_score: {quality_score}")
+            self.logger.info(f"Generated question {question.id} for project {project_id}, category: {question.category}, quality_score: {quality_score} (DB connection now released)")
 
             # Log question generation
             log_question(
@@ -269,8 +288,14 @@ class SocraticCounselorAgent(BaseAgent):
 
         except Exception as e:
             self.logger.error(f"Error generating question: {e}", exc_info=True)
-            if db:
-                db.rollback()
+            # Attempt to close DB if still open
+            try:
+                if db and hasattr(db, 'is_active') and db.is_active:
+                    db.rollback()
+                    db.close()
+            except Exception as cleanup_error:
+                self.logger.debug(f"Error during exception cleanup: {cleanup_error}")
+
             return {
                 'success': False,
                 'error': f'Failed to generate question: {str(e)}',
