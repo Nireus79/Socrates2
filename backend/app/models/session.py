@@ -18,6 +18,7 @@ class Session(BaseModel):
     - project_id: Foreign key to projects table
     - mode: Chat mode (socratic, direct_chat)
     - status: Session status (active, paused, completed)
+    - domain: Knowledge domain for the session (programming, business, architecture, etc.)
     - started_at: When the session started
     - ended_at: When the session ended (NULL if still active)
     - created_at: Timestamp (inherited from BaseModel)
@@ -53,6 +54,12 @@ class Session(BaseModel):
         comment="Session status: active, paused, completed"
     )
 
+    domain = Column(
+        String(100),
+        nullable=True,
+        comment="Knowledge domain for the session (programming, business, architecture, data_engineering, testing, security, devops)"
+    )
+
     started_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -83,6 +90,7 @@ class Session(BaseModel):
             "project_id": str(self.project_id),
             "mode": self.mode,
             "status": self.status,
+            "domain": self.domain,
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "ended_at": self.ended_at.isoformat() if self.ended_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,

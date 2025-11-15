@@ -48,7 +48,7 @@ class UpdateProjectRequest(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=2000)
     status: Optional[str] = Field(None, pattern="^(active|archived|completed)$")
-    phase: Optional[str] = Field(None, pattern="^(discovery|specification|implementation|testing|deployment)$")
+    phase: Optional[str] = Field(None, pattern="^(discovery|analysis|design|implementation)$")
     maturity_level: Optional[int] = Field(None, ge=0, le=100)
 
 

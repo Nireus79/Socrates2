@@ -1687,8 +1687,8 @@ def get_session_context(
     if recent_messages:
         last_msg = recent_messages[-1]
         last_message = {
-            "speaker": last_msg.speaker if hasattr(last_msg, 'speaker') else "user",
-            "message": last_msg.message if hasattr(last_msg, 'message') else "",
+            "speaker": last_msg.role,
+            "message": last_msg.content,
             "timestamp": last_msg.created_at.isoformat() if hasattr(last_msg, 'created_at') and last_msg.created_at else None
         }
 
@@ -1703,8 +1703,8 @@ def get_session_context(
         "context": {
             "recent_messages": [
                 {
-                    "speaker": msg.speaker if hasattr(msg, 'speaker') else "user",
-                    "message": msg.message if hasattr(msg, 'message') else "",
+                    "speaker": msg.role,
+                    "message": msg.content,
                     "timestamp": msg.created_at.isoformat() if hasattr(msg, 'created_at') and msg.created_at else None
                 }
                 for msg in recent_messages
@@ -1712,7 +1712,6 @@ def get_session_context(
             "message_count": total_messages,
             "last_message": last_message,
             "mode": session.mode,
-            "domain": session.domain if hasattr(session, 'domain') else None,
             "status": session.status
         }
     }
@@ -1795,8 +1794,8 @@ def get_session_messages(
         "success": True,
         "messages": [
             {
-                "speaker": msg.speaker if hasattr(msg, 'speaker') else "user",
-                "message": msg.message if hasattr(msg, 'message') else "",
+                "speaker": msg.role,
+                "message": msg.content,
                 "timestamp": msg.created_at.isoformat() if hasattr(msg, 'created_at') and msg.created_at else None
             }
             for msg in messages

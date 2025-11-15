@@ -42,15 +42,20 @@ def get_repository_service(
 class CreateSpecificationRequest(BaseModel):
     """Request model for creating a specification."""
     project_id: str = Field(..., description="Project UUID")
+    category: str = Field(..., min_length=1, max_length=100, description="Specification category (goals, requirements, tech_stack, etc.)")
     key: str = Field(..., min_length=1, max_length=255, description="Specification key/name")
     value: str = Field(..., min_length=1, max_length=10000, description="Specification value")
-    spec_type: Optional[str] = Field(default="functional", description="Specification type")
+    source: str = Field(default="user_input", description="Source of specification (user_input, extracted, inferred)")
+    content: Optional[str] = Field(None, max_length=10000, description="Optional detailed content or notes")
+    confidence: Optional[float] = Field(None, ge=0.0, le=1.0, description="Confidence score (0.00-1.00)")
 
 
 class UpdateSpecificationRequest(BaseModel):
     """Request model for updating a specification."""
     value: Optional[str] = Field(None, min_length=1, max_length=10000)
-    spec_type: Optional[str] = Field(None)
+    content: Optional[str] = Field(None, max_length=10000)
+    source: Optional[str] = Field(None, description="Source of specification")
+    confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
 
 
 class ApproveSpecificationRequest(BaseModel):
@@ -62,11 +67,13 @@ class SpecificationResponse(BaseModel):
     """Response model for specification data."""
     id: str
     project_id: str
+    category: str
     key: str
     value: str
-    spec_type: str
-    status: str
-    version: int
+    source: str
+    content: Optional[str]
+    confidence: Optional[float]
+    is_current: bool
     created_at: str
     updated_at: Optional[str]
 
