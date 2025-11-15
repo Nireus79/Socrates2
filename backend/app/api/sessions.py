@@ -49,6 +49,20 @@ class SetModeRequest(BaseModel):
     mode: str  # 'socratic' or 'direct_chat'
 
 
+class CreateProjectSessionRequest(BaseModel):
+    """Request model for creating a session under a project."""
+    mode: str = "socratic"  # 'socratic' or 'direct_chat'
+    domain: Optional[str] = None  # 'programming', 'business', 'architecture', etc.
+
+
+class UpdateProjectSessionRequest(BaseModel):
+    """Request model for updating a session under a project."""
+    status: Optional[str] = None  # 'active', 'paused', 'completed'
+    mode: Optional[str] = None  # 'socratic' or 'direct_chat'
+    domain: Optional[str] = None  # 'programming', 'business', 'architecture', etc.
+    ended_at: Optional[str] = None  # ISO format timestamp
+
+
 class SessionResponse(BaseModel):
     """Response model for session data."""
     id: str
@@ -1971,3 +1985,376 @@ def delete_session(
             status_code=500,
             detail=f"Internal error deleting session: {str(e)}"
         )
+
+
+# ============================================================================
+# HIGH-PRIORITY PROJECT SESSIONS ENDPOINTS (5 endpoints with 6-phase pattern)
+# ============================================================================
+
+@project_sessions_router.get("")
+def list_project_sessions(
+    project_id: str,
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """List all sessions for a project with pagination (6-phase pattern)."""
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    try:
+        # PHASE 1: Load data from database while session is ACTIVE
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project not found: {project_id}")
+        if str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+        query = db.query(SessionModel).filter(SessionModel.project_id == project_id).order_by(SessionModel.created_at.desc())
+        total = query.count()
+        sessions = query.offset(skip).limit(limit).all()
+
+        # PHASE 2: Convert ALL attributes to primitives WHILE session is ACTIVE
+        sessions_data = []
+        for session in sessions:
+            sessions_data.append({
+                'id': str(session.id),
+                'project_id': str(session.project_id),
+                'mode': session.mode,
+                'status': session.status,
+                'domain': session.domain,
+                'started_at': session.started_at.isoformat() if session.started_at else None,
+                'ended_at': session.ended_at.isoformat() if session.ended_at else None,
+                'created_at': session.created_at.isoformat() if session.created_at else None
+            })
+
+        # PHASE 3: Commit transaction
+        db.commit()
+
+        # PHASE 4: IMMEDIATELY close DB connection
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5 & 6: Build response from cached primitives and return
+        return {
+            'success': True,
+            'sessions': sessions_data,
+            'total': total,
+            'skip': skip,
+            'limit': limit
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in list_project_sessions: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal error listing project sessions: {str(e)}")
+
+
+@project_sessions_router.post("", status_code=status.HTTP_201_CREATED)
+def create_project_session(
+    project_id: str,
+    request: CreateProjectSessionRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """Create a new session in a project (6-phase pattern)."""
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    try:
+        # PHASE 1: Load and create
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project not found: {project_id}")
+        if str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+        session = SessionModel(
+            project_id=UUID(project_id),
+            mode=request.mode or 'socratic',
+            domain=request.domain if hasattr(request, 'domain') else None,
+            status='active',
+            started_at=datetime.now(timezone.utc)
+        )
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+
+        # PHASE 2: Convert ALL attributes to primitives WHILE session is ACTIVE
+        session_id_str = str(session.id)
+        project_id_str = str(session.project_id)
+        session_mode = session.mode
+        session_domain = session.domain
+        session_status = session.status
+        session_started_at = session.started_at.isoformat() if session.started_at else None
+        session_created_at = session.created_at.isoformat() if session.created_at else None
+
+        # PHASE 4: IMMEDIATELY close DB connection
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5 & 6: Build response and return
+        return {
+            'success': True,
+            'session': {
+                'id': session_id_str,
+                'project_id': project_id_str,
+                'mode': session_mode,
+                'domain': session_domain,
+                'status': session_status,
+                'started_at': session_started_at,
+                'created_at': session_created_at
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in create_project_session: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal error creating session: {str(e)}")
+
+
+@project_sessions_router.get("/{session_id}")
+def get_project_session(
+    project_id: str,
+    session_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """Get specific session details for a project (6-phase pattern)."""
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    try:
+        # PHASE 1: Load data
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project not found: {project_id}")
+        if str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+        session = db.query(SessionModel).filter(
+            SessionModel.id == session_id,
+            SessionModel.project_id == project_id
+        ).first()
+        if not session:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Session not found: {session_id}")
+
+        # PHASE 2: Convert ALL attributes to primitives
+        session_id_str = str(session.id)
+        project_id_str = str(session.project_id)
+        session_mode = session.mode
+        session_status = session.status
+        session_domain = session.domain
+        session_started_at = session.started_at.isoformat() if session.started_at else None
+        session_ended_at = session.ended_at.isoformat() if session.ended_at else None
+        session_created_at = session.created_at.isoformat() if session.created_at else None
+        session_updated_at = session.updated_at.isoformat() if session.updated_at else None
+
+        # PHASE 3: Commit
+        db.commit()
+
+        # PHASE 4: Close connection
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5 & 6: Return response
+        return {
+            'success': True,
+            'session': {
+                'id': session_id_str,
+                'project_id': project_id_str,
+                'mode': session_mode,
+                'status': session_status,
+                'domain': session_domain,
+                'started_at': session_started_at,
+                'ended_at': session_ended_at,
+                'created_at': session_created_at,
+                'updated_at': session_updated_at
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_project_session: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal error retrieving session: {str(e)}")
+
+
+@project_sessions_router.put("/{session_id}")
+def update_project_session(
+    project_id: str,
+    session_id: str,
+    request: UpdateProjectSessionRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """Update a session in a project (6-phase pattern)."""
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    try:
+        # PHASE 1: Load data
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project not found: {project_id}")
+        if str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+        session = db.query(SessionModel).filter(
+            SessionModel.id == session_id,
+            SessionModel.project_id == project_id
+        ).first()
+        if not session:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Session not found: {session_id}")
+
+        # Update fields if provided
+        if request.status is not None:
+            session.status = request.status
+        if request.mode is not None:
+            session.mode = request.mode
+        if hasattr(request, 'domain') and request.domain is not None:
+            session.domain = request.domain
+        if request.ended_at is not None:
+            session.ended_at = datetime.fromisoformat(request.ended_at.replace('Z', '+00:00'))
+
+        db.commit()
+        db.refresh(session)
+
+        # PHASE 2: Convert ALL attributes to primitives
+        session_id_str = str(session.id)
+        project_id_str = str(session.project_id)
+        session_mode = session.mode
+        session_status = session.status
+        session_domain = session.domain
+        session_started_at = session.started_at.isoformat() if session.started_at else None
+        session_ended_at = session.ended_at.isoformat() if session.ended_at else None
+        session_created_at = session.created_at.isoformat() if session.created_at else None
+        session_updated_at = session.updated_at.isoformat() if session.updated_at else None
+
+        # PHASE 4: Close connection
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5 & 6: Return response
+        return {
+            'success': True,
+            'session': {
+                'id': session_id_str,
+                'project_id': project_id_str,
+                'mode': session_mode,
+                'status': session_status,
+                'domain': session_domain,
+                'started_at': session_started_at,
+                'ended_at': session_ended_at,
+                'created_at': session_created_at,
+                'updated_at': session_updated_at
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in update_project_session: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal error updating session: {str(e)}")
+
+
+@router.get("/{session_id}/context")
+def get_session_context(
+    session_id: str,
+    limit: int = 10,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """Get session context with recent messages (6-phase pattern). Uses msg.role and msg.content."""
+    from ..models.conversation_history import ConversationHistory
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    try:
+        # PHASE 1: Load data
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Session not found: {session_id}")
+
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+        message_query = db.query(ConversationHistory).filter(
+            ConversationHistory.session_id == session_id
+        ).order_by(ConversationHistory.created_at.desc())
+
+        total_messages = message_query.count()
+        recent_messages = list(reversed(message_query.limit(limit).all()))
+
+        # PHASE 2: Convert ALL attributes to primitives
+        session_id_str = str(session.id)
+        project_id_str = str(session.project_id)
+        session_mode = session.mode
+        session_status = session.status
+        session_domain = session.domain
+
+        messages_data = []
+        for msg in recent_messages:
+            messages_data.append({
+                'role': msg.role,
+                'content': msg.content,
+                'timestamp': msg.created_at.isoformat() if msg.created_at else None
+            })
+
+        # PHASE 3: Commit
+        db.commit()
+
+        # PHASE 4: Close connection
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5 & 6: Return response
+        return {
+            'success': True,
+            'session': {
+                'id': session_id_str,
+                'project_id': project_id_str,
+                'mode': session_mode,
+                'status': session_status,
+                'domain': session_domain
+            },
+            'context': {
+                'recent_messages': messages_data,
+                'message_count': total_messages,
+                'domain': session_domain,
+                'mode': session_mode,
+                'status': session_status
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_session_context: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal error retrieving session context: {str(e)}")
