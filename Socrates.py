@@ -179,6 +179,22 @@ class IntentParser:
             (r'(?:connect|setup)\s+github',
              lambda m: ("/fetch github connect", [])),
 
+            # Code generation
+            (r'(?:generate|create)\s+(?:code|software|app|application|project)',
+             lambda m: ("/code generate", [])),
+
+            (r'(?:list|show|view)\s+(?:code\s+)?generations?',
+             lambda m: ("/code list", [])),
+
+            (r'(?:check|show)\s+(?:(?:my|the)\s+)?(?:generation\s+)?status(?:\s+for\s+)?(.+)?',
+             lambda m: ("_code_status", [m.group(1).strip()] if m.lastindex and m.group(1) else [])),
+
+            (r'(?:download|get)\s+(?:my\s+)?(?:the\s+)?(?:generated\s+)?code(?:\s+for\s+)?(.+)?',
+             lambda m: ("_code_download", [m.group(1).strip()] if m.lastindex and m.group(1) else [])),
+
+            (r'(?:preview|show|view)\s+(?:my\s+)?(?:the\s+)?(?:generated\s+)?code(?:\s+for\s+)?(.+)?',
+             lambda m: ("_code_preview", [m.group(1).strip()] if m.lastindex and m.group(1) else [])),
+
             # Help - only at start of input
             (r'^help(?:\s+(.+))?$',
              lambda m: ("/help " + m.group(1).strip() if m.lastindex and m.group(1) else "/help", [])),
@@ -233,6 +249,12 @@ class IntentParser:
                             return self._get_list_command(args[0])
                         elif command == "_get_export_command":
                             return self._get_export_command(args[0])
+                        elif command == "_code_status":
+                            return self._parse_code_status(args)
+                        elif command == "_code_download":
+                            return self._parse_code_download(args)
+                        elif command == "_code_preview":
+                            return self._parse_code_preview(args)
 
                         return {
                             'intent': 'command',
@@ -322,6 +344,51 @@ class IntentParser:
             return 'google'
         else:
             return 'anthropic'  # default
+
+    def _parse_code_status(self, args: List[str]) -> Dict[str, Any]:
+        """Parse code status request"""
+        if args and args[0]:
+            gen_id = args[0].strip()
+        else:
+            gen_id = None
+
+        return {
+            'intent': 'code_status',
+            'command': '/code status',
+            'args': [gen_id] if gen_id else [],
+            'confidence': 0.85 if gen_id else 0.7,
+            'requires_confirmation': False
+        }
+
+    def _parse_code_download(self, args: List[str]) -> Dict[str, Any]:
+        """Parse code download request"""
+        if args and args[0]:
+            gen_id = args[0].strip()
+        else:
+            gen_id = None
+
+        return {
+            'intent': 'code_download',
+            'command': '/code download',
+            'args': [gen_id] if gen_id else [],
+            'confidence': 0.85 if gen_id else 0.7,
+            'requires_confirmation': False
+        }
+
+    def _parse_code_preview(self, args: List[str]) -> Dict[str, Any]:
+        """Parse code preview request"""
+        if args and args[0]:
+            gen_id = args[0].strip()
+        else:
+            gen_id = None
+
+        return {
+            'intent': 'code_preview',
+            'command': '/code preview',
+            'args': [gen_id] if gen_id else [],
+            'confidence': 0.85 if gen_id else 0.7,
+            'requires_confirmation': False
+        }
 
     def _try_claude_parsing(self, user_input: str) -> Optional[Dict[str, Any]]:
         """
@@ -1104,6 +1171,14 @@ Knowledge Base & Resources:
   /fetch github <url>    Import GitHub repository content
   /fetch github status   Check GitHub connection status
   /fetch github connect  Setup GitHub integration
+
+Code Generation:
+  /code                  Show code generation help
+  /code generate         Generate code from project specifications
+  /code list             List all code generations in project
+  /code status <gen_id>  Show generation progress and status
+  /code preview <gen_id> Preview generated code before download
+  /code download <gen_id> Download generated code package
 
 CLI Mode:
   /cmd <command> [args]  Execute traditional CLI commands (useful in chat mode)
@@ -3370,6 +3445,255 @@ Updated: {p.get('updated_at', 'N/A')}
         except Exception as e:
             self.console.print(f"[ERROR] {str(e)}")
 
+    def cmd_code(self, args: List[str]):
+        """Manage code generation"""
+        if not self.ensure_project_active():
+            return
+
+        if not args:
+            # Show help for /code command
+            self.console.print("\n[bold cyan]Code Generation[/bold cyan]")
+            self.console.print("\nUsage: /code <subcommand> [args]")
+            self.console.print("\nSubcommands:")
+            self.console.print("  /code generate              Generate code from project specifications")
+            self.console.print("  /code list                  List code generations for this project")
+            self.console.print("  /code status <gen_id>       Show generation status")
+            self.console.print("  /code download <gen_id>     Download generated code")
+            self.console.print("  /code preview <gen_id>      Preview generated code")
+            return
+
+        subcommand = args[0].lower()
+
+        if subcommand == "generate":
+            self.cmd_code_generate(args[1:] if len(args) > 1 else [])
+
+        elif subcommand == "list":
+            self.cmd_code_list()
+
+        elif subcommand == "status":
+            if len(args) < 2:
+                self.console.print("Usage: /code status <generation_id>")
+                return
+            self.cmd_code_status(args[1])
+
+        elif subcommand == "download":
+            if len(args) < 2:
+                self.console.print("Usage: /code download <generation_id>")
+                return
+            self.cmd_code_download(args[1])
+
+        elif subcommand == "preview":
+            if len(args) < 2:
+                self.console.print("Usage: /code preview <generation_id>")
+                return
+            self.cmd_code_preview(args[1])
+
+        else:
+            self.console.print(f"Unknown subcommand: {subcommand}")
+            self.console.print("Use: /code for help")
+
+    def cmd_code_generate(self, args: List[str]):
+        """Generate code from project specifications"""
+        try:
+            self.console.print("\n[INFO] Code Generation Settings")
+            self.console.print("\nDefault: Python REST API")
+            self.console.print("\nSelect language:")
+            self.console.print("  [1] Python (default)")
+            self.console.print("  [2] TypeScript")
+            self.console.print("  [3] Go")
+            self.console.print("  [4] Java")
+
+            lang_choice = self.console.input("\nSelect (1-4) [1]: ").strip() or "1"
+
+            lang_map = {"1": "python", "2": "typescript", "3": "go", "4": "java"}
+            language = lang_map.get(lang_choice, "python")
+
+            self.console.print("\nSelect pattern:")
+            self.console.print("  [1] REST API (default)")
+            self.console.print("  [2] GraphQL")
+            self.console.print("  [3] CLI Tool")
+
+            pattern_choice = self.console.input("\nSelect (1-3) [1]: ").strip() or "1"
+
+            pattern_map = {"1": "rest-api", "2": "graphql", "3": "cli-tool"}
+            pattern = pattern_map.get(pattern_choice, "rest-api")
+
+            self.console.print(f"\n[INFO] Starting code generation...")
+            self.console.print(f"       Language: {language}")
+            self.console.print(f"       Pattern: {pattern}")
+
+            result = self.api.generate_code(
+                self.current_project,
+                language=language,
+                pattern=pattern
+            )
+
+            if result.get("success"):
+                data = result.get("data", {})
+                gen_id = data.get("id", "unknown")
+                self.console.print(f"\n[OK] Code generation started")
+                self.console.print(f"    ID: {gen_id}")
+                self.console.print(f"    Status: {data.get('status', 'pending')}")
+                self.console.print(f"\nRun: /code status {gen_id}")
+                self.console.print("to check progress")
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Generation failed')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_code_list(self):
+        """List code generations for the project"""
+        try:
+            self.console.print("\n[INFO] Fetching code generations...")
+
+            result = self.api.list_code_generations(self.current_project)
+
+            if result.get("success"):
+                generations = result.get("data", [])
+
+                if not generations:
+                    self.console.print("No code generations yet")
+                    self.console.print("Run: /code generate")
+                    return
+
+                self.console.print(f"\n[bold cyan]Code Generations ({len(generations)})[/bold cyan]\n")
+
+                for gen in generations:
+                    gen_id = gen.get("id", "?")
+                    status = gen.get("status", "unknown")
+                    language = gen.get("language", "unknown")
+                    created = gen.get("created_at", "?")
+                    files = gen.get("file_count", 0)
+                    lines = gen.get("line_count", 0)
+
+                    status_emoji = "✓" if status == "completed" else "⏳" if status == "in_progress" else "✗" if status == "failed" else "○"
+
+                    self.console.print(f"  {status_emoji} [cyan]{gen_id}[/cyan]")
+                    self.console.print(f"    Status: {status}")
+                    self.console.print(f"    Language: {language}")
+                    self.console.print(f"    Files: {files}, Lines: {lines}")
+                    self.console.print(f"    Created: {created}")
+                    self.console.print()
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Failed to fetch generations')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_code_status(self, generation_id: str):
+        """Show code generation status"""
+        try:
+            self.console.print(f"\n[INFO] Checking status for: {generation_id}")
+
+            result = self.api.get_generation_status(generation_id)
+
+            if result.get("success"):
+                data = result.get("data", {})
+                status = data.get("status", "unknown")
+                progress = data.get("progress", 0)
+                files_completed = data.get("files_completed", 0)
+                total_files = data.get("total_files", 0)
+                error_msg = data.get("error_message")
+
+                self.console.print(f"\n[bold cyan]Generation Status[/bold cyan]")
+                self.console.print(f"  ID: {generation_id}")
+                self.console.print(f"  Status: {status}")
+
+                # Progress bar
+                if status == "in_progress":
+                    bar = "█" * int(progress / 5) + "░" * (20 - int(progress / 5))
+                    self.console.print(f"  Progress: [{bar}] {progress}%")
+                    self.console.print(f"  Files: {files_completed}/{total_files}")
+                elif status == "completed":
+                    self.console.print(f"  [OK] Completed with {total_files} files")
+                    self.console.print(f"\nRun: /code download {generation_id}")
+                    self.console.print("to download the generated code")
+                elif status == "failed":
+                    self.console.print(f"  [ERROR] Generation failed")
+                    if error_msg:
+                        self.console.print(f"  Reason: {error_msg}")
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Failed to get status')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_code_preview(self, generation_id: str):
+        """Preview generated code"""
+        try:
+            self.console.print(f"\n[INFO] Loading preview for: {generation_id}")
+
+            result = self.api.get_generation_status(generation_id)
+
+            if result.get("success"):
+                data = result.get("data", {})
+                status = data.get("status", "unknown")
+
+                if status != "completed":
+                    self.console.print(f"[WARN] Generation not yet completed")
+                    self.console.print(f"       Status: {status}")
+                    self.console.print(f"       Run: /code status {generation_id}")
+                    return
+
+                self.console.print(f"\n[bold cyan]Generated Code Preview[/bold cyan]")
+                self.console.print(f"  Generation ID: {generation_id}")
+
+                # File structure
+                files = data.get("files", [])
+                if files:
+                    self.console.print(f"\n[bold]File Structure ({len(files)} files):[/bold]")
+                    for file in files[:10]:  # Show first 10 files
+                        file_path = file.get("path", "unknown")
+                        file_lines = file.get("lines", 0)
+                        self.console.print(f"  • {file_path} ({file_lines} lines)")
+                    if len(files) > 10:
+                        self.console.print(f"  ... and {len(files) - 10} more files")
+
+                # Statistics
+                self.console.print(f"\n[bold]Statistics:[/bold]")
+                self.console.print(f"  Total Files: {data.get('total_files', 0)}")
+                self.console.print(f"  Total Lines: {data.get('total_lines', 0)}")
+                self.console.print(f"  Test Coverage: {data.get('test_coverage', 0):.0f}%")
+                quality_score = data.get("quality_score", 0)
+                quality_bar = "█" * int(quality_score / 10) + "░" * (10 - int(quality_score / 10))
+                self.console.print(f"  Quality: [{quality_bar}] {quality_score}/100")
+
+                self.console.print(f"\n[OK] Preview looks good!")
+                self.console.print(f"Run: /code download {generation_id}")
+                self.console.print("to download the complete code")
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Failed to load preview')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_code_download(self, generation_id: str):
+        """Download generated code"""
+        try:
+            self.console.print(f"\n[INFO] Preparing download for: {generation_id}")
+
+            result = self.api.download_generated_code(generation_id)
+
+            if result.get("success"):
+                data = result.get("data", {})
+                download_url = data.get("download_url")
+                file_size = data.get("file_size", 0)
+                file_count = data.get("file_count", 0)
+
+                self.console.print(f"\n[OK] Code ready for download")
+                self.console.print(f"  Size: {file_size / (1024*1024):.2f} MB")
+                self.console.print(f"  Files: {file_count}")
+
+                if download_url:
+                    self.console.print(f"\n[INFO] Download URL:")
+                    self.console.print(f"  {download_url}")
+                    self.console.print(f"\nOr run your own download command to save locally")
+                else:
+                    self.console.print(f"\n[INFO] Download link available in web interface")
+
+                self.console.print(f"\nGeneration ID (for reference): {generation_id}")
+            else:
+                self.console.print(f"[ERROR] {result.get('error', 'Download failed')}")
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
     def cmd_theme(self, args: List[str]):
         """Change CLI color theme"""
         themes = {
@@ -4370,6 +4694,9 @@ Updated: {p.get('updated_at', 'N/A')}
 
         elif command == "/fetch":
             self.cmd_fetch(args)
+
+        elif command == "/code":
+            self.cmd_code(args)
 
         else:
             self.console.print(f"Unknown command: {command}")
