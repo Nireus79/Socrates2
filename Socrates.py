@@ -180,19 +180,19 @@ class IntentParser:
              lambda m: ("/fetch github connect", [])),
 
             # Code generation
-            (r'(?:generate|create)\s+(?:code|software|app|application|project)',
+            (r'(?:generate|create)(?:\s+\w+)?\s+(?:code|software|app|application|project)',
              lambda m: ("/code generate", [])),
 
             (r'(?:list|show|view)\s+(?:code\s+)?generations?',
              lambda m: ("/code list", [])),
 
-            (r'(?:check|show)\s+(?:(?:my|the)\s+)?(?:generation\s+)?status(?:\s+for\s+)?(.+)?',
+            (r'(?:check|show)\s+(?:(?:my|me|the|your|you|our|us)\s+)*(?:(?:code|generation)\s+)?status(?:\s+for\s+)?(.+)?',
              lambda m: ("_code_status", [m.group(1).strip()] if m.lastindex and m.group(1) else [])),
 
             (r'(?:download|get)\s+(?:my\s+)?(?:the\s+)?(?:generated\s+)?code(?:\s+for\s+)?(.+)?',
              lambda m: ("_code_download", [m.group(1).strip()] if m.lastindex and m.group(1) else [])),
 
-            (r'(?:preview|show|view)\s+(?:my\s+)?(?:the\s+)?(?:generated\s+)?code(?:\s+for\s+)?(.+)?',
+            (r'(?:preview|show|view)\s+(?:(?:my|the|generated|code|preview)\s+)*(?:for\s+)?(\S+)?',
              lambda m: ("_code_preview", [m.group(1).strip()] if m.lastindex and m.group(1) else [])),
 
             # Help - only at start of input
