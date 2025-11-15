@@ -16,15 +16,25 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-# Import and run the main application
-if __name__ == "__main__":
-    from Socrates import main
 
+def main():
+    """Launch the Socrates CLI application"""
     try:
-        main()
+        # Import here after path is set up
+        from Socrates import SocratesCLI
+
+        # Create and run the CLI
+        cli = SocratesCLI()
+        cli.run()
     except KeyboardInterrupt:
         print("\n\nGoodbye!")
         sys.exit(0)
     except Exception as e:
         print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
