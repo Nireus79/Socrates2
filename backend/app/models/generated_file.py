@@ -2,9 +2,9 @@
 GeneratedFile model for storing individual generated files.
 """
 from sqlalchemy import Column, ForeignKey, Integer, JSON, String, Text
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 
-from ..core.database import PG_UUID
 from ..models.base import BaseModel
 
 
