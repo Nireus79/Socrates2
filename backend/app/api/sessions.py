@@ -1287,22 +1287,23 @@ def list_user_sessions(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    # Build query for sessions belonging to user's projects
-    query = db.query(SessionModel).join(
-        Project, SessionModel.project_id == Project.id
-    ).filter(Project.user_id == current_user.id)
+    try:
+        # PHASE 1: Build and execute query to load sessions
+        query = db.query(SessionModel).join(
+            Project, SessionModel.project_id == Project.id
+        ).filter(Project.user_id == current_user.id)
 
-    # Filter by project_id if provided
-    if project_id:
-        query = query.filter(SessionModel.project_id == project_id)
+        # Filter by project_id if provided
+        if project_id:
+            query = query.filter(SessionModel.project_id == project_id)
 
-    total = query.count()
-    sessions = query.offset(skip).limit(limit).all()
+        total = query.count()
+        sessions = query.offset(skip).limit(limit).all()
 
-    return {
-        'success': True,
-        'sessions': [
-            {
+        # PHASE 2: Convert ALL session attributes to primitives WHILE SESSION IS STILL ACTIVE
+        sessions_data = []
+        for session in sessions:
+            sessions_data.append({
                 'id': str(session.id),
                 'project_id': str(session.project_id),
                 'mode': session.mode,
@@ -1311,11 +1312,35 @@ def list_user_sessions(
                 'ended_at': session.ended_at.isoformat() if session.ended_at else None,
                 'created_at': session.created_at.isoformat() if session.created_at else None,
                 'updated_at': session.updated_at.isoformat() if session.updated_at else None
-            }
-            for session in sessions
-        ],
-        'total': total
-    }
+            })
+
+        # PHASE 3: Commit transaction
+        db.commit()
+
+        # PHASE 4: Close DB connection IMMEDIATELY
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5: Build response from cached primitives (no DB access)
+        response_data = {
+            'success': True,
+            'sessions': sessions_data,
+            'total': total
+        }
+
+        # PHASE 6: Return response with released connection
+        return response_data
+
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in list_user_sessions: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal error listing sessions: {str(e)}"
+        )
 
 
 # ============================================================================
@@ -1340,7 +1365,7 @@ def list_project_sessions(
     project_id: str,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db_specs)
-) -> list:
+) -> Dict[str, Any]:
     """
     List all sessions for a project.
 
