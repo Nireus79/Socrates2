@@ -132,31 +132,43 @@ def create_project(
             description=request.description or ""
         )
 
-        # PHASE 2: Commit transaction
+        # PHASE 2: Convert all attributes to primitives WHILE SESSION IS STILL ACTIVE
+        # This prevents DetachedInstanceError after session closure
+        project_id_str = str(project.id)
+        user_id_str = str(project.user_id)
+        project_name = project.name
+        project_description = project.description
+        project_status = project.status
+        project_phase = project.current_phase
+        project_maturity = project.maturity_score or 0
+        project_created = project.created_at.isoformat()
+        project_updated = project.updated_at.isoformat() if project.updated_at else None
+
+        # PHASE 3: Commit transaction
         service.commit_all()
 
-        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # PHASE 4: Close DB connection IMMEDIATELY (after conversion, before building response)
         # This prevents connection pool exhaustion
         try:
             service.specs_session.close()
         except:
             pass
 
-        # PHASE 4: Build response data from already-loaded project object
+        # PHASE 5: Build response data from cached primitives (no DB access)
         project_data = {
-            "id": str(project.id),
-            "project_id": str(project.id),  # For CLI compatibility
-            "user_id": str(project.user_id),
-            "name": project.name,
-            "description": project.description,
-            "status": project.status,
-            "phase": project.current_phase,
-            "maturity_level": project.maturity_score or 0,
-            "created_at": project.created_at.isoformat(),
-            "updated_at": project.updated_at.isoformat() if project.updated_at else None
+            "id": project_id_str,
+            "project_id": project_id_str,  # For CLI compatibility
+            "user_id": user_id_str,
+            "name": project_name,
+            "description": project_description,
+            "status": project_status,
+            "phase": project_phase,
+            "maturity_level": project_maturity,
+            "created_at": project_created,
+            "updated_at": project_updated
         }
 
-        # PHASE 5: Return response with released connection
+        # PHASE 6: Return response with released connection
         return ResponseWrapper.success(
             data=project_data,
             message="Project created successfully"
@@ -232,17 +244,8 @@ def list_projects(
         # Get total count
         total = service.projects.count_user_projects(current_user.id)
 
-        # PHASE 2: Commit transaction
-        service.commit_all()
-
-        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
-        # This prevents connection pool exhaustion
-        try:
-            service.specs_session.close()
-        except:
-            pass
-
-        # PHASE 4: Build response data from already-loaded project objects
+        # PHASE 2: Convert all attributes to primitives WHILE SESSION IS STILL ACTIVE
+        # This prevents DetachedInstanceError after session closure
         projects_data = [
             {
                 "id": str(p.id),
@@ -258,6 +261,17 @@ def list_projects(
             for p in projects
         ]
 
+        # PHASE 3: Commit transaction
+        service.commit_all()
+
+        # PHASE 4: Close DB connection IMMEDIATELY (after conversion, before building response)
+        # This prevents connection pool exhaustion
+        try:
+            service.specs_session.close()
+        except:
+            pass
+
+        # PHASE 5: Build response data from cached primitives (no DB access)
         response_data = {
             "projects": projects_data,
             "total": total,
@@ -265,7 +279,7 @@ def list_projects(
             "limit": limit
         }
 
-        # PHASE 5: Return response with released connection
+        # PHASE 6: Return response with released connection
         return ResponseWrapper.success(
             data=response_data,
             message="Projects retrieved successfully"
@@ -346,30 +360,42 @@ def get_project(
                 detail="You don't have access to this project"
             )
 
-        # PHASE 2: Commit transaction
+        # PHASE 2: Convert all attributes to primitives WHILE SESSION IS STILL ACTIVE
+        # This prevents DetachedInstanceError after session closure
+        project_id_str = str(project.id)
+        project_user_id_str = str(project.user_id)
+        project_name = project.name
+        project_description = project.description
+        project_status = project.status
+        project_phase = project.current_phase
+        project_maturity = int((project.maturity_score or 0) * 100)
+        project_created = project.created_at.isoformat()
+        project_updated = project.updated_at.isoformat() if project.updated_at else None
+
+        # PHASE 3: Commit transaction
         service.commit_all()
 
-        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # PHASE 4: Close DB connection IMMEDIATELY (after conversion, before building response)
         # This prevents connection pool exhaustion
         try:
             service.specs_session.close()
         except:
             pass
 
-        # PHASE 4: Build response data from already-loaded project object
+        # PHASE 5: Build response data from cached primitives (no DB access)
         project_data = {
-            "id": str(project.id),
-            "user_id": str(project.user_id),
-            "name": project.name,
-            "description": project.description,
-            "status": project.status,
-            "phase": project.current_phase,
-            "maturity_level": int((project.maturity_score or 0) * 100),
-            "created_at": project.created_at.isoformat(),
-            "updated_at": project.updated_at.isoformat() if project.updated_at else None
+            "id": project_id_str,
+            "user_id": project_user_id_str,
+            "name": project_name,
+            "description": project_description,
+            "status": project_status,
+            "phase": project_phase,
+            "maturity_level": project_maturity,
+            "created_at": project_created,
+            "updated_at": project_updated
         }
 
-        # PHASE 5: Return response with released connection
+        # PHASE 6: Return response with released connection
         return ResponseWrapper.success(
             data=project_data,
             message="Project retrieved successfully"
