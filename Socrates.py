@@ -811,6 +811,19 @@ Advanced Features:
   /wizard                Interactive project setup with templates
   /status                Show current project and session status
 
+LLM Management:
+  /llm                   Show LLM management help
+  /llm list              List all available LLM models
+  /llm current           Show currently selected model
+  /llm select <p> <m>    Select a model (e.g. /llm select anthropic claude-3.5-sonnet)
+  /llm update            Update deprecated models
+  /llm costs             Show LLM pricing information
+  /llm usage [period]    Show your usage and costs (day/week/month)
+
+CLI Mode:
+  /cmd <command> [args]  Execute traditional CLI commands (useful in chat mode)
+                         Example: /cmd /project list
+
 System:
   /help                  Show this help message
   /back                  Go back (clear project/session selection)
@@ -2413,6 +2426,314 @@ Updated: {p.get('updated_at', 'N/A')}
         else:
             self.console.print("Usage: /logging [on|off|status|clear]")
 
+    def cmd_escape_to_cli(self, args: List[str]):
+        """
+        Escape to traditional CLI mode - execute a command using / prefix.
+        Usage: /cmd /project list
+        """
+        if not args:
+            self.console.print("Usage: /cmd <command> [args...]")
+            self.console.print("Example: /cmd /project list")
+            return
+
+        # Reconstruct the full command
+        full_command = " ".join(args)
+
+        # If command doesn't start with /, add it
+        if not full_command.startswith("/"):
+            full_command = "/" + full_command
+
+        # Execute the command
+        self.handle_command(full_command)
+
+    def cmd_llm(self, args: List[str]):
+        """Manage LLM model selection, costs, and usage"""
+        if not args:
+            args = ["current"]
+
+        subcommand = args[0].lower()
+
+        if subcommand == "list":
+            self.cmd_llm_list()
+
+        elif subcommand == "select":
+            self.cmd_llm_select(args[1:])
+
+        elif subcommand == "current":
+            self.cmd_llm_current()
+
+        elif subcommand == "update":
+            self.cmd_llm_update()
+
+        elif subcommand == "costs":
+            self.cmd_llm_costs()
+
+        elif subcommand == "usage":
+            self.cmd_llm_usage(args[1:])
+
+        else:
+            self.console.print("LLM Model Management\n")
+            self.console.print("Usage: /llm <subcommand> [options]\n")
+            self.console.print("Subcommands:")
+            self.console.print("  list              - List all available LLM models")
+            self.console.print("  current           - Show currently selected model")
+            self.console.print("  select <provider> <model> - Select a new model")
+            self.console.print("  update            - Update deprecated models")
+            self.console.print("  costs             - Show LLM pricing")
+            self.console.print("  usage [period]    - Show your usage (day/week/month)\n")
+            self.console.print("Example: /llm select anthropic claude-3.5-sonnet\n")
+
+    def cmd_llm_list(self):
+        """List all available LLM models"""
+        if not self.ensure_authenticated():
+            return
+
+        try:
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Loading models...", total=None)
+                result = self.api.list_available_llms()
+
+            if result.get("success"):
+                models = result.get("models", [])
+                if not models:
+                    self.console.print("No models available")
+                    return
+
+                # Group by provider
+                by_provider = {}
+                for model in models:
+                    provider = model.get("provider", "Unknown")
+                    if provider not in by_provider:
+                        by_provider[provider] = []
+                    by_provider[provider].append(model)
+
+                current = result.get("current_model", {})
+                current_name = f"{current.get('provider', '')}/{current.get('name', '')}"
+
+                self.console.print("\n[LLM Models Available]\n")
+
+                for provider, provider_models in sorted(by_provider.items()):
+                    self.console.print(f"[bold]{provider}[/bold]")
+
+                    for model in provider_models:
+                        name = model.get("name", "")
+                        is_current = f"{provider}/{name}" == current_name
+                        deprecated = model.get("deprecated", False)
+                        cost_input = model.get("cost_per_1m_input", "N/A")
+                        cost_output = model.get("cost_per_1m_output", "N/A")
+
+                        # Format output
+                        marker = "✓ " if is_current else "  "
+                        depr = " [DEPRECATED]" if deprecated else ""
+                        line = f"{marker}{name:30} | ${cost_input:>6}/1M | ${cost_output:>6}/1M{depr}"
+
+                        if is_current:
+                            self.console.print(f"[green]{line}[/green]")
+                        elif deprecated:
+                            self.console.print(f"[yellow]{line}[/yellow]")
+                        else:
+                            self.console.print(line)
+
+                    self.console.print()
+
+            else:
+                error = result.get("error", "Failed to load models")
+                self.console.print(f"[ERROR] {error}")
+
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_llm_current(self):
+        """Show currently selected LLM model"""
+        if not self.ensure_authenticated():
+            return
+
+        try:
+            result = self.api.get_current_llm()
+
+            if result.get("success") and result.get("model"):
+                model = result.get("model", {})
+                provider = model.get("provider", "Unknown")
+                name = model.get("name", "Unknown")
+                deprecated = model.get("deprecated", False)
+
+                self.console.print(f"\n[Current LLM Model]\n")
+                self.console.print(f"Provider: {provider}")
+                self.console.print(f"Model:    {name}")
+
+                if deprecated:
+                    self.console.print("[yellow]Status:   DEPRECATED[/yellow]")
+                    recommended = model.get("recommended_replacement")
+                    if recommended:
+                        self.console.print(f"Recommended: {recommended}\n")
+                else:
+                    self.console.print("Status:   Active\n")
+            else:
+                self.console.print("[ERROR] Could not fetch current model")
+
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}")
+
+    def cmd_llm_select(self, args: List[str]):
+        """Select a new LLM model"""
+        if not self.ensure_authenticated():
+            return
+
+        if len(args) < 2:
+            self.console.print("Usage: /llm select <provider> <model>")
+            self.console.print("Example: /llm select anthropic claude-3.5-sonnet\n")
+            return
+
+        provider = args[0].lower()
+        model_name = args[1]
+
+        try:
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Updating model...", total=None)
+                result = self.api.select_llm(provider, model_name)
+
+            if result.get("success"):
+                self.console.print(f"\n[OK] Switched to {provider}/{model_name}\n")
+
+                # Show pricing info
+                cost_input = result.get("cost_per_1m_input", "N/A")
+                cost_output = result.get("cost_per_1m_output", "N/A")
+                if cost_input != "N/A":
+                    self.console.print(f"Cost: ${cost_input}/1M tokens input | ${cost_output}/1M tokens output\n")
+            else:
+                error = result.get("error", "Failed to select model")
+                self.console.print(f"[ERROR] {error}\n")
+
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}\n")
+
+    def cmd_llm_update(self):
+        """Update deprecated LLM models"""
+        if not self.ensure_authenticated():
+            return
+
+        try:
+            # Get current model
+            current = self.api.get_current_llm()
+            if not current.get("model", {}).get("deprecated"):
+                self.console.print("\n[OK] Your current model is not deprecated\n")
+                return
+
+            # Get list of available models
+            available = self.api.list_available_llms()
+            models = available.get("models", [])
+
+            # Find deprecated models
+            deprecated = [m for m in models if m.get("deprecated")]
+
+            if not deprecated:
+                self.console.print("\n[OK] No deprecated models found\n")
+                return
+
+            self.console.print("\n[Deprecated Models]\n")
+            for i, model in enumerate(deprecated, 1):
+                provider = model.get("provider")
+                name = model.get("name")
+                recommended = model.get("recommended_replacement")
+                self.console.print(f"{i}. {provider}/{name}")
+                if recommended:
+                    self.console.print(f"   Recommended: {recommended}")
+
+            self.console.print()
+
+            # Prompt user to select which to upgrade
+            choice = Prompt.ask("\nSelect model number to upgrade (or press Enter to skip)")
+
+            if not choice or not choice.isdigit() or int(choice) < 1 or int(choice) > len(deprecated):
+                self.console.print("[CANCELLED] No model selected\n")
+                return
+
+            selected = deprecated[int(choice) - 1]
+            provider = selected.get("provider")
+            recommended = selected.get("recommended_replacement")
+
+            if recommended:
+                # Extract provider and model from recommended
+                parts = recommended.split("/")
+                if len(parts) == 2:
+                    new_provider, new_model = parts
+                    self.cmd_llm_select([new_provider, new_model])
+
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}\n")
+
+    def cmd_llm_costs(self):
+        """Show LLM pricing information"""
+        if not self.ensure_authenticated():
+            return
+
+        try:
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Loading pricing...", total=None)
+                result = self.api.get_llm_costs()
+
+            if result.get("success"):
+                costs = result.get("costs", {})
+
+                self.console.print("\n[LLM Model Pricing]\n")
+                self.console.print(f"{'Provider':<12} {'Model':<30} {'Input':<12} {'Output':<12}")
+                self.console.print("─" * 70)
+
+                for provider, models in sorted(costs.items()):
+                    for model in models:
+                        name = model.get("name", "")
+                        cost_in = model.get("cost_per_1m_input", 0)
+                        cost_out = model.get("cost_per_1m_output", 0)
+
+                        in_str = f"${cost_in:.4f}/1M" if cost_in else "Free"
+                        out_str = f"${cost_out:.4f}/1M" if cost_out else "Free"
+
+                        self.console.print(f"{provider:<12} {name:<30} {in_str:<12} {out_str:<12}")
+
+                self.console.print()
+
+            else:
+                error = result.get("error", "Failed to load pricing")
+                self.console.print(f"[ERROR] {error}\n")
+
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}\n")
+
+    def cmd_llm_usage(self, args: List[str]):
+        """Show your LLM usage and costs"""
+        if not self.ensure_authenticated():
+            return
+
+        period = args[0].lower() if args else "month"
+        if period not in ["day", "week", "month"]:
+            period = "month"
+
+        try:
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Loading usage...", total=None)
+                result = self.api.get_llm_usage(period)
+
+            if result.get("success"):
+                usage = result.get("usage", {})
+
+                self.console.print(f"\n[LLM Usage - Last {period.capitalize()}]\n")
+                self.console.print(f"Total Requests: {usage.get('total_requests', 0)}")
+                self.console.print(f"Total Tokens:   {usage.get('total_tokens', 0):,}")
+                self.console.print(f"Input Tokens:   {usage.get('input_tokens', 0):,}")
+                self.console.print(f"Output Tokens:  {usage.get('output_tokens', 0):,}")
+                self.console.print(f"Total Cost:     ${usage.get('total_cost', 0):.2f}\n")
+
+            else:
+                error = result.get("error", "Failed to load usage")
+                self.console.print(f"[ERROR] {error}\n")
+
+        except Exception as e:
+            self.console.print(f"[ERROR] {str(e)}\n")
+
     def cmd_theme(self, args: List[str]):
         """Change CLI color theme"""
         themes = {
@@ -3401,6 +3722,12 @@ Updated: {p.get('updated_at', 'N/A')}
 
         elif command == "/logging":
             self.cmd_logging(args)
+
+        elif command == "/cmd":
+            self.cmd_escape_to_cli(args)
+
+        elif command == "/llm":
+            self.cmd_llm(args)
 
         else:
             self.console.print(f"Unknown command: {command}")
