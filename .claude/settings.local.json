@@ -49,7 +49,11 @@
       "Bash(uvicorn:*)",
       "Bash($env:DATABASE_URL_SPECS='postgresql://postgres@localhost:5432/socrates_specs')",
       "Bash(DATABASE_URL_SPECS='postgresql://postgres@localhost:5432/socrates_specs' python -m alembic:*)",
-      "Bash(python run_migration.py:*)"
+      "Bash(python run_migration.py:*)",
+      "Bash(python test_intent_parser.py:*)",
+      "Bash(python test_phase5.py:*)",
+      "Bash(python test_edge_cases.py:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
