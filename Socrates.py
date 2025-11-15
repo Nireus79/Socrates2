@@ -2513,10 +2513,18 @@ Updated: {p.get('updated_at', 'N/A')}
         """
         Handle chat message with intelligent intent parsing.
 
-        Attempts to parse natural language commands first before treating as chat.
-        This enables hybrid mode: both chat AND commands work naturally.
+        In SOCRATIC mode: Skip intent parsing to preserve Socratic flow.
+                         User should answer questions naturally.
+
+        In DIRECT mode:  Parse for natural language commands first.
+                        Enables hybrid mode: both chat AND commands work naturally.
         """
-        # Try to parse as natural language command first
+        # In Socratic mode, bypass intent parsing - preserve the Socratic flow
+        if self.chat_mode == "socratic":
+            self.handle_socratic_message(message)
+            return
+
+        # In Direct mode, try to parse as natural language command first
         intent = self.intent_parser.parse(message)
 
         if intent:
@@ -2547,11 +2555,8 @@ Updated: {p.get('updated_at', 'N/A')}
                 self.handle_command(full_cmd)
                 return
 
-        # No intent detected, treat as regular chat message
-        if self.chat_mode == "socratic":
-            self.handle_socratic_message(message)
-        else:
-            self.handle_direct_message(message)
+        # No intent detected in Direct mode, treat as regular chat message
+        self.handle_direct_message(message)
 
     def handle_socratic_message(self, message: str):
         """Handle Socratic chat message"""
