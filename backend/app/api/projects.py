@@ -486,30 +486,42 @@ def update_project(
         if request.maturity_level is not None:
             project = service.projects.update_maturity_level(project_uuid, request.maturity_level)
 
-        # PHASE 2: Commit transaction with timeout handling
+        # PHASE 2: Convert all attributes to primitives WHILE SESSION IS STILL ACTIVE
+        # This prevents DetachedInstanceError after session closure
+        project_id_str = str(project.id)
+        project_user_id_str = str(project.user_id)
+        project_name = project.name
+        project_description = project.description
+        project_status = project.status
+        project_phase = project.current_phase
+        project_maturity = int((project.maturity_score or 0) * 100)
+        project_created = project.created_at.isoformat()
+        project_updated = project.updated_at.isoformat() if project.updated_at else None
+
+        # PHASE 3: Commit transaction with timeout handling
         service.commit_all()
 
-        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # PHASE 4: Close DB connection IMMEDIATELY (after conversion, before building response)
         # This prevents connection pool exhaustion
         try:
             service.specs_session.close()
         except:
             pass
 
-        # PHASE 4: Build response data from already-loaded project object
+        # PHASE 5: Build response data from cached primitives (no DB access)
         response_data = ProjectResponse(
-            id=str(project.id),
-            user_id=str(project.user_id),
-            name=project.name,
-            description=project.description,
-            status=project.status,
-            phase=project.current_phase,
-            maturity_level=int((project.maturity_score or 0) * 100),
-            created_at=project.created_at.isoformat(),
-            updated_at=project.updated_at.isoformat() if project.updated_at else None
+            id=project_id_str,
+            user_id=project_user_id_str,
+            name=project_name,
+            description=project_description,
+            status=project_status,
+            phase=project_phase,
+            maturity_level=project_maturity,
+            created_at=project_created,
+            updated_at=project_updated
         )
 
-        # PHASE 5: Return response with released connection
+        # PHASE 6: Return response with released connection
         return response_data
 
     except Exception as e:
@@ -580,30 +592,42 @@ def partial_update_project(
         if request.maturity_level is not None:
             project = service.projects.update_maturity_level(project_uuid, request.maturity_level)
 
-        # PHASE 2: Commit transaction with timeout handling
+        # PHASE 2: Convert all attributes to primitives WHILE SESSION IS STILL ACTIVE
+        # This prevents DetachedInstanceError after session closure
+        project_id_str = str(project.id)
+        project_user_id_str = str(project.user_id)
+        project_name = project.name
+        project_description = project.description
+        project_status = project.status
+        project_phase = project.current_phase
+        project_maturity = int((project.maturity_score or 0) * 100)
+        project_created = project.created_at.isoformat()
+        project_updated = project.updated_at.isoformat() if project.updated_at else None
+
+        # PHASE 3: Commit transaction with timeout handling
         service.commit_all()
 
-        # PHASE 3: Close DB connection IMMEDIATELY (before building response)
+        # PHASE 4: Close DB connection IMMEDIATELY (after conversion, before building response)
         # This prevents connection pool exhaustion
         try:
             service.specs_session.close()
         except:
             pass
 
-        # PHASE 4: Build response data from already-loaded project object
+        # PHASE 5: Build response data from cached primitives (no DB access)
         response_data = ProjectResponse(
-            id=str(project.id),
-            user_id=str(project.user_id),
-            name=project.name,
-            description=project.description,
-            status=project.status,
-            phase=project.current_phase,
-            maturity_level=int((project.maturity_score or 0) * 100),
-            created_at=project.created_at.isoformat(),
-            updated_at=project.updated_at.isoformat() if project.updated_at else None
+            id=project_id_str,
+            user_id=project_user_id_str,
+            name=project_name,
+            description=project_description,
+            status=project_status,
+            phase=project_phase,
+            maturity_level=project_maturity,
+            created_at=project_created,
+            updated_at=project_updated
         )
 
-        # PHASE 5: Return response with released connection
+        # PHASE 6: Return response with released connection
         return response_data
 
     except Exception as e:
