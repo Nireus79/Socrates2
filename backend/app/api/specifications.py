@@ -830,20 +830,36 @@ def list_project_specifications(
         )
 
     # Get specifications for this project
-    specifications = service.specifications.get_by_project(project_uuid)
+    try:
+        specifications = service.specifications.get_by_project(project_uuid)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to fetch specifications for project {project_id}: {e}")
+        return []
 
-    return [
-        {
-            "id": str(s.id),
-            "project_id": str(s.project_id),
-            "key": s.key,
-            "value": s.value,
-            "spec_type": s.spec_type,
-            "status": s.status,
-            "created_at": s.created_at.isoformat() if s.created_at else None
-        }
-        for s in specifications
-    ] if specifications else []
+    # Handle NULL/missing fields defensively
+    result = []
+    if specifications:
+        for s in specifications:
+            try:
+                result.append({
+                    "id": str(s.id) if hasattr(s, 'id') else None,
+                    "project_id": str(s.project_id) if hasattr(s, 'project_id') else None,
+                    "key": getattr(s, 'key', None),
+                    "value": getattr(s, 'value', None),
+                    "spec_type": getattr(s, 'spec_type', 'unknown'),
+                    "status": getattr(s, 'status', 'active'),
+                    "category": getattr(s, 'category', None),
+                    "created_at": s.created_at.isoformat() if hasattr(s, 'created_at') and s.created_at else None
+                })
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to serialize specification {getattr(s, 'id', 'unknown')}: {e}")
+                continue
+
+    return result
 
 
 @project_specifications_router.post("", status_code=status.HTTP_201_CREATED)
