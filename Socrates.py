@@ -1036,6 +1036,10 @@ No session required.
                 # Fallback in case prompt_session is None
                 return input(prompt_text).strip()
 
+    # ============================================================================
+    # AUTHENTICATION COMMANDS - User registration, login, account management
+    # ============================================================================
+
     def cmd_register(self):
         """Handle /register command"""
         self.console.print("\nRegister New Account\n")
