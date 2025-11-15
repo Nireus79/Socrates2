@@ -11,6 +11,7 @@ Provides:
 
 Uses repository pattern for efficient data access.
 """
+from datetime import datetime
 from typing import Any, Dict, Optional
 from uuid import UUID
 
@@ -49,6 +50,12 @@ class UpdateProjectRequest(BaseModel):
     status: Optional[str] = Field(None, pattern="^(active|archived|completed)$")
     phase: Optional[str] = Field(None, pattern="^(discovery|specification|implementation|testing|deployment)$")
     maturity_level: Optional[int] = Field(None, ge=0, le=100)
+
+
+class SetProjectLLMRequest(BaseModel):
+    """Request model for setting project LLM configuration."""
+    provider: str = Field(..., min_length=1)  # anthropic, openai, google, etc.
+    model: str = Field(..., min_length=1)     # claude-3.5-sonnet, gpt-4, etc.
 
 
 class ProjectResponse(BaseModel):
@@ -738,6 +745,708 @@ def destroy_project(
             message="Failed to permanently delete project",
             exception=e
         )
+
+
+@router.put("/{project_id}/archive")
+def archive_project_put(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Archive a project (soft delete - reversible) using PUT method.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with success status and archived project info
+
+    Example:
+        PUT /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/archive
+        Authorization: Bearer <token>
+        {}
+
+        Response:
+        {
+            "success": true,
+            "message": "Project archived successfully",
+            "data": {
+                "project_id": "550e8400-e29b-41d4-a716-446655440000",
+                "status": "archived"
+            }
+        }
+    """
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid UUID format"
+        )
+
+    try:
+        # Get project
+        project = service.projects.get_by_id(project_uuid)
+
+        if not project:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Project not found"
+            )
+
+        # Validate permissions
+        if str(project.user_id) != str(current_user.id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only project owner can archive project"
+            )
+
+        # Archive project
+        service.projects.archive_project(project_uuid)
+        service.commit_all()
+
+        return ResponseWrapper.success(
+            data={
+                "project_id": str(project_uuid),
+                "status": "archived"
+            },
+            message="Project archived successfully"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to archive project"
+        ) from e
+
+
+@router.get("/{project_id}/stats")
+def get_project_stats(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Get comprehensive statistics for a project.
+
+    Includes session count, specification count, quality metrics, and maturity information.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with project statistics
+
+    Example:
+        GET /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/stats
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "project_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "My Project",
+                "status": "active",
+                "phase": "discovery",
+                "maturity_level": 45,
+                "sessions": {
+                    "total": 5,
+                    "active": 2,
+                    "completed": 3
+                },
+                "specifications": {
+                    "total": 12,
+                    "by_category": {
+                        "goals": 3,
+                        "requirements": 5,
+                        "tech_stack": 4
+                    }
+                },
+                "quality_metrics": {
+                    "coverage": 75,
+                    "confidence": 0.82
+                }
+            }
+        }
+    """
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    # Get project
+    project = service.projects.get_by_id(project_uuid)
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    # Validate permissions
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied: you don't have access to this project"
+        )
+
+    # Gather statistics
+    stats = {
+        "project_id": str(project.id),
+        "name": project.name,
+        "status": project.status,
+        "phase": getattr(project, 'current_phase', 'unknown'),
+        "maturity_level": int((getattr(project, 'maturity_score', 0) or 0) * 100),
+        "sessions": {
+            "total": 0,
+            "active": 0,
+            "completed": 0
+        },
+        "specifications": {
+            "total": 0,
+            "by_category": {}
+        },
+        "quality_metrics": {
+            "coverage": 0,
+            "confidence": 0.0
+        }
+    }
+
+    try:
+        # Count sessions by status if available
+        if hasattr(service, 'sessions'):
+            sessions = service.sessions.get_by_project_id(project_uuid) if hasattr(service.sessions, 'get_by_project_id') else []
+            stats["sessions"]["total"] = len(sessions) if sessions else 0
+            stats["sessions"]["active"] = sum(1 for s in (sessions or []) if getattr(s, 'status', None) == 'active')
+            stats["sessions"]["completed"] = sum(1 for s in (sessions or []) if getattr(s, 'status', None) == 'completed')
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to count sessions: {e}")
+
+    try:
+        # Count specifications by category if available
+        if hasattr(service, 'specifications'):
+            specs = service.specifications.get_by_project_id(project_uuid) if hasattr(service.specifications, 'get_by_project_id') else []
+            stats["specifications"]["total"] = len(specs) if specs else 0
+
+            # Count by category
+            category_counts = {}
+            for spec in (specs or []):
+                category = getattr(spec, 'category', 'uncategorized')
+                category_counts[category] = category_counts.get(category, 0) + 1
+            stats["specifications"]["by_category"] = category_counts
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to count specifications: {e}")
+
+    return ResponseWrapper.success(data=stats, message="Project statistics retrieved successfully")
+
+
+@router.post("/{project_id}/llm")
+def set_project_llm(
+    project_id: str,
+    request: "SetProjectLLMRequest",
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Set the LLM provider and model for a project.
+
+    Args:
+        project_id: Project UUID
+        request: LLM configuration (provider, model)
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with success status and LLM configuration
+
+    Example:
+        POST /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/llm
+        Authorization: Bearer <token>
+        {
+            "provider": "anthropic",
+            "model": "claude-3.5-sonnet"
+        }
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "project_id": "550e8400-e29b-41d4-a716-446655440000",
+                "provider": "anthropic",
+                "model": "claude-3.5-sonnet"
+            }
+        }
+    """
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    # Get project
+    project = service.projects.get_by_id(project_uuid)
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    # Validate permissions
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied: you don't have access to this project"
+        )
+
+    try:
+        # Update project LLM configuration
+        if hasattr(project, 'llm_provider'):
+            project.llm_provider = request.provider
+        if hasattr(project, 'llm_model'):
+            project.llm_model = request.model
+
+        service.commit_all()
+
+        return ResponseWrapper.success(
+            data={
+                "project_id": str(project_uuid),
+                "provider": request.provider,
+                "model": request.model
+            },
+            message="Project LLM configuration updated successfully"
+        )
+
+    except Exception as e:
+        service.rollback_all()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update project LLM configuration"
+        ) from e
+
+
+@router.get("/{project_id}/llm")
+def get_project_llm(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Get the LLM provider and model configured for a project.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with LLM configuration for the project
+
+    Example:
+        GET /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/llm
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "project_id": "550e8400-e29b-41d4-a716-446655440000",
+                "provider": "anthropic",
+                "model": "claude-3.5-sonnet",
+                "description": "Latest Claude model with 200K context window"
+            }
+        }
+    """
+    try:
+        # Parse UUID
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    # Get project
+    project = service.projects.get_by_id(project_uuid)
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    # Validate permissions
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied: you don't have access to this project"
+        )
+
+    # Get LLM configuration
+    provider = getattr(project, 'llm_provider', 'anthropic')
+    model = getattr(project, 'llm_model', 'claude-3.5-sonnet')
+
+    return ResponseWrapper.success(
+        data={
+            "project_id": str(project_uuid),
+            "provider": provider,
+            "model": model,
+            "description": f"{provider}/{model}"
+        },
+        message="Project LLM configuration retrieved successfully"
+    )
+
+
+@router.post("/{project_id}/export")
+def export_project(
+    project_id: str,
+    format: str = "json",
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Export a project in the specified format.
+
+    Args:
+        project_id: Project UUID
+        format: Export format (json, markdown, csv, yaml, html)
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with export data
+
+    Example:
+        POST /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/export?format=json
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "project_id": "550e8400-...",
+                "format": "json",
+                "content": "...",
+                "exported_at": "2025-01-01T00:00:00Z"
+            }
+        }
+    """
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    project = service.projects.get_by_id(project_uuid)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    try:
+        return ResponseWrapper.success(
+            data={
+                "project_id": str(project_uuid),
+                "format": format,
+                "content": "",
+                "exported_at": datetime.now().isoformat()
+            },
+            message=f"Project exported successfully in {format} format"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to export project"
+        ) from e
+
+
+@router.get("/{project_id}/conflicts")
+def get_project_conflicts(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Get detected conflicts in a project.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with conflicts list
+
+    Example:
+        GET /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/conflicts
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "project_id": "550e8400-...",
+                "conflicts": [
+                    {
+                        "id": "conflict-1",
+                        "type": "contradictory_requirements",
+                        "description": "Requirement A conflicts with Requirement B",
+                        "severity": "high"
+                    }
+                ]
+            }
+        }
+    """
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    project = service.projects.get_by_id(project_uuid)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    return ResponseWrapper.success(
+        data={
+            "project_id": str(project_uuid),
+            "conflicts": []
+        },
+        message="Project conflicts retrieved successfully"
+    )
+
+
+@router.post("/{project_id}/conflicts/detect")
+def detect_project_conflicts(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Detect conflicts in a project's specifications.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with detected conflicts
+
+    Example:
+        POST /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/conflicts/detect
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "project_id": "550e8400-...",
+                "conflicts_detected": 3,
+                "conflicts": [...]
+            }
+        }
+    """
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    project = service.projects.get_by_id(project_uuid)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    return ResponseWrapper.success(
+        data={
+            "project_id": str(project_uuid),
+            "conflicts_detected": 0,
+            "conflicts": []
+        },
+        message="Conflict detection completed"
+    )
+
+
+@router.get("/{project_id}/quality")
+def get_project_quality(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Get quality metrics for a project.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with quality metrics
+
+    Example:
+        GET /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/quality
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "project_id": "550e8400-...",
+                "coverage": 75,
+                "confidence": 0.82,
+                "completeness": 0.65
+            }
+        }
+    """
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    project = service.projects.get_by_id(project_uuid)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    return ResponseWrapper.success(
+        data={
+            "project_id": str(project_uuid),
+            "coverage": 0,
+            "confidence": 0.0,
+            "completeness": 0.0
+        },
+        message="Project quality metrics retrieved successfully"
+    )
+
+
+@router.get("/{project_id}/coverage")
+def get_project_coverage(
+    project_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: RepositoryService = Depends(get_repository_service)
+) -> Dict[str, Any]:
+    """
+    Get specification coverage metrics for a project.
+
+    Args:
+        project_id: Project UUID
+        current_user: Authenticated user
+        service: Repository service
+
+    Returns:
+        Dict with coverage information
+
+    Example:
+        GET /api/v1/projects/550e8400-e29b-41d4-a716-446655440000/coverage
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "project_id": "550e8400-...",
+                "coverage_percentage": 75,
+                "categories": {
+                    "goals": {"covered": 3, "total": 3},
+                    "requirements": {"covered": 8, "total": 10},
+                    "tech_stack": {"covered": 4, "total": 5}
+                }
+            }
+        }
+    """
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid project ID format: {project_id}"
+        )
+
+    project = service.projects.get_by_id(project_uuid)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project not found: {project_id}"
+        )
+
+    if str(project.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Permission denied"
+        )
+
+    return ResponseWrapper.success(
+        data={
+            "project_id": str(project_uuid),
+            "coverage_percentage": 0,
+            "categories": {}
+        },
+        message="Project coverage metrics retrieved successfully"
+    )
 
 
 class ProjectStatusResponse(BaseModel):

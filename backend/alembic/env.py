@@ -11,8 +11,10 @@ from alembic import context
 config = context.config
 
 # Override sqlalchemy.url with environment variable if set
-# This allows us to use different databases via DATABASE_URL env var
-if os.getenv("DATABASE_URL"):
+# This allows us to use different databases via DATABASE_URL or DATABASE_URL_SPECS env var
+if os.getenv("DATABASE_URL_SPECS"):
+    config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL_SPECS"))
+elif os.getenv("DATABASE_URL"):
     config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
 # Interpret the config file for Python logging.

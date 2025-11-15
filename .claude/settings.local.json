@@ -53,7 +53,13 @@
       "Bash(python test_intent_parser.py:*)",
       "Bash(python test_phase5.py:*)",
       "Bash(python test_edge_cases.py:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(python:*)",
+      "Bash(timeout 120 python:*)",
+      "Bash(DATABASE_URL='postgresql://postgres@localhost:5432/socrates_specs' python -m alembic:*)",
+      "Bash(git clean:*)",
+      "Bash(set:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

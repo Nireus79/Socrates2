@@ -301,3 +301,51 @@ def get_usage_stats(
     """
     llm_router = get_llm_router()
     return llm_router.get_usage_stats(current_user.id, period)
+
+
+@router.get("/providers")
+def list_llm_providers(
+    current_user: User = Depends(get_current_active_user)
+) -> Dict[str, Any]:
+    """
+    List all available LLM providers and their information.
+
+    This is an alternative endpoint to /available for listing LLM providers.
+
+    Returns all available LLM providers with their models, capabilities, and pricing.
+
+    Example:
+        GET /api/v1/llm/providers
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "data": {
+                "providers": {
+                    "anthropic": [
+                        {
+                            "name": "claude-3.5-sonnet",
+                            "description": "Latest Claude model",
+                            "context_window": 200000,
+                            "max_output_tokens": 4096,
+                            "cost_per_1k_input": 0.003,
+                            "cost_per_1k_output": 0.015,
+                            "capabilities": ["text", "vision", "code", "analysis"]
+                        }
+                    ],
+                    "openai": [...],
+                    "google": [...]
+                }
+            }
+        }
+    """
+    llm_router = get_llm_router()
+    models = llm_router.get_available_models()
+
+    return {
+        "success": True,
+        "data": {
+            "providers": models
+        }
+    }

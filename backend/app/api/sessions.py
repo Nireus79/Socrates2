@@ -1349,3 +1349,379 @@ def update_project_session(
         "ended_at": session.ended_at.isoformat() if session.ended_at else None,
         "created_at": session.created_at.isoformat() if session.created_at else None
     }
+
+
+@router.get("/{session_id}/context")
+def get_session_context(
+    session_id: str,
+    limit: int = 10,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Get session context including recent messages and session metadata.
+
+    Args:
+        session_id: Session UUID
+        limit: Number of recent messages to include (default: 10)
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'session': dict,
+            'context': {
+                'recent_messages': List[dict],
+                'message_count': int,
+                'last_message': dict,
+                'mode': str,
+                'domain': str,
+                'status': str
+            }
+        }
+
+    Example:
+        GET /api/v1/sessions/session-456/context
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "session": {
+                "id": "session-456",
+                "project_id": "abc-123",
+                "mode": "socratic",
+                "status": "active"
+            },
+            "context": {
+                "recent_messages": [
+                    {
+                        "speaker": "assistant",
+                        "message": "What are your main challenges?",
+                        "timestamp": "2025-01-01T00:05:00Z"
+                    }
+                ],
+                "message_count": 5,
+                "last_message": {
+                    "speaker": "user",
+                    "message": "Scalability and performance",
+                    "timestamp": "2025-01-01T00:05:30Z"
+                },
+                "mode": "socratic",
+                "domain": "programming",
+                "status": "active"
+            }
+        }
+    """
+    from ..models.conversation_history import ConversationHistory
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    # Verify session exists and user has access
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    # Get recent messages
+    message_query = db.query(ConversationHistory).filter(
+        ConversationHistory.session_id == session_id
+    ).order_by(ConversationHistory.created_at.desc())
+
+    total_messages = message_query.count()
+    recent_messages = list(reversed(message_query.limit(limit).all()))
+
+    last_message = None
+    if recent_messages:
+        last_msg = recent_messages[-1]
+        last_message = {
+            "speaker": last_msg.speaker if hasattr(last_msg, 'speaker') else "user",
+            "message": last_msg.message if hasattr(last_msg, 'message') else "",
+            "timestamp": last_msg.created_at.isoformat() if hasattr(last_msg, 'created_at') and last_msg.created_at else None
+        }
+
+    return {
+        "success": True,
+        "session": {
+            "id": str(session.id),
+            "project_id": str(session.project_id),
+            "mode": session.mode,
+            "status": session.status
+        },
+        "context": {
+            "recent_messages": [
+                {
+                    "speaker": msg.speaker if hasattr(msg, 'speaker') else "user",
+                    "message": msg.message if hasattr(msg, 'message') else "",
+                    "timestamp": msg.created_at.isoformat() if hasattr(msg, 'created_at') and msg.created_at else None
+                }
+                for msg in recent_messages
+            ],
+            "message_count": total_messages,
+            "last_message": last_message,
+            "mode": session.mode,
+            "domain": session.domain if hasattr(session, 'domain') else None,
+            "status": session.status
+        }
+    }
+
+
+@router.get("/{session_id}/messages")
+def get_session_messages(
+    session_id: str,
+    skip: int = 0,
+    limit: int = 50,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Get paginated messages for a session.
+
+    Args:
+        session_id: Session UUID
+        skip: Number of messages to skip (default: 0)
+        limit: Maximum messages to return (default: 50)
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'messages': List[dict],
+            'total': int,
+            'skip': int,
+            'limit': int
+        }
+
+    Example:
+        GET /api/v1/sessions/session-456/messages?skip=0&limit=20
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "messages": [
+                {
+                    "speaker": "assistant",
+                    "message": "What is your primary goal?",
+                    "timestamp": "2025-01-01T00:00:00Z"
+                },
+                {
+                    "speaker": "user",
+                    "message": "Build a scalable API",
+                    "timestamp": "2025-01-01T00:00:30Z"
+                }
+            ],
+            "total": 42,
+            "skip": 0,
+            "limit": 20
+        }
+    """
+    from ..models.conversation_history import ConversationHistory
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    # Verify session exists and user has access
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+    # Check project ownership
+    project = db.query(Project).filter(Project.id == session.project_id).first()
+    if not project or str(project.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    # Get messages with pagination
+    query = db.query(ConversationHistory).filter(
+        ConversationHistory.session_id == session_id
+    ).order_by(ConversationHistory.created_at.asc())
+
+    total = query.count()
+    messages = query.offset(skip).limit(limit).all()
+
+    return {
+        "success": True,
+        "messages": [
+            {
+                "speaker": msg.speaker if hasattr(msg, 'speaker') else "user",
+                "message": msg.message if hasattr(msg, 'message') else "",
+                "timestamp": msg.created_at.isoformat() if hasattr(msg, 'created_at') and msg.created_at else None
+            }
+            for msg in messages
+        ],
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
+
+
+@router.get("/{session_id}/question")
+def get_question_alt(
+    session_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Get the next Socratic question for the session (alternative endpoint).
+
+    This is an alias for /next-question providing the same functionality
+    with a different path for flexibility in client implementations.
+
+    Args:
+        session_id: Session UUID
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'question_id': str,
+            'question': dict with text, category, etc.
+        }
+
+    Example:
+        GET /api/v1/sessions/session-456/question
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "question_id": "q-789",
+            "question": {
+                "id": "q-789",
+                "text": "What is the primary goal of your project?",
+                "category": "goals",
+                "difficulty": "basic"
+            }
+        }
+    """
+    # Delegate to the main get_next_question function
+    return get_next_question(session_id=session_id, current_user=current_user, db=db)
+
+
+@router.post("/{session_id}/submit-answer")
+def submit_answer_alt(
+    session_id: str,
+    request: SubmitAnswerRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Submit answer to a question and extract specifications (alternative endpoint).
+
+    This is an alias for /answer providing the same functionality
+    with a different path for flexibility in client implementations.
+
+    Args:
+        session_id: Session UUID
+        request: Answer details (question_id, answer)
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        {
+            'success': bool,
+            'specs_extracted': int,
+            'specifications': List[dict],
+            'maturity_score': float
+        }
+
+    Example:
+        POST /api/v1/sessions/session-456/submit-answer
+        Authorization: Bearer <token>
+        {
+            "question_id": "q-789",
+            "answer": "I want to build a FastAPI web application for managing tasks..."
+        }
+
+        Response:
+        {
+            "success": true,
+            "specs_extracted": 5,
+            "specifications": [
+                {
+                    "category": "tech_stack",
+                    "key": "framework",
+                    "value": "FastAPI"
+                },
+                ...
+            ],
+            "maturity_score": 12.5
+        }
+    """
+    # Delegate to the main submit_answer function
+    return submit_answer(session_id=session_id, request=request, current_user=current_user, db=db)
+
+
+@router.delete("/{session_id}")
+def delete_session(
+    session_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db_specs)
+) -> Dict[str, Any]:
+    """
+    Delete a session.
+
+    Args:
+        session_id: Session UUID
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        Dict with success status
+
+    Example:
+        DELETE /api/v1/sessions/session-456
+        Authorization: Bearer <token>
+
+        Response:
+        {
+            "success": true,
+            "message": "Session deleted successfully",
+            "data": {
+                "session_id": "session-456"
+            }
+        }
+    """
+    from ..models.project import Project
+    from ..models.session import Session as SessionModel
+
+    try:
+        # Get session
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
+
+        # Delete session
+        db.delete(session)
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "Session deleted successfully",
+            "data": {
+                "session_id": str(session_id)
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error deleting session: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal error deleting session: {str(e)}"
+        )
