@@ -1142,6 +1142,89 @@ No session required.
         except Exception as e:
             self.console.print(f"[ERROR] Error: {str(e)[:100]}")
 
+    def quick_login_on_startup(self) -> bool:
+        """
+        Quick login on startup - minimal form (username + password only).
+        Returns True if login successful, False if cancelled/failed.
+        """
+        self.console.print("\n┌──────────────────────────────────────┐")
+        self.console.print("│  QUICK LOGIN                         │")
+        self.console.print("└──────────────────────────────────────┘\n")
+
+        try:
+            # Get username (not email)
+            username = Prompt.ask("Username")
+            if not username:
+                self.console.print("[CANCELLED] Login aborted\n")
+                return False
+
+            # Get password (hidden input)
+            password = Prompt.ask("Password", password=True)
+            if not password:
+                self.console.print("[CANCELLED] Login aborted\n")
+                return False
+
+            # Attempt login
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Authenticating...", total=None)
+                result = self.api.login(username, password)
+
+            # Check if login was successful
+            if result.get("access_token"):
+                self.config.set("access_token", result["access_token"])
+                self.config.set("refresh_token", result.get("refresh_token"))
+                self.config.set("user_email", result.get("username"))
+                self.config.set("username", result.get("username"))
+                self.config.set("user_id", result.get("user_id"))
+                self.config.set("user_name", result.get("name"))
+                self.api.set_token(result["access_token"])
+                if result.get("refresh_token"):
+                    self.api.set_refresh_token(result["refresh_token"])
+
+                user_display = result.get("name", username)
+                self.cli_logger.log_login(username, result.get("username", ""))
+                self.console.print(f"\n✓ Login successful as {user_display}\n")
+                return True
+            else:
+                error_detail = result.get('message', result.get('detail', 'Invalid credentials'))
+                self.console.print(f"\n[ERROR] Login failed: {error_detail}\n")
+                return False
+
+        except requests.exceptions.ConnectionError:
+            self.console.print("\n[ERROR] Cannot connect to Socrates backend")
+            self.console.print("The server is not running at http://localhost:8000\n")
+            return False
+        except KeyboardInterrupt:
+            self.console.print("\n[CANCELLED] Login aborted\n")
+            return False
+        except Exception as e:
+            self.console.print(f"\n[ERROR] Login error: {str(e)[:100]}\n")
+            return False
+
+    def check_deprecated_models(self) -> bool:
+        """
+        Check if selected LLM model is deprecated.
+        Returns True if model is deprecated, False otherwise.
+        """
+        try:
+            current_model = self.api.get_current_llm()
+            if current_model.get("success") and current_model.get("model"):
+                model_info = current_model.get("model", {})
+                if model_info.get("deprecated"):
+                    self.console.print("\n⚠ WARNING: Your selected model is deprecated\n")
+                    self.console.print(f"  Current: {model_info.get('name')} (deprecated)")
+                    recommended = model_info.get("recommended_replacement")
+                    if recommended:
+                        self.console.print(f"  Recommended: {recommended}\n")
+                    self.console.print("Run '/llm update' to upgrade to a newer model\n")
+                    return True
+        except Exception as e:
+            if self.debug:
+                self.console.print(f"[DEBUG] Could not check model deprecation: {e}")
+
+        return False
+
     def cmd_login(self):
         """Handle /login command"""
         self.console.print("\nLogin\n")
@@ -3332,29 +3415,41 @@ Updated: {p.get('updated_at', 'N/A')}
 
         # Check if user is logged in
         if self.config.get("access_token"):
-            email = self.config.get("user_email", "User")
-            self.console.print(f"Welcome back, {email}!\n")
+            # User already authenticated - restore session silently
             self.api.set_token(self.config.get("access_token"))
-            # Also set refresh token if available
             refresh_token = self.config.get("refresh_token")
             if refresh_token:
                 self.api.set_refresh_token(refresh_token)
 
-            # Restore active project from config
+            # Restore active project from config (silently, no message)
             saved_project = self.config.get("current_project")
             if saved_project:
                 self.current_project = saved_project
-                self.console.print(f"Restored project: {saved_project.get('name')}")
 
-            # Restore active session from config
+            # Restore active session from config (silently, no message)
             saved_session = self.config.get("current_session")
             if saved_session:
                 self.current_session = saved_session
-                self.console.print(f"Restored session: {saved_session.get('id', 'unknown')[:8]}...")
 
-            self.console.print()
+            # Show welcome message
+            user_name = self.config.get("user_name") or self.config.get("user_email", "User")
+            self.console.print(f"Welcome back, {user_name}!\n")
         else:
-            self.console.print("Please /login or /register to get started\n")
+            # User not logged in - prompt for quick login
+            self.console.print()
+            if not self.quick_login_on_startup():
+                # User cancelled login
+                self.console.print("Cannot proceed without authentication.\n")
+                self.console.print("You can still access: /help, /register, /exit\n")
+                # Don't exit, allow user to register or manually login
+                return
+
+        # Check for deprecated models (only if authenticated)
+        if self.config.get("access_token"):
+            self.check_deprecated_models()
+
+        # Show ready message
+        self.console.print("Ready to chat. Type /help for commands or just start talking.")
 
         # Main loop
         try:
@@ -3454,10 +3549,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# cd backend
-#   python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-#   This will start the backend server on http://localhost:8000 with hot-reload enabled (automatically reloads
-#   when you save code changes).
-#
-#   To stop it, press Ctrl+C.
