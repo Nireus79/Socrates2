@@ -957,6 +957,36 @@ No session required.
         if self.debug:
             self.console.print(f"DEBUG: Credentials cleared")
 
+    def _get_session_id(self, session_obj: Optional[Dict] = None) -> Optional[str]:
+        """
+        Safely extract session ID from session object.
+        Handles multiple possible field names: 'id', 'session_id'
+        Also handles nested 'session' object format.
+        """
+        if session_obj is None:
+            session_obj = self.current_session
+
+        if not session_obj or not isinstance(session_obj, dict):
+            return None
+
+        # Try primary field names first
+        session_id = session_obj.get("id")
+        if session_id:
+            return session_id
+
+        # Try alternative field names
+        session_id = session_obj.get("session_id")
+        if session_id:
+            return session_id
+
+        # Try nested session object
+        if isinstance(session_obj.get("session"), dict):
+            session_id = session_obj["session"].get("id")
+            if session_id:
+                return session_id
+
+        return None
+
     def _get_config_dict(self) -> Dict[str, Any]:
         """Get full config as dictionary for command handlers."""
         return {
@@ -2177,7 +2207,7 @@ Updated: {p.get('updated_at', 'N/A')}
                         return
 
                     self.current_session = session_data
-                    session_id = self.current_session.get("id")
+                    session_id = self._get_session_id()
                     # Log the session start
                     self.cli_logger.log_session_start(session_id, "socratic", self.current_project["id"])
                     self.console.print(f"[OK] Session started: {session_id}")
@@ -2295,7 +2325,7 @@ Updated: {p.get('updated_at', 'N/A')}
 
             if Confirm.ask("End current session?"):
                 try:
-                    session_id = self.current_session.get("id")
+                    session_id = self._get_session_id()
                     if not session_id:
                         self.console.print("[ERROR] Invalid session data - missing ID")
                         return
@@ -2348,7 +2378,8 @@ Updated: {p.get('updated_at', 'N/A')}
             table.add_column("Created", style="dim")
 
             for session in sessions:
-                active = "→ " if self.current_session and session.get("id") == self.current_session.get("id") else ""
+                current_sess_id = self._get_session_id()
+                active = "→ " if self.current_session and session.get("id") == current_sess_id else ""
                 status_color = "green" if session.get("status") == "active" else "dim"
                 table.add_row(
                     active + (session.get("id", "")[:8] if session.get("id") else ""),
@@ -2372,7 +2403,7 @@ Updated: {p.get('updated_at', 'N/A')}
             return
 
         try:
-            session_id = self.current_session.get("id")
+            session_id = self._get_session_id()
             if not session_id:
                 self.console.print("[ERROR] Invalid session data - missing ID")
                 return
@@ -2411,7 +2442,7 @@ Updated: {p.get('updated_at', 'N/A')}
             return
 
         try:
-            session_id = self.current_session.get("id")
+            session_id = self._get_session_id()
             if not session_id:
                 if self.debug:
                     self.console.print(f"[DEBUG] current_session keys: {list(self.current_session.keys()) if isinstance(self.current_session, dict) else 'not a dict'}")
@@ -2523,7 +2554,7 @@ Updated: {p.get('updated_at', 'N/A')}
 
         try:
             # Get session ID (handle both "id" and "session_id" keys)
-            session_id = self.current_session.get("id") or self.current_session.get("session_id")
+            session_id = self._get_session_id()
             if not session_id:
                 self.console.print("Error: Session ID not found")
                 return
@@ -2563,7 +2594,7 @@ Updated: {p.get('updated_at', 'N/A')}
 
         try:
             # Get session ID (handle both "id" and "session_id" keys)
-            session_id = self.current_session.get("id") or self.current_session.get("session_id")
+            session_id = self._get_session_id()
             if not session_id:
                 self.console.print("Error: Session ID not found")
                 return
@@ -3852,7 +3883,7 @@ Updated: {p.get('updated_at', 'N/A')}
         note_text = " ".join(args)
 
         try:
-            session_id = self.current_session.get("id")
+            session_id = self._get_session_id()
             if not session_id:
                 self.console.print("[ERROR] Invalid session data - missing ID")
                 return
@@ -3878,7 +3909,7 @@ Updated: {p.get('updated_at', 'N/A')}
             return
 
         try:
-            session_id = self.current_session.get("id")
+            session_id = self._get_session_id()
             if not session_id:
                 self.console.print("[ERROR] Invalid session data - missing ID")
                 return
@@ -3907,7 +3938,7 @@ Updated: {p.get('updated_at', 'N/A')}
         branch_name = args[0] if args else None
 
         try:
-            session_id = self.current_session.get("id")
+            session_id = self._get_session_id()
             if not session_id:
                 self.console.print("[ERROR] Invalid session data - missing ID")
                 return
@@ -3934,7 +3965,7 @@ Updated: {p.get('updated_at', 'N/A')}
             # Show current session stats if active
             if self.current_session:
                 try:
-                    session_id = self.current_session.get("id")
+                    session_id = self._get_session_id()
                     if not session_id:
                         self.console.print("[ERROR] Invalid session data - missing ID")
                         return
@@ -4595,7 +4626,7 @@ Updated: {p.get('updated_at', 'N/A')}
                 with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Switching mode...", total=None)
-                    session_id = self.current_session.get("id")
+                    session_id = self._get_session_id()
                     if not session_id:
                         if self.debug:
                             self.console.print(f"[DEBUG] current_session keys: {list(self.current_session.keys()) if isinstance(self.current_session, dict) else 'not a dict'}")
