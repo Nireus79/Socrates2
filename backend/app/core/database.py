@@ -35,8 +35,9 @@ def _create_engine(url: str):
     if url and not url.startswith("sqlite"):
         engine_kwargs.update({
             "pool_pre_ping": True,  # Verify connections before using
-            "pool_size": 5,
-            "max_overflow": 10,
+            "pool_size": 20,  # INCREASED: Handle LLM calls that hold connections
+            "max_overflow": 40,  # INCREASED: Allow more concurrent LLM operations
+            "pool_recycle": 3600,  # Recycle connections after 1 hour to prevent stale connections
         })
     elif url and url.startswith("sqlite"):
         # SQLite-specific settings for in-memory testing
