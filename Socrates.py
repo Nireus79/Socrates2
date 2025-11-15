@@ -2072,15 +2072,21 @@ Updated: {p.get('updated_at', 'N/A')}
             return
 
         try:
+            # Get session ID (handle both "id" and "session_id" keys)
+            session_id = self.current_session.get("id") or self.current_session.get("session_id")
+            if not session_id:
+                self.console.print("Error: Session ID not found")
+                return
+
             # Log the chat message
-            self.cli_logger.log_chat_message(self.current_session["id"], message, "socratic")
+            self.cli_logger.log_chat_message(session_id, message, "socratic")
 
             # Submit answer
             with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Processing answer...", total=None)
                 result = self.api.submit_answer(
-                    self.current_session["id"],
+                    session_id,
                     self.current_question["question_id"],
                     message
                 )
@@ -2106,8 +2112,14 @@ Updated: {p.get('updated_at', 'N/A')}
             return
 
         try:
+            # Get session ID (handle both "id" and "session_id" keys)
+            session_id = self.current_session.get("id") or self.current_session.get("session_id")
+            if not session_id:
+                self.console.print("Error: Session ID not found")
+                return
+
             # Log the chat message
-            self.cli_logger.log_chat_message(self.current_session["id"], message, "direct")
+            self.cli_logger.log_chat_message(session_id, message, "direct")
 
             # First, ensure session is in direct_chat mode
             if self.chat_mode != "direct_chat":
@@ -2115,7 +2127,7 @@ Updated: {p.get('updated_at', 'N/A')}
                               console=self.console, transient=True) as progress:
                     progress.add_task("Switching to direct chat mode...", total=None)
                     mode_result = self.api.set_session_mode(
-                        self.current_session["id"],
+                        session_id,
                         "direct_chat"
                     )
 
@@ -2129,7 +2141,7 @@ Updated: {p.get('updated_at', 'N/A')}
             with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Thinking...", total=None)
-                result = self.api.send_chat_message(self.current_session["id"], message)
+                result = self.api.send_chat_message(session_id, message)
 
             if result.get("success"):
                 response_text = result.get("response", "")
@@ -3181,8 +3193,8 @@ Updated: {p.get('updated_at', 'N/A')}
         command_name = command.lstrip('/')
 
         if self.registry and self.registry.command_exists(command_name):
-            # Update config dict before routing
-            self.registry.config = self._get_config_dict()
+            # Update config dict in-place (don't replace it, as handlers have references to the old dict)
+            self.registry.config.update(self._get_config_dict())
             if self.registry.route_command(command_name, args):
                 # Command was handled successfully, sync any config changes back
                 self._sync_config_from_registry()
