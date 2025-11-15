@@ -616,19 +616,64 @@ def get_session(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+    try:
+        # PHASE 1: Load and validate all necessary data from database
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    # Check project ownership
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
 
-    return {
-        'success': True,
-        'session': session.to_dict()  # TODO Parameter 'self' unfilled
-    }
+        # PHASE 2: Convert ALL attributes to primitives WHILE SESSION IS STILL ACTIVE
+        session_id_str = str(session.id)
+        project_id_str = str(session.project_id)
+        session_status = session.status
+        session_mode = session.mode
+        session_started_at = session.started_at.isoformat() if session.started_at else None
+        session_ended_at = session.ended_at.isoformat() if session.ended_at else None
+        session_created_at = session.created_at.isoformat() if session.created_at else None
+        session_updated_at = session.updated_at.isoformat() if session.updated_at else None
+
+        # PHASE 3: Commit transaction
+        db.commit()
+
+        # PHASE 4: Close DB connection IMMEDIATELY
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5: Build response from cached primitives (no DB access)
+        session_data = {
+            'id': session_id_str,
+            'project_id': project_id_str,
+            'status': session_status,
+            'mode': session_mode,
+            'started_at': session_started_at,
+            'ended_at': session_ended_at,
+            'created_at': session_created_at,
+            'updated_at': session_updated_at
+        }
+
+        # PHASE 6: Return response with released connection
+        return {
+            'success': True,
+            'session': session_data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_session: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal error retrieving session: {str(e)}"
+        )
 
 
 @router.get("/{session_id}/history")
@@ -684,31 +729,70 @@ def get_session_history(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    # Verify session exists and user has access
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+    try:
+        # PHASE 1: Load and validate all necessary data from database
+        # Verify session exists and user has access
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    # Check project ownership
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
 
-    # Get conversation history with pagination
-    query = db.query(ConversationHistory).filter(
-        ConversationHistory.session_id == session_id
-    ).order_by(ConversationHistory.created_at.asc())
+        # Get conversation history with pagination
+        query = db.query(ConversationHistory).filter(
+            ConversationHistory.session_id == session_id
+        ).order_by(ConversationHistory.created_at.asc())
 
-    total = query.count()
-    history = query.offset(skip).limit(limit).all()
+        total = query.count()
+        history = query.offset(skip).limit(limit).all()
 
-    return {
-        'success': True,
-        'history': [h.to_dict() for h in history],  # TODO Parameter 'self' unfilled
-        'total': total,
-        'skip': skip,
-        'limit': limit
-    }
+        # PHASE 2: Convert ALL history items to primitives WHILE SESSION IS STILL ACTIVE
+        history_data = []
+        for h in history:
+            history_data.append({
+                'id': str(h.id) if hasattr(h, 'id') else None,
+                'session_id': str(h.session_id) if hasattr(h, 'session_id') else None,
+                'role': h.role if hasattr(h, 'role') else None,
+                'content': h.content if hasattr(h, 'content') else None,
+                'metadata': h.metadata_ if hasattr(h, 'metadata_') else None,
+                'created_at': h.created_at.isoformat() if hasattr(h, 'created_at') and h.created_at else None,
+                'updated_at': h.updated_at.isoformat() if hasattr(h, 'updated_at') and h.updated_at else None
+            })
+
+        # PHASE 3: Commit transaction
+        db.commit()
+
+        # PHASE 4: Close DB connection IMMEDIATELY
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5: Build response from cached primitives (no DB access)
+        response_data = {
+            'success': True,
+            'history': history_data,
+            'total': total,
+            'skip': skip,
+            'limit': limit
+        }
+
+        # PHASE 6: Return response with released connection
+        return response_data
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_session_history: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal error retrieving session history: {str(e)}"
+        )
 
 
 @router.post("/{session_id}/end")
@@ -746,28 +830,56 @@ def end_session(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+    try:
+        # PHASE 1: Load and validate all necessary data from database
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    # Check project ownership
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
 
-    # Update session status
-    session.status = 'completed'
-    session.ended_at = datetime.now(timezone.utc)
-    db.commit()
+        # Update session status
+        session.status = 'completed'
+        session.ended_at = datetime.now(timezone.utc)
+        db.commit()
 
-    return ResponseWrapper.success(
-        data={
-            'session_id': str(session.id),
-            'status': session.status,
-            'ended_at': session.ended_at.isoformat() if session.ended_at else None
-        },
-        message="Session ended successfully"
-    )
+        # PHASE 2: Convert ALL attributes to primitives WHILE SESSION IS STILL ACTIVE
+        session_id_str = str(session.id)
+        session_status = session.status
+        session_ended_at = session.ended_at.isoformat() if session.ended_at else None
+
+        # PHASE 4: Close DB connection IMMEDIATELY
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5: Build response from cached primitives (no DB access)
+        response_data = {
+            'session_id': session_id_str,
+            'status': session_status,
+            'ended_at': session_ended_at
+        }
+
+        # PHASE 6: Return response with released connection
+        return ResponseWrapper.success(
+            data=response_data,
+            message="Session ended successfully"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in end_session: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal error ending session: {str(e)}"
+        )
 
 
 @router.get("/{session_id}/mode")
@@ -807,21 +919,49 @@ def get_session_mode(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+    try:
+        # PHASE 1: Load and validate all necessary data from database
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    # Check project ownership
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
 
-    return {
-        'success': True,
-        'session_id': str(session.id),
-        'mode': session.mode,
-        'status': session.status
-    }
+        # PHASE 2: Convert ALL attributes to primitives WHILE SESSION IS STILL ACTIVE
+        session_id_str = str(session.id)
+        session_mode = session.mode
+        session_status = session.status
+
+        # PHASE 4: Close DB connection IMMEDIATELY
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5: Build response from cached primitives (no DB access)
+        response_data = {
+            'success': True,
+            'session_id': session_id_str,
+            'mode': session_mode,
+            'status': session_status
+        }
+
+        # PHASE 6: Return response with released connection
+        return response_data
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_session_mode: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal error retrieving session mode: {str(e)}"
+        )
 
 
 @router.put("/{session_id}/mode")
@@ -868,40 +1008,68 @@ def set_session_mode(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    # Validate mode
-    if request.mode not in ['socratic', 'direct_chat']:
+    try:
+        # Validate mode
+        if request.mode not in ['socratic', 'direct_chat']:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid mode: {request.mode}. Must be 'socratic' or 'direct_chat'"
+            )
+
+        # PHASE 1: Load and validate all necessary data from database
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
+
+        # Check session is active
+        if session.status != 'active':
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot change mode on inactive session (status: {session.status})"
+            )
+
+        old_mode = session.mode
+        session.mode = request.mode
+        db.commit()
+
+        # PHASE 2: Convert ALL attributes to primitives WHILE SESSION IS STILL ACTIVE
+        session_id_str = str(session.id)
+        new_mode = session.mode
+        session_status = session.status
+
+        # PHASE 4: Close DB connection IMMEDIATELY
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5: Build response from cached primitives (no DB access)
+        response_data = {
+            'success': True,
+            'session_id': session_id_str,
+            'old_mode': old_mode,
+            'new_mode': new_mode,
+            'status': session_status
+        }
+
+        # PHASE 6: Return response with released connection
+        return response_data
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in set_session_mode: {e}", exc_info=True)
         raise HTTPException(
-            status_code=400,
-            detail=f"Invalid mode: {request.mode}. Must be 'socratic' or 'direct_chat'"
+            status_code=500,
+            detail=f"Internal error setting session mode: {str(e)}"
         )
-
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
-
-    # Check project ownership
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
-
-    # Check session is active
-    if session.status != 'active':
-        raise HTTPException(
-            status_code=400,
-            detail=f"Cannot change mode on inactive session (status: {session.status})"
-        )
-
-    old_mode = session.mode
-    session.mode = request.mode
-    db.commit()
-
-    return {
-        'success': True,
-        'session_id': str(session.id),
-        'old_mode': old_mode,
-        'new_mode': session.mode,
-        'status': session.status
-    }
 
 
 @router.post("/{session_id}/pause")
@@ -939,30 +1107,57 @@ def pause_session(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+    try:
+        # PHASE 1: Load and validate all necessary data from database
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    # Check project ownership
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
 
-    # Check session is active
-    if session.status != 'active':
+        # Check session is active
+        if session.status != 'active':
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot pause inactive session (status: {session.status})"
+            )
+
+        session.status = 'paused'
+        db.commit()
+
+        # PHASE 2: Convert ALL attributes to primitives WHILE SESSION IS STILL ACTIVE
+        session_id_str = str(session.id)
+        session_status = session.status
+
+        # PHASE 4: Close DB connection IMMEDIATELY
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5: Build response from cached primitives (no DB access)
+        response_data = {
+            'success': True,
+            'session_id': session_id_str,
+            'status': session_status
+        }
+
+        # PHASE 6: Return response with released connection
+        return response_data
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in pause_session: {e}", exc_info=True)
         raise HTTPException(
-            status_code=400,
-            detail=f"Cannot pause inactive session (status: {session.status})"
+            status_code=500,
+            detail=f"Internal error pausing session: {str(e)}"
         )
-
-    session.status = 'paused'
-    db.commit()
-
-    return {
-        'success': True,
-        'session_id': str(session.id),
-        'status': session.status
-    }
 
 
 @router.post("/{session_id}/resume")
@@ -1000,30 +1195,57 @@ def resume_session(
     from ..models.project import Project
     from ..models.session import Session as SessionModel
 
-    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+    try:
+        # PHASE 1: Load and validate all necessary data from database
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
 
-    # Check project ownership
-    project = db.query(Project).filter(Project.id == session.project_id).first()
-    if not project or str(project.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Permission denied")
+        # Check project ownership
+        project = db.query(Project).filter(Project.id == session.project_id).first()
+        if not project or str(project.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Permission denied")
 
-    # Check session is paused
-    if session.status != 'paused':
+        # Check session is paused
+        if session.status != 'paused':
+            raise HTTPException(
+                status_code=400,
+                detail=f"Can only resume paused sessions (current status: {session.status})"
+            )
+
+        session.status = 'active'
+        db.commit()
+
+        # PHASE 2: Convert ALL attributes to primitives WHILE SESSION IS STILL ACTIVE
+        session_id_str = str(session.id)
+        session_status = session.status
+
+        # PHASE 4: Close DB connection IMMEDIATELY
+        try:
+            db.close()
+        except:
+            pass
+
+        # PHASE 5: Build response from cached primitives (no DB access)
+        response_data = {
+            'success': True,
+            'session_id': session_id_str,
+            'status': session_status
+        }
+
+        # PHASE 6: Return response with released connection
+        return response_data
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in resume_session: {e}", exc_info=True)
         raise HTTPException(
-            status_code=400,
-            detail=f"Can only resume paused sessions (current status: {session.status})"
+            status_code=500,
+            detail=f"Internal error resuming session: {str(e)}"
         )
-
-    session.status = 'active'
-    db.commit()
-
-    return {
-        'success': True,
-        'session_id': str(session.id),
-        'status': session.status
-    }
 
 
 @router.get("")
