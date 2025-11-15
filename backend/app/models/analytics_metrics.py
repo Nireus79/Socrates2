@@ -35,7 +35,7 @@ class AnalyticsMetrics(BaseModel):
             "value": float(self.value or 0),
             "date": self.date.isoformat(),
             "tags": self.tags or {},
-            "metadata": self.metadata or "",
+            "metadata": self.metrics_metadata or "",
         }
 
 

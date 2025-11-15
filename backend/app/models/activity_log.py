@@ -125,7 +125,7 @@ class ActivityLog(BaseModel):
             "entity_type": self.entity_type,
             "entity_id": str(self.entity_id) if self.entity_id else None,
             "description": self.description,
-            "metadata": self.metadata,
+            "metadata": self.action_metadata,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
