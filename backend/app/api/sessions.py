@@ -35,7 +35,7 @@ class StartSessionRequest(BaseModel):
 
 class SubmitAnswerRequest(BaseModel):
     """Request model for submitting an answer."""
-    question_id: str
+    question_id: Optional[str] = None  # Optional: can be inferred from session context
     answer: str
 
 
@@ -184,7 +184,7 @@ def start_session(
         )
 
 
-@router.post("/{session_id}/next-question")
+@router.get("/{session_id}/next-question")
 def get_next_question(
     session_id: str,
     current_user: User = Depends(get_current_active_user),
@@ -353,17 +353,30 @@ def submit_answer(
         if session.status != 'active':
             raise HTTPException(status_code=400, detail=f"Session is not active (status: {session.status})")
 
+        # Get question_id if not provided (use latest question from session)
+        question_id = request.question_id
+        if not question_id:
+            # Get the most recent question from this session
+            latest_question = db.query(Question).filter(
+                Question.session_id == session_id
+            ).order_by(Question.created_at.desc()).first()
+
+            if not latest_question:
+                raise HTTPException(status_code=400, detail="No recent question found. Please request a question first.")
+
+            question_id = str(latest_question.id)
+
         # Verify question exists
-        question = db.query(Question).filter(Question.id == request.question_id).first()
+        question = db.query(Question).filter(Question.id == question_id).first()
         if not question:
-            raise HTTPException(status_code=404, detail=f"Question not found: {request.question_id}")
+            raise HTTPException(status_code=404, detail=f"Question not found: {question_id}")
 
         # Save to conversation history
         conversation = ConversationHistory(
             session_id=session_id,
             role='user',
             content=request.answer,
-            metadata_={'question_id': str(request.question_id)}
+            metadata_={'question_id': str(question_id)}
         )
         db.add(conversation)
         db.commit()
@@ -382,7 +395,7 @@ def submit_answer(
             action='extract_specifications',
             data={
                 'session_id': session_id,
-                'question_id': request.question_id,
+                'question_id': question_id,
                 'answer': request.answer,
                 'user_id': current_user.id
             }
@@ -811,7 +824,7 @@ def get_session_mode(
     }
 
 
-@router.post("/{session_id}/mode")
+@router.put("/{session_id}/mode")
 def set_session_mode(
     session_id: str,
     request: SetModeRequest,

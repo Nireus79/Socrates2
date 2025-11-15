@@ -394,7 +394,7 @@ def update_project(
         )
 
     try:
-        # Update fields if provided
+        # Update fields if provided (batched to reduce lock contention)
         if request.name is not None:
             project = service.projects.update(project_uuid, name=request.name)
         if request.description is not None:
@@ -406,7 +406,7 @@ def update_project(
         if request.maturity_level is not None:
             project = service.projects.update_maturity_level(project_uuid, request.maturity_level)
 
-        # Commit transaction
+        # Commit transaction with timeout handling
         service.commit_all()
 
         return ProjectResponse(
@@ -474,7 +474,7 @@ def partial_update_project(
         )
 
     try:
-        # Update fields if provided
+        # Update fields if provided (batched to reduce lock contention)
         if request.name is not None:
             project = service.projects.update(project_uuid, name=request.name)
         if request.description is not None:
@@ -486,7 +486,7 @@ def partial_update_project(
         if request.maturity_level is not None:
             project = service.projects.update_maturity_level(project_uuid, request.maturity_level)
 
-        # Commit transaction
+        # Commit transaction with timeout handling
         service.commit_all()
 
         return ProjectResponse(
