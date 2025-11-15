@@ -597,8 +597,8 @@ class SocratesCLI:
         # Start the server
         print("Starting backend server...")
 
-        # Find the backend directory
-        backend_dir = Path(__file__).parent / "backend"
+        # Find the backend directory (backend is in parent directory of src/)
+        backend_dir = Path(__file__).parent.parent / "backend"
         if not backend_dir.exists():
             print(f"Error: Backend directory not found at {backend_dir}")
             print("Continuing without auto-started server...")
@@ -909,6 +909,54 @@ No session required.
             self.console.print(f"DEBUG: Token found in config, user: {self.config.get('user_email')}")
         return True
 
+    def validate_token_with_backend(self) -> bool:
+        """
+        Validate that the token is actually valid with the backend.
+
+        Returns:
+            True if token is valid, False if invalid (and clears credentials)
+        """
+        token = self.config.get("access_token")
+        if not token:
+            return False
+
+        self.api.set_token(token)
+        try:
+            # Try to get current user - this will fail if token is invalid
+            response = requests.get(
+                f"{self.api.base_url}/api/v1/auth/me",
+                headers=self.api._headers(),
+                timeout=5
+            )
+            if response.status_code == 200:
+                if self.debug:
+                    self.console.print(f"DEBUG: Token validation successful")
+                return True
+            elif response.status_code == 401:
+                if self.debug:
+                    self.console.print(f"DEBUG: Token is invalid (401)")
+                # Token is invalid - clear credentials
+                self.clear_authentication()
+                return False
+            else:
+                if self.debug:
+                    self.console.print(f"DEBUG: Unexpected response from auth/me: {response.status_code}")
+                return False
+        except Exception as e:
+            if self.debug:
+                self.console.print(f"DEBUG: Error validating token: {e}")
+            return False
+
+    def clear_authentication(self):
+        """Clear all authentication credentials."""
+        self.config.clear()
+        self.api.access_token = None
+        self.api.refresh_token = None
+        self.current_project = None
+        self.current_session = None
+        if self.debug:
+            self.console.print(f"DEBUG: Credentials cleared")
+
     def _get_config_dict(self) -> Dict[str, Any]:
         """Get full config as dictionary for command handlers."""
         return {
@@ -1035,6 +1083,76 @@ No session required.
             except AttributeError:
                 # Fallback in case prompt_session is None
                 return input(prompt_text).strip()
+
+    def get_password_input(self, prompt_text: str) -> str:
+        """
+        Get password input with asterisk feedback for each character typed.
+        Works better with PowerShell and other terminals that don't support hidden input.
+        """
+        import sys
+        try:
+            # Try to use platform-specific terminal control
+            if sys.platform == "win32":
+                # Windows PowerShell: use visible asterisks
+                return self._get_password_with_asterisks(prompt_text)
+            else:
+                # Unix/Linux: try getpass first
+                try:
+                    return getpass(prompt_text)
+                except Exception:
+                    return self._get_password_with_asterisks(prompt_text)
+        except Exception:
+            # Ultimate fallback
+            return self._get_password_with_asterisks(prompt_text)
+
+    def _get_password_with_asterisks(self, prompt_text: str) -> str:
+        """
+        Get password input showing asterisks for each typed character.
+        Uses Windows-compatible msvcrt on Windows, falls back to input() on other platforms.
+        """
+        import sys
+
+        # Windows: use msvcrt for character-by-character input
+        if sys.platform == "win32":
+            try:
+                import msvcrt
+                self.console.print(prompt_text, end="", style="")
+                sys.stdout.flush()
+
+                password = ""
+                while True:
+                    char = msvcrt.getch()
+
+                    # Enter key
+                    if char == b'\r' or char == b'\n':
+                        self.console.print()  # New line after asterisks
+                        return password
+                    # Backspace
+                    elif char == b'\x08':
+                        if password:
+                            password = password[:-1]
+                            sys.stdout.write('\b \b')  # Delete asterisk
+                            sys.stdout.flush()
+                    # Regular character
+                    elif char.isalnum() or char in b'!@#$%^&*()_+-=[]{}|;:,.<>?/~`':
+                        password += char.decode('utf-8', errors='ignore')
+                        sys.stdout.write('*')
+                        sys.stdout.flush()
+                    # Ignore other characters
+
+            except Exception as e:
+                self.console.print(f"\n[DEBUG] Password input error: {e}\n")
+                # Fallback to simple input
+                pass
+
+        # Fallback for Unix/Linux or if msvcrt fails: use getpass
+        try:
+            return getpass(prompt_text)
+        except Exception:
+            # Last resort: visible password input
+            self.console.print(prompt_text, end="", style="dim")
+            self.console.print(" [Password visible for compatibility]", style="yellow")
+            return input().strip()
 
     # ============================================================================
     # AUTHENTICATION COMMANDS - User registration, login, account management
@@ -1167,7 +1285,25 @@ No session required.
                     self.console.print(f"User ID: {result.get('user_id')}")
                     self.console.print(f"Username: {data['username']}")
                     self.console.print(f"Email: {data['email']}")
-                    self.console.print("\nPlease login with /login")
+
+                    # Auto-login with the just-registered credentials
+                    self.console.print("\nLogging in automatically...")
+                    login_result = self.api.login(data['username'], data['password'])
+                    if login_result.get("access_token"):
+                        # Save credentials
+                        self.config["access_token"] = login_result["access_token"]
+                        self.config["refresh_token"] = login_result.get("refresh_token")
+                        self.config["user_id"] = login_result.get("user_id")
+                        self.config["username"] = data['username']
+                        self.config["user_email"] = data['email']
+                        self.config["user_name"] = data['name']
+                        self.save_config()
+
+                        # Update API client with new token
+                        self.api.access_token = login_result["access_token"]
+                        self.console.print(f"[OK] Logged in as {data['username']}")
+                    else:
+                        self.console.print("[WARNING] Registration successful but automatic login failed. Please login manually with /login")
                 else:
                     self.console.print(f"\n[ERROR] Registration failed: {result.get('message', 'Unknown error')}")
             except requests.exceptions.ConnectionError:
@@ -1189,22 +1325,72 @@ No session required.
 
     def quick_login_on_startup(self) -> bool:
         """
-        Quick login on startup - minimal form (username + password only).
-        Returns True if login successful, False if cancelled/failed.
+        Quick login/register on startup - lets user choose action.
+        Returns True if login/register successful, False if cancelled/failed.
         """
-        self.console.print("\n┌──────────────────────────────────────┐")
-        self.console.print("│  QUICK LOGIN                         │")
-        self.console.print("└──────────────────────────────────────┘\n")
+        max_attempts = 3
 
+        while max_attempts > 0:
+            self.console.print("\n┌──────────────────────────────────────┐")
+            self.console.print("│  SOCRATES - AUTHENTICATION REQUIRED  │")
+            self.console.print("└──────────────────────────────────────┘\n")
+            self.console.print("Options:")
+            self.console.print("  [1] Login with existing account")
+            self.console.print("  [2] Register new account")
+            self.console.print("  [0] Skip (limited access)\n")
+
+            try:
+                choice = self.get_prompt_input("Choose (1/2/0): ").strip()
+
+                if choice == "1":
+                    if self._quick_login():
+                        return True
+                    # Login failed - offer retry
+                    max_attempts -= 1
+                    if max_attempts > 0:
+                        self.console.print(f"\nLogin failed. {max_attempts} attempts remaining.\n")
+                        continue
+                    else:
+                        self.console.print("\nMax login attempts exceeded. You can still /login later.\n")
+                        return False
+
+                elif choice == "2":
+                    if self._quick_register():
+                        return True
+                    # Register failed - offer retry
+                    max_attempts -= 1
+                    if max_attempts > 0:
+                        self.console.print(f"\nRegistration failed. {max_attempts} attempts remaining.\n")
+                        continue
+                    else:
+                        self.console.print("\nMax registration attempts exceeded. You can still /register later.\n")
+                        return False
+                else:
+                    self.console.print("\n[INFO] Continuing without authentication\n")
+                    self.console.print("Limited access: You can use /help, /register, /login\n")
+                    return False
+
+            except KeyboardInterrupt:
+                self.console.print("\n[CANCELLED] Authentication skipped\n")
+                return False
+            except Exception as e:
+                self.console.print(f"\n[ERROR] {str(e)[:100]}\n")
+                return False
+
+        return False
+
+    def _quick_login(self) -> bool:
+        """Quick login - username + password only."""
         try:
-            # Get username (not email)
-            username = Prompt.ask("Username")
+            # Get username
+            username = self.get_prompt_input("Username: ").strip()
             if not username:
                 self.console.print("[CANCELLED] Login aborted\n")
                 return False
 
-            # Get password (hidden input)
-            password = Prompt.ask("Password", password=True)
+            # Get password with asterisk feedback
+            password = self.get_password_input("Password: ")
+
             if not password:
                 self.console.print("[CANCELLED] Login aborted\n")
                 return False
@@ -1229,7 +1415,7 @@ No session required.
 
                 user_display = result.get("name", username)
                 self.cli_logger.log_login(username, result.get("username", ""))
-                self.console.print(f"\n✓ Login successful as {user_display}\n")
+                self.console.print(f"\nLogin successful as {user_display}\n")
                 return True
             else:
                 error_detail = result.get('message', result.get('detail', 'Invalid credentials'))
@@ -1240,11 +1426,88 @@ No session required.
             self.console.print("\n[ERROR] Cannot connect to Socrates backend")
             self.console.print("The server is not running at http://localhost:8000\n")
             return False
-        except KeyboardInterrupt:
-            self.console.print("\n[CANCELLED] Login aborted\n")
-            return False
         except Exception as e:
             self.console.print(f"\n[ERROR] Login error: {str(e)[:100]}\n")
+            return False
+
+    def _quick_register(self) -> bool:
+        """Quick register - minimal form."""
+        try:
+            username = self.get_prompt_input("Username: ").strip()
+            if not username:
+                self.console.print("[CANCELLED] Registration aborted\n")
+                return False
+
+            name = self.get_prompt_input("First name: ").strip()
+            if not name:
+                self.console.print("[CANCELLED] Registration aborted\n")
+                return False
+
+            surname = self.get_prompt_input("Last name: ").strip()
+            if not surname:
+                self.console.print("[CANCELLED] Registration aborted\n")
+                return False
+
+            email = self.get_prompt_input("Email (optional): ").strip()
+
+            # Get password with asterisk feedback
+            password = self.get_password_input("Password: ")
+
+            if not password:
+                self.console.print("[CANCELLED] Registration aborted\n")
+                return False
+
+            # Get password confirmation with asterisk feedback
+            password_confirm = self.get_password_input("Confirm password: ")
+
+            if password != password_confirm:
+                self.console.print("\n[ERROR] Passwords do not match\n")
+                return False
+
+            # Attempt registration
+            with Progress(SpinnerColumn(), TextColumn("{task.description}"),
+                          console=self.console, transient=True) as progress:
+                progress.add_task("Registering...", total=None)
+                result = self.api.register(username, name, surname, email, password)
+
+            if result.get("user_id"):
+                # Registration successful - now auto-login
+                self.console.print("\n[OK] Registration successful")
+                self.console.print("Logging in automatically...\n")
+
+                # Auto-login with the just-registered credentials
+                login_result = self.api.login(username, password)
+                if login_result.get("access_token"):
+                    # Save credentials
+                    self.config.set("access_token", login_result["access_token"])
+                    self.config.set("refresh_token", login_result.get("refresh_token"))
+                    self.config.set("user_id", login_result.get("user_id"))
+                    self.config.set("username", username)
+                    self.config.set("user_email", email)
+                    self.config.set("user_name", name)
+                    self.api.set_token(login_result["access_token"])
+                    if login_result.get("refresh_token"):
+                        self.api.set_refresh_token(login_result["refresh_token"])
+
+                    self.cli_logger.log_login(username, username)
+                    self.console.print(f"[OK] Logged in as {username}\n")
+                    return True
+                else:
+                    # Registration worked but login failed
+                    self.console.print(f"[WARNING] Registration successful but auto-login failed.")
+                    self.console.print(f"Please login manually with your username: {username}\n")
+                    return False
+            else:
+                error_detail = result.get('message', result.get('detail', 'Registration failed'))
+                self.console.print(f"\n[ERROR] Registration failed: {error_detail}\n")
+                return False
+
+        except requests.exceptions.ConnectionError:
+            self.console.print("\n[ERROR] Cannot connect to Socrates backend")
+            self.console.print("The server is not running at http://localhost:8000\n")
+            return False
+        except Exception as e:
+            self.console.print(f"\n[ERROR] Registration error: {str(e)[:100]}\n")
             return False
 
     def check_deprecated_models(self) -> bool:
@@ -1895,15 +2158,18 @@ Updated: {p.get('updated_at', 'N/A')}
                     # Extract data from wrapped response
                     data = result.get("data", {})
 
-                    # Handle both response formats: session object or session_id
-                    session_data = data.get("session")
-                    if not session_data:
+                    # The API returns data with a nested 'session' object that has the proper structure
+                    # If there's a nested 'session' object, use that; otherwise fall back to constructing from response
+                    if isinstance(data, dict) and "session" in data and isinstance(data.get("session"), dict):
+                        # Use the nested session object which has proper 'id' field
+                        session_data = data["session"]
+                    else:
                         # Fallback: construct session object from response fields
                         session_data = {
-                            "id": data.get("session_id"),
+                            "id": data.get("session_id") or data.get("id"),
                             "project_id": data.get("project_id"),
-                            "status": data.get("status"),
-                            "mode": "socratic"
+                            "status": data.get("status", "active"),
+                            "mode": data.get("mode", "socratic")
                         }
 
                     if not session_data or not session_data.get("id"):
@@ -1911,7 +2177,7 @@ Updated: {p.get('updated_at', 'N/A')}
                         return
 
                     self.current_session = session_data
-                    session_id = self.current_session["id"]
+                    session_id = self.current_session.get("id")
                     # Log the session start
                     self.cli_logger.log_session_start(session_id, "socratic", self.current_project["id"])
                     self.console.print(f"[OK] Session started: {session_id}")
@@ -2029,7 +2295,10 @@ Updated: {p.get('updated_at', 'N/A')}
 
             if Confirm.ask("End current session?"):
                 try:
-                    session_id = self.current_session["id"]
+                    session_id = self.current_session.get("id")
+                    if not session_id:
+                        self.console.print("[ERROR] Invalid session data - missing ID")
+                        return
                     result = self.api.end_session(session_id)
                     if result.get("success"):
                         # Log the session end
@@ -2079,11 +2348,11 @@ Updated: {p.get('updated_at', 'N/A')}
             table.add_column("Created", style="dim")
 
             for session in sessions:
-                active = "→ " if self.current_session and session["id"] == self.current_session["id"] else ""
-                status_color = "green" if session["status"] == "active" else "dim"
+                active = "→ " if self.current_session and session.get("id") == self.current_session.get("id") else ""
+                status_color = "green" if session.get("status") == "active" else "dim"
                 table.add_row(
-                    active + session["id"][:8],
-                    f"[{status_color}]{session['status']}[/{status_color}]",
+                    active + (session.get("id", "")[:8] if session.get("id") else ""),
+                    f"[{status_color}]{session.get('status', 'unknown')}[/{status_color}]",
                     str(session.get("question_count", 0)),
                     str(session.get("spec_count", 0)),
                     session.get("created_at", "")[:16]
@@ -2103,7 +2372,11 @@ Updated: {p.get('updated_at', 'N/A')}
             return
 
         try:
-            result = self.api.get_session_history(self.current_session["id"])
+            session_id = self.current_session.get("id")
+            if not session_id:
+                self.console.print("[ERROR] Invalid session data - missing ID")
+                return
+            result = self.api.get_session_history(session_id)
             if result.get("success"):
                 # Extract from data wrapper
                 data = result.get("data", {})
@@ -2138,10 +2411,17 @@ Updated: {p.get('updated_at', 'N/A')}
             return
 
         try:
+            session_id = self.current_session.get("id")
+            if not session_id:
+                if self.debug:
+                    self.console.print(f"[DEBUG] current_session keys: {list(self.current_session.keys()) if isinstance(self.current_session, dict) else 'not a dict'}")
+                    self.console.print(f"[DEBUG] current_session: {self.current_session}")
+                self.console.print("[ERROR] Invalid session data - missing ID")
+                return
             with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Generating question...", total=None)
-                result = self.api.get_next_question(self.current_session["id"])
+                result = self.api.get_next_question(session_id)
 
             if result.get("success"):
                 # Extract from data wrapper
@@ -3572,10 +3852,14 @@ Updated: {p.get('updated_at', 'N/A')}
         note_text = " ".join(args)
 
         try:
+            session_id = self.current_session.get("id")
+            if not session_id:
+                self.console.print("[ERROR] Invalid session data - missing ID")
+                return
             with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Adding note...", total=None)
-                result = self.api.add_session_note(self.current_session["id"], note_text)
+                result = self.api.add_session_note(session_id, note_text)
 
             if result.get("success"):
                 self.console.print(f"[OK] Note added")
@@ -3594,10 +3878,14 @@ Updated: {p.get('updated_at', 'N/A')}
             return
 
         try:
+            session_id = self.current_session.get("id")
+            if not session_id:
+                self.console.print("[ERROR] Invalid session data - missing ID")
+                return
             with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Creating bookmark...", total=None)
-                result = self.api.bookmark_session(self.current_session["id"])
+                result = self.api.bookmark_session(session_id)
 
             if result.get("success"):
                 self.console.print(f"[OK] Bookmark created")
@@ -3619,10 +3907,14 @@ Updated: {p.get('updated_at', 'N/A')}
         branch_name = args[0] if args else None
 
         try:
+            session_id = self.current_session.get("id")
+            if not session_id:
+                self.console.print("[ERROR] Invalid session data - missing ID")
+                return
             with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                           console=self.console, transient=True) as progress:
                 progress.add_task("Creating branch...", total=None)
-                result = self.api.branch_session(self.current_session["id"], branch_name)
+                result = self.api.branch_session(session_id, branch_name)
 
             if result.get("success"):
                 self.console.print(f"[OK] Branch created")
@@ -3642,10 +3934,14 @@ Updated: {p.get('updated_at', 'N/A')}
             # Show current session stats if active
             if self.current_session:
                 try:
+                    session_id = self.current_session.get("id")
+                    if not session_id:
+                        self.console.print("[ERROR] Invalid session data - missing ID")
+                        return
                     with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                                   console=self.console, transient=True) as progress:
                         progress.add_task("Loading stats...", total=None)
-                        result = self.api.get_session_stats(self.current_session["id"])
+                        result = self.api.get_session_stats(session_id)
 
                     if result.get("success"):
                         self.console.print("\nSession Statistics\n")
@@ -4299,8 +4595,15 @@ Updated: {p.get('updated_at', 'N/A')}
                 with Progress(SpinnerColumn(), TextColumn("{task.description}"),
                               console=self.console, transient=True) as progress:
                     progress.add_task("Switching mode...", total=None)
+                    session_id = self.current_session.get("id")
+                    if not session_id:
+                        if self.debug:
+                            self.console.print(f"[DEBUG] current_session keys: {list(self.current_session.keys()) if isinstance(self.current_session, dict) else 'not a dict'}")
+                            self.console.print(f"[DEBUG] current_session: {self.current_session}")
+                        self.console.print("[ERROR] Invalid session data - missing ID")
+                        return
                     result = self.api.set_session_mode(
-                        self.current_session["id"],
+                        session_id,
                         backend_mode
                     )
 
@@ -4387,42 +4690,53 @@ Updated: {p.get('updated_at', 'N/A')}
         self.print_banner()
 
         # Check if user is logged in
+        authenticated = False
         if self.config.get("access_token"):
-            # User already authenticated - restore session silently
-            self.api.set_token(self.config.get("access_token"))
-            refresh_token = self.config.get("refresh_token")
-            if refresh_token:
-                self.api.set_refresh_token(refresh_token)
+            # User already authenticated - validate token with backend first
+            if self.validate_token_with_backend():
+                # Token is valid - restore session silently
+                self.api.set_token(self.config.get("access_token"))
+                refresh_token = self.config.get("refresh_token")
+                if refresh_token:
+                    self.api.set_refresh_token(refresh_token)
 
-            # Restore active project from config (silently, no message)
-            saved_project = self.config.get("current_project")
-            if saved_project:
-                self.current_project = saved_project
+                # Restore active project from config (silently, no message)
+                saved_project = self.config.get("current_project")
+                if saved_project:
+                    self.current_project = saved_project
 
-            # Restore active session from config (silently, no message)
-            saved_session = self.config.get("current_session")
-            if saved_session:
-                self.current_session = saved_session
+                # Restore active session from config (silently, no message)
+                saved_session = self.config.get("current_session")
+                if saved_session:
+                    self.current_session = saved_session
 
-            # Show welcome message
-            user_name = self.config.get("user_name") or self.config.get("user_email", "User")
-            self.console.print(f"Welcome back, {user_name}!\n")
+                # Show welcome message
+                user_name = self.config.get("user_name") or self.config.get("user_email", "User")
+                self.console.print(f"Welcome back, {user_name}!\n")
+                authenticated = True
+            else:
+                # Token is invalid - credentials were cleared, prompt for login
+                self.console.print("[WARNING] Your session has expired. Please login again.\n")
+                if self.quick_login_on_startup():
+                    authenticated = True
+                # If login fails, continue with limited access
         else:
             # User not logged in - prompt for quick login
             self.console.print()
-            if not self.quick_login_on_startup():
-                # User cancelled login
-                self.console.print("Cannot proceed without authentication.\n")
-                self.console.print("You can still access: /help, /register, /exit\n")
-                # Don't exit, allow user to register or manually login
-                return
+            if self.quick_login_on_startup():
+                authenticated = True
+            # If login skipped or failed, continue with limited access
 
         # Check for deprecated models (only if authenticated)
         if self.config.get("access_token"):
             self.check_deprecated_models()
 
-        # Show ready message
-        self.console.print("Ready to chat. Type /help for commands or just start talking.")
+        # Show ready message based on authentication status
+        if authenticated:
+            self.console.print("Ready to chat. Type /help for commands or just start talking.")
+        else:
+            self.console.print("Running in limited mode. Use /login or /register to authenticate.")
+            self.console.print("Or type /help to see available commands.")
 
         # Main loop
         try:
@@ -4430,8 +4744,9 @@ Updated: {p.get('updated_at', 'N/A')}
                 try:
                     # Build prompt
                     prompt_parts = []
-                    if self.current_project:
-                        prompt_parts.append(f"{self.current_project['name'][:20]}")
+                    if self.current_project and isinstance(self.current_project, dict):
+                        project_name = self.current_project.get('name', 'Project')
+                        prompt_parts.append(f"{project_name[:20]}")
                     if self.current_session:
                         prompt_parts.append(f"session")
 
@@ -4439,19 +4754,32 @@ Updated: {p.get('updated_at', 'N/A')}
                     mode_emoji = "" if self.chat_mode == "socratic" else ""
                     prompt_parts.append(f"{mode_emoji}")
 
-                    prompt_text = " ".join(prompt_parts) if prompt_parts else f"socrates {mode_emoji}"
+                    prompt_text = " ".join(filter(None, prompt_parts)) if prompt_parts else f"socrates {mode_emoji}"
 
                     # Get user input
-                    user_input = self.get_prompt_input(f"{prompt_text} > ")
+                    try:
+                        user_input = self.get_prompt_input(f"{prompt_text} > ")
+                    except Exception as input_error:
+                        if self.debug:
+                            self.console.print(f"DEBUG: Input error: {input_error}")
+                        continue
 
-                    if not user_input:
+                    if not user_input or user_input is None:
                         continue
 
                     # Handle command or chat message
-                    if user_input.startswith('/'):
-                        self.handle_command(user_input)
-                    else:
-                        self.handle_chat_message(user_input)
+                    try:
+                        if user_input.startswith('/'):
+                            self.handle_command(user_input)
+                        else:
+                            self.handle_chat_message(user_input)
+                    except TypeError as te:
+                        if "NoneType" in str(te) and "len" in str(te):
+                            self.console.print("[ERROR] Internal error processing command. Please try again.")
+                            if self.debug:
+                                self.console.print(f"DEBUG: {te}")
+                        else:
+                            raise
 
                 except KeyboardInterrupt:
                     self.console.print("\nUse /exit to quit")
