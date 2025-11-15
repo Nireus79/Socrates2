@@ -61,12 +61,13 @@ class Specification(BaseModel):
         comment="Foreign key to projects table"
     )
 
-    session_id = Column(
-        PG_UUID(as_uuid=True),
-        ForeignKey('sessions.id', ondelete='SET NULL'),
-        nullable=True,
-        comment="Foreign key to sessions table (can be NULL)"
-    )
+    # TODO: Enable when session_id column is created in database migration
+    # session_id = Column(
+    #     PG_UUID(as_uuid=True),
+    #     ForeignKey('sessions.id', ondelete='SET NULL'),
+    #     nullable=True,
+    #     comment="Foreign key to sessions table (can be NULL)"
+    # )
 
     category = Column(
         String(100),
@@ -133,7 +134,8 @@ class Specification(BaseModel):
 
     # Relationships
     project = relationship("Project", back_populates="specifications")
-    session = relationship("Session", back_populates="specifications")
+    # TODO: Enable when session_id column is created in database
+    # session = relationship("Session", back_populates="specifications")
 
     def __repr__(self):
         """String representation of specification"""
